@@ -1,0 +1,118 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  username  String   @unique
+  password  String
+  role      String   @default("VIEWER")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CottonInventory {
+  id           Int         @id @default(autoincrement())
+  date         DateTime
+  type         String
+  quantity     Float
+  balance      Float
+  reference    String
+  batchId      String?
+  productionId Int?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  production   Production? @relation("CottonProduction", fields: [productionId], references: [id])
+}
+
+model YarnInventory {
+  id           Int         @id @default(autoincrement())
+  date         DateTime
+  type         String
+  quantity     Float
+  balance      Float
+  reference    String
+  count        String?
+  productionId Int?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  production   Production? @relation("YarnProduction", fields: [productionId], references: [id])
+}
+
+model InwardBatch {
+  id        Int      @id @default(autoincrement())
+  batchId   String   @unique
+  date      DateTime
+  supplier  String
+  bale      Int
+  kg        Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Production {
+  id              Int                     @id @default(autoincrement())
+  date            DateTime
+  totalConsumed   Float
+  totalProduced   Float
+  totalWaste      Float
+  wasteBlowRoom   Float                   @default(0)
+  wasteCarding    Float                   @default(0)
+  wasteOE         Float                   @default(0)
+  wasteOthers     Float                   @default(0)
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+  cottonInventory CottonInventory[]       @relation("CottonProduction")
+  consumedBatches ProductionConsumption[]
+  producedYarn    ProductionOutput[]
+  yarnInventory   YarnInventory[]         @relation("YarnProduction")
+}
+
+model ProductionConsumption {
+  id           Int        @id @default(autoincrement())
+  productionId Int
+  batchNo      String
+  weight       Float
+  createdAt    DateTime   @default(now())
+  production   Production @relation(fields: [productionId], references: [id], onDelete: Cascade)
+}
+
+model ProductionOutput {
+  id           Int        @id @default(autoincrement())
+  productionId Int
+  count        String
+  weight       Float
+  bags         Int
+  remainingLog Float
+  createdAt    DateTime   @default(now())
+  production   Production @relation(fields: [productionId], references: [id], onDelete: Cascade)
+}
+
+model Outward {
+  id           Int            @id @default(autoincrement())
+  date         DateTime
+  customerName String
+  vehicleNo    String
+  driverName   String?
+  totalBags    Int            @default(0)
+  totalWeight  Float          @default(0)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  items        OutwardItem[]
+}
+
+model OutwardItem {
+  id        Int      @id @default(autoincrement())
+  outwardId Int
+  count     String
+  bags      Int
+  weight    Float
+  createdAt DateTime @default(now())
+  outward   Outward  @relation(fields: [outwardId], references: [id], onDelete: Cascade)
+}
