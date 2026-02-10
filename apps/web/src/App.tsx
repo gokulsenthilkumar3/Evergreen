@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   Box,
   Drawer,
@@ -17,8 +17,9 @@ import {
   Tooltip,
   Menu,
   MenuItem,
-  CircularProgress,
-  Grid,
+  ThemeProvider,
+  CssBaseline,
+  type PaletteMode,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -31,8 +32,11 @@ import {
   Receipt as BillingIcon,
   TrendingUp,
   TrendingUp as OutwardIcon,
+  Brightness4 as DarkModeIcon,
+  Brightness7 as LightModeIcon,
 } from '@mui/icons-material';
 
+import getTheme from './theme';
 import Login from './components/Login';
 import Dashboard from './pages/Dashboard';
 import Inventory from './pages/Inventory';
@@ -51,7 +55,19 @@ const App = () => {
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [drawerOpen, setDrawerOpen] = useState(true);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [mode, setMode] = useState<PaletteMode>((localStorage.getItem('themeMode') as PaletteMode) || 'light');
+
   const profileMenuOpen = Boolean(anchorEl);
+
+  const theme = useMemo(() => getTheme(mode), [mode]);
+
+  useEffect(() => {
+    localStorage.setItem('themeMode', mode);
+  }, [mode]);
+
+  const toggleTheme = () => {
+    setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
+  };
 
   const handleProfileClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -73,153 +89,213 @@ const App = () => {
   };
 
   const menuItems = [
-    { text: 'Dashboard', icon: <DashboardIcon />, page: 'dashboard' },
-    { text: 'Today Summary', icon: <TrendingUp fontSize="small" />, page: 'today' },
+    { text: 'Dashboards', icon: <DashboardIcon />, page: 'dashboard' },
+    { text: 'Summary', icon: <TrendingUp fontSize="small" />, page: 'today' },
+    { text: 'Inward/Batch', icon: <InventoryIcon />, page: 'inward' },
     { text: 'Inventory', icon: <InventoryIcon />, page: 'inventory' },
-    { text: 'Costing', icon: <CostIcon />, page: 'costing' },
-    { text: 'Inward / Batch', icon: <InventoryIcon />, page: 'inward' },
-    { text: 'Outward (Sales)', icon: <OutwardIcon fontSize="small" />, page: 'outward' },
     { text: 'Production', icon: <WasteIcon />, page: 'production' },
-
+    { text: 'Outwards', icon: <OutwardIcon fontSize="small" />, page: 'outward' },
+    { text: 'Costing', icon: <CostIcon />, page: 'costing' },
     { text: 'Billing', icon: <BillingIcon />, page: 'billing' },
     { text: 'Settings', icon: <SettingsIcon />, page: 'settings' },
   ];
 
   if (!user) {
-    return <Login onLoginSuccess={handleLogin} />;
+    return (
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Login onLoginSuccess={handleLogin} />
+      </ThemeProvider>
+    );
   }
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f8fafc' }}>
-      <AppBar
-        position="fixed"
-        sx={{
-          zIndex: (theme) => theme.zIndex.drawer + 1,
-          bgcolor: 'white',
-          color: 'text.primary',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-          borderBottom: '1px solid',
-          borderColor: 'divider'
-        }}
-      >
-        <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            onClick={() => setDrawerOpen(!drawerOpen)}
-            edge="start"
-            sx={{ mr: 2 }}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, fontWeight: 'bold', color: 'primary.main' }}>
-            EVER GREEN <span style={{ color: '#64748b' }}>YARN SMS</span>
-          </Typography>
-          <Tooltip title="Profile">
-            <IconButton onClick={handleProfileClick} sx={{ p: 0 }}>
-              <Avatar alt="Admin User" sx={{ bgcolor: 'primary.main' }}>{user.username?.charAt(0).toUpperCase()}</Avatar>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Box sx={{
+        display: 'flex',
+        minHeight: '100vh',
+        width: '100vw',
+        bgcolor: 'background.default',
+        color: 'text.primary',
+        overflow: 'hidden'
+      }}>
+        <AppBar
+          position="fixed"
+          sx={{
+            zIndex: (theme) => theme.zIndex.drawer + 1,
+          }}
+        >
+          <Toolbar>
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              onClick={() => setDrawerOpen(!drawerOpen)}
+              edge="start"
+              sx={{ mr: 2 }}
+            >
+              <MenuIcon />
             </IconButton>
-          </Tooltip>
-          <Menu
-            anchorEl={anchorEl}
-            open={profileMenuOpen}
-            onClose={handleProfileClose}
-            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-          >
-            <MenuItem disabled>
-              <Box>
-                <Typography variant="body2" fontWeight="bold">{user.username}</Typography>
-                <Typography variant="caption" color="text.secondary">{user.role || 'Admin'}</Typography>
-              </Box>
-            </MenuItem>
-            <Divider />
-            <MenuItem onClick={handleLogout} sx={{ color: 'error.main' }}>
-              <ListItemIcon sx={{ color: 'error.main' }}>
-                <LogoutIcon fontSize="small" />
-              </ListItemIcon>
-              Logout
-            </MenuItem>
-          </Menu>
-        </Toolbar>
-      </AppBar>
-      <Drawer
-        variant="permanent"
-        sx={{
-          width: drawerOpen ? drawerWidth : 70,
-          flexShrink: 0,
-          [`& .MuiDrawer-paper`]: {
-            width: drawerOpen ? drawerWidth : 70,
-            boxSizing: 'border-box',
-            borderRight: '1px solid',
-            borderColor: 'divider',
-            transition: 'width 0.2s ease-in-out',
-            overflowX: 'hidden'
-          },
-        }}
-      >
-        <Toolbar />
-        <Box sx={{ overflow: 'auto', py: 2 }}>
-          <List>
-            {menuItems.map((item) => (
-              <ListItem key={item.text} disablePadding sx={{ display: 'block', mb: 0.5 }}>
-                <ListItemButton
-                  selected={currentPage === item.page}
-                  onClick={() => setCurrentPage(item.page)}
-                  sx={{
-                    minHeight: 48,
-                    justifyContent: drawerOpen ? 'initial' : 'center',
-                    px: 2.5,
-                    mx: 1,
-                    borderRadius: 2,
-                    '&.Mui-selected': {
-                      bgcolor: 'primary.50',
-                      color: 'primary.main',
-                      '& .MuiListItemIcon-root': {
-                        color: 'primary.main',
-                      },
-                    },
-                  }}
+            <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, fontWeight: 'bold' }}>
+              <span style={{ color: mode === 'dark' ? '#4caf50' : '#2e7d32' }}>EVER GREEN</span> <span style={{ color: mode === 'dark' ? '#94a3b8' : '#64748b' }}>YARN SMS</span>
+            </Typography>
+
+            <IconButton onClick={toggleTheme} color="inherit" sx={{ mr: 2 }}>
+              {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
+            </IconButton>
+
+            <Tooltip title="Profile">
+              <IconButton onClick={handleProfileClick} sx={{ p: 0 }}>
+                <Avatar
+                  alt={user.name || user.username}
+                  sx={{ bgcolor: 'primary.main', fontWeight: 'bold' }}
                 >
-                  <ListItemIcon
+                  {(user.name || user.username)?.charAt(0).toUpperCase()}
+                </Avatar>
+              </IconButton>
+            </Tooltip>
+            <Menu
+              anchorEl={anchorEl}
+              open={profileMenuOpen}
+              onClose={handleProfileClose}
+              transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+              anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+            >
+              <MenuItem disabled>
+                <Box sx={{ py: 0.5 }}>
+                  <Typography variant="body2" fontWeight="bold">{user.name || user.username}</Typography>
+                  <Typography variant="caption" color="text.secondary">{user.role || 'Admin'}</Typography>
+                </Box>
+              </MenuItem>
+              <Divider />
+              <MenuItem onClick={handleLogout} sx={{ color: 'error.main' }}>
+                <ListItemIcon sx={{ color: 'error.main' }}>
+                  <LogoutIcon fontSize="small" />
+                </ListItemIcon>
+                Logout
+              </MenuItem>
+            </Menu>
+          </Toolbar>
+        </AppBar>
+        <Drawer
+          variant="permanent"
+          sx={{
+            width: drawerOpen ? drawerWidth : 70,
+            flexShrink: 0,
+            [`& .MuiDrawer-paper`]: {
+              width: drawerOpen ? drawerWidth : 70,
+              boxSizing: 'border-box',
+              transition: (theme) => theme.transitions.create('width', {
+                easing: theme.transitions.easing.sharp,
+                duration: theme.transitions.duration.enteringScreen,
+              }),
+              overflowX: 'hidden'
+            },
+          }}
+        >
+          <Toolbar />
+          <Box sx={{ overflow: 'auto', flexGrow: 1, py: 2 }}>
+            <List>
+              {menuItems.map((item) => (
+                <ListItem key={item.text} disablePadding sx={{ display: 'block', mb: 0.5 }}>
+                  <ListItemButton
+                    selected={currentPage === item.page}
+                    onClick={() => setCurrentPage(item.page)}
                     sx={{
-                      minWidth: 0,
-                      mr: drawerOpen ? 2 : 'auto',
-                      justifyContent: 'center',
+                      minHeight: 48,
+                      justifyContent: drawerOpen ? 'initial' : 'center',
+                      px: 2.5,
+                      mx: 1,
+                      borderRadius: 2,
+                      '&.Mui-selected': {
+                        bgcolor: mode === 'dark' ? 'rgba(76, 175, 80, 0.15)' : 'rgba(46, 125, 50, 0.08)',
+                        color: mode === 'dark' ? '#81c784' : 'primary.main',
+                        '& .MuiListItemIcon-root': {
+                          color: mode === 'dark' ? '#81c784' : 'primary.main',
+                        },
+                      },
+                      '&:hover': {
+                        bgcolor: mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.04)',
+                      }
                     }}
                   >
-                    {item.icon}
-                  </ListItemIcon>
-                  {drawerOpen && <ListItemText primary={item.text} primaryTypographyProps={{ variant: 'body2', fontWeight: currentPage === item.page ? 600 : 500 }} />}
-                </ListItemButton>
-              </ListItem>
-            ))}
-          </List>
+                    <ListItemIcon
+                      sx={{
+                        minWidth: 0,
+                        mr: drawerOpen ? 2 : 'auto',
+                        justifyContent: 'center',
+                        color: currentPage === item.page ? (mode === 'dark' ? '#81c784' : 'primary.main') : 'inherit'
+                      }}
+                    >
+                      {item.icon}
+                    </ListItemIcon>
+                    {drawerOpen && (
+                      <ListItemText
+                        primary={item.text}
+                        primaryTypographyProps={{
+                          variant: 'body2',
+                          fontWeight: currentPage === item.page ? 700 : 500,
+                          color: currentPage === item.page ? 'inherit' : 'text.secondary'
+                        }}
+                      />
+                    )}
+                  </ListItemButton>
+                </ListItem>
+              ))}
+            </List>
+          </Box>
+        </Drawer>
+        <Box
+          component="main"
+          sx={{
+            flexGrow: 1,
+            p: { xs: 2, md: 3 },
+            width: { sm: `calc(100% - ${drawerOpen ? drawerWidth : 70}px)` },
+            height: '100vh',
+            display: 'flex',
+            flexDirection: 'column',
+            overflowY: 'auto',
+            bgcolor: 'background.default',
+            transition: (theme) => theme.transitions.create(['width', 'margin'], {
+              easing: theme.transitions.easing.sharp,
+              duration: theme.transitions.duration.enteringScreen,
+            }),
+          }}
+        >
+          <Toolbar />
+          <Container
+            maxWidth={false}
+            sx={{
+              flexGrow: 1,
+              width: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              p: '0 !important',
+              m: 0
+            }}
+          >
+            {currentPage === 'dashboard' && <Dashboard />}
+            {currentPage === 'today' && <TodayDashboard />}
+            {currentPage === 'inventory' && <Inventory userRole={user.role} />}
+            {currentPage === 'costing' && <Costing userRole={user.role} />}
+            {currentPage === 'inward' && <InwardEntry userRole={user.role} />}
+            {currentPage === 'outward' && <OutwardEntry userRole={user.role} />}
+            {currentPage === 'production' && <ProductionEntry userRole={user.role} />}
+            {currentPage === 'billing' && <Billing userRole={user.role} />}
+            {currentPage === 'settings' && <Settings currentUser={user} />}
+
+            {!['dashboard', 'today', 'inventory', 'costing', 'inward', 'outward', 'production', 'billing', 'settings'].includes(currentPage) && (
+              <Box sx={{ p: 4, textAlign: 'center' }}>
+                <Typography variant="h4" sx={{ mb: 2, fontWeight: 'bold' }}>
+                  {currentPage.charAt(0).toUpperCase() + currentPage.slice(1)}
+                </Typography>
+                <Typography color="text.secondary">This page is currently under development.</Typography>
+              </Box>
+            )}
+          </Container>
         </Box>
-      </Drawer>
-      <Box component="main" sx={{ flexGrow: 1, p: 3, width: '100%' }}>
-        <Toolbar />
-        <Container maxWidth={false} sx={{ width: '100%', maxWidth: '100%' }}>
-          {currentPage === 'dashboard' && <Dashboard />}
-          {currentPage === 'today' && <TodayDashboard />}
-
-          {currentPage === 'inventory' && <Inventory />}
-          {currentPage === 'costing' && <Costing userRole={user.role} />}
-          {currentPage === 'inward' && <InwardEntry />}
-          {currentPage === 'outward' && <OutwardEntry />}
-          {currentPage === 'production' && <ProductionEntry />}
-
-          {currentPage === 'billing' && <Billing />}
-          {currentPage === 'settings' && <Settings />}
-
-          {!['dashboard', 'today', 'inventory', 'costing', 'inward', 'outward', 'production', 'billing', 'settings'].includes(currentPage) && (
-            <Typography variant="h4" sx={{ mb: 4, fontWeight: 'bold', color: 'text.primary' }}>
-              {currentPage.charAt(0).toUpperCase() + currentPage.slice(1)} - Coming Soon
-            </Typography>
-          )}
-        </Container>
       </Box>
-    </Box>
+    </ThemeProvider>
   );
 };
 

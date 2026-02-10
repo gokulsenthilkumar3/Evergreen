@@ -28,6 +28,7 @@ export class AuthService {
             user: {
                 id: user.id,
                 username: user.username,
+                name: user.name,
                 role: user.role,
             }
         };
@@ -56,6 +57,7 @@ export class AuthService {
         const newUser = await this.prisma.user.create({
             data: {
                 username: userDto.username,
+                name: userDto.name,
                 password: userDto.password, // In real app, hash this!
                 role: userDto.role || 'VIEWER',
                 email: userDto.email || `${userDto.username}-${Date.now()}@temp.local`,
@@ -72,6 +74,7 @@ export class AuthService {
             select: {
                 id: true,
                 username: true,
+                name: true,
                 email: true,
                 role: true,
                 createdAt: true,
@@ -140,6 +143,7 @@ export class AuthService {
         // Build update data
         const updateData: any = {};
         if (userDto.username) updateData.username = userDto.username;
+        if (userDto.name) updateData.name = userDto.name;
         if (userDto.password) updateData.password = userDto.password;
 
         // Handle email carefully: if empty string provided, we might want to keep it empty or set a temp
@@ -157,6 +161,7 @@ export class AuthService {
             select: {
                 id: true,
                 username: true,
+                name: true,
                 email: true,
                 role: true,
                 createdAt: true,

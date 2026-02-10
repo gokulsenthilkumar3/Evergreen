@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, Delete, Param } from '@nestjs/common';
 import { InventoryService } from './inventory.service';
 
 export enum DateRange {
@@ -20,6 +20,7 @@ export class InventoryController {
     ) {
         const history = await this.inventoryService.getHistory(from, to);
         const metrics = await this.inventoryService.getDashboardMetrics(from, to);
+        const wasteHistory = await this.inventoryService.getWasteHistory(from, to);
 
         return {
             range,
@@ -50,11 +51,12 @@ export class InventoryController {
                 },
             ],
             history,
+            totalBales: metrics.totalBales,
             yarnStockByCount: [],
             inwardHistory: [],
             outwardHistory: [],
             productionHistory: [],
-            wasteHistory: [],
+            wasteHistory,
         };
     }
 
@@ -106,5 +108,15 @@ export class InventoryController {
             inventory: [],
             totalStock: 0,
         };
+    }
+
+    @Delete('inward/:id')
+    async deleteInward(@Param('id') id: string) {
+        return this.inventoryService.deleteInward(parseInt(id));
+    }
+
+    @Delete('outward/:id')
+    async deleteOutward(@Param('id') id: string) {
+        return this.inventoryService.deleteOutward(parseInt(id));
     }
 }
