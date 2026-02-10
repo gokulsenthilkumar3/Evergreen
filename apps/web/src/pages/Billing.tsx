@@ -29,7 +29,11 @@ interface InvoiceItem {
     rate: string;
 }
 
-const Billing: React.FC = () => {
+interface BillingProps {
+    userRole?: string;
+}
+
+const Billing: React.FC<BillingProps> = ({ userRole }) => {
     const [invoiceData, setInvoiceData] = useState({
         invoiceNo: '',
         date: new Date().toISOString().split('T')[0],
@@ -121,6 +125,18 @@ const Billing: React.FC = () => {
             setItems([{ id: 1, yarnCount: '4', bags: '', weight: '', rate: '' }]);
         } catch (error) {
             setNotification({ open: true, message: 'Failed to save invoice', severity: 'error' });
+        }
+    };
+
+    const handleDeleteInvoice = async (id: string) => {
+        if (!window.confirm('Are you sure you want to delete this invoice?')) return;
+
+        try {
+            await api.delete(`/billing/invoice/${id}`);
+            setNotification({ open: true, message: 'Invoice deleted successfully', severity: 'success' });
+            refetchInvoices();
+        } catch (error) {
+            setNotification({ open: true, message: 'Failed to delete invoice', severity: 'error' });
         }
     };
 
@@ -314,6 +330,7 @@ const Billing: React.FC = () => {
                                 <TableCell>Customer</TableCell>
                                 <TableCell align="right">Amount (₹)</TableCell>
                                 <TableCell>Status</TableCell>
+                                <TableCell align="center">Action</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -327,6 +344,17 @@ const Billing: React.FC = () => {
                                         <Typography variant="caption" sx={{ color: 'success.main' }}>
                                             Saved
                                         </Typography>
+                                    </TableCell>
+                                    <TableCell align="center">
+                                        {(userRole === 'ADMIN' || userRole === 'AUTHOR') && (
+                                            <IconButton
+                                                size="small"
+                                                color="error"
+                                                onClick={() => handleDeleteInvoice(invoice.id)}
+                                            >
+                                                <DeleteIcon fontSize="small" />
+                                            </IconButton>
+                                        )}
                                     </TableCell>
                                 </TableRow>
                             ))}

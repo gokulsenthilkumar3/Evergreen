@@ -18,6 +18,8 @@ import {
     MenuItem,
     TextField,
     Button,
+    Snackbar,
+    Alert,
     type SelectChangeEvent,
 } from '@mui/material';
 import {
@@ -40,6 +42,9 @@ import {
     CartesianGrid,
     Legend
 } from 'recharts';
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 import api from '../utils/api';
 
 interface TabPanelProps {
@@ -79,26 +84,35 @@ interface InventoryItem {
     item?: string;
     quantity: number;
     balance?: number;
+    bale?: number;
     unit?: string;
     reference: string;
     details?: string;
 }
 
-const Inventory: React.FC = () => {
+interface InventoryProps {
+    userRole?: string;
+}
+
+const Inventory: React.FC<InventoryProps> = () => {
     const [tabValue, setTabValue] = useState(0);
     const [dateFilter, setDateFilter] = useState<string>('month');
     const [customFrom, setCustomFrom] = useState<string>('');
     const [customTo, setCustomTo] = useState<string>('');
     const [historyTypeFilter, setHistoryTypeFilter] = useState<string>('all');
 
+    const [notification, setNotification] = useState({
+        open: false,
+        message: '',
+        severity: 'success' as 'success' | 'error' | 'info',
+    });
+
     const handleDateFilterChange = (event: SelectChangeEvent) => {
         setDateFilter(event.target.value);
     };
 
-    const handleExport = (type: 'email' | 'excel' | 'pdf') => {
-        console.log(`Exporting inventory as ${type}`);
-        alert(`Exporting as ${type}... (Implementation Pending)`);
-    };
+
+
 
     const getDateRange = () => {
         const today = new Date();
@@ -165,13 +179,20 @@ const Inventory: React.FC = () => {
         ...(dashboardData?.history || []).map((h: any) => ({
             id: h.id || Math.random().toString(),
             date: new Date(h.date).toISOString().split('T')[0],
+            originalDate: new Date(h.date), // Keep original date object for sorting
             type: h.type === 'INWARD' ? 'INWARD' : (h.type === 'OUTWARD' ? 'OUTWARD' : 'PRODUCTION'),
             item: h.material,
             quantity: h.quantity || 0,
             balance: h.balance || 0,
+            bale: h.bale || 0,
             reference: h.reference || 'N/A'
         }))
-    ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    ].sort((a: any, b: any) => {
+        const dateDiff = b.originalDate.getTime() - a.originalDate.getTime();
+        if (dateDiff !== 0) return dateDiff;
+        // If dates are equal, sort by ID descending (assuming larger ID is newer)
+        return parseInt(b.id) - parseInt(a.id);
+    });
 
     const filteredFullHistory = fullHistory.filter(item => {
         if (historyTypeFilter === 'all') return true;
@@ -180,48 +201,215 @@ const Inventory: React.FC = () => {
         return true;
     });
 
-    const renderMovementTable = (data: InventoryItem[], title: string) => (
-        <Box sx={{ maxWidth: '100%', width: '100%' }}>
-            <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>{title}</Typography>
-            <TableContainer component={Paper} variant="outlined">
-                <Table size="small">
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>Date</TableCell>
-                            <TableCell>Type</TableCell>
-                            <TableCell align="right">Quantity (kg)</TableCell>
-                            <TableCell align="right">Balance (kg)</TableCell>
-                            <TableCell>Reference</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {data.length === 0 ? (
-                            <TableRow><TableCell colSpan={5} align="center">No data found</TableCell></TableRow>
-                        ) : (
-                            data.map((row) => (
-                                <TableRow key={row.id}>
-                                    <TableCell>{row.date}</TableCell>
-                                    <TableCell>
-                                        <Chip
-                                            icon={row.quantity >= 0 ? <ArrowUpward /> : <ArrowDownward />}
-                                            label={row.type}
-                                            color={row.quantity >= 0 ? 'success' : 'error'}
-                                            size="small"
-                                        />
-                                    </TableCell>
-                                    <TableCell align="right" sx={{ color: row.quantity >= 0 ? 'success.main' : 'error.main', fontWeight: 'bold' }}>
-                                        {row.quantity >= 0 ? '+' : ''}{row.quantity}
-                                    </TableCell>
-                                    <TableCell align="right" sx={{ fontWeight: 'bold' }}>{row.balance}</TableCell>
-                                    <TableCell>{row.reference}</TableCell>
-                                </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
-            </TableContainer>
-        </Box>
-    );
+    const handleExport = (type: 'email' | 'excel' | 'pdf') => {
+        const dataToExport = filteredFullHistory.map(row => ({
+            Date: row.date,
+            Type: row.type,
+            Item: row.item,
+            'Quantity (kg)': row.quantity,
+            'Balance (kg)': row.balance,
+            Reference: row.reference
+        }));
+
+        if (type === 'excel') {
+            const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Inventory");
+            XLSX.writeFile(workbook, "Inventory_Report.xlsx");
+            setNotification({ open: true, message: 'Exported as Excel', severity: 'success' });
+        } else if (type === 'pdf') {
+            const doc = new jsPDF();
+            doc.text("Inventory Report", 14, 15);
+            (doc as any).autoTable({
+                head: [['Date', 'Type', 'Item', 'Quantity (kg)', 'Balance (kg)', 'Reference']],
+                body: dataToExport.map(row => Object.values(row)),
+                startY: 20
+            });
+            doc.save("Inventory_Report.pdf");
+            setNotification({ open: true, message: 'Exported as PDF', severity: 'success' });
+        } else if (type === 'email') {
+            const subject = encodeURIComponent("Inventory Report");
+            const body = encodeURIComponent("Please attach the exported report manually.");
+            window.location.href = `mailto:?subject=${subject}&body=${body}`;
+            setNotification({ open: true, message: 'Opening email client...', severity: 'info' });
+        }
+    };
+
+
+    const renderMovementTable = (data: InventoryItem[], title: string) => {
+        const isCotton = title.includes('Cotton');
+        const isYarn = title.includes('Yarn');
+
+        // Calculate current balance
+        const latestEntry = data.length > 0 ? data[0] : null;
+        let currentBalance = latestEntry?.balance || 0;
+
+        // For yarn, calculate balance by count
+        const yarnByCount: Record<string, { bags: number; kg: number; remainder: number }> = {};
+        let totalBagsFromCounts = 0;
+        let totalRemainderFromCounts = 0;
+        let totalKgFromAllCounts = 0;
+
+        if (isYarn) {
+            // Group yarn data by count
+            ['2', '4', '6', '8', '10'].forEach(count => {
+                const countData = data.filter(d => d.reference?.includes(`Count ${count}`) || d.details?.includes(count));
+                const latestCountEntry = countData.length > 0 ? countData[0] : null;
+                const totalKg = latestCountEntry?.balance || 0;
+                const bags = Math.floor(totalKg / 60);
+                const remainder = totalKg % 60;
+                yarnByCount[count] = { bags, kg: totalKg, remainder };
+
+                // Sum up bags, remainders, and total kg from all counts
+                totalBagsFromCounts += bags;
+                totalRemainderFromCounts += remainder;
+                totalKgFromAllCounts += totalKg;
+            });
+
+            // For yarn, use the sum of all count balances
+            currentBalance = totalKgFromAllCounts;
+        }
+
+        // Calculate additional bags from combined remainders
+        const additionalBagsFromRemainder = Math.floor(totalRemainderFromCounts / 60);
+        const finalRemainder = totalRemainderFromCounts % 60;
+
+        // Calculate bales/bags
+        // For Cotton: Sum the actual bale movements from the current filtered data
+        const currentBaleBalance = isCotton ? data.reduce((sum, item) => {
+            // For inward, add bales. For production/outward (negative quantity), subtract bales.
+            // item.bale is usually positive number representing the batch size or movement size.
+            // But if we just sum them with the sign of quantity, we get the net movement.
+            // Item type check is safer.
+            const isPositive = item.type === 'INWARD';
+            const baleAmount = item.bale || 0;
+            return sum + (isPositive ? baleAmount : -baleAmount);
+        }, 0) : 0;
+
+        const totalBales = isCotton ? currentBaleBalance : 0;
+        const totalBags = isYarn ? (totalBagsFromCounts + additionalBagsFromRemainder) : 0;
+        const remainderKg = isYarn ? finalRemainder : 0;
+
+        return (
+            <Box sx={{ maxWidth: '100%', width: '100%' }}>
+                <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>{title}</Typography>
+
+                {/* Balance Summary Section */}
+                <Paper sx={{ p: 3, mb: 3, borderRadius: 2, bgcolor: 'primary.dark' }}>
+                    {isCotton && (
+                        <>
+                            <Box sx={{ display: 'flex', gap: 4, alignItems: 'center', flexWrap: 'wrap' }}>
+                                <Box>
+                                    <Typography variant="subtitle2" color="text.secondary">Balance Cotton Bales</Typography>
+                                    <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.light' }}>
+                                        {totalBales.toLocaleString()}
+                                    </Typography>
+                                </Box>
+                                <Box>
+                                    <Typography variant="subtitle2" color="text.secondary">Total Balance (kg)</Typography>
+                                    <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'success.light' }}>
+                                        {currentBalance.toLocaleString()} kg
+                                    </Typography>
+                                </Box>
+                            </Box>
+                        </>
+                    )}
+                    {isYarn && (
+                        <>
+                            <Box sx={{ mb: 2 }}>
+                                <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>Balance Yarn Bags</Typography>
+                                <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.light', mb: 2 }}>
+                                    {totalBags.toLocaleString()} bags
+                                </Typography>
+                            </Box>
+                            <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', mb: 2 }}>
+                                {Object.entries(yarnByCount).map(([count, data]) => (
+                                    <Box key={count} sx={{ minWidth: 120 }}>
+                                        <Typography variant="caption" color="text.secondary">Count {count}</Typography>
+                                        <Typography variant="body1" sx={{ fontWeight: 'bold', color: 'info.light' }}>
+                                            {data.bags} bags
+                                        </Typography>
+                                        {data.remainder > 0 && (
+                                            <Typography variant="caption" color="text.secondary">
+                                                +{data.remainder.toFixed(2)} kg
+                                            </Typography>
+                                        )}
+                                    </Box>
+                                ))}
+                            </Box>
+                            <Box>
+                                <Typography variant="subtitle2" color="text.secondary">Total Balance (kg)</Typography>
+                                <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'success.light' }}>
+                                    {currentBalance.toLocaleString()} kg
+                                    {remainderKg > 0 && (
+                                        <Typography component="span" variant="caption" sx={{ ml: 1, color: 'text.secondary' }}>
+                                            (Incomplete bag: {remainderKg.toFixed(2)} kg)
+                                        </Typography>
+                                    )}
+                                </Typography>
+                            </Box>
+                        </>
+                    )}
+                </Paper>
+
+                <TableContainer component={Paper} variant="outlined">
+                    <Table size="small">
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>Date</TableCell>
+                                <TableCell>Type</TableCell>
+                                {isCotton && <TableCell align="right">Bale</TableCell>}
+                                {isYarn && <TableCell align="right">Bags</TableCell>}
+                                <TableCell align="right">Quantity (kg)</TableCell>
+                                <TableCell align="right">Balance (kg)</TableCell>
+                                <TableCell>Reference</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {data.length === 0 ? (
+                                <TableRow><TableCell colSpan={isCotton || isYarn ? 7 : 6} align="center">No data found</TableCell></TableRow>
+                            ) : (
+                                data.map((row) => {
+                                    // Use actual bale data from backend for cotton
+                                    const baleCount = isCotton ? (row.bale || 0) : 0;
+                                    const bagCount = isYarn ? Math.floor(Math.abs(row.quantity) / 60) : 0;
+
+                                    return (
+                                        <TableRow key={row.id}>
+                                            <TableCell>{row.date}</TableCell>
+                                            <TableCell>
+                                                <Chip
+                                                    icon={row.quantity >= 0 ? <ArrowUpward /> : <ArrowDownward />}
+                                                    label={row.type}
+                                                    color={row.quantity >= 0 ? 'success' : 'error'}
+                                                    size="small"
+                                                />
+                                            </TableCell>
+                                            {isCotton && (
+                                                <TableCell align="right" sx={{ fontWeight: 'medium' }}>
+                                                    {row.quantity >= 0 ? '+' : '-'}{baleCount}
+                                                </TableCell>
+                                            )}
+                                            {isYarn && (
+                                                <TableCell align="right" sx={{ fontWeight: 'medium' }}>
+                                                    {row.quantity >= 0 ? '+' : '-'}{bagCount}
+                                                </TableCell>
+                                            )}
+                                            <TableCell align="right" sx={{ color: row.quantity >= 0 ? 'success.main' : 'error.main', fontWeight: 'bold' }}>
+                                                {row.quantity >= 0 ? '+' : ''}{row.quantity}
+                                            </TableCell>
+                                            <TableCell align="right" sx={{ fontWeight: 'bold' }}>{row.balance}</TableCell>
+                                            <TableCell>{row.reference}</TableCell>
+                                        </TableRow>
+                                    );
+                                })
+                            )}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            </Box>
+        );
+    };
 
     return (
         <Box sx={{ maxWidth: '100%', width: '100%' }}>
@@ -254,6 +442,7 @@ const Inventory: React.FC = () => {
                     <Tab label="Dashboard" />
                     <Tab label="Cotton Inventory" />
                     <Tab label="Yarn Inventory" />
+                    <Tab label="Waste Logs" />
                     <Tab label="All History" />
                 </Tabs>
 
@@ -312,6 +501,61 @@ const Inventory: React.FC = () => {
                 <TabPanel value={tabValue} index={2}>{renderMovementTable(fullHistory.filter(i => i.item === 'Yarn'), 'Yarn Stock Movement')}</TabPanel>
 
                 <TabPanel value={tabValue} index={3}>
+                    <Box sx={{ maxWidth: '100%', width: '100%' }}>
+                        <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>Waste Logs</Typography>
+
+                        {/* Waste Balance Summary */}
+                        <Paper sx={{ p: 3, mb: 3, borderRadius: 2, bgcolor: 'error.dark' }}>
+                            <Box>
+                                <Typography variant="subtitle2" color="rgba(255,255,255,0.7)">Total Waste Balance (kg)</Typography>
+                                <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'white' }}>
+                                    {(dashboardData?.wasteHistory && dashboardData.wasteHistory.length > 0)
+                                        ? dashboardData.wasteHistory[0].balance.toLocaleString()
+                                        : '0'} kg
+                                </Typography>
+                            </Box>
+                        </Paper>
+
+                        <TableContainer component={Paper} variant="outlined">
+                            <Table size="small">
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell>Date</TableCell>
+                                        <TableCell align="right">Total Waste (kg)</TableCell>
+                                        <TableCell align="right">Blow Room (kg)</TableCell>
+                                        <TableCell align="right">Carding (kg)</TableCell>
+                                        <TableCell align="right">OE (kg)</TableCell>
+                                        <TableCell align="right">Others (kg)</TableCell>
+                                        <TableCell align="right">Balance (kg)</TableCell>
+                                        <TableCell>Reference</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {(dashboardData?.wasteHistory || []).length === 0 ? (
+                                        <TableRow><TableCell colSpan={8} align="center">No waste data found</TableCell></TableRow>
+                                    ) : (
+                                        (dashboardData?.wasteHistory || []).map((row: any) => (
+                                            <TableRow key={row.id}>
+                                                <TableCell>{new Date(row.date).toISOString().split('T')[0]}</TableCell>
+                                                <TableCell align="right" sx={{ fontWeight: 'bold', color: 'warning.main' }}>
+                                                    {row.quantity}
+                                                </TableCell>
+                                                <TableCell align="right">{row.wasteBlowRoom || 0}</TableCell>
+                                                <TableCell align="right">{row.wasteCarding || 0}</TableCell>
+                                                <TableCell align="right">{row.wasteOE || 0}</TableCell>
+                                                <TableCell align="right">{row.wasteOthers || 0}</TableCell>
+                                                <TableCell align="right" sx={{ fontWeight: 'bold' }}>{row.balance}</TableCell>
+                                                <TableCell>{row.reference}</TableCell>
+                                            </TableRow>
+                                        ))
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    </Box>
+                </TabPanel>
+
+                <TabPanel value={tabValue} index={4}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                         <FormControl sx={{ minWidth: 200 }} size="small">
                             <InputLabel>Type Filter</InputLabel>
@@ -334,27 +578,57 @@ const Inventory: React.FC = () => {
                                     <TableCell>Date</TableCell>
                                     <TableCell>Type</TableCell>
                                     <TableCell>Material</TableCell>
-                                    <TableCell align="right">Quantity (kg)</TableCell>
+                                    <TableCell align="right">Amount (kg)</TableCell>
+                                    <TableCell align="right">Balance (kg)</TableCell>
                                     <TableCell>Reference</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
                                 {filteredFullHistory.map((row) => (
-                                    <TableRow key={row.id}>
+                                    <TableRow key={`${row.item}-${row.id}`}>
                                         <TableCell>{row.date}</TableCell>
-                                        <TableCell><Chip label={row.type} size="small" color={row.type === 'INWARD' ? 'success' : 'info'} /></TableCell>
-                                        <TableCell><Chip label={row.item || 'N/A'} size="small" variant="outlined" /></TableCell>
-                                        <TableCell align="right" sx={{ color: row.quantity >= 0 ? 'success.main' : 'error.main' }}>
-                                            {row.quantity >= 0 ? '+' : ''}{row.quantity}
+                                        <TableCell>
+                                            <Chip
+                                                label={row.type}
+                                                size="small"
+                                                color={row.type === 'INWARD' ? 'success' : (row.type === 'OUTWARD' ? 'warning' : 'info')}
+                                            />
+                                        </TableCell>
+                                        <TableCell>{row.item}</TableCell>
+                                        <TableCell align="right" sx={{ color: row.quantity >= 0 ? 'success.main' : 'error.main', fontWeight: 'bold' }}>
+                                            {row.quantity >= 0 ? '+' : ''}{row.quantity.toLocaleString()}
+                                        </TableCell>
+                                        <TableCell align="right" sx={{ fontWeight: 'bold' }}>
+                                            {row.balance?.toLocaleString() || '-'}
                                         </TableCell>
                                         <TableCell>{row.reference}</TableCell>
                                     </TableRow>
                                 ))}
+                                {filteredFullHistory.length === 0 && (
+                                    <TableRow>
+                                        <TableCell colSpan={7} align="center">No movement history found</TableCell>
+                                    </TableRow>
+                                )}
                             </TableBody>
                         </Table>
                     </TableContainer>
                 </TabPanel>
             </Paper>
+
+            <Snackbar
+                open={notification.open}
+                autoHideDuration={6000}
+                onClose={() => setNotification({ ...notification, open: false })}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            >
+                <Alert
+                    onClose={() => setNotification({ ...notification, open: false })}
+                    severity={notification.severity}
+                    sx={{ width: '100%' }}
+                >
+                    {notification.message}
+                </Alert>
+            </Snackbar>
         </Box>
     );
 };

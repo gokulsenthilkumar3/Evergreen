@@ -12,6 +12,8 @@ import {
     Tabs,
     Tab,
     Chip,
+    Snackbar,
+    Alert,
     Button,
     Dialog,
     DialogTitle,
@@ -26,6 +28,7 @@ import {
 import {
     Add as AddIcon,
     Close as CloseIcon,
+    Delete as DeleteIcon,
     ArrowUpward,
     ArrowDownward,
 } from '@mui/icons-material';
@@ -68,6 +71,12 @@ const Costing: React.FC<{ userRole?: string }> = ({ userRole = 'admin' }) => {
     const [customFrom, setCustomFrom] = useState<string>('');
     const [customTo, setCustomTo] = useState<string>('');
 
+    const [notification, setNotification] = useState({
+        open: false,
+        message: '',
+        severity: 'success' as 'success' | 'error' | 'info',
+    });
+
     // Fetch Entries List
     const { data: entries } = useQuery({
         queryKey: ['costingEntries'],
@@ -107,20 +116,25 @@ const Costing: React.FC<{ userRole?: string }> = ({ userRole = 'admin' }) => {
     const { data: dashboardData } = useQuery({
         queryKey: ['costingDashboard', dateRange.from, dateRange.to],
         queryFn: async () => {
-            // Mock data - reflecting requirements for empty state or future API
-            return {
-                kpis: [
-                    { label: 'Electricity (EB)', value: '₹0', color: '#f59e0b', hasData: false, trend: '0%' },
-                    { label: 'Employee Costs', value: '₹0', color: '#3b82f6', hasData: false },
-                    { label: 'Packaging', value: '₹0', color: '#10b981', hasData: false },
-                    { label: 'Maintenance', value: '₹0', color: '#ef4444', hasData: false },
-                ],
-                breakdown: [],
-                dailyTrend: [],
-                maintenanceTrend: [],
-                packagingTrend: [],
-                expensesTrend: []
-            };
+            try {
+                // Mock data - reflecting requirements for empty state or future API
+                return {
+                    kpis: [
+                        { label: 'Electricity (EB)', value: '₹0', color: '#f59e0b', hasData: false, trend: '0%' },
+                        { label: 'Employee Costs', value: '₹0', color: '#3b82f6', hasData: false },
+                        { label: 'Packaging', value: '₹0', color: '#10b981', hasData: false },
+                        { label: 'Maintenance', value: '₹0', color: '#ef4444', hasData: false },
+                    ],
+                    breakdown: [],
+                    dailyTrend: [],
+                    maintenanceTrend: [],
+                    packagingTrend: [],
+                    expensesTrend: []
+                };
+            } catch (error) {
+                console.error("Error fetching dashboard data", error);
+                return {};
+            }
         },
     });
 
@@ -136,6 +150,19 @@ const Costing: React.FC<{ userRole?: string }> = ({ userRole = 'admin' }) => {
     const handleSuccess = () => {
         queryClient.invalidateQueries({ queryKey: ['costingEntries'] });
         setOpenWizard(false);
+        setNotification({ open: true, message: 'Entry saved successfully', severity: 'success' });
+    };
+
+    const handleDeleteEntry = async (id: string) => {
+        if (!window.confirm('Are you sure you want to delete this costing entry?')) return;
+
+        try {
+            await api.delete(`/costing/${id}`);
+            queryClient.invalidateQueries({ queryKey: ['costingEntries'] });
+            setNotification({ open: true, message: 'Entry deleted successfully', severity: 'success' });
+        } catch (error) {
+            setNotification({ open: true, message: 'Failed to delete cost entry', severity: 'error' });
+        }
     };
 
     return (
@@ -361,6 +388,7 @@ const Costing: React.FC<{ userRole?: string }> = ({ userRole = 'admin' }) => {
                                                     <TableCell>Details</TableCell>
                                                     <TableCell align="right">Amount (₹)</TableCell>
                                                     {index === 4 && <TableCell>Type</TableCell>}
+                                                    <TableCell align="center">Actions</TableCell>
                                                 </>
                                             )}
                                         </TableRow>
@@ -388,6 +416,17 @@ const Costing: React.FC<{ userRole?: string }> = ({ userRole = 'admin' }) => {
                                                                 <Chip label={entry.type || 'Expense'} size="small" />
                                                             </TableCell>
                                                         )}
+                                                        <TableCell align="center">
+                                                            {(userRole === 'ADMIN' || userRole === 'AUTHOR') && (
+                                                                <IconButton
+                                                                    size="small"
+                                                                    color="error"
+                                                                    onClick={() => handleDeleteEntry(entry.id)}
+                                                                >
+                                                                    <DeleteIcon fontSize="small" />
+                                                                </IconButton>
+                                                            )}
+                                                        </TableCell>
                                                     </>
                                                 )}
                                             </TableRow>
@@ -421,7 +460,22 @@ const Costing: React.FC<{ userRole?: string }> = ({ userRole = 'admin' }) => {
                     <CostingEntry userRole={userRole} onSuccess={handleSuccess} />
                 </DialogContent>
             </Dialog>
-        </Box>
+
+            <Snackbar
+                open={notification.open}
+                autoHideDuration={6000}
+                onClose={() => setNotification({ ...notification, open: false })}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            >
+                <Alert
+                    onClose={() => setNotification({ ...notification, open: false })}
+                    severity={notification.severity}
+                    sx={{ width: '100%' }}
+                >
+                    {notification.message}
+                </Alert>
+            </Snackbar>
+        </Box >
     );
 };
 

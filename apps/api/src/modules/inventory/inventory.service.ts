@@ -21,7 +21,7 @@ export class InventoryService {
 
     async getAvailableBatches() {
         return this.prisma.inwardBatch.findMany({
-            select: { batchId: true, supplier: true, kg: true },
+            select: { batchId: true, supplier: true, bale: true, kg: true },
             orderBy: { date: 'desc' }
         });
     }
@@ -145,13 +145,23 @@ export class InventoryService {
             orderBy: { date: 'desc' },
         });
 
+        // Fetch all batches to get bale information
+        const batches = await this.prisma.inwardBatch.findMany({
+            select: { batchId: true, bale: true }
+        });
+        const batchMap = new Map(batches.map(b => [b.batchId, b.bale]));
+
         const yarnMovements = await this.prisma.yarnInventory.findMany({
             where: whereClause,
             orderBy: { date: 'desc' },
         });
 
         const combined = [
-            ...cottonMovements.map((m: any) => ({ ...m, material: 'Cotton' })),
+            ...cottonMovements.map((m: any) => ({
+                ...m,
+                material: 'Cotton',
+                bale: m.batchId ? batchMap.get(m.batchId) || 0 : 0
+            })),
             ...yarnMovements.map((m: any) => ({ ...m, material: 'Yarn' })),
         ].sort((a, b) => b.date.getTime() - a.date.getTime());
 
@@ -163,10 +173,70 @@ export class InventoryService {
         const lastCotton = await this.prisma.cottonInventory.findFirst({ orderBy: { id: 'desc' } });
         const lastYarn = await this.prisma.yarnInventory.findFirst({ orderBy: { id: 'desc' } });
 
+        // Calculate total bales from all inward batches
+        const allBatches = await this.prisma.inwardBatch.findMany({
+            select: { bale: true }
+        });
+        const totalBales = allBatches.reduce((sum, batch) => sum + batch.bale, 0);
+
         return {
             totalCotton: lastCotton ? lastCotton.balance : 0,
             totalYarn: lastYarn ? lastYarn.balance : 0,
+            totalBales: totalBales,
             // ... more metrics
         };
+    }
+
+    async getWasteHistory(from?: string, to?: string) {
+        const whereClause = from && to ? {
+            date: {
+                gte: new Date(from),
+                lte: new Date(to),
+            }
+        } : {};
+
+        return this.prisma.wasteInventory.findMany({
+            where: whereClause,
+            orderBy: { date: 'desc' },
+        });
+    }
+
+    async deleteInward(id: number) {
+        return this.prisma.$transaction(async (tx) => {
+            const batch = await tx.inwardBatch.findUnique({
+                where: { id }
+            });
+
+            if (!batch) throw new Error('Batch not found');
+
+            // 1. Delete inward movements from inventory (reference is batchId)
+            await tx.cottonInventory.deleteMany({
+                where: { reference: batch.batchId }
+            });
+
+            // 2. Delete batch
+            await tx.inwardBatch.delete({
+                where: { id }
+            });
+
+            // 3. Optional: Recalculate all balances? (In a simple app, we just delete)
+            return { success: true };
+        });
+    }
+
+    async deleteOutward(id: number) {
+        return this.prisma.$transaction(async (tx) => {
+            // 1. Delete yarn inventory movements
+            await tx.yarnInventory.deleteMany({
+                where: { reference: `OUT-${id}` }
+            });
+
+            // 2. Delete outward record (cascades to items)
+            await tx.outward.delete({
+                where: { id }
+            });
+
+            return { success: true };
+        });
     }
 }

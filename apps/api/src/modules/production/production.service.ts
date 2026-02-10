@@ -54,10 +54,14 @@ export class ProductionService {
                 });
             }
 
-            // 3. Update Yarn Inventory (Increase)
+            // 3. Update Yarn Inventory (Increase) - Create one entry per count
             for (const p of data.produced) {
-                const lastYarn = await tx.yarnInventory.findFirst({ orderBy: { id: 'desc' } });
-                const currentBalance = lastYarn ? lastYarn.balance : 0;
+                // Get the last balance for this specific count
+                const lastYarnForCount = await tx.yarnInventory.findFirst({
+                    where: { count: p.count },
+                    orderBy: { id: 'desc' }
+                });
+                const currentBalanceForCount = lastYarnForCount ? lastYarnForCount.balance : 0;
                 const weight = parseFloat(p.weight);
 
                 await tx.yarnInventory.create({
@@ -65,9 +69,30 @@ export class ProductionService {
                         date: new Date(data.date),
                         type: 'PRODUCTION',
                         quantity: weight,
-                        balance: currentBalance + weight,
-                        reference: `PROD-${production.id}`,
+                        balance: currentBalanceForCount + weight,
+                        reference: `PROD-${production.id} Count ${p.count}`,
                         count: p.count,
+                        productionId: production.id
+                    }
+                });
+            }
+
+            // 4. Update Waste Inventory (if waste exists)
+            if (data.totalWaste > 0) {
+                const lastWaste = await tx.wasteInventory.findFirst({ orderBy: { id: 'desc' } });
+                const currentWasteBalance = lastWaste ? lastWaste.balance : 0;
+
+                await tx.wasteInventory.create({
+                    data: {
+                        date: new Date(data.date),
+                        type: 'PRODUCTION',
+                        quantity: data.totalWaste,
+                        balance: currentWasteBalance + data.totalWaste,
+                        reference: `PROD-${production.id}`,
+                        wasteBlowRoom: parseFloat(data.waste.blowRoom) || 0,
+                        wasteCarding: parseFloat(data.waste.carding) || 0,
+                        wasteOE: parseFloat(data.waste.oe) || 0,
+                        wasteOthers: parseFloat(data.waste.others) || 0,
                         productionId: production.id
                     }
                 });
@@ -84,6 +109,26 @@ export class ProductionService {
                 consumedBatches: true,
                 producedYarn: true
             }
+        });
+    }
+
+    async delete(id: number) {
+        return this.prisma.$transaction(async (tx) => {
+            // 1. Delete inventory movements
+            await tx.cottonInventory.deleteMany({
+                where: { productionId: id }
+            });
+
+            await tx.yarnInventory.deleteMany({
+                where: { productionId: id }
+            });
+
+            // 2. Delete production record (cascades to consumedBatches and producedYarn)
+            await tx.production.delete({
+                where: { id }
+            });
+
+            return { success: true };
         });
     }
 }

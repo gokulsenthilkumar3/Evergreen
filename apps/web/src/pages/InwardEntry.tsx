@@ -38,7 +38,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../utils/api';
 
 interface BatchEntry {
-    id: string;
+    id: number;
     batchId: string;
     date: string;
     supplier: string;
@@ -59,6 +59,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole }) => {
 
     // Form State
     const [formData, setFormData] = useState({
+        date: new Date().toISOString().split('T')[0],
         supplier: '',
         bale: '',
         kg: '',
@@ -82,10 +83,14 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole }) => {
     });
 
     const [suppliers, setSuppliers] = useState<string[]>([]);
-    const [notification, setNotification] = useState({
+    const [notification, setNotification] = useState<{
+        open: boolean;
+        message: string;
+        severity: 'success' | 'error' | 'info';
+    }>({
         open: false,
         message: '',
-        severity: 'success' as 'success' | 'error',
+        severity: 'success',
     });
 
     // Generate Batch ID on component mount
@@ -117,9 +122,17 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole }) => {
         setSuppliers(prev => prev.filter(s => s !== supplierToRemove));
     };
 
-    const handleDeleteBatch = (_id: string) => {
-        // Implementation for delete API if needed
-        alert('Delete implementation pending');
+    const handleDeleteBatch = async (id: number) => {
+        if (!window.confirm('Are you sure you want to delete this batch? This will also remove associated inventory records.')) return;
+
+        try {
+            await api.delete(`/inventory/inward/${id}`);
+            setNotification({ open: true, message: 'Batch deleted and inventory updated!', severity: 'success' });
+            queryClient.invalidateQueries({ queryKey: ['inwardHistory'] });
+            queryClient.invalidateQueries({ queryKey: ['dashboardSummary'] });
+        } catch (error) {
+            setNotification({ open: true, message: 'Failed to delete batch.', severity: 'error' });
+        }
     };
 
     const handleSubmit = async () => {
@@ -132,7 +145,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole }) => {
             // Call API to save batch
             await api.post('/inventory/inward', {
                 batchId: generatedBatchId,
-                date: new Date().toISOString(),
+                date: formData.date,
                 supplier: formData.supplier,
                 bale: Number(formData.bale),
                 kg: Number(formData.kg),
@@ -146,19 +159,22 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole }) => {
             setNotification({ open: true, message: 'Batch added and inventory updated!', severity: 'success' });
 
             // Reset form
-            setFormData({ supplier: '', bale: '', kg: '' });
+            setFormData({
+                date: new Date().toISOString().split('T')[0],
+                supplier: '',
+                bale: '',
+                kg: ''
+            });
             generateBatchId();
             setOpenWizard(false);
 
         } catch (error) {
-            console.error('Error saving batch:', error);
             setNotification({ open: true, message: 'Failed to save batch to database.', severity: 'error' });
         }
     };
 
     const handleExport = (type: 'email' | 'excel' | 'pdf') => {
-        console.log(`Exporting batches as ${type}`);
-        alert(`Exporting as ${type}... (Implementation Pending)`);
+        setNotification({ open: true, message: `Exporting as ${type}... (Implementation Pending)`, severity: 'info' });
     };
 
     return (
@@ -236,6 +252,16 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole }) => {
                 </DialogTitle>
                 <DialogContent>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, alignItems: 'center', mt: 1 }}>
+                        <TextField
+                            label="Date"
+                            name="date"
+                            type="date"
+                            value={formData.date}
+                            onChange={handleInputChange}
+                            required
+                            InputLabelProps={{ shrink: true }}
+                            sx={{ flex: '1 1 200px' }}
+                        />
                         <TextField
                             label="Batch ID"
                             value={generatedBatchId}
@@ -342,7 +368,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole }) => {
                                         <TableCell align="right">{row.bale}</TableCell>
                                         <TableCell align="right">{row.kg?.toLocaleString()} kg</TableCell>
                                         <TableCell align="center">
-                                            {(userRole === 'Admin' || userRole === 'Author') && (
+                                            {(userRole === 'ADMIN' || userRole === 'AUTHOR') && (
                                                 <IconButton
                                                     size="small"
                                                     color="error"

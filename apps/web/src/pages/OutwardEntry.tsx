@@ -33,7 +33,11 @@ interface OutwardItem {
     weight: number;
 }
 
-const OutwardEntry: React.FC = () => {
+interface OutwardEntryProps {
+    userRole?: string;
+}
+
+const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole }) => {
     const { data: outwardHistory, refetch: refetchHistory } = useQuery({
         queryKey: ['outwardHistory'],
         queryFn: async () => {
@@ -103,6 +107,18 @@ const OutwardEntry: React.FC = () => {
             refetchHistory();
         } catch (error) {
             setNotification({ open: true, message: 'Failed to save outward entry', severity: 'error' });
+        }
+    };
+
+    const handleDeleteOutward = async (id: number) => {
+        if (!window.confirm('Are you sure you want to delete this outward entry? This will also revert inventory changes.')) return;
+
+        try {
+            await api.delete(`/inventory/outward/${id}`);
+            setNotification({ open: true, message: 'Outward entry deleted successfully', severity: 'success' });
+            refetchHistory();
+        } catch (error) {
+            setNotification({ open: true, message: 'Failed to delete outward entry', severity: 'error' });
         }
     };
 
@@ -253,6 +269,7 @@ const OutwardEntry: React.FC = () => {
                                         <TableCell sx={{ fontWeight: 'bold' }}>Date</TableCell>
                                         <TableCell sx={{ fontWeight: 'bold' }}>Customer</TableCell>
                                         <TableCell sx={{ fontWeight: 'bold' }}>Total</TableCell>
+                                        <TableCell sx={{ fontWeight: 'bold' }} align="center">Action</TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
@@ -266,6 +283,17 @@ const OutwardEntry: React.FC = () => {
                                             <TableCell>
                                                 <Typography variant="body2">{row.totalBags} Bags</Typography>
                                                 <Typography variant="body2" fontWeight="bold">{row.totalWeight} kg</Typography>
+                                            </TableCell>
+                                            <TableCell align="center">
+                                                {(userRole === 'ADMIN' || userRole === 'AUTHOR') && (
+                                                    <IconButton
+                                                        size="small"
+                                                        color="error"
+                                                        onClick={() => handleDeleteOutward(row.id)}
+                                                    >
+                                                        <DeleteIcon fontSize="small" />
+                                                    </IconButton>
+                                                )}
                                             </TableCell>
                                         </TableRow>
                                     ))}

@@ -11,6 +11,7 @@ model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
   username  String   @unique
+  name      String?
   password  String
   role      String   @default("VIEWER")
   createdAt DateTime @default(now())
@@ -45,6 +46,23 @@ model YarnInventory {
   production   Production? @relation("YarnProduction", fields: [productionId], references: [id])
 }
 
+model WasteInventory {
+  id            Int         @id @default(autoincrement())
+  date          DateTime
+  type          String
+  quantity      Float
+  balance       Float
+  reference     String
+  wasteBlowRoom Float       @default(0)
+  wasteCarding  Float       @default(0)
+  wasteOE       Float       @default(0)
+  wasteOthers   Float       @default(0)
+  productionId  Int?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  production    Production? @relation("WasteProduction", fields: [productionId], references: [id])
+}
+
 model InwardBatch {
   id        Int      @id @default(autoincrement())
   batchId   String   @unique
@@ -72,6 +90,7 @@ model Production {
   consumedBatches ProductionConsumption[]
   producedYarn    ProductionOutput[]
   yarnInventory   YarnInventory[]         @relation("YarnProduction")
+  wasteInventory  WasteInventory[]        @relation("WasteProduction")
 }
 
 model ProductionConsumption {

@@ -87,6 +87,7 @@ const Settings: React.FC<SettingsProps> = ({ currentUser }) => {
     const [editingUser, setEditingUser] = useState<any>(null);
     const [newUser, setNewUser] = useState({
         username: '',
+        name: '',
         password: '',
         email: '',
         role: 'VIEWER',
@@ -151,7 +152,7 @@ const Settings: React.FC<SettingsProps> = ({ currentUser }) => {
             await api.post('/auth/users', newUser);
             setNotification({ open: true, message: 'User added successfully', severity: 'success' });
             setOpenUserDialog(false);
-            setNewUser({ username: '', password: '', email: '', role: 'VIEWER' });
+            setNewUser({ username: '', name: '', password: '', email: '', role: 'VIEWER' });
             fetchUsers();
         } catch (error) {
             setNotification({ open: true, message: 'Failed to add user', severity: 'error' });
@@ -173,7 +174,7 @@ const Settings: React.FC<SettingsProps> = ({ currentUser }) => {
             setNotification({ open: true, message: 'User updated successfully', severity: 'success' });
             setOpenUserDialog(false);
             setEditingUser(null);
-            setNewUser({ username: '', password: '', email: '', role: 'VIEWER' });
+            setNewUser({ username: '', name: '', password: '', email: '', role: 'VIEWER' });
             fetchUsers();
         } catch (error) {
             setNotification({ open: true, message: 'Failed to update user', severity: 'error' });
@@ -195,6 +196,7 @@ const Settings: React.FC<SettingsProps> = ({ currentUser }) => {
         setEditingUser(user);
         setNewUser({
             username: user.username,
+            name: user.name || '',
             password: '', // Keep password empty unless changing
             email: user.email || '',
             role: user.role,
@@ -353,7 +355,7 @@ const Settings: React.FC<SettingsProps> = ({ currentUser }) => {
                                 startIcon={<AddIcon />}
                                 onClick={() => {
                                     setEditingUser(null);
-                                    setNewUser({ username: '', password: '', email: '', role: 'VIEWER' });
+                                    setNewUser({ username: '', name: '', password: '', email: '', role: 'VIEWER' });
                                     setOpenUserDialog(true);
                                 }}
                             >
@@ -366,6 +368,7 @@ const Settings: React.FC<SettingsProps> = ({ currentUser }) => {
                                 <TableHead>
                                     <TableRow>
                                         <TableCell>Username</TableCell>
+                                        <TableCell>Name</TableCell>
                                         <TableCell>Email</TableCell>
                                         <TableCell>Role</TableCell>
                                         <TableCell align="right">Actions</TableCell>
@@ -375,6 +378,7 @@ const Settings: React.FC<SettingsProps> = ({ currentUser }) => {
                                     {users.map((user) => (
                                         <TableRow key={user.id}>
                                             <TableCell>{user.username}</TableCell>
+                                            <TableCell>{user.name || '-'}</TableCell>
                                             <TableCell>{user.email || '-'}</TableCell>
                                             <TableCell>
                                                 <Chip
@@ -438,6 +442,12 @@ const Settings: React.FC<SettingsProps> = ({ currentUser }) => {
                             required
                             value={newUser.username}
                             onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
+                        />
+                        <TextField
+                            label="Full Name"
+                            fullWidth
+                            value={newUser.name}
+                            onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
                         />
                         <TextField
                             label="Email"
