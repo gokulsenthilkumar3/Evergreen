@@ -20,6 +20,11 @@ import {
     Button,
     Snackbar,
     Alert,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogContentText,
+    DialogActions,
     type SelectChangeEvent,
 } from '@mui/material';
 import {
@@ -42,9 +47,8 @@ import {
     CartesianGrid,
     Legend
 } from 'recharts';
-import * as XLSX from 'xlsx';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import { generateExcel } from '../utils/excelGenerator';
+import { generatePDF } from '../utils/pdfGenerator';
 import api from '../utils/api';
 
 interface TabPanelProps {
@@ -100,6 +104,31 @@ const Inventory: React.FC<InventoryProps> = () => {
     const [customFrom, setCustomFrom] = useState<string>('');
     const [customTo, setCustomTo] = useState<string>('');
     const [historyTypeFilter, setHistoryTypeFilter] = useState<string>('all');
+
+    // Waste Management State
+    const [wasteModalOpen, setWasteModalOpen] = useState(false);
+    const [wasteAction, setWasteAction] = useState<'recycle' | 'export'>('recycle');
+    const [wasteForm, setWasteForm] = useState({ date: new Date().toISOString().split('T')[0], quantity: '', buyer: '', price: '' });
+
+    const handleWasteSubmit = async () => {
+        try {
+            if (!wasteForm.quantity || parseFloat(wasteForm.quantity) <= 0) {
+                setNotification({ open: true, message: 'Invalid quantity', severity: 'error' });
+                return;
+            }
+            if (wasteAction === 'export') {
+                await api.post('/inventory/waste/export', { ...wasteForm, quantity: parseFloat(wasteForm.quantity) });
+            } else {
+                await api.post('/inventory/waste/recycle', { date: wasteForm.date, quantity: parseFloat(wasteForm.quantity) });
+            }
+            setNotification({ open: true, message: 'Waste processed successfully', severity: 'success' });
+            setWasteModalOpen(false);
+            setWasteForm({ date: new Date().toISOString().split('T')[0], quantity: '', buyer: '', price: '' });
+            refetch();
+        } catch (error: any) {
+            setNotification({ open: true, message: error.response?.data?.message || 'Failed to process waste', severity: 'error' });
+        }
+    };
 
     const [notification, setNotification] = useState({
         open: false,
@@ -162,7 +191,7 @@ const Inventory: React.FC<InventoryProps> = () => {
 
     const dateRange = getDateRange();
 
-    const { data: dashboardData } = useQuery({
+    const { data: dashboardData, refetch } = useQuery({
         queryKey: ['inventoryDashboard', dateRange.from, dateRange.to],
         queryFn: async () => {
             const response = await api.get('/inventory/history', {
@@ -205,27 +234,19 @@ const Inventory: React.FC<InventoryProps> = () => {
         const dataToExport = filteredFullHistory.map(row => ({
             Date: row.date,
             Type: row.type,
-            Item: row.item,
+            Item: row.item || '-',
             'Quantity (kg)': row.quantity,
-            'Balance (kg)': row.balance,
-            Reference: row.reference
+            'Balance (kg)': row.balance ?? 0,
+            Reference: row.reference || '-'
         }));
 
         if (type === 'excel') {
-            const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Inventory");
-            XLSX.writeFile(workbook, "Inventory_Report.xlsx");
+            generateExcel(dataToExport, "Inventory_Report");
             setNotification({ open: true, message: 'Exported as Excel', severity: 'success' });
         } else if (type === 'pdf') {
-            const doc = new jsPDF();
-            doc.text("Inventory Report", 14, 15);
-            (doc as any).autoTable({
-                head: [['Date', 'Type', 'Item', 'Quantity (kg)', 'Balance (kg)', 'Reference']],
-                body: dataToExport.map(row => Object.values(row)),
-                startY: 20
-            });
-            doc.save("Inventory_Report.pdf");
+            const headers = ['Date', 'Type', 'Item', 'Quantity (kg)', 'Balance (kg)', 'Reference'];
+            const data = dataToExport.map(row => Object.values(row));
+            generatePDF("Inventory Report", headers, data, "Inventory_Report");
             setNotification({ open: true, message: 'Exported as PDF', severity: 'success' });
         } else if (type === 'email') {
             const subject = encodeURIComponent("Inventory Report");
@@ -271,24 +292,28 @@ const Inventory: React.FC<InventoryProps> = () => {
         }
 
         // Calculate additional bags from combined remainders
-        const additionalBagsFromRemainder = Math.floor(totalRemainderFromCounts / 60);
-        const finalRemainder = totalRemainderFromCounts % 60;
+        // FIX: Do not combine remainders from different counts into bags. 
+        // Different yarn counts cannot be mixed to form a bag.
+        // const additionalBagsFromRemainder = Math.floor(totalRemainderFromCounts / 60);
+        // const finalRemainder = totalRemainderFromCounts % 60;
 
         // Calculate bales/bags
         // For Cotton: Sum the actual bale movements from the current filtered data
+        // Calculate bales/bags
+        // For Cotton: Sum the actual bale movements (API returns signed values now)
         const currentBaleBalance = isCotton ? data.reduce((sum, item) => {
-            // For inward, add bales. For production/outward (negative quantity), subtract bales.
-            // item.bale is usually positive number representing the batch size or movement size.
-            // But if we just sum them with the sign of quantity, we get the net movement.
-            // Item type check is safer.
-            const isPositive = item.type === 'INWARD';
-            const baleAmount = item.bale || 0;
-            return sum + (isPositive ? baleAmount : -baleAmount);
+            return sum + (item.bale || 0);
         }, 0) : 0;
 
+        // Calculate Total Balance (kg) by summing quantities (Ledger approach) instead of trusting stale snapshots
+        if (isCotton) {
+            currentBalance = data.reduce((sum, item) => sum + (item.quantity || 0), 0);
+        }
+
         const totalBales = isCotton ? currentBaleBalance : 0;
-        const totalBags = isYarn ? (totalBagsFromCounts + additionalBagsFromRemainder) : 0;
-        const remainderKg = isYarn ? finalRemainder : 0;
+        // FIX: Total bags is just sum of bags from each count
+        const totalBags = isYarn ? totalBagsFromCounts : 0;
+        const remainderKg = isYarn ? totalRemainderFromCounts : 0;
 
         return (
             <Box sx={{ maxWidth: '100%', width: '100%' }}>
@@ -320,6 +345,11 @@ const Inventory: React.FC<InventoryProps> = () => {
                                 <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>Balance Yarn Bags</Typography>
                                 <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.light', mb: 2 }}>
                                     {totalBags.toLocaleString()} bags
+                                    {remainderKg > 0 && (
+                                        <Typography component="span" variant="h6" sx={{ ml: 2, color: 'warning.light' }}>
+                                            (+ {remainderKg.toFixed(2)} kg loose)
+                                        </Typography>
+                                    )}
                                 </Typography>
                             </Box>
                             <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', mb: 2 }}>
@@ -387,7 +417,7 @@ const Inventory: React.FC<InventoryProps> = () => {
                                             </TableCell>
                                             {isCotton && (
                                                 <TableCell align="right" sx={{ fontWeight: 'medium' }}>
-                                                    {row.quantity >= 0 ? '+' : '-'}{baleCount}
+                                                    {row.quantity >= 0 ? '+' : '-'}{Math.abs(baleCount)}
                                                 </TableCell>
                                             )}
                                             {isYarn && (
@@ -502,7 +532,12 @@ const Inventory: React.FC<InventoryProps> = () => {
 
                 <TabPanel value={tabValue} index={3}>
                     <Box sx={{ maxWidth: '100%', width: '100%' }}>
-                        <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>Waste Logs</Typography>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>Waste Logs</Typography>
+                            <Button variant="contained" color="secondary" onClick={() => setWasteModalOpen(true)}>
+                                Manage Waste
+                            </Button>
+                        </Box>
 
                         {/* Waste Balance Summary */}
                         <Paper sx={{ p: 3, mb: 3, borderRadius: 2, bgcolor: 'error.dark' }}>
@@ -629,7 +664,76 @@ const Inventory: React.FC<InventoryProps> = () => {
                     {notification.message}
                 </Alert>
             </Snackbar>
-        </Box>
+
+
+            {/* Waste Management Dialog */}
+            <Dialog open={wasteModalOpen} onClose={() => setWasteModalOpen(false)}>
+                <DialogTitle>Manage Waste</DialogTitle>
+                <DialogContent>
+                    <DialogContentText sx={{ mb: 2 }}>
+                        Select whether to recycle waste (add back to cotton stock) or export/sell it.
+                    </DialogContentText>
+
+                    <FormControl fullWidth sx={{ mb: 2 }}>
+                        <InputLabel>Action</InputLabel>
+                        <Select
+                            value={wasteAction}
+                            label="Action"
+                            onChange={(e) => setWasteAction(e.target.value as 'recycle' | 'export')}
+                        >
+                            <MenuItem value="recycle">Recycle (Add to Cotton Stock)</MenuItem>
+                            <MenuItem value="export">Export / Sell</MenuItem>
+                        </Select>
+                    </FormControl>
+
+                    <TextField
+                        type="date"
+                        label="Date"
+                        fullWidth
+                        sx={{ mb: 2 }}
+                        value={wasteForm.date}
+                        onChange={(e) => setWasteForm({ ...wasteForm, date: e.target.value })}
+                        InputLabelProps={{ shrink: true }}
+                    />
+
+                    <TextField
+                        type="number"
+                        label="Quantity (kg)"
+                        fullWidth
+                        sx={{ mb: 2 }}
+                        value={wasteForm.quantity}
+                        onChange={(e) => setWasteForm({ ...wasteForm, quantity: e.target.value })}
+                    />
+
+                    {wasteAction === 'export' && (
+                        <>
+                            <TextField
+                                label="Buyer Name"
+                                fullWidth
+                                sx={{ mb: 2 }}
+                                value={wasteForm.buyer}
+                                onChange={(e) => setWasteForm({ ...wasteForm, buyer: e.target.value })}
+                            />
+                            <TextField
+                                type="number"
+                                label="Price (Total)"
+                                fullWidth
+                                sx={{ mb: 2 }}
+                                value={wasteForm.price}
+                                onChange={(e) => setWasteForm({ ...wasteForm, price: e.target.value })}
+                            />
+                        </>
+                    )}
+
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setWasteModalOpen(false)}>Cancel</Button>
+                    <Button onClick={handleWasteSubmit} variant="contained" color="primary">
+                        Submit
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        </Box >
     );
 };
 

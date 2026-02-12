@@ -31,12 +31,21 @@ function TabPanel(props: TabPanelProps) {
 }
 
 interface CostingEntryProps {
-    userRole: string;
+    userRole?: string; // Optional now
     onSuccess?: () => void;
+    initialTab?: number;
 }
 
-const CostingEntry: React.FC<CostingEntryProps> = ({ userRole, onSuccess }) => {
-    const [tabValue, setTabValue] = useState(0);
+const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, initialTab = 0 }) => {
+    const [tabValue, setTabValue] = useState(initialTab || 0);
+
+    // Sync tab with prop if it changes and matches context
+    useEffect(() => {
+        if (typeof initialTab === 'number') {
+            setTabValue(initialTab);
+        }
+    }, [initialTab]);
+
     const [notification, setNotification] = useState({
         open: false,
         message: '',
@@ -44,17 +53,29 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ userRole, onSuccess }) => {
     });
 
     // Fetch Production Data for Auto-Calculation
+
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+    const [packagingDate, setPackagingDate] = useState(date);
+
+    // Sync packaging date when global date changes (reset)
+    useEffect(() => {
+        setPackagingDate(date);
+    }, [date]);
+
     const { data: productionData } = useQuery({
-        queryKey: ['production', date],
+        queryKey: ['production', packagingDate],
         queryFn: async () => {
             try {
                 const res = await api.get('/production'); // Assuming API returns all recent production
                 // Filter client side OR use dedicated endpoint if available
-                const entry = res.data.find((p: any) => p.date === date);
-                return entry || { totalYarn: 0 };
+                const entry = res.data.find((p: any) => {
+                    // Handle ISO date string comparison
+                    const pDate = new Date(p.date).toISOString().split('T')[0];
+                    return pDate === packagingDate;
+                });
+                return entry || { totalProduced: 0 };
             } catch (err) {
-                return { totalYarn: 0 };
+                return { totalProduced: 0 };
             }
         },
     });
@@ -93,6 +114,8 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ userRole, onSuccess }) => {
         description: '',
         type: 'Asset',
     });
+
+
 
     // Fetch all entries for checking existing
     const { data: entries, refetch: refetchEntries } = useQuery({
@@ -159,6 +182,8 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ userRole, onSuccess }) => {
         }
     }, [existingMaintenance]);
 
+
+
     // Handlers
     const handleDelete = async (id: string) => {
         if (!window.confirm('Delete this entry?')) return;
@@ -211,7 +236,7 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ userRole, onSuccess }) => {
     };
 
     const handlePackagingSubmit = async () => {
-        const yarnKg = productionData?.totalYarn || 0;
+        const yarnKg = productionData?.totalProduced || 0;
         const rate = parseFloat(packagingData.rate);
         if (yarnKg <= 0) {
             setNotification({ open: true, message: 'No yarn production for this date', severity: 'warning' });
@@ -254,7 +279,7 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ userRole, onSuccess }) => {
 
     // UI Calcs
     const ebTotal = (parseFloat(ebData.unitsConsumed) || 0) * (parseFloat(ebData.ratePerUnit) || 0);
-    const yarnProduction = productionData?.totalYarn || 0;
+    const yarnProduction = productionData?.totalProduced || 0;
     const packageCost = yarnProduction * (parseFloat(packagingData.rate) || 0); // Dynamic calc
     const maintenanceFormulaCost = yarnProduction * (parseFloat(maintenanceData.ratePerKg) || 0);
 
@@ -335,8 +360,18 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ userRole, onSuccess }) => {
                         {existingPackaging && <Alert severity="info" sx={{ mb: 2 }}>Entry exists.</Alert>}
                         <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 3 }}>
                             <Paper sx={{ p: 2 }}>
-                                <Typography color="text.secondary">Total Yarn Produced</Typography>
-                                <Typography variant="h5" fontWeight="bold">{yarnProduction.toFixed(2)} kg</Typography>
+                                <TextField
+                                    label="Production Date"
+                                    type="date"
+                                    size="small"
+                                    value={packagingDate}
+                                    onChange={(e) => setPackagingDate(e.target.value)}
+                                    InputLabelProps={{ shrink: true }}
+                                    fullWidth
+                                    sx={{ mb: 2 }}
+                                />
+                                <Typography color="text.secondary" variant="caption">Total Yarn Produced</Typography>
+                                <Typography variant="h6" fontWeight="bold">{yarnProduction} kg</Typography>
                             </Paper>
                             <Paper sx={{ p: 2 }}>
                                 <TextField
@@ -345,7 +380,7 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ userRole, onSuccess }) => {
                                     value={packagingData.rate}
                                     onChange={(e) => setPackagingData({ ...packagingData, rate: e.target.value })}
                                     fullWidth
-                                    variant="standard"
+                                    variant="outlined"
                                     inputProps={{ style: { textAlign: 'center', fontWeight: 'bold', fontSize: '1.2rem' } }}
                                 />
                             </Paper>
@@ -362,12 +397,33 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ userRole, onSuccess }) => {
                 <TabPanel value={tabValue} index={3}>
                     <Box sx={{ maxWidth: 600, mx: 'auto', display: 'flex', flexDirection: 'column', gap: 2 }}>
                         {existingMaintenance && <Alert severity="info">Entry exists.</Alert>}
-                        <Alert severity="info">Formula: {yarnProduction} kg × ₹{maintenanceData.ratePerKg} = ₹{maintenanceFormulaCost.toFixed(2)}</Alert>
+
+                        <Paper sx={{ p: 2, bgcolor: 'background.default' }}>
+                            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 2 }}>
+                                <TextField
+                                    label="Production Date"
+                                    type="date"
+                                    size="small"
+                                    value={packagingDate}
+                                    onChange={(e) => setPackagingDate(e.target.value)}
+                                    InputLabelProps={{ shrink: true }}
+                                    sx={{ width: 150 }}
+                                />
+                            </Box>
+                            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                                <Typography fontWeight="bold">{yarnProduction} kg</Typography>
+                                <Typography variant="body2" color="text.secondary">×</Typography>
+                                <Typography fontWeight="bold">₹{maintenanceData.ratePerKg}</Typography>
+                                <Typography variant="body2" color="text.secondary">=</Typography>
+                                <Typography fontWeight="bold" color="primary">₹{maintenanceFormulaCost.toFixed(2)}</Typography>
+                            </Box>
+                        </Paper>
+
                         <TextField label="Rate (₹/kg)" type="number" value={maintenanceData.ratePerKg} onChange={(e) => setMaintenanceData({ ...maintenanceData, ratePerKg: e.target.value })} />
                         <TextField label="Description" value={maintenanceData.description} onChange={(e) => setMaintenanceData({ ...maintenanceData, description: e.target.value })} />
                         <Box sx={{ display: 'flex', gap: 1 }}>
                             <TextField label="Total Cost" type="number" fullWidth value={maintenanceData.totalCost} onChange={(e) => setMaintenanceData({ ...maintenanceData, totalCost: e.target.value })} />
-                            <Button variant="outlined" onClick={() => setMaintenanceData({ ...maintenanceData, totalCost: maintenanceFormulaCost.toFixed(2) })}>Formula</Button>
+                            <Button variant="outlined" onClick={() => setMaintenanceData({ ...maintenanceData, totalCost: maintenanceFormulaCost.toFixed(2) })}>Apply Formula</Button>
                         </Box>
                         <Box sx={{ display: 'flex', gap: 2 }}>
                             <Button variant="contained" fullWidth startIcon={<SaveIcon />} onClick={handleMaintenanceSubmit}>{existingMaintenance ? 'Update' : 'Save'}</Button>

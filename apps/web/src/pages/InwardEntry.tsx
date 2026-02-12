@@ -36,6 +36,8 @@ import {
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../utils/api';
+import { generatePDF } from '../utils/pdfGenerator';
+import { generateExcel } from '../utils/excelGenerator';
 
 interface BatchEntry {
     id: number;
@@ -174,7 +176,41 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole }) => {
     };
 
     const handleExport = (type: 'email' | 'excel' | 'pdf') => {
-        setNotification({ open: true, message: `Exporting as ${type}... (Implementation Pending)`, severity: 'info' });
+        const data = batchHistory;
+        if (data.length === 0) {
+            setNotification({ open: true, message: 'No data to export', severity: 'error' });
+            return;
+        }
+
+        const filename = `Inward_Batch_Report_${new Date().toISOString().split('T')[0]}`;
+
+        if (type === 'pdf') {
+            const headers = ['Batch ID', 'Date', 'Supplier', 'Bale', 'Total Kg'];
+            const rows = data.map((row: BatchEntry) => [
+                row.batchId,
+                new Date(row.date).toLocaleDateString(),
+                row.supplier,
+                row.bale,
+                row.kg?.toLocaleString() || '0'
+            ]);
+            generatePDF('Inward Batch History', headers, rows, filename);
+            setNotification({ open: true, message: 'Exported as PDF successfully', severity: 'success' });
+        } else if (type === 'excel') {
+            const excelData = data.map((row: BatchEntry) => ({
+                'Batch ID': row.batchId,
+                Date: new Date(row.date).toLocaleDateString(),
+                Supplier: row.supplier,
+                Bale: row.bale,
+                'Total Kg': row.kg
+            }));
+            generateExcel(excelData, filename);
+            setNotification({ open: true, message: 'Exported as Excel successfully', severity: 'success' });
+        } else if (type === 'email') {
+            const subject = encodeURIComponent(`Inward Batch Report: ${new Date().toISOString().split('T')[0]}`);
+            const body = encodeURIComponent(`Please find the attached Inward Batch Report.\n\n(Note: Please export and attach the PDF/Excel file manually)`);
+            window.location.href = `mailto:?subject=${subject}&body=${body}`;
+            setNotification({ open: true, message: 'Opening email client...', severity: 'info' });
+        }
     };
 
     return (
@@ -227,15 +263,17 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole }) => {
                             />
                         </>
                     )}
-                    <Button
-                        variant="contained"
-                        size="small"
-                        startIcon={<AddIcon />}
-                        onClick={() => setOpenWizard(true)}
-                        sx={{ borderRadius: 2 }}
-                    >
-                        Add Batch
-                    </Button>
+                    {(userRole === 'AUTHOR' || userRole === 'MODIFIER') && (
+                        <Button
+                            variant="contained"
+                            size="small"
+                            startIcon={<AddIcon />}
+                            onClick={() => setOpenWizard(true)}
+                            sx={{ borderRadius: 2 }}
+                        >
+                            Add Batch
+                        </Button>
+                    )}
                 </Box>
             </Box>
 
@@ -368,7 +406,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole }) => {
                                         <TableCell align="right">{row.bale}</TableCell>
                                         <TableCell align="right">{row.kg?.toLocaleString()} kg</TableCell>
                                         <TableCell align="center">
-                                            {(userRole === 'ADMIN' || userRole === 'AUTHOR') && (
+                                            {(userRole === 'AUTHOR') && (
                                                 <IconButton
                                                     size="small"
                                                     color="error"

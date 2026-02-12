@@ -15,7 +15,6 @@ import {
     TableHead,
     TableRow,
     CircularProgress,
-    Button,
 } from '@mui/material';
 import {
     AccountBalance,
@@ -46,7 +45,7 @@ const TodayDashboard: React.FC = () => {
         }
     });
 
-    const todayProduction = productionHistory?.find((p: any) => p.date === today);
+    const todayProduction = productionHistory?.find((p: any) => p.date?.startsWith(today));
     const todayCosts = costingEntries?.filter((c: any) => c.date === today) || [];
 
     const totalCost = todayCosts.reduce((sum: number, c: any) => sum + (c.totalCost || 0), 0);
@@ -138,8 +137,8 @@ const TodayDashboard: React.FC = () => {
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {todayProduction?.produced?.length > 0 ? (
-                                        todayProduction.produced.map((p: any) => (
+                                    {todayProduction?.producedYarn?.length > 0 ? (
+                                        todayProduction.producedYarn.map((p: any) => (
                                             <TableRow key={p.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                                                 <TableCell component="th" scope="row">
                                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -173,10 +172,10 @@ const TodayDashboard: React.FC = () => {
                         </Typography>
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 3 }}>
                             {[
-                                { label: 'Blow Room', val: todayProduction?.waste?.blowRoom || 0, color: '#fdd835' },
-                                { label: 'Carding', val: todayProduction?.waste?.carding || 0, color: '#fb8c00' },
-                                { label: 'OE Waste', val: todayProduction?.waste?.oe || 0, color: '#e53935' },
-                                { label: 'Others', val: todayProduction?.waste?.others || 0, color: '#757575' },
+                                { label: 'Blow Room', val: todayProduction?.wasteBlowRoom || 0, color: '#fdd835' },
+                                { label: 'Carding', val: todayProduction?.wasteCarding || 0, color: '#fb8c00' },
+                                { label: 'OE Waste', val: todayProduction?.wasteOE || 0, color: '#e53935' },
+                                { label: 'Others', val: todayProduction?.wasteOthers || 0, color: '#757575' },
                             ].map((w, i) => (
                                 <Box key={i}>
                                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>

@@ -29,7 +29,9 @@ import {
 } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';
 import { ResponsiveContainer, LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend, PieChart, Pie, Cell } from 'recharts';
-// import api from '../utils/api';
+import api from '../utils/api';
+import { generateExcel } from '../utils/excelGenerator';
+import { generatePDF } from '../utils/pdfGenerator';
 
 interface CostingKPI {
     label: string;
@@ -107,28 +109,20 @@ const CostingHistory: React.FC = () => {
     const { data: dashboardData, isLoading: isLoadingDashboard } = useQuery({
         queryKey: ['costingDashboard', dateRange.from, dateRange.to],
         queryFn: async () => {
-            // Mock data
-            return {
-                kpis: [
-                    { label: 'Electricity (EB)', value: '₹0', color: '#f59e0b', hasData: false, trend: '0%' },
-                    { label: 'Employee Costs', value: '₹0', color: '#3b82f6', hasData: false },
-                    { label: 'Packaging', value: '₹0', color: '#10b981', hasData: false },
-                    { label: 'Maintenance', value: '₹0', color: '#ef4444', hasData: false },
-                ],
-                breakdown: [],
-                dailyTrend: [],
-                maintenanceTrend: [],
-                packagingTrend: [],
-                expensesTrend: []
-            };
+            const res = await api.get('/costing/dashboard', {
+                params: { from: dateRange.from, to: dateRange.to }
+            });
+            return res.data;
         },
     });
 
     const { data: historyList, isLoading: isLoadingHistory } = useQuery({
         queryKey: ['costingHistoryList', dateRange.from, dateRange.to],
         queryFn: async () => {
-            // Mock data
-            return [] as CostingHistoryEntry[];
+            const res = await api.get('/costing/history', {
+                params: { from: dateRange.from, to: dateRange.to }
+            });
+            return res.data;
         },
     });
 
@@ -137,8 +131,39 @@ const CostingHistory: React.FC = () => {
     };
 
     const handleExport = (type: 'email' | 'excel' | 'pdf') => {
-        console.log(`Exporting costing history as ${type}`);
-        alert(`Exporting as ${type}... (Implementation Pending)`);
+        const data = historyList || [];
+        if (data.length === 0) {
+            alert('No data to export');
+            return;
+        }
+
+        const filename = `Costing_Report_${dateRange.from}_to_${dateRange.to}`;
+
+        if (type === 'pdf') {
+            const headers = ['Date', 'Category', 'Description', 'Amount (INR)', 'Details'];
+            const rows = data.map((row: CostingHistoryEntry) => [
+                new Date(row.date).toLocaleDateString(),
+                row.category,
+                row.description,
+                row.amount.toLocaleString(),
+                row.details
+            ]);
+            generatePDF('Costing History Report', headers, rows, filename);
+        } else if (type === 'excel') {
+            const excelData = data.map((row: CostingHistoryEntry) => ({
+                Date: new Date(row.date).toLocaleDateString(),
+                Category: row.category,
+                Description: row.description,
+                Amount: row.amount,
+                Details: row.details
+            }));
+            generateExcel(excelData, filename);
+        } else if (type === 'email') {
+            // Generate mailto link
+            const subject = encodeURIComponent(`Costing Report: ${dateRange.from} to ${dateRange.to}`);
+            const body = encodeURIComponent(`Please find the attached Costing Report for the period ${dateRange.from} to ${dateRange.to}.\n\n(Note: Please export and attach the PDF/Excel file manually as I cannot attach files directly from the browser)`);
+            window.location.href = `mailto:?subject=${subject}&body=${body}`;
+        }
     };
 
     if (isLoadingDashboard || isLoadingHistory) {
