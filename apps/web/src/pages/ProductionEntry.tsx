@@ -31,9 +31,14 @@ import {
     Close as CloseIcon,
     ArrowBack as BackIcon,
     ArrowForward as NextIcon,
+    Email as EmailIcon,
+    TableView as ExcelIcon,
+    PictureAsPdf as PdfIcon,
 } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';
 import api from '../utils/api';
+import { generateExcel } from '../utils/excelGenerator';
+import { generatePDF } from '../utils/pdfGenerator';
 
 interface ConsumptionItem {
     id: number;
@@ -272,8 +277,9 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole }) => {
             setNotification({ open: true, message: 'Production entry saved successfully!', severity: 'success' });
             refetchProduction();
             handleCloseWizard();
-        } catch (error) {
-            setNotification({ open: true, message: 'Failed to save production entry', severity: 'error' });
+        } catch (error: any) {
+            const message = error.response?.data?.message || 'Failed to save production entry';
+            setNotification({ open: true, message: Array.isArray(message) ? message.join(', ') : message, severity: 'error' });
         }
     };
 
@@ -298,19 +304,59 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole }) => {
         setWaste({ blowRoom: '', carding: '', oe: '', others: '' });
     };
 
+    const handleExport = (type: 'email' | 'excel' | 'pdf') => {
+        const data = recentProduction || [];
+        if (data.length === 0) {
+            setNotification({ open: true, message: 'No data to export', severity: 'error' });
+            return;
+        }
+
+        const filename = `Production_Report_${new Date().toISOString().split('T')[0]}`;
+
+        if (type === 'pdf') {
+            const headers = ['Date', 'Consumed (kg)', 'Produced (kg)', 'Waste (kg)', 'Efficiency (%)'];
+            const rows = data.map((row: any) => [
+                new Date(row.date).toLocaleDateString(),
+                row.totalConsumed,
+                row.totalProduced,
+                row.totalWaste,
+                ((row.totalProduced / row.totalConsumed) * 100).toFixed(2) + '%'
+            ]);
+            generatePDF('Production Report', headers, rows, filename);
+        } else if (type === 'excel') {
+            const excelData = data.map((row: any) => ({
+                Date: new Date(row.date).toLocaleDateString(),
+                'Consumed (kg)': row.totalConsumed,
+                'Produced (kg)': row.totalProduced,
+                'Waste (kg)': row.totalWaste,
+                'Efficiency (%)': ((row.totalProduced / row.totalConsumed) * 100).toFixed(2) + '%'
+            }));
+            generateExcel(excelData, filename);
+        } else if (type === 'email') {
+            const subject = encodeURIComponent(`Production Report: ${new Date().toISOString().split('T')[0]}`);
+            const body = encodeURIComponent(`Please find the attached Production Report.\n\n(Note: Please export and attach the PDF/Excel file manually)`);
+            window.location.href = `mailto:?subject=${subject}&body=${body}`;
+        }
+    };
+
     return (
         <Box sx={{ maxWidth: '100%', width: '100%' }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                 <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
                     Production / Mixing
                 </Typography>
-                <Button
-                    variant="contained"
-                    startIcon={<AddIcon />}
-                    onClick={() => setOpenWizard(true)}
-                >
-                    Add Production
-                </Button>
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                    <Button startIcon={<EmailIcon />} variant="outlined" onClick={() => handleExport('email')}>Email</Button>
+                    <Button startIcon={<ExcelIcon />} variant="outlined" onClick={() => handleExport('excel')}>Excel</Button>
+                    <Button startIcon={<PdfIcon />} variant="outlined" onClick={() => handleExport('pdf')}>PDF</Button>
+                    <Button
+                        variant="contained"
+                        startIcon={<AddIcon />}
+                        onClick={() => setOpenWizard(true)}
+                    >
+                        Add Production
+                    </Button>
+                </Box>
             </Box>
 
             {/* Production History Table */}
@@ -329,7 +375,7 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole }) => {
                     <TableBody>
                         {recentProduction?.map((row: any) => (
                             <TableRow key={row.id}>
-                                <TableCell>{row.date}</TableCell>
+                                <TableCell>{new Date(row.date).toLocaleDateString()}</TableCell>
                                 <TableCell align="right">{row.totalConsumed}</TableCell>
                                 <TableCell align="right">{row.totalProduced}</TableCell>
                                 <TableCell align="right">{row.totalWaste}</TableCell>

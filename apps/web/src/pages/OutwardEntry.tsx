@@ -17,14 +17,27 @@ import {
     Snackbar,
     Grid,
     Divider,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    Menu,
+    ListItemIcon,
+    ListItemText,
 } from '@mui/material';
 import {
     Add as AddIcon,
     Delete as DeleteIcon,
     Save as SaveIcon,
+    Email as EmailIcon,
+    TableView as ExcelIcon,
+    PictureAsPdf as PdfIcon,
+    FileDownload as ExportIcon,
 } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';
 import api from '../utils/api';
+import { generateExcel } from '../utils/excelGenerator';
+import { generatePDF } from '../utils/pdfGenerator';
 
 interface OutwardItem {
     id: number;
@@ -38,12 +51,67 @@ interface OutwardEntryProps {
 }
 
 const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole }) => {
+    const [openDialog, setOpenDialog] = useState(false);
+    const [historyFrom, setHistoryFrom] = useState('');
+    const [historyTo, setHistoryTo] = useState('');
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const [filterType, setFilterType] = useState('all');
+
+    const handleMenuOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
+        setAnchorEl(event.currentTarget);
+    };
+
+    const handleMenuClose = () => {
+        setAnchorEl(null);
+    };
+
+    const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const type = e.target.value;
+        setFilterType(type);
+        const today = new Date();
+
+        if (type === 'today') {
+            const str = today.toISOString().split('T')[0];
+            setHistoryFrom(str);
+            setHistoryTo(str);
+        } else if (type === 'week') {
+            const past = new Date(today);
+            past.setDate(today.getDate() - 7);
+            setHistoryFrom(past.toISOString().split('T')[0]);
+            setHistoryTo(today.toISOString().split('T')[0]);
+        } else if (type === 'month') {
+            const past = new Date(today);
+            past.setMonth(today.getMonth() - 1);
+            setHistoryFrom(past.toISOString().split('T')[0]);
+            setHistoryTo(today.toISOString().split('T')[0]);
+        } else if (type === 'all') {
+            setHistoryFrom('');
+            setHistoryTo('');
+        }
+    };
+
+    const handleExportAction = (type: 'email' | 'excel' | 'pdf') => {
+        handleExport(type);
+        handleMenuClose();
+    };
+
     const { data: outwardHistory, refetch: refetchHistory } = useQuery({
-        queryKey: ['outwardHistory'],
+        queryKey: ['outwardHistory', historyFrom, historyTo],
         queryFn: async () => {
-            const response = await api.get('/inventory/outward');
+            const params: any = {};
+            if (historyFrom) params.from = historyFrom;
+            if (historyTo) params.to = historyTo;
+            const response = await api.get('/inventory/outward', { params });
             return response.data;
         },
+    });
+
+    const { data: yarnStock = {}, refetch: refetchStock } = useQuery<{ [key: string]: number }>({
+        queryKey: ['yarnStock'],
+        queryFn: async () => {
+            const res = await api.get('/inventory/yarn-stock');
+            return res.data;
+        }
     });
 
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
@@ -61,7 +129,17 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole }) => {
     });
 
     const handleItemChange = (id: number, field: keyof OutwardItem, value: any) => {
-        setItems(prev => prev.map(item => (item.id === id ? { ...item, [field]: value } : item)));
+        setItems(prev => prev.map(item => {
+            if (item.id === id) {
+                const updatedItem = { ...item, [field]: value };
+                if (field === 'bags') {
+                    // Auto-calculate weight: 1 bag = 60kg
+                    updatedItem.weight = (parseFloat(value) || 0) * 60;
+                }
+                return updatedItem;
+            }
+            return item;
+        }));
     };
 
     const addItemRow = () => {
@@ -79,15 +157,35 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole }) => {
     const getTotalWeight = () => items.reduce((sum, item) => sum + (Number(item.weight) || 0), 0);
 
     const handleSave = async () => {
-        if (!customerName || !vehicleNo) {
-            setNotification({ open: true, message: 'Please fill Customer Name and Vehicle No', severity: 'error' });
+        if (!customerName || !vehicleNo || !driverName) {
+            setNotification({ open: true, message: 'Please fill Customer Name, Vehicle No, and Driver Name', severity: 'error' });
             return;
         }
 
-        const validItems = items.filter(i => Number(i.bags) > 0 || Number(i.weight) > 0);
-        if (validItems.length === 0) {
-            setNotification({ open: true, message: 'Please add at least one item with bags/weight', severity: 'error' });
+        // Vehicle Number Validation (Basic Indian Format)
+        const vehicleRegex = /^[A-Z]{2}[ -]?[0-9]{1,2}(?:[ -]?[A-Z]{1,2})?[ -]?[0-9]{4}$/i;
+        if (!vehicleRegex.test(vehicleNo)) {
+            setNotification({ open: true, message: 'Invalid Vehicle Number format (e.g., TN 01 AB 1234)', severity: 'error' });
             return;
+        }
+
+        const validItems = items.filter(i => Number(i.bags) > 0);
+        if (validItems.length === 0) {
+            setNotification({ open: true, message: 'Please add at least one item with bags', severity: 'error' });
+            return;
+        }
+
+        // Validate Stock Availability
+        for (const item of validItems) {
+            const currentStock = yarnStock[item.count] || 0;
+            if (Number(item.weight) > currentStock) {
+                setNotification({
+                    open: true,
+                    message: `Insufficient stock for Count ${item.count}. Available: ${(currentStock / 60).toFixed(0)} bags (${currentStock.toFixed(2)}kg)`,
+                    severity: 'error'
+                });
+                return;
+            }
         }
 
         try {
@@ -96,7 +194,11 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole }) => {
                 customerName,
                 vehicleNo,
                 driverName,
-                items: validItems
+                items: validItems.map(item => ({
+                    ...item,
+                    bags: Number(item.bags),
+                    weight: Number(item.weight)
+                }))
             });
             setNotification({ open: true, message: 'Outward entry saved successfully!', severity: 'success' });
             // Reset form
@@ -105,6 +207,8 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole }) => {
             setDriverName('');
             setItems([{ id: 1, count: '2', bags: 0, weight: 0 }]);
             refetchHistory();
+            refetchStock();
+            setOpenDialog(false);
         } catch (error) {
             setNotification({ open: true, message: 'Failed to save outward entry', severity: 'error' });
         }
@@ -117,24 +221,196 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole }) => {
             await api.delete(`/inventory/outward/${id}`);
             setNotification({ open: true, message: 'Outward entry deleted successfully', severity: 'success' });
             refetchHistory();
+            refetchStock();
         } catch (error) {
             setNotification({ open: true, message: 'Failed to delete outward entry', severity: 'error' });
         }
     };
 
+    const handleExport = (type: 'email' | 'excel' | 'pdf') => {
+        const data = outwardHistory || [];
+        if (data.length === 0) {
+            setNotification({ open: true, message: 'No data to export', severity: 'error' });
+            return;
+        }
+
+        const filename = `Outward_Sales_Report_${new Date().toISOString().split('T')[0]}`;
+
+        if (type === 'pdf') {
+            const headers = ['Date', 'Customer', 'Vehicle No', 'Driver', 'T. Bags', 'T. Weight (kg)'];
+            const rows = data.map((row: any) => [
+                new Date(row.date).toLocaleDateString(),
+                row.customerName,
+                row.vehicleNo,
+                row.driverName || '-',
+                row.totalBags,
+                row.totalWeight
+            ]);
+            generatePDF('Outward Sales Report', headers, rows, filename);
+        } else if (type === 'excel') {
+            const excelData = data.map((row: any) => ({
+                Date: new Date(row.date).toLocaleDateString(),
+                Customer: row.customerName,
+                'Vehicle No': row.vehicleNo,
+                'Driver Name': row.driverName,
+                'Total Bags': row.totalBags,
+                'Total Weight (kg)': row.totalWeight
+            }));
+            generateExcel(excelData, filename);
+        } else if (type === 'email') {
+            const subject = encodeURIComponent(`Outward Sales Report: ${new Date().toISOString().split('T')[0]}`);
+            const body = encodeURIComponent(`Please find the attached Outward Sales Report.\n\n(Note: Please export and attach the PDF/Excel file manually)`);
+            window.location.href = `mailto:?subject=${subject}&body=${body}`;
+        }
+    };
+
     return (
         <Box sx={{ maxWidth: '100%', width: '100%' }}>
-            <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 3 }}>
-                Outward (Sales)
-            </Typography>
+            {/* Header and Actions */}
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'stretch', md: 'center' }, gap: 2, mb: 3 }}>
+                <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                    Outward History
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <TextField
+                        select
+                        label="Date Filter"
+                        size="small"
+                        value={filterType}
+                        onChange={handleFilterChange}
+                        sx={{ width: 150 }}
+                    >
+                        <MenuItem value="all">All Time</MenuItem>
+                        <MenuItem value="today">Today</MenuItem>
+                        <MenuItem value="week">Past Week</MenuItem>
+                        <MenuItem value="month">Past Month</MenuItem>
+                        <MenuItem value="custom">Custom Range</MenuItem>
+                    </TextField>
 
-            <Grid container spacing={3}>
-                {/* Entry Form */}
-                <Grid size={{ xs: 12, lg: 7 }}>
-                    <Paper sx={{ p: 3, borderRadius: 2 }}>
-                        <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
-                            New Outward Entry
-                        </Typography>
+                    {filterType === 'custom' && (
+                        <>
+                            <TextField
+                                label="From"
+                                type="date"
+                                size="small"
+                                value={historyFrom}
+                                onChange={(e) => setHistoryFrom(e.target.value)}
+                                InputLabelProps={{ shrink: true }}
+                                sx={{ width: 140 }}
+                            />
+                            <TextField
+                                label="To"
+                                type="date"
+                                size="small"
+                                value={historyTo}
+                                onChange={(e) => setHistoryTo(e.target.value)}
+                                InputLabelProps={{ shrink: true }}
+                                sx={{ width: 140 }}
+                            />
+                        </>
+                    )}
+
+                    <Button
+                        variant="contained"
+                        startIcon={<AddIcon />}
+                        onClick={() => setOpenDialog(true)}
+                        sx={{
+                            fontWeight: 'bold',
+                            whiteSpace: 'nowrap',
+                            bgcolor: 'success.main',
+                            '&:hover': { bgcolor: 'success.dark' },
+                            borderRadius: '20px',
+                            px: 3,
+                            textTransform: 'none',
+                            fontSize: '1rem'
+                        }}
+                    >
+                        Add Outward
+                    </Button>
+
+                    <Divider orientation="vertical" flexItem sx={{ mx: 1, display: { xs: 'none', md: 'block' } }} />
+
+                    <Button
+                        startIcon={<ExportIcon />}
+                        variant="outlined"
+                        onClick={handleMenuOpen}
+                        sx={{ borderRadius: '20px', textTransform: 'none' }}
+                    >
+                        Export
+                    </Button>
+                    <Menu
+                        anchorEl={anchorEl}
+                        open={Boolean(anchorEl)}
+                        onClose={handleMenuClose}
+                    >
+                        <MenuItem onClick={() => handleExportAction('email')}>
+                            <ListItemIcon><EmailIcon fontSize="small" /></ListItemIcon>
+                            <ListItemText>Email</ListItemText>
+                        </MenuItem>
+                        <MenuItem onClick={() => handleExportAction('excel')}>
+                            <ListItemIcon><ExcelIcon fontSize="small" /></ListItemIcon>
+                            <ListItemText>Excel</ListItemText>
+                        </MenuItem>
+                        <MenuItem onClick={() => handleExportAction('pdf')}>
+                            <ListItemIcon><PdfIcon fontSize="small" /></ListItemIcon>
+                            <ListItemText>PDF</ListItemText>
+                        </MenuItem>
+                    </Menu>
+                </Box>
+            </Box>
+
+            {/* History Table */}
+            <Paper sx={{ width: '100%', mb: 2, borderRadius: 2 }}>
+                <TableContainer>
+                    <Table stickyHeader>
+                        <TableHead>
+                            <TableRow sx={{ bgcolor: 'action.hover' }}>
+                                <TableCell sx={{ fontWeight: 'bold' }}>Date</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold' }}>Customer</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold' }}>Vehicle / Driver</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold' }} align="center">Total Bags</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold' }} align="center">Total Weight</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold' }} align="center">Action</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {outwardHistory?.map((row: any) => (
+                                <TableRow key={row.id} hover>
+                                    <TableCell>{new Date(row.date).toLocaleDateString()}</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold' }}>{row.customerName}</TableCell>
+                                    <TableCell>
+                                        <Typography variant="body2">{row.vehicleNo}</Typography>
+                                        <Typography variant="caption" color="text.secondary">{row.driverName}</Typography>
+                                    </TableCell>
+                                    <TableCell align="center">{row.totalBags}</TableCell>
+                                    <TableCell align="center" sx={{ fontWeight: 'bold', color: 'primary.main' }}>{row.totalWeight} kg</TableCell>
+                                    <TableCell align="center">
+                                        {(userRole === 'ADMIN' || userRole === 'AUTHOR') && (
+                                            <IconButton color="error" onClick={() => handleDeleteOutward(row.id)}>
+                                                <DeleteIcon />
+                                            </IconButton>
+                                        )}
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                            {(!outwardHistory || outwardHistory.length === 0) && (
+                                <TableRow>
+                                    <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
+                                        <Typography variant="h6" color="text.secondary">No Outwards Found</Typography>
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            </Paper>
+
+            <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="md" fullWidth>
+                <DialogTitle sx={{ fontWeight: 'bold', borderBottom: 1, borderColor: 'divider' }}>
+                    New Outward Entry
+                </DialogTitle>
+                <DialogContent sx={{ p: 3 }}>
+                    <Box sx={{ mt: 1 }}>
                         <Grid container spacing={2}>
                             <Grid size={{ xs: 12, sm: 6 }}>
                                 <TextField
@@ -152,6 +428,8 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole }) => {
                                     fullWidth
                                     value={customerName}
                                     onChange={(e) => setCustomerName(e.target.value)}
+                                    required
+                                    error={!customerName && notification.severity === 'error'}
                                 />
                             </Grid>
                             <Grid size={{ xs: 12, sm: 6 }}>
@@ -159,7 +437,11 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole }) => {
                                     label="Vehicle No"
                                     fullWidth
                                     value={vehicleNo}
-                                    onChange={(e) => setVehicleNo(e.target.value)}
+                                    onChange={(e) => setVehicleNo(e.target.value.toUpperCase())}
+                                    required
+                                    placeholder="TN 01 AB 1234"
+                                    error={!vehicleNo && notification.severity === 'error'}
+                                    helperText="Format: TN 01 AB 1234"
                                 />
                             </Grid>
                             <Grid size={{ xs: 12, sm: 6 }}>
@@ -168,6 +450,8 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole }) => {
                                     fullWidth
                                     value={driverName}
                                     onChange={(e) => setDriverName(e.target.value)}
+                                    required
+                                    error={!driverName && notification.severity === 'error'}
                                 />
                             </Grid>
                         </Grid>
@@ -182,15 +466,15 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole }) => {
                             <Table size="small">
                                 <TableHead>
                                     <TableRow sx={{ bgcolor: 'action.hover' }}>
-                                        <TableCell sx={{ fontWeight: 'bold' }}>Count</TableCell>
-                                        <TableCell sx={{ fontWeight: 'bold' }}>Bags</TableCell>
-                                        <TableCell sx={{ fontWeight: 'bold' }}>Weight (kg)</TableCell>
-                                        <TableCell sx={{ fontWeight: 'bold' }} width={50}></TableCell>
+                                        <TableCell sx={{ fontWeight: 'bold', width: '25%' }}>Count</TableCell>
+                                        <TableCell sx={{ fontWeight: 'bold', width: '35%' }}>Bags</TableCell>
+                                        <TableCell sx={{ fontWeight: 'bold', width: '30%' }}>Weight (kg)</TableCell>
+                                        <TableCell sx={{ fontWeight: 'bold', width: '10%' }} align="center">Action</TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
                                     {items.map((item) => (
-                                        <TableRow key={item.id}>
+                                        <TableRow key={item.id} sx={{ '& td': { verticalAlign: 'top', py: 2 } }}>
                                             <TableCell>
                                                 <TextField
                                                     select
@@ -198,10 +482,17 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole }) => {
                                                     fullWidth
                                                     value={item.count}
                                                     onChange={(e) => handleItemChange(item.id, 'count', e.target.value)}
+                                                    label="Count"
                                                 >
-                                                    {['2', '4', '6', '8', '10'].map(c => (
-                                                        <MenuItem key={c} value={c}>{c}</MenuItem>
-                                                    ))}
+                                                    {Object.keys(yarnStock).length > 0 ? (
+                                                        Object.keys(yarnStock).sort((a, b) => Number(a) - Number(b)).map(c => (
+                                                            <MenuItem key={c} value={c}>{c}</MenuItem>
+                                                        ))
+                                                    ) : (
+                                                        ['2', '4', '6', '8', '10'].map(c => (
+                                                            <MenuItem key={c} value={c}>{c}</MenuItem>
+                                                        ))
+                                                    )}
                                                 </TextField>
                                             </TableCell>
                                             <TableCell>
@@ -211,6 +502,13 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole }) => {
                                                     fullWidth
                                                     value={item.bags}
                                                     onChange={(e) => handleItemChange(item.id, 'bags', e.target.value)}
+                                                    required
+                                                    error={!item.bags || (yarnStock[item.count] !== undefined && item.weight > yarnStock[item.count])}
+                                                    helperText={
+                                                        yarnStock[item.count] !== undefined
+                                                            ? `Available: ${Math.floor(yarnStock[item.count] / 60)} bags (${yarnStock[item.count].toFixed(1)}kg)`
+                                                            : 'Stock unknown'
+                                                    }
                                                 />
                                             </TableCell>
                                             <TableCell>
@@ -219,7 +517,8 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole }) => {
                                                     type="number"
                                                     fullWidth
                                                     value={item.weight}
-                                                    onChange={(e) => handleItemChange(item.id, 'weight', e.target.value)}
+                                                    disabled // Auto-calculated
+                                                    sx={{ bgcolor: 'action.hover' }}
                                                 />
                                             </TableCell>
                                             <TableCell>
@@ -233,83 +532,25 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole }) => {
                             </Table>
                         </TableContainer>
 
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <Button startIcon={<AddIcon />} onClick={addItemRow}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 1 }}>
+                            <Button startIcon={<AddIcon />} onClick={addItemRow} variant="outlined" color="primary">
                                 Add Row
                             </Button>
-                            <Box sx={{ textAlign: 'right' }}>
-                                <Typography variant="body2" color="text.secondary">Total Bags: {getTotalBags()}</Typography>
-                                <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>Total Weight: {getTotalWeight().toFixed(2)} kg</Typography>
+                            <Box sx={{ textAlign: 'right', p: 2, bgcolor: 'primary.50', borderRadius: 2, minWidth: 200, boxShadow: 1 }}>
+                                <Typography variant="body2" color="text.secondary">Total Bags: <strong>{getTotalBags()}</strong></Typography>
+                                <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold' }}>
+                                    Weight: {getTotalWeight().toFixed(2)} kg
+                                </Typography>
                             </Box>
                         </Box>
 
-                        <Button
-                            variant="contained"
-                            fullWidth
-                            size="large"
-                            startIcon={<SaveIcon />}
-                            onClick={handleSave}
-                            sx={{ mt: 3, py: 1.5, fontWeight: 'bold' }}
-                        >
-                            Save Outward Entry
-                        </Button>
-                    </Paper>
-                </Grid>
-
-                {/* History */}
-                <Grid size={{ xs: 12, lg: 5 }}>
-                    <Paper sx={{ p: 3, borderRadius: 2 }}>
-                        <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
-                            Recent History
-                        </Typography>
-                        <TableContainer sx={{ maxHeight: 600 }}>
-                            <Table size="small" stickyHeader>
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell sx={{ fontWeight: 'bold' }}>Date</TableCell>
-                                        <TableCell sx={{ fontWeight: 'bold' }}>Customer</TableCell>
-                                        <TableCell sx={{ fontWeight: 'bold' }}>Total</TableCell>
-                                        <TableCell sx={{ fontWeight: 'bold' }} align="center">Action</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {outwardHistory?.map((row: any) => (
-                                        <TableRow key={row.id}>
-                                            <TableCell>{new Date(row.date).toLocaleDateString()}</TableCell>
-                                            <TableCell>
-                                                <Typography variant="body2" fontWeight="bold">{row.customerName}</Typography>
-                                                <Typography variant="caption" color="text.secondary">{row.vehicleNo}</Typography>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Typography variant="body2">{row.totalBags} Bags</Typography>
-                                                <Typography variant="body2" fontWeight="bold">{row.totalWeight} kg</Typography>
-                                            </TableCell>
-                                            <TableCell align="center">
-                                                {(userRole === 'ADMIN' || userRole === 'AUTHOR') && (
-                                                    <IconButton
-                                                        size="small"
-                                                        color="error"
-                                                        onClick={() => handleDeleteOutward(row.id)}
-                                                    >
-                                                        <DeleteIcon fontSize="small" />
-                                                    </IconButton>
-                                                )}
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                    {(!outwardHistory || outwardHistory.length === 0) && (
-                                        <TableRow>
-                                            <TableCell colSpan={3} align="center" sx={{ py: 4 }}>
-                                                No history found
-                                            </TableCell>
-                                        </TableRow>
-                                    )}
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
-                    </Paper>
-                </Grid>
-            </Grid>
+                    </Box>
+                </DialogContent>
+                <DialogActions sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
+                    <Button onClick={() => setOpenDialog(false)} color="inherit">Cancel</Button>
+                    <Button onClick={handleSave} variant="contained" startIcon={<SaveIcon />}>Save Entry</Button>
+                </DialogActions>
+            </Dialog>
 
             <Snackbar
                 open={notification.open}

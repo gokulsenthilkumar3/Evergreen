@@ -112,31 +112,91 @@ const Costing: React.FC<{ userRole?: string }> = ({ userRole = 'admin' }) => {
 
     const dateRange = getDateRange();
 
-    // Fetch Dashboard Data
-    const { data: dashboardData } = useQuery({
-        queryKey: ['costingDashboard', dateRange.from, dateRange.to],
+    // Fetch Summary for Production Data (to calculate Avg Cost/Kg)
+    const { data: summaryData } = useQuery({
+        queryKey: ['dashboardSummary', dateRange],
         queryFn: async () => {
-            try {
-                // Mock data - reflecting requirements for empty state or future API
-                return {
-                    kpis: [
-                        { label: 'Electricity (EB)', value: '₹0', color: '#f59e0b', hasData: false, trend: '0%' },
-                        { label: 'Employee Costs', value: '₹0', color: '#3b82f6', hasData: false },
-                        { label: 'Packaging', value: '₹0', color: '#10b981', hasData: false },
-                        { label: 'Maintenance', value: '₹0', color: '#ef4444', hasData: false },
-                    ],
-                    breakdown: [],
-                    dailyTrend: [],
-                    maintenanceTrend: [],
-                    packagingTrend: [],
-                    expensesTrend: []
-                };
-            } catch (error) {
-                console.error("Error fetching dashboard data", error);
-                return {};
-            }
+            const response = await api.get(`/dashboard/summary?from=${dateRange.from}&to=${dateRange.to}`);
+            return response.data;
         },
+        enabled: tabValue === 0 // Only fetch on Dashboard tab
     });
+
+    // Fetch Dashboard Data
+    // Compute Dashboard Data from Entries
+    const dashboardData = React.useMemo(() => {
+        if (!entries || entries.length === 0) return null;
+
+        const fromDate = new Date(dateRange.from);
+        const toDate = new Date(dateRange.to);
+
+        // Filter by Date Range
+        const filtered = entries.filter((e: any) => {
+            const d = new Date(e.date);
+            return d >= fromDate && d <= toDate;
+        });
+
+        // Calculate Category Totals
+        const totals = {
+            eb: 0,
+            employee: 0,
+            packaging: 0,
+            maintenance: 0,
+            expense: 0
+        };
+
+        const dailyMap = new Map<string, any>();
+
+        filtered.forEach((e: any) => {
+            const cost = parseFloat(e.totalCost) || 0;
+            const dateStr = e.date.split('T')[0];
+
+            // Category Totals
+            if (e.category === 'EB (Electricity)') totals.eb += cost;
+            else if (e.category === 'Employee') totals.employee += cost;
+            else if (e.category === 'Packaging') totals.packaging += cost;
+            else if (e.category === 'Maintenance') totals.maintenance += cost;
+            else totals.expense += cost;
+
+            // Daily Trend Aggregation
+            if (!dailyMap.has(dateStr)) {
+                dailyMap.set(dateStr, { date: dateStr, cost: 0, packaging: 0, maintenance: 0, expense: 0 });
+            }
+            const day = dailyMap.get(dateStr);
+            day.cost += cost;
+            if (e.category === 'Packaging') day.packaging += cost;
+            if (e.category === 'Maintenance') day.maintenance += cost;
+            if (e.category !== 'EB (Electricity)' && e.category !== 'Employee' && e.category !== 'Packaging' && e.category !== 'Maintenance') day.expense += cost;
+        });
+
+        const sortedDaily = Array.from(dailyMap.values()).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+        const grandTotal = totals.eb + totals.employee + totals.packaging + totals.maintenance + totals.expense;
+        const production = summaryData?.meta?.periodProduction || 0;
+        const avgCostPerKg = production > 0 ? grandTotal / production : 0;
+
+        return {
+            kpis: [
+                { label: 'Total Cost', value: `₹${grandTotal.toLocaleString()}`, color: '#000000', hasData: grandTotal > 0 },
+                { label: 'Avg Cost/Kg', value: `₹${avgCostPerKg.toFixed(2)}`, color: '#7c3aed', hasData: avgCostPerKg > 0, subValue: production > 0 ? `${production.toLocaleString()} kg` : '' },
+                { label: 'Electricity (EB)', value: `₹${totals.eb.toLocaleString()}`, color: '#f59e0b', hasData: totals.eb > 0 },
+                { label: 'Employee Costs', value: `₹${totals.employee.toLocaleString()}`, color: '#3b82f6', hasData: totals.employee > 0 },
+                { label: 'Packaging', value: `₹${totals.packaging.toLocaleString()}`, color: '#10b981', hasData: totals.packaging > 0 },
+                { label: 'Maintenance', value: `₹${totals.maintenance.toLocaleString()}`, color: '#ef4444', hasData: totals.maintenance > 0 },
+            ],
+            breakdown: [
+                { name: 'EB', value: totals.eb, color: '#f59e0b' },
+                { name: 'Employee', value: totals.employee, color: '#3b82f6' },
+                { name: 'Packaging', value: totals.packaging, color: '#10b981' },
+                { name: 'Maintenance', value: totals.maintenance, color: '#ef4444' },
+                { name: 'Expenses', value: totals.expense, color: '#8b5cf6' },
+            ].filter(i => i.value > 0),
+            dailyTrend: sortedDaily,
+            packagingTrend: sortedDaily.map(d => ({ date: d.date, cost: d.packaging })),
+            maintenanceTrend: sortedDaily.map(d => ({ date: d.date, cost: d.maintenance })),
+            expensesTrend: sortedDaily.map(d => ({ date: d.date, cost: d.expense })),
+        };
+    }, [entries, dateRange, summaryData]);
 
     const categories = ['EB (Electricity)', 'Employee', 'Packaging', 'Maintenance', 'Expense'];
 
@@ -457,7 +517,11 @@ const Costing: React.FC<{ userRole?: string }> = ({ userRole = 'admin' }) => {
                     </IconButton>
                 </DialogTitle>
                 <DialogContent dividers>
-                    <CostingEntry userRole={userRole} onSuccess={handleSuccess} />
+                    <CostingEntry
+                        userRole={userRole}
+                        onSuccess={handleSuccess}
+                        initialTab={tabValue > 0 ? tabValue - 1 : 0}
+                    />
                 </DialogContent>
             </Dialog>
 

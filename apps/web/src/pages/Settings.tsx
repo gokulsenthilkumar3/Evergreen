@@ -11,27 +11,13 @@ import {
     FormControlLabel,
     Alert,
     Snackbar,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    MenuItem,
-    Chip,
-    IconButton,
 } from '@mui/material';
 import {
-    Save as SaveIcon,
-    Add as AddIcon,
-    Edit as EditIcon,
-    Delete as DeleteIcon
+    Save as SaveIcon
 } from '@mui/icons-material';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../utils/api';
+
 import Logs from './Logs';
 
 interface TabPanelProps {
@@ -49,11 +35,7 @@ function TabPanel(props: TabPanelProps) {
     );
 }
 
-interface SettingsProps {
-    currentUser?: any;
-}
-
-const Settings: React.FC<SettingsProps> = ({ currentUser }) => {
+const Settings: React.FC = () => {
     const [tabValue, setTabValue] = useState(0);
     const [notification, setNotification] = useState({
         open: false,
@@ -61,148 +43,84 @@ const Settings: React.FC<SettingsProps> = ({ currentUser }) => {
         severity: 'success' as 'success' | 'error',
     });
 
-    // Company Settings
-    const [companySettings, setCompanySettings] = useState({
-        companyName: 'Ever Green Yarn Mills',
-        address: 'Industrial Area, Coimbatore',
-        gstin: '33XXXXX1234X1Z5',
-        phone: '+91 98765 43210',
-        email: 'info@evergreenyarn.com',
+    const queryClient = useQueryClient();
+
+    // Fetch Settings
+    const { data: settings } = useQuery({
+        queryKey: ['settings'],
+        queryFn: async () => {
+            const res = await api.get('/settings');
+            return res.data;
+        }
     });
 
-    // System Settings (Removed EB/Packaging rates)
+    // Company Settings State
+    const [companySettings, setCompanySettings] = useState({
+        companyName: '',
+        address: '',
+        gstin: '',
+        phone: '',
+        email: '',
+    });
+
+    // System Settings State
     const [systemSettings, setSystemSettings] = useState({
         autoBackup: true,
         emailNotifications: true,
         lowStockAlert: true,
-        lowStockThreshold: '500',
-        maintenanceRate: '4',
-        ebRate: '10',
-        packageRate: '1.6',
+        lowStockThreshold: '',
+        maintenanceRate: '',
+        ebRate: '',
+        packageRate: '',
     });
 
-    // User Management State
-    const [users, setUsers] = useState<any[]>([]);
-    const [openUserDialog, setOpenUserDialog] = useState(false);
-    const [editingUser, setEditingUser] = useState<any>(null);
-    const [newUser, setNewUser] = useState({
-        username: '',
-        name: '',
-        password: '',
-        email: '',
-        role: 'VIEWER',
+    // Populate state when data is fetched
+    useEffect(() => {
+        if (settings) {
+            setCompanySettings({
+                companyName: settings.companyName || '',
+                address: settings.address || '',
+                gstin: settings.gstin || '',
+                phone: settings.phone || '',
+                email: settings.email || '',
+            });
+            setSystemSettings({
+                autoBackup: settings.autoBackup ?? true,
+                emailNotifications: settings.emailNotifications ?? true,
+                lowStockAlert: settings.lowStockAlert ?? true,
+                lowStockThreshold: settings.lowStockThreshold || '500',
+                maintenanceRate: settings.maintenanceRate || '4',
+                ebRate: settings.ebRate || '10',
+                packageRate: settings.packageRate || '1.6',
+            });
+        }
+    }, [settings]);
+
+    // Update Settings Mutation
+    const updateSettingsMutation = useMutation({
+        mutationFn: (data: any) => api.put('/settings', data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['settings'] });
+            setNotification({ open: true, message: 'Settings saved successfully!', severity: 'success' });
+        },
+        onError: () => {
+            setNotification({ open: true, message: 'Failed to save settings', severity: 'error' });
+        }
     });
 
     const handleSaveCompanySettings = () => {
-        setNotification({ open: true, message: 'Company settings saved!', severity: 'success' });
-    };
-
-    // Load settings from localStorage on mount (Maintenance only)
-    useEffect(() => {
-        const savedMaintenanceRate = localStorage.getItem('maintenanceRate');
-        const savedEbRate = localStorage.getItem('ebRate');
-        const savedPackageRate = localStorage.getItem('packageRate');
-
-        setSystemSettings(prev => ({
-            ...prev,
-            maintenanceRate: savedMaintenanceRate || '4',
-            ebRate: savedEbRate || '10',
-            packageRate: savedPackageRate || '1.6',
-        }));
-    }, []);
-
-    // Fetch users when the component loads or tab changes
-    useEffect(() => {
-        fetchUsers();
-    }, [tabValue]);
-
-    const fetchUsers = async () => {
-        try {
-            const res = await api.get('/auth/users');
-            console.log('📬 Fetched users from API:', res.data);
-            setUsers(res.data);
-        } catch (error) {
-            console.error('Failed to fetch users', error);
-        }
+        updateSettingsMutation.mutate({
+            ...companySettings
+        });
     };
 
     const handleSaveSystemSettings = () => {
-        localStorage.setItem('maintenanceRate', systemSettings.maintenanceRate);
-        localStorage.setItem('ebRate', systemSettings.ebRate);
-        localStorage.setItem('packageRate', systemSettings.packageRate);
-        setNotification({ open: true, message: 'System settings saved!', severity: 'success' });
-    };
-
-    const handleAddUser = async () => {
-        if (editingUser) {
-            handleUpdateUser();
-            return;
-        }
-
-        if (!newUser.username) {
-            setNotification({ open: true, message: 'Username is required', severity: 'error' });
-            return;
-        }
-        if (!newUser.password || newUser.password.length <= 5) {
-            setNotification({ open: true, message: 'Password must be greater than 5 characters', severity: 'error' });
-            return;
-        }
-
-        try {
-            await api.post('/auth/users', newUser);
-            setNotification({ open: true, message: 'User added successfully', severity: 'success' });
-            setOpenUserDialog(false);
-            setNewUser({ username: '', name: '', password: '', email: '', role: 'VIEWER' });
-            fetchUsers();
-        } catch (error) {
-            setNotification({ open: true, message: 'Failed to add user', severity: 'error' });
-        }
-    };
-
-    const handleUpdateUser = async () => {
-        if (!newUser.username) {
-            setNotification({ open: true, message: 'Username is required', severity: 'error' });
-            return;
-        }
-        if (newUser.password && newUser.password.length <= 5) {
-            setNotification({ open: true, message: 'Password must be greater than 5 characters', severity: 'error' });
-            return;
-        }
-
-        try {
-            await api.put(`/auth/users/${editingUser.id}`, newUser);
-            setNotification({ open: true, message: 'User updated successfully', severity: 'success' });
-            setOpenUserDialog(false);
-            setEditingUser(null);
-            setNewUser({ username: '', name: '', password: '', email: '', role: 'VIEWER' });
-            fetchUsers();
-        } catch (error) {
-            setNotification({ open: true, message: 'Failed to update user', severity: 'error' });
-        }
-    };
-
-    const handleDeleteUser = async (id: string) => {
-        if (!window.confirm('Are you sure you want to delete this user?')) return;
-        try {
-            await api.delete(`/auth/users/${id}`);
-            setNotification({ open: true, message: 'User deleted successfully', severity: 'success' });
-            fetchUsers();
-        } catch (error) {
-            setNotification({ open: true, message: 'Failed to delete user', severity: 'error' });
-        }
-    };
-
-    const handleEditClick = (user: any) => {
-        setEditingUser(user);
-        setNewUser({
-            username: user.username,
-            name: user.name || '',
-            password: '', // Keep password empty unless changing
-            email: user.email || '',
-            role: user.role,
+        updateSettingsMutation.mutate({
+            ...systemSettings
         });
-        setOpenUserDialog(true);
     };
+
+
 
     return (
         <Box sx={{ maxWidth: '100%', width: '100%' }}>
@@ -214,7 +132,7 @@ const Settings: React.FC<SettingsProps> = ({ currentUser }) => {
                 <Tabs value={tabValue} onChange={(_, newValue) => setTabValue(newValue)}>
                     <Tab label="Company Info" />
                     <Tab label="System Settings" />
-                    <Tab label="User Management" />
+
                     <Tab label="Audit Logs" />
                 </Tabs>
 
@@ -345,84 +263,10 @@ const Settings: React.FC<SettingsProps> = ({ currentUser }) => {
                     </Box>
                 </TabPanel>
 
-                {/* User Management Tab */}
-                <TabPanel value={tabValue} index={2}>
-                    <Box sx={{ maxWidth: 800, mx: 'auto' }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                            <Typography variant="h6">Users</Typography>
-                            <Button
-                                variant="contained"
-                                startIcon={<AddIcon />}
-                                onClick={() => {
-                                    setEditingUser(null);
-                                    setNewUser({ username: '', name: '', password: '', email: '', role: 'VIEWER' });
-                                    setOpenUserDialog(true);
-                                }}
-                            >
-                                Add User
-                            </Button>
-                        </Box>
 
-                        <TableContainer component={Paper}>
-                            <Table>
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell>Username</TableCell>
-                                        <TableCell>Name</TableCell>
-                                        <TableCell>Email</TableCell>
-                                        <TableCell>Role</TableCell>
-                                        <TableCell align="right">Actions</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {users.map((user) => (
-                                        <TableRow key={user.id}>
-                                            <TableCell>{user.username}</TableCell>
-                                            <TableCell>{user.name || '-'}</TableCell>
-                                            <TableCell>{user.email || '-'}</TableCell>
-                                            <TableCell>
-                                                <Chip
-                                                    label={user.role === 'ADMIN' || user.role === 'AUTHOR' ? 'Admin / Author' : user.role === 'MODIFIER' ? 'Modifier' : 'Viewer'}
-                                                    size="small"
-                                                    color={(user.role === 'ADMIN' || user.role === 'AUTHOR') ? 'error' : user.role === 'MODIFIER' ? 'warning' : 'primary'}
-                                                />
-                                            </TableCell>
-                                            <TableCell align="right">
-                                                <Box>
-                                                    <IconButton
-                                                        size="small"
-                                                        color="primary"
-                                                        onClick={() => handleEditClick(user)}
-                                                        sx={{ mr: 1 }}
-                                                    >
-                                                        <EditIcon fontSize="small" />
-                                                    </IconButton>
-                                                    {currentUser?.id !== user.id && (
-                                                        <IconButton
-                                                            size="small"
-                                                            color="error"
-                                                            onClick={() => handleDeleteUser(user.id)}
-                                                        >
-                                                            <DeleteIcon fontSize="small" />
-                                                        </IconButton>
-                                                    )}
-                                                </Box>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                    {users.length === 0 && (
-                                        <TableRow>
-                                            <TableCell colSpan={4} align="center">No users found</TableCell>
-                                        </TableRow>
-                                    )}
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
-                    </Box>
-                </TabPanel>
 
                 {/* Audit Logs Tab */}
-                <TabPanel value={tabValue} index={3}>
+                <TabPanel value={tabValue} index={2}>
                     <Logs />
                 </TabPanel>
             </Paper>
@@ -431,59 +275,7 @@ const Settings: React.FC<SettingsProps> = ({ currentUser }) => {
                 <Alert severity={notification.severity}>{notification.message}</Alert>
             </Snackbar>
 
-            {/* User Dialog (Add/Edit) */}
-            <Dialog open={openUserDialog} onClose={() => setOpenUserDialog(false)}>
-                <DialogTitle>{editingUser ? 'Edit User' : 'Add New User'}</DialogTitle>
-                <DialogContent>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1, minWidth: 300 }}>
-                        <TextField
-                            label="Username"
-                            fullWidth
-                            required
-                            value={newUser.username}
-                            onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
-                        />
-                        <TextField
-                            label="Full Name"
-                            fullWidth
-                            value={newUser.name}
-                            onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
-                        />
-                        <TextField
-                            label="Email"
-                            type="email"
-                            fullWidth
-                            value={newUser.email}
-                            onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-                            placeholder="Optional"
-                        />
-                        <TextField
-                            label={editingUser ? "New Password (Optional)" : "Password"}
-                            type="password"
-                            fullWidth
-                            required={!editingUser}
-                            helperText={editingUser ? "Leave blank to keep current password" : "Min 6 characters"}
-                            value={newUser.password}
-                            onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
-                        />
-                        <TextField
-                            select
-                            label="Role"
-                            fullWidth
-                            value={newUser.role}
-                            onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
-                        >
-                            <MenuItem value="ADMIN">Admin / Author</MenuItem>
-                            <MenuItem value="MODIFIER">Modifier</MenuItem>
-                            <MenuItem value="VIEWER">Viewer</MenuItem>
-                        </TextField>
-                    </Box>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setOpenUserDialog(false)}>Cancel</Button>
-                    <Button onClick={handleAddUser} variant="contained">{editingUser ? 'Update' : 'Add'}</Button>
-                </DialogActions>
-            </Dialog>
+
         </Box>
     );
 };

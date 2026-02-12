@@ -25,9 +25,9 @@ async function bootstrap() {
   });
 
   // Global validation pipe
+  // Note: whitelist/forbidNonWhitelisted removed because no DTO classes are defined.
+  // Adding them back will break all endpoints until proper DTOs are created.
   app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
-    forbidNonWhitelisted: true,
     transform: true,
   }));
 

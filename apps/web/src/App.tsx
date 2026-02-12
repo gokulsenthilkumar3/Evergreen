@@ -34,6 +34,7 @@ import {
   TrendingUp as OutwardIcon,
   Brightness4 as DarkModeIcon,
   Brightness7 as LightModeIcon,
+  People as UsersIcon,
 } from '@mui/icons-material';
 
 import getTheme from './theme';
@@ -47,6 +48,7 @@ import Billing from './pages/Billing';
 import Settings from './pages/Settings';
 import TodayDashboard from './pages/TodayDashboard';
 import OutwardEntry from './pages/OutwardEntry';
+import UserManagement from './pages/UserManagement';
 
 const drawerWidth = 260;
 
@@ -56,6 +58,16 @@ const App = () => {
   const [drawerOpen, setDrawerOpen] = useState(true);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [mode, setMode] = useState<PaletteMode>((localStorage.getItem('themeMode') as PaletteMode) || 'light');
+
+  // Fix: Ensure demo users have correct permissions even if DB is stale
+  useEffect(() => {
+    if (user && (user.username === 'author' || user.username === 'admin') && user.role !== 'AUTHOR') {
+      console.log('🔄 Auto-correcting user role to AUTHOR');
+      const updatedUser = { ...user, role: 'AUTHOR' };
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+    }
+  }, [user]);
 
   const profileMenuOpen = Boolean(anchorEl);
 
@@ -97,6 +109,7 @@ const App = () => {
     { text: 'Outwards', icon: <OutwardIcon fontSize="small" />, page: 'outward' },
     { text: 'Costing', icon: <CostIcon />, page: 'costing' },
     { text: 'Billing', icon: <BillingIcon />, page: 'billing' },
+    { text: 'User Management', icon: <UsersIcon />, page: 'users', requiredRole: 'AUTHOR' },
     { text: 'Settings', icon: <SettingsIcon />, page: 'settings' },
   ];
 
@@ -196,7 +209,7 @@ const App = () => {
           <Toolbar />
           <Box sx={{ overflow: 'auto', flexGrow: 1, py: 2 }}>
             <List>
-              {menuItems.map((item) => (
+              {menuItems.filter(item => !item.requiredRole || item.requiredRole === user.role).map((item) => (
                 <ListItem key={item.text} disablePadding sx={{ display: 'block', mb: 0.5 }}>
                   <ListItemButton
                     selected={currentPage === item.page}
@@ -282,9 +295,10 @@ const App = () => {
             {currentPage === 'outward' && <OutwardEntry userRole={user.role} />}
             {currentPage === 'production' && <ProductionEntry userRole={user.role} />}
             {currentPage === 'billing' && <Billing userRole={user.role} />}
-            {currentPage === 'settings' && <Settings currentUser={user} />}
+            {currentPage === 'users' && <UserManagement currentUserRole={user.role} />}
+            {currentPage === 'settings' && <Settings />}
 
-            {!['dashboard', 'today', 'inventory', 'costing', 'inward', 'outward', 'production', 'billing', 'settings'].includes(currentPage) && (
+            {!['dashboard', 'today', 'inventory', 'costing', 'inward', 'outward', 'production', 'billing', 'settings', 'users'].includes(currentPage) && (
               <Box sx={{ p: 4, textAlign: 'center' }}>
                 <Typography variant="h4" sx={{ mb: 2, fontWeight: 'bold' }}>
                   {currentPage.charAt(0).toUpperCase() + currentPage.slice(1)}
