@@ -18,6 +18,13 @@ import {
     MenuItem,
     TextField,
     Button,
+    Snackbar,
+    Alert,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogContentText,
+    DialogActions,
     type SelectChangeEvent,
 } from '@mui/material';
 import {
@@ -40,6 +47,8 @@ import {
     CartesianGrid,
     Legend
 } from 'recharts';
+import { generateExcel } from '../utils/excelGenerator';
+import { generatePDF } from '../utils/pdfGenerator';
 import api from '../utils/api';
 
 interface TabPanelProps {
@@ -79,26 +88,60 @@ interface InventoryItem {
     item?: string;
     quantity: number;
     balance?: number;
+    bale?: number;
     unit?: string;
     reference: string;
     details?: string;
 }
 
-const Inventory: React.FC = () => {
+interface InventoryProps {
+    userRole?: string;
+}
+
+const Inventory: React.FC<InventoryProps> = () => {
     const [tabValue, setTabValue] = useState(0);
     const [dateFilter, setDateFilter] = useState<string>('month');
     const [customFrom, setCustomFrom] = useState<string>('');
     const [customTo, setCustomTo] = useState<string>('');
     const [historyTypeFilter, setHistoryTypeFilter] = useState<string>('all');
 
+    // Waste Management State
+    const [wasteModalOpen, setWasteModalOpen] = useState(false);
+    const [wasteAction, setWasteAction] = useState<'recycle' | 'export'>('recycle');
+    const [wasteForm, setWasteForm] = useState({ date: new Date().toISOString().split('T')[0], quantity: '', buyer: '', price: '' });
+
+    const handleWasteSubmit = async () => {
+        try {
+            if (!wasteForm.quantity || parseFloat(wasteForm.quantity) <= 0) {
+                setNotification({ open: true, message: 'Invalid quantity', severity: 'error' });
+                return;
+            }
+            if (wasteAction === 'export') {
+                await api.post('/inventory/waste/export', { ...wasteForm, quantity: parseFloat(wasteForm.quantity) });
+            } else {
+                await api.post('/inventory/waste/recycle', { date: wasteForm.date, quantity: parseFloat(wasteForm.quantity) });
+            }
+            setNotification({ open: true, message: 'Waste processed successfully', severity: 'success' });
+            setWasteModalOpen(false);
+            setWasteForm({ date: new Date().toISOString().split('T')[0], quantity: '', buyer: '', price: '' });
+            refetch();
+        } catch (error: any) {
+            setNotification({ open: true, message: error.response?.data?.message || 'Failed to process waste', severity: 'error' });
+        }
+    };
+
+    const [notification, setNotification] = useState({
+        open: false,
+        message: '',
+        severity: 'success' as 'success' | 'error' | 'info',
+    });
+
     const handleDateFilterChange = (event: SelectChangeEvent) => {
         setDateFilter(event.target.value);
     };
 
-    const handleExport = (type: 'email' | 'excel' | 'pdf') => {
-        console.log(`Exporting inventory as ${type}`);
-        alert(`Exporting as ${type}... (Implementation Pending)`);
-    };
+
+
 
     const getDateRange = () => {
         const today = new Date();
@@ -148,7 +191,7 @@ const Inventory: React.FC = () => {
 
     const dateRange = getDateRange();
 
-    const { data: dashboardData } = useQuery({
+    const { data: dashboardData, refetch } = useQuery({
         queryKey: ['inventoryDashboard', dateRange.from, dateRange.to],
         queryFn: async () => {
             const response = await api.get('/inventory/history', {
@@ -165,13 +208,20 @@ const Inventory: React.FC = () => {
         ...(dashboardData?.history || []).map((h: any) => ({
             id: h.id || Math.random().toString(),
             date: new Date(h.date).toISOString().split('T')[0],
+            originalDate: new Date(h.date), // Keep original date object for sorting
             type: h.type === 'INWARD' ? 'INWARD' : (h.type === 'OUTWARD' ? 'OUTWARD' : 'PRODUCTION'),
             item: h.material,
             quantity: h.quantity || 0,
             balance: h.balance || 0,
+            bale: h.bale || 0,
             reference: h.reference || 'N/A'
         }))
-    ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    ].sort((a: any, b: any) => {
+        const dateDiff = b.originalDate.getTime() - a.originalDate.getTime();
+        if (dateDiff !== 0) return dateDiff;
+        // If dates are equal, sort by ID descending (assuming larger ID is newer)
+        return parseInt(b.id) - parseInt(a.id);
+    });
 
     const filteredFullHistory = fullHistory.filter(item => {
         if (historyTypeFilter === 'all') return true;
@@ -180,48 +230,216 @@ const Inventory: React.FC = () => {
         return true;
     });
 
-    const renderMovementTable = (data: InventoryItem[], title: string) => (
-        <Box sx={{ maxWidth: '100%', width: '100%' }}>
-            <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>{title}</Typography>
-            <TableContainer component={Paper} variant="outlined">
-                <Table size="small">
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>Date</TableCell>
-                            <TableCell>Type</TableCell>
-                            <TableCell align="right">Quantity (kg)</TableCell>
-                            <TableCell align="right">Balance (kg)</TableCell>
-                            <TableCell>Reference</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {data.length === 0 ? (
-                            <TableRow><TableCell colSpan={5} align="center">No data found</TableCell></TableRow>
-                        ) : (
-                            data.map((row) => (
-                                <TableRow key={row.id}>
-                                    <TableCell>{row.date}</TableCell>
-                                    <TableCell>
-                                        <Chip
-                                            icon={row.quantity >= 0 ? <ArrowUpward /> : <ArrowDownward />}
-                                            label={row.type}
-                                            color={row.quantity >= 0 ? 'success' : 'error'}
-                                            size="small"
-                                        />
-                                    </TableCell>
-                                    <TableCell align="right" sx={{ color: row.quantity >= 0 ? 'success.main' : 'error.main', fontWeight: 'bold' }}>
-                                        {row.quantity >= 0 ? '+' : ''}{row.quantity}
-                                    </TableCell>
-                                    <TableCell align="right" sx={{ fontWeight: 'bold' }}>{row.balance}</TableCell>
-                                    <TableCell>{row.reference}</TableCell>
-                                </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
-            </TableContainer>
-        </Box>
-    );
+    const handleExport = (type: 'email' | 'excel' | 'pdf') => {
+        const dataToExport = filteredFullHistory.map(row => ({
+            Date: row.date,
+            Type: row.type,
+            Item: row.item || '-',
+            'Quantity (kg)': row.quantity,
+            'Balance (kg)': row.balance ?? 0,
+            Reference: row.reference || '-'
+        }));
+
+        if (type === 'excel') {
+            generateExcel(dataToExport, "Inventory_Report");
+            setNotification({ open: true, message: 'Exported as Excel', severity: 'success' });
+        } else if (type === 'pdf') {
+            const headers = ['Date', 'Type', 'Item', 'Quantity (kg)', 'Balance (kg)', 'Reference'];
+            const data = dataToExport.map(row => Object.values(row));
+            generatePDF("Inventory Report", headers, data, "Inventory_Report");
+            setNotification({ open: true, message: 'Exported as PDF', severity: 'success' });
+        } else if (type === 'email') {
+            const subject = encodeURIComponent("Inventory Report");
+            const body = encodeURIComponent("Please attach the exported report manually.");
+            window.location.href = `mailto:?subject=${subject}&body=${body}`;
+            setNotification({ open: true, message: 'Opening email client...', severity: 'info' });
+        }
+    };
+
+
+    const renderMovementTable = (data: InventoryItem[], title: string) => {
+        const isCotton = title.includes('Cotton');
+        const isYarn = title.includes('Yarn');
+
+        // Calculate current balance
+        const latestEntry = data.length > 0 ? data[0] : null;
+        let currentBalance = latestEntry?.balance || 0;
+
+        // For yarn, calculate balance by count
+        const yarnByCount: Record<string, { bags: number; kg: number; remainder: number }> = {};
+        let totalBagsFromCounts = 0;
+        let totalRemainderFromCounts = 0;
+        let totalKgFromAllCounts = 0;
+
+        if (isYarn) {
+            // Group yarn data by count
+            ['2', '4', '6', '8', '10'].forEach(count => {
+                const countData = data.filter(d => d.reference?.includes(`Count ${count}`) || d.details?.includes(count));
+                const latestCountEntry = countData.length > 0 ? countData[0] : null;
+                const totalKg = latestCountEntry?.balance || 0;
+                const bags = Math.floor(totalKg / 60);
+                const remainder = totalKg % 60;
+                yarnByCount[count] = { bags, kg: totalKg, remainder };
+
+                // Sum up bags, remainders, and total kg from all counts
+                totalBagsFromCounts += bags;
+                totalRemainderFromCounts += remainder;
+                totalKgFromAllCounts += totalKg;
+            });
+
+            // For yarn, use the sum of all count balances
+            currentBalance = totalKgFromAllCounts;
+        }
+
+        // Calculate additional bags from combined remainders
+        // FIX: Do not combine remainders from different counts into bags. 
+        // Different yarn counts cannot be mixed to form a bag.
+        // const additionalBagsFromRemainder = Math.floor(totalRemainderFromCounts / 60);
+        // const finalRemainder = totalRemainderFromCounts % 60;
+
+        // Calculate bales/bags
+        // For Cotton: Sum the actual bale movements from the current filtered data
+        // Calculate bales/bags
+        // For Cotton: Sum the actual bale movements (API returns signed values now)
+        const currentBaleBalance = isCotton ? data.reduce((sum, item) => {
+            return sum + (item.bale || 0);
+        }, 0) : 0;
+
+        // Calculate Total Balance (kg) by summing quantities (Ledger approach) instead of trusting stale snapshots
+        if (isCotton) {
+            currentBalance = data.reduce((sum, item) => sum + (item.quantity || 0), 0);
+        }
+
+        const totalBales = isCotton ? currentBaleBalance : 0;
+        // FIX: Total bags is just sum of bags from each count
+        const totalBags = isYarn ? totalBagsFromCounts : 0;
+        const remainderKg = isYarn ? totalRemainderFromCounts : 0;
+
+        return (
+            <Box sx={{ maxWidth: '100%', width: '100%' }}>
+                <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>{title}</Typography>
+
+                {/* Balance Summary Section */}
+                <Paper sx={{ p: 3, mb: 3, borderRadius: 2, bgcolor: 'primary.dark' }}>
+                    {isCotton && (
+                        <>
+                            <Box sx={{ display: 'flex', gap: 4, alignItems: 'center', flexWrap: 'wrap' }}>
+                                <Box>
+                                    <Typography variant="subtitle2" color="text.secondary">Balance Cotton Bales</Typography>
+                                    <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.light' }}>
+                                        {totalBales.toLocaleString()}
+                                    </Typography>
+                                </Box>
+                                <Box>
+                                    <Typography variant="subtitle2" color="text.secondary">Total Balance (kg)</Typography>
+                                    <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'success.light' }}>
+                                        {currentBalance.toLocaleString()} kg
+                                    </Typography>
+                                </Box>
+                            </Box>
+                        </>
+                    )}
+                    {isYarn && (
+                        <>
+                            <Box sx={{ mb: 2 }}>
+                                <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>Balance Yarn Bags</Typography>
+                                <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.light', mb: 2 }}>
+                                    {totalBags.toLocaleString()} bags
+                                    {remainderKg > 0 && (
+                                        <Typography component="span" variant="h6" sx={{ ml: 2, color: 'warning.light' }}>
+                                            (+ {remainderKg.toFixed(2)} kg loose)
+                                        </Typography>
+                                    )}
+                                </Typography>
+                            </Box>
+                            <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', mb: 2 }}>
+                                {Object.entries(yarnByCount).map(([count, data]) => (
+                                    <Box key={count} sx={{ minWidth: 120 }}>
+                                        <Typography variant="caption" color="text.secondary">Count {count}</Typography>
+                                        <Typography variant="body1" sx={{ fontWeight: 'bold', color: 'info.light' }}>
+                                            {data.bags} bags
+                                        </Typography>
+                                        {data.remainder > 0 && (
+                                            <Typography variant="caption" color="text.secondary">
+                                                +{data.remainder.toFixed(2)} kg
+                                            </Typography>
+                                        )}
+                                    </Box>
+                                ))}
+                            </Box>
+                            <Box>
+                                <Typography variant="subtitle2" color="text.secondary">Total Balance (kg)</Typography>
+                                <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'success.light' }}>
+                                    {currentBalance.toLocaleString()} kg
+                                    {remainderKg > 0 && (
+                                        <Typography component="span" variant="caption" sx={{ ml: 1, color: 'text.secondary' }}>
+                                            (Incomplete bag: {remainderKg.toFixed(2)} kg)
+                                        </Typography>
+                                    )}
+                                </Typography>
+                            </Box>
+                        </>
+                    )}
+                </Paper>
+
+                <TableContainer component={Paper} variant="outlined">
+                    <Table size="small">
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>Date</TableCell>
+                                <TableCell>Type</TableCell>
+                                {isCotton && <TableCell align="right">Bale</TableCell>}
+                                {isYarn && <TableCell align="right">Bags</TableCell>}
+                                <TableCell align="right">Quantity (kg)</TableCell>
+                                <TableCell align="right">Balance (kg)</TableCell>
+                                <TableCell>Reference</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {data.length === 0 ? (
+                                <TableRow><TableCell colSpan={isCotton || isYarn ? 7 : 6} align="center">No data found</TableCell></TableRow>
+                            ) : (
+                                data.map((row) => {
+                                    // Use actual bale data from backend for cotton
+                                    const baleCount = isCotton ? (row.bale || 0) : 0;
+                                    const bagCount = isYarn ? Math.floor(Math.abs(row.quantity) / 60) : 0;
+
+                                    return (
+                                        <TableRow key={row.id}>
+                                            <TableCell>{row.date}</TableCell>
+                                            <TableCell>
+                                                <Chip
+                                                    icon={row.quantity >= 0 ? <ArrowUpward /> : <ArrowDownward />}
+                                                    label={row.type}
+                                                    color={row.quantity >= 0 ? 'success' : 'error'}
+                                                    size="small"
+                                                />
+                                            </TableCell>
+                                            {isCotton && (
+                                                <TableCell align="right" sx={{ fontWeight: 'medium' }}>
+                                                    {row.quantity >= 0 ? '+' : '-'}{Math.abs(baleCount)}
+                                                </TableCell>
+                                            )}
+                                            {isYarn && (
+                                                <TableCell align="right" sx={{ fontWeight: 'medium' }}>
+                                                    {row.quantity >= 0 ? '+' : '-'}{bagCount}
+                                                </TableCell>
+                                            )}
+                                            <TableCell align="right" sx={{ color: row.quantity >= 0 ? 'success.main' : 'error.main', fontWeight: 'bold' }}>
+                                                {row.quantity >= 0 ? '+' : ''}{row.quantity}
+                                            </TableCell>
+                                            <TableCell align="right" sx={{ fontWeight: 'bold' }}>{row.balance}</TableCell>
+                                            <TableCell>{row.reference}</TableCell>
+                                        </TableRow>
+                                    );
+                                })
+                            )}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            </Box>
+        );
+    };
 
     return (
         <Box sx={{ maxWidth: '100%', width: '100%' }}>
@@ -254,6 +472,7 @@ const Inventory: React.FC = () => {
                     <Tab label="Dashboard" />
                     <Tab label="Cotton Inventory" />
                     <Tab label="Yarn Inventory" />
+                    <Tab label="Waste Logs" />
                     <Tab label="All History" />
                 </Tabs>
 
@@ -312,6 +531,66 @@ const Inventory: React.FC = () => {
                 <TabPanel value={tabValue} index={2}>{renderMovementTable(fullHistory.filter(i => i.item === 'Yarn'), 'Yarn Stock Movement')}</TabPanel>
 
                 <TabPanel value={tabValue} index={3}>
+                    <Box sx={{ maxWidth: '100%', width: '100%' }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>Waste Logs</Typography>
+                            <Button variant="contained" color="secondary" onClick={() => setWasteModalOpen(true)}>
+                                Manage Waste
+                            </Button>
+                        </Box>
+
+                        {/* Waste Balance Summary */}
+                        <Paper sx={{ p: 3, mb: 3, borderRadius: 2, bgcolor: 'error.dark' }}>
+                            <Box>
+                                <Typography variant="subtitle2" color="rgba(255,255,255,0.7)">Total Waste Balance (kg)</Typography>
+                                <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'white' }}>
+                                    {(dashboardData?.wasteHistory && dashboardData.wasteHistory.length > 0)
+                                        ? dashboardData.wasteHistory[0].balance.toLocaleString()
+                                        : '0'} kg
+                                </Typography>
+                            </Box>
+                        </Paper>
+
+                        <TableContainer component={Paper} variant="outlined">
+                            <Table size="small">
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell>Date</TableCell>
+                                        <TableCell align="right">Total Waste (kg)</TableCell>
+                                        <TableCell align="right">Blow Room (kg)</TableCell>
+                                        <TableCell align="right">Carding (kg)</TableCell>
+                                        <TableCell align="right">OE (kg)</TableCell>
+                                        <TableCell align="right">Others (kg)</TableCell>
+                                        <TableCell align="right">Balance (kg)</TableCell>
+                                        <TableCell>Reference</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {(dashboardData?.wasteHistory || []).length === 0 ? (
+                                        <TableRow><TableCell colSpan={8} align="center">No waste data found</TableCell></TableRow>
+                                    ) : (
+                                        (dashboardData?.wasteHistory || []).map((row: any) => (
+                                            <TableRow key={row.id}>
+                                                <TableCell>{new Date(row.date).toISOString().split('T')[0]}</TableCell>
+                                                <TableCell align="right" sx={{ fontWeight: 'bold', color: 'warning.main' }}>
+                                                    {row.quantity}
+                                                </TableCell>
+                                                <TableCell align="right">{row.wasteBlowRoom || 0}</TableCell>
+                                                <TableCell align="right">{row.wasteCarding || 0}</TableCell>
+                                                <TableCell align="right">{row.wasteOE || 0}</TableCell>
+                                                <TableCell align="right">{row.wasteOthers || 0}</TableCell>
+                                                <TableCell align="right" sx={{ fontWeight: 'bold' }}>{row.balance}</TableCell>
+                                                <TableCell>{row.reference}</TableCell>
+                                            </TableRow>
+                                        ))
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    </Box>
+                </TabPanel>
+
+                <TabPanel value={tabValue} index={4}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                         <FormControl sx={{ minWidth: 200 }} size="small">
                             <InputLabel>Type Filter</InputLabel>
@@ -334,28 +613,127 @@ const Inventory: React.FC = () => {
                                     <TableCell>Date</TableCell>
                                     <TableCell>Type</TableCell>
                                     <TableCell>Material</TableCell>
-                                    <TableCell align="right">Quantity (kg)</TableCell>
+                                    <TableCell align="right">Amount (kg)</TableCell>
+                                    <TableCell align="right">Balance (kg)</TableCell>
                                     <TableCell>Reference</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
                                 {filteredFullHistory.map((row) => (
-                                    <TableRow key={row.id}>
+                                    <TableRow key={`${row.item}-${row.id}`}>
                                         <TableCell>{row.date}</TableCell>
-                                        <TableCell><Chip label={row.type} size="small" color={row.type === 'INWARD' ? 'success' : 'info'} /></TableCell>
-                                        <TableCell><Chip label={row.item || 'N/A'} size="small" variant="outlined" /></TableCell>
-                                        <TableCell align="right" sx={{ color: row.quantity >= 0 ? 'success.main' : 'error.main' }}>
-                                            {row.quantity >= 0 ? '+' : ''}{row.quantity}
+                                        <TableCell>
+                                            <Chip
+                                                label={row.type}
+                                                size="small"
+                                                color={row.type === 'INWARD' ? 'success' : (row.type === 'OUTWARD' ? 'warning' : 'info')}
+                                            />
+                                        </TableCell>
+                                        <TableCell>{row.item}</TableCell>
+                                        <TableCell align="right" sx={{ color: row.quantity >= 0 ? 'success.main' : 'error.main', fontWeight: 'bold' }}>
+                                            {row.quantity >= 0 ? '+' : ''}{row.quantity.toLocaleString()}
+                                        </TableCell>
+                                        <TableCell align="right" sx={{ fontWeight: 'bold' }}>
+                                            {row.balance?.toLocaleString() || '-'}
                                         </TableCell>
                                         <TableCell>{row.reference}</TableCell>
                                     </TableRow>
                                 ))}
+                                {filteredFullHistory.length === 0 && (
+                                    <TableRow>
+                                        <TableCell colSpan={7} align="center">No movement history found</TableCell>
+                                    </TableRow>
+                                )}
                             </TableBody>
                         </Table>
                     </TableContainer>
                 </TabPanel>
             </Paper>
-        </Box>
+
+            <Snackbar
+                open={notification.open}
+                autoHideDuration={6000}
+                onClose={() => setNotification({ ...notification, open: false })}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            >
+                <Alert
+                    onClose={() => setNotification({ ...notification, open: false })}
+                    severity={notification.severity}
+                    sx={{ width: '100%' }}
+                >
+                    {notification.message}
+                </Alert>
+            </Snackbar>
+
+
+            {/* Waste Management Dialog */}
+            <Dialog open={wasteModalOpen} onClose={() => setWasteModalOpen(false)}>
+                <DialogTitle>Manage Waste</DialogTitle>
+                <DialogContent>
+                    <DialogContentText sx={{ mb: 2 }}>
+                        Select whether to recycle waste (add back to cotton stock) or export/sell it.
+                    </DialogContentText>
+
+                    <FormControl fullWidth sx={{ mb: 2 }}>
+                        <InputLabel>Action</InputLabel>
+                        <Select
+                            value={wasteAction}
+                            label="Action"
+                            onChange={(e) => setWasteAction(e.target.value as 'recycle' | 'export')}
+                        >
+                            <MenuItem value="recycle">Recycle (Add to Cotton Stock)</MenuItem>
+                            <MenuItem value="export">Export / Sell</MenuItem>
+                        </Select>
+                    </FormControl>
+
+                    <TextField
+                        type="date"
+                        label="Date"
+                        fullWidth
+                        sx={{ mb: 2 }}
+                        value={wasteForm.date}
+                        onChange={(e) => setWasteForm({ ...wasteForm, date: e.target.value })}
+                        InputLabelProps={{ shrink: true }}
+                    />
+
+                    <TextField
+                        type="number"
+                        label="Quantity (kg)"
+                        fullWidth
+                        sx={{ mb: 2 }}
+                        value={wasteForm.quantity}
+                        onChange={(e) => setWasteForm({ ...wasteForm, quantity: e.target.value })}
+                    />
+
+                    {wasteAction === 'export' && (
+                        <>
+                            <TextField
+                                label="Buyer Name"
+                                fullWidth
+                                sx={{ mb: 2 }}
+                                value={wasteForm.buyer}
+                                onChange={(e) => setWasteForm({ ...wasteForm, buyer: e.target.value })}
+                            />
+                            <TextField
+                                type="number"
+                                label="Price (Total)"
+                                fullWidth
+                                sx={{ mb: 2 }}
+                                value={wasteForm.price}
+                                onChange={(e) => setWasteForm({ ...wasteForm, price: e.target.value })}
+                            />
+                        </>
+                    )}
+
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setWasteModalOpen(false)}>Cancel</Button>
+                    <Button onClick={handleWasteSubmit} variant="contained" color="primary">
+                        Submit
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        </Box >
     );
 };
 

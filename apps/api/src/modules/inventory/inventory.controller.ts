@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, Delete, Param } from '@nestjs/common';
 import { InventoryService } from './inventory.service';
 
 export enum DateRange {
@@ -19,42 +19,77 @@ export class InventoryController {
         @Query('to') to?: string
     ) {
         const history = await this.inventoryService.getHistory(from, to);
-        const metrics = await this.inventoryService.getDashboardMetrics(from, to);
+        const metrics: any = await this.inventoryService.getDashboardMetrics(from, to);
+        const wasteHistory = await this.inventoryService.getWasteHistory(from, to);
+        const rawStockByCount = await this.inventoryService.getYarnStockByCount();
+
+        // Format Yarn Stock Chart (Count -> Bags)
+        const yarnStockByCount = Object.entries(rawStockByCount)
+            .map(([count, kg]) => ({
+                name: `Count ${count}`,
+                bags: Math.floor(kg / 60),
+                kg: kg
+            }))
+            .sort((a, b) => parseInt(a.name.replace(/\D/g, '')) - parseInt(b.name.replace(/\D/g, '')));
+
+        // Format Trend Chart (Date -> Inward Cotton vs Outward Yarn)
+        const trendMap = new Map<string, { date: string, kg: number, outward: number }>();
+
+        // Initialize with history range or just from data points
+        // Using data points:
+        history.forEach((item: any) => {
+            const dateKey = new Date(item.date).toISOString().split('T')[0];
+            if (!trendMap.has(dateKey)) {
+                trendMap.set(dateKey, { date: dateKey, kg: 0, outward: 0 });
+            }
+            const entry = trendMap.get(dateKey)!;
+
+            if (item.material === 'Cotton' && item.type === 'INWARD') {
+                entry.kg += item.quantity;
+            } else if (item.material === 'Yarn' && item.type === 'OUTWARD') {
+                entry.outward += Math.abs(item.quantity);
+            }
+        });
+
+        const inwardHistory = Array.from(trendMap.values())
+            .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
         return {
             range,
             kpis: [
                 {
                     label: 'Total Bale (Cotton)',
-                    value: `${metrics.totalCotton || 0} kg`,
+                    value: `${metrics.cottonBales.toLocaleString()} bales (${metrics.totalCotton.toLocaleString()} kg)`,
                     color: '#0288d1',
                     hasData: metrics.totalCotton > 0
                 },
                 {
                     label: 'Total Bag (Yarn)',
-                    value: `${metrics.totalYarn || 0} kg`,
+                    value: `${metrics.yarnBags.toLocaleString()} bags (${metrics.totalYarn.toLocaleString()} kg)`,
+                    subValue: metrics.totalYarn % 60 > 0 ? `(Incomplete bag: ${(metrics.totalYarn % 60).toFixed(2)} kg)` : '',
                     color: '#2e7d32',
                     hasData: metrics.totalYarn > 0
                 },
                 {
                     label: 'Total Inward',
-                    value: '0 kg',
+                    value: `${inwardHistory.reduce((sum, i) => sum + i.kg, 0).toLocaleString()} kg`,
                     color: '#ed6c02',
-                    hasData: false
+                    hasData: inwardHistory.some(i => i.kg > 0)
                 },
                 {
-                    label: 'Waste Generated',
-                    value: '0 kg',
+                    label: 'Total Outward (Sales)',
+                    value: `${inwardHistory.reduce((sum, i) => sum + i.outward, 0).toLocaleString()} kg`,
                     color: '#d32f2f',
-                    hasData: false
+                    hasData: inwardHistory.some(i => i.outward > 0)
                 },
             ],
             history,
-            yarnStockByCount: [],
-            inwardHistory: [],
-            outwardHistory: [],
+            totalBales: metrics.cottonBales,
+            yarnStockByCount,
+            inwardHistory, // This now contains the trend data structure
+            outwardHistory: [], // Not used by charts directly, legacy?
             productionHistory: [],
-            wasteHistory: [],
+            wasteHistory,
         };
     }
 
@@ -99,6 +134,11 @@ export class InventoryController {
         };
     }
 
+    @Get('yarn-stock')
+    async getStockByCount() {
+        return this.inventoryService.getYarnStockByCount();
+    }
+
     @Get('yarn-inventory')
     async getYarnInventory(@Query('range') range: DateRange = DateRange.MONTH) {
         return {
@@ -106,5 +146,15 @@ export class InventoryController {
             inventory: [],
             totalStock: 0,
         };
+    }
+
+    @Delete('inward/:id')
+    async deleteInward(@Param('id') id: string) {
+        return this.inventoryService.deleteInward(parseInt(id));
+    }
+
+    @Delete('outward/:id')
+    async deleteOutward(@Param('id') id: string) {
+        return this.inventoryService.deleteOutward(parseInt(id));
     }
 }

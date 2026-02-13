@@ -9,6 +9,22 @@ export class AuthService {
         private prisma: PrismaService
     ) { }
 
+    private async logActivity(username: string, action: string, details: string) {
+        try {
+            // @ts-ignore
+            await this.prisma.activityLog.create({
+                data: {
+                    username,
+                    action,
+                    module: 'USER_MANAGEMENT',
+                    details
+                }
+            });
+        } catch (e) {
+            console.error('Failed to create log:', e);
+        }
+    }
+
     async validateUser(username: string, pass: string): Promise<any> {
         const user = await this.prisma.user.findUnique({
             where: { username }
@@ -21,13 +37,31 @@ export class AuthService {
         return null;
     }
 
-    async login(user: any) {
-        const payload = { username: user.username, sub: user.id, role: user.role };
+    async login(user: any, requestInfo?: { ip?: string, userAgent?: string, device?: string }) {
+        // Create a new session record
+        const session = await this.prisma.session.create({
+            data: {
+                userId: user.id,
+                ipAddress: requestInfo?.ip || 'Unknown',
+                userAgent: requestInfo?.userAgent || 'Unknown',
+                device: requestInfo?.device || 'Unknown', // Could parse UA for device type
+                isValid: true,
+            }
+        });
+
+        const payload = {
+            username: user.username,
+            sub: user.id,
+            role: user.role,
+            sessionId: session.id
+        };
+
         return {
             access_token: this.jwtService.sign(payload),
             user: {
                 id: user.id,
                 username: user.username,
+                name: user.name,
                 role: user.role,
             }
         };
@@ -56,6 +90,7 @@ export class AuthService {
         const newUser = await this.prisma.user.create({
             data: {
                 username: userDto.username,
+                name: userDto.name,
                 password: userDto.password, // In real app, hash this!
                 role: userDto.role || 'VIEWER',
                 email: userDto.email || `${userDto.username}-${Date.now()}@temp.local`,
@@ -63,6 +98,14 @@ export class AuthService {
         });
 
         console.log('✅ User created successfully:', newUser.id);
+
+        await this.logActivity(
+            // Ideally we pass the admin username here, but for now we log the event
+            'SYSTEM',
+            'CREATE',
+            `Created user: ${newUser.username} (${newUser.role})`
+        );
+
         const { password, ...result } = newUser;
         return result;
     }
@@ -72,6 +115,7 @@ export class AuthService {
             select: {
                 id: true,
                 username: true,
+                name: true,
                 email: true,
                 role: true,
                 createdAt: true,
@@ -103,6 +147,13 @@ export class AuthService {
         });
 
         console.log('✅ User deleted successfully:', userId);
+
+        await this.logActivity(
+            'SYSTEM',
+            'DELETE',
+            `Deleted user ID: ${userId}`
+        );
+
         return { message: 'User deleted successfully' };
     }
 
@@ -140,6 +191,7 @@ export class AuthService {
         // Build update data
         const updateData: any = {};
         if (userDto.username) updateData.username = userDto.username;
+        if (userDto.name) updateData.name = userDto.name;
         if (userDto.password) updateData.password = userDto.password;
 
         // Handle email carefully: if empty string provided, we might want to keep it empty or set a temp
@@ -157,6 +209,7 @@ export class AuthService {
             select: {
                 id: true,
                 username: true,
+                name: true,
                 email: true,
                 role: true,
                 createdAt: true,
@@ -165,6 +218,13 @@ export class AuthService {
         });
 
         console.log('✅ User updated successfully:', updatedUser.id);
+
+        await this.logActivity(
+            'SYSTEM',
+            'UPDATE',
+            `Updated user ${updatedUser.username}: ${Object.keys(updateData).join(', ')}`
+        );
+
         return updatedUser;
     }
 }

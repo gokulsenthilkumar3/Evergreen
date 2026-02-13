@@ -1,11 +1,11 @@
-import { createTheme } from '@mui/material/styles';
+import { createTheme, type PaletteMode } from '@mui/material/styles';
 
-export const getTheme = (mode: 'light' | 'dark') => {
-  const lightPalette = {
-    mode: 'light' as const,
+const getTheme = (mode: PaletteMode) => createTheme({
+  palette: {
+    mode,
     primary: {
       main: '#2e7d32', // Forest Green
-      light: '#4caf50',
+      light: '#60ad5e',
       dark: '#1b5e20',
       contrastText: '#ffffff',
     },
@@ -14,90 +14,87 @@ export const getTheme = (mode: 'light' | 'dark') => {
       contrastText: '#000000',
     },
     background: {
-      default: '#f8fafc',
-      paper: '#ffffff',
+      default: mode === 'dark' ? '#071421' : '#f8fafc',
+      paper: mode === 'dark' ? '#0a1929' : '#ffffff',
     },
     text: {
-      primary: '#1e293b',
-      secondary: '#64748b',
+      primary: mode === 'dark' ? '#f3f6f9' : '#0f172a',
+      secondary: mode === 'dark' ? '#94a3b8' : '#64748b',
     },
-    divider: 'rgba(0, 0, 0, 0.08)',
-  };
-
-  const darkPalette = {
-    mode: 'dark' as const,
-    primary: {
-      main: '#4caf50', // Brighter green for dark mode
-      light: '#81c784',
-      dark: '#2e7d32',
-      contrastText: '#ffffff',
-    },
-    secondary: {
-      main: '#ffd700', // Gold
-      contrastText: '#000000',
-    },
-    background: {
-      default: '#0f172a', // Darker navy
-      paper: '#1e293b',
-    },
-    text: {
-      primary: '#f1f5f9',
-      secondary: '#94a3b8',
-    },
-    divider: 'rgba(255, 255, 255, 0.08)',
-  };
-
-  return createTheme({
-    palette: mode === 'light' ? lightPalette : darkPalette,
-    typography: {
-      fontFamily: '"Outfit", "Roboto", "Helvetica", "Arial", sans-serif',
-      h1: { fontWeight: 700 },
-      h2: { fontWeight: 700 },
-      h3: { fontWeight: 600 },
-    },
-    shape: {
-      borderRadius: 12,
-    },
-    components: {
-      MuiButton: {
-        styleOverrides: {
-          root: {
-            textTransform: 'none',
-            borderRadius: 8,
-            padding: '10px 24px',
-          },
-        },
-      },
-      MuiPaper: {
-        styleOverrides: {
-          root: {
-            backgroundImage: 'none',
-            boxShadow: mode === 'light'
-              ? '0px 2px 10px rgba(0, 0, 0, 0.05)'
-              : '0px 4px 20px rgba(0, 0, 0, 0.25)',
-          },
-        },
-      },
-      MuiAppBar: {
-        styleOverrides: {
-          root: {
-            backgroundColor: mode === 'light' ? '#ffffff' : '#1e293b',
-            color: mode === 'light' ? '#1e293b' : '#f1f5f9',
-            backgroundImage: 'none',
-          },
-        },
-      },
-      MuiDrawer: {
-        styleOverrides: {
-          paper: {
-            backgroundColor: mode === 'light' ? '#ffffff' : '#1e293b',
-            backgroundImage: 'none',
-          },
+    divider: mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
+  },
+  typography: {
+    fontFamily: '"Outfit", "Roboto", "Helvetica", "Arial", sans-serif',
+    h1: { fontWeight: 700 },
+    h2: { fontWeight: 700 },
+    h3: { fontWeight: 700 },
+    h4: { fontWeight: 700, letterSpacing: '-0.02em' },
+    h5: { fontWeight: 600 },
+    h6: { fontWeight: 600 },
+    button: { fontWeight: 600 },
+  },
+  shape: {
+    borderRadius: 12,
+  },
+  components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        body: {
+          backgroundColor: mode === 'dark' ? '#071421' : '#f8fafc',
+          color: mode === 'dark' ? '#f3f6f9' : '#0f172a',
         },
       },
     },
-  });
-};
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          textTransform: 'none',
+          borderRadius: 8,
+          padding: '8px 20px',
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          backgroundImage: 'none',
+          boxShadow: mode === 'dark'
+            ? '0px 4px 20px rgba(0, 0, 0, 0.4)'
+            : '0px 2px 10px rgba(0, 0, 0, 0.05)',
+          border: mode === 'dark' ? '1px solid rgba(255, 255, 255, 0.05)' : 'none',
+        },
+      },
+    },
+    MuiAppBar: {
+      defaultProps: {
+        elevation: 0,
+        color: 'inherit',
+      },
+      styleOverrides: {
+        root: {
+          backgroundColor: mode === 'dark' ? '#0a1929' : '#ffffff',
+          borderBottom: `1px solid ${mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`,
+          color: mode === 'dark' ? '#f3f6f9' : '#0f172a',
+        },
+      },
+    },
+    MuiDrawer: {
+      styleOverrides: {
+        paper: {
+          backgroundColor: mode === 'dark' ? '#0a1929' : '#ffffff',
+          borderRight: `1px solid ${mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`,
+        },
+      },
+    },
+    MuiTableCell: {
+      styleOverrides: {
+        head: {
+          fontWeight: 600,
+          backgroundColor: mode === 'dark' ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)',
+        },
+      },
+    },
+  },
+});
 
-export default getTheme('dark'); // Keep dark as default export for backward compatibility
-
+export default getTheme;

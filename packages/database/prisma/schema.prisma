@@ -8,13 +8,29 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  username  String   @unique
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  username  String    @unique
+  name      String?
   password  String
-  role      String   @default("VIEWER")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  role      String    @default("VIEWER")
+  sessions  Session[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Session {
+  id         String   @id @default(cuid())
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token      String?  // Optional: Store JWT signature if needed, or just use ID
+  ipAddress  String?
+  location   String?
+  device     String?
+  userAgent  String?
+  isValid    Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  lastActive DateTime @updatedAt
 }
 
 model CottonInventory {
@@ -45,6 +61,23 @@ model YarnInventory {
   production   Production? @relation("YarnProduction", fields: [productionId], references: [id])
 }
 
+model WasteInventory {
+  id            Int         @id @default(autoincrement())
+  date          DateTime
+  type          String
+  quantity      Float
+  balance       Float
+  reference     String
+  wasteBlowRoom Float       @default(0)
+  wasteCarding  Float       @default(0)
+  wasteOE       Float       @default(0)
+  wasteOthers   Float       @default(0)
+  productionId  Int?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  production    Production? @relation("WasteProduction", fields: [productionId], references: [id])
+}
+
 model InwardBatch {
   id        Int      @id @default(autoincrement())
   batchId   String   @unique
@@ -72,6 +105,7 @@ model Production {
   consumedBatches ProductionConsumption[]
   producedYarn    ProductionOutput[]
   yarnInventory   YarnInventory[]         @relation("YarnProduction")
+  wasteInventory  WasteInventory[]        @relation("WasteProduction")
 }
 
 model ProductionConsumption {
@@ -115,4 +149,51 @@ model OutwardItem {
   weight    Float
   createdAt DateTime @default(now())
   outward   Outward  @relation(fields: [outwardId], references: [id], onDelete: Cascade)
+}
+
+model ActivityLog {
+  id        Int      @id @default(autoincrement())
+  action    String
+  module    String
+  details   String
+  username  String
+  createdAt DateTime @default(now())
+}
+
+model SystemSettings {
+  id                  Int      @id @default(autoincrement())
+  companyName         String   @default("Ever Green Yarn Mills")
+  address             String   @default("Industrial Area, Coimbatore")
+  gstin               String   @default("33XXXXX1234X1Z5")
+  phone               String   @default("+91 98765 43210")
+  email               String   @default("info@evergreenyarn.com")
+  autoBackup          Boolean  @default(true)
+  emailNotifications  Boolean  @default(true)
+  lowStockAlert       Boolean  @default(true)
+  lowStockThreshold   String   @default("500")
+  maintenanceRate     String   @default("4")
+  ebRate              String   @default("10")
+  packageRate         String   @default("1.6")
+  updatedAt           DateTime @updatedAt
+}
+
+model CostingEntry {
+  id              Int      @id @default(autoincrement())
+  date            DateTime
+  category        String
+  details         String?
+  totalCost       Float
+
+  unitsConsumed   Float?
+  ratePerUnit     Float?
+  noOfShifts      Int?
+  workers         Int?
+  yarnProduced    Float?
+  rate            Float?
+  description     String?
+  type            String?
+  title           String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
