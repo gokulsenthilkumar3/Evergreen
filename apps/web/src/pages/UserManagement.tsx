@@ -23,7 +23,8 @@ import {
     Chip,
     Alert,
     Snackbar,
-    CircularProgress
+    CircularProgress,
+    Tooltip,
 } from '@mui/material';
 import {
     Add as AddIcon,
@@ -42,13 +43,16 @@ interface User {
     email: string;
     role: 'VIEWER' | 'MODIFIER' | 'AUTHOR';
     createdAt: string;
+    createdBy?: string;
+    updatedBy?: string;
 }
 
 interface UserManagementProps {
     currentUserRole?: string;
+    username?: string;
 }
 
-const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole }) => {
+const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole, username }) => {
     const queryClient = useQueryClient();
     const [openDialog, setOpenDialog] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -150,13 +154,14 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole }) => {
         if (editingUser) {
             const updateData: any = { ...formData };
             if (!updateData.password) delete updateData.password; // Don't send empty password
+            updateData.updatedBy = username;
             updateUserMutation.mutate({ id: editingUser.id, data: updateData });
         } else {
             if (!formData.password) {
                 setNotification({ open: true, message: 'Password is required for new users', severity: 'error' });
                 return;
             }
-            createUserMutation.mutate(formData);
+            createUserMutation.mutate({ ...formData, createdBy: username });
         }
     };
 
@@ -217,6 +222,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole }) => {
                                 <TableCell sx={{ fontWeight: 'bold' }}>Username</TableCell>
                                 <TableCell sx={{ fontWeight: 'bold' }}>Name</TableCell>
                                 <TableCell sx={{ fontWeight: 'bold' }}>Role</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold' }}>Created By</TableCell>
                                 <TableCell sx={{ fontWeight: 'bold' }}>Created At</TableCell>
                                 <TableCell align="center" sx={{ fontWeight: 'bold' }}>Actions</TableCell>
                             </TableRow>
@@ -249,7 +255,14 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole }) => {
                                                 sx={{ fontWeight: 'bold' }}
                                             />
                                         </TableCell>
-                                        <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
+                                        <TableCell>{user.createdBy || '-'}</TableCell>
+                                        <TableCell>
+                                            <Tooltip title={new Date(user.createdAt).toLocaleString()} arrow placement="top">
+                                                <Box component="span" sx={{ cursor: 'help', borderBottom: '1px dotted', borderColor: 'divider' }}>
+                                                    {new Date(user.createdAt).toLocaleDateString()}
+                                                </Box>
+                                            </Tooltip>
+                                        </TableCell>
                                         <TableCell align="center">
                                             <IconButton
                                                 color="primary"

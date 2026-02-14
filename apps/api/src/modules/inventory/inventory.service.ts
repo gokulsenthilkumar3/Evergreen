@@ -74,6 +74,7 @@ export class InventoryService {
         vehicleNo: string;
         driverName: string;
         items: Array<{ count: string; bags: number; weight: number }>;
+        createdBy?: string;
     }) {
         return this.prisma.$transaction(async (tx) => {
             const totalBags = data.items.reduce((sum, item) => sum + item.bags, 0);
@@ -88,11 +89,13 @@ export class InventoryService {
                     driverName: data.driverName,
                     totalBags,
                     totalWeight,
+                    createdBy: data.createdBy,
                     items: {
                         create: data.items.map(item => ({
                             count: item.count,
                             bags: item.bags,
-                            weight: item.weight
+                            weight: item.weight,
+                            createdBy: data.createdBy
                         }))
                     }
                 },
@@ -115,7 +118,8 @@ export class InventoryService {
                         quantity: -item.weight,
                         balance: currentBalance - item.weight,
                         reference: `OUT-${outward.id}`,
-                        count: item.count
+                        count: item.count,
+                        createdBy: data.createdBy
                     }
                 });
             }
@@ -124,7 +128,7 @@ export class InventoryService {
         });
     }
 
-    async createInward(data: { batchId: string; date: string; supplier: string; bale: number; kg: number }) {
+    async createInward(data: { batchId: string; date: string; supplier: string; bale: number; kg: number; createdBy?: string }) {
         return this.prisma.$transaction(async (tx) => {
             // 1. Create Inward Batch record
             const batch = await tx.inwardBatch.create({
@@ -134,6 +138,7 @@ export class InventoryService {
                     supplier: data.supplier,
                     bale: data.bale,
                     kg: data.kg,
+                    createdBy: data.createdBy,
                 }
             });
 
@@ -151,7 +156,8 @@ export class InventoryService {
                     quantity: data.kg,
                     balance: currentBalance + data.kg,
                     reference: data.batchId,
-                    batchId: data.batchId
+                    batchId: data.batchId,
+                    createdBy: data.createdBy
                 }
             });
 
@@ -183,14 +189,17 @@ export class InventoryService {
             orderBy: { date: 'desc' },
         });
 
+        const wasteMovements = await this.prisma.wasteInventory.findMany({
+            where: whereClause,
+            orderBy: { date: 'desc' },
+        });
+
         const combined = [
             ...cottonMovements.map((m: any) => {
                 const batch = m.batchId ? batchMap.get(m.batchId) : null;
                 let baleCount = 0;
 
                 if (batch && batch.kg > 0) {
-                    // Calculate bales proportional to weight movement
-                    // Works for both INWARD (positive) and PRODUCTION (negative)
                     baleCount = (m.quantity / batch.kg) * batch.bale;
                 }
 
@@ -201,7 +210,12 @@ export class InventoryService {
                 };
             }),
             ...yarnMovements.map((m: any) => ({ ...m, material: 'Yarn' })),
-        ].sort((a: any, b: any) => b.date.getTime() - a.date.getTime());
+            ...wasteMovements.map((m: any) => ({ ...m, material: 'Waste' })),
+        ].sort((a: any, b: any) => {
+            const dateDiff = b.date.getTime() - a.date.getTime();
+            if (dateDiff !== 0) return dateDiff;
+            return b.id - a.id;
+        });
 
         return combined;
     }
@@ -391,7 +405,7 @@ export class InventoryService {
         return stock;
     }
 
-    async recycleWaste(data: { date: string; quantity: number }) {
+    async recycleWaste(data: { date: string; quantity: number; createdBy?: string }) {
         return this.prisma.$transaction(async (tx) => {
             // 1. Check Waste Balance
             const wasteAgg = await tx.wasteInventory.aggregate({ _sum: { quantity: true } });
@@ -410,7 +424,8 @@ export class InventoryService {
                     type: 'RECYCLE',
                     quantity: -data.quantity,
                     balance: (lastWaste?.balance || 0) - data.quantity,
-                    reference: 'RECYCLE',
+                    reference: 'RECYCLED',
+                    createdBy: data.createdBy,
                 }
             });
 
@@ -421,9 +436,10 @@ export class InventoryService {
                     date: new Date(data.date),
                     type: 'RECYCLED_WASTE',
                     quantity: data.quantity,
-                    balance: (lastCotton?.balance || 0) + data.quantity,
+                    balance: (lastCotton?.balance || 0) + data.quantity, // Should this be + or -? Recycling ADDS to Cotton stock? Yes.
                     reference: 'RECYCLED',
-                    batchId: null
+                    batchId: null,
+                    createdBy: data.createdBy,
                 }
             });
 
@@ -431,7 +447,7 @@ export class InventoryService {
         });
     }
 
-    async exportWaste(data: { date: string; quantity: number; buyer?: string; price?: number }) {
+    async exportWaste(data: { date: string; quantity: number; buyer?: string; price?: number; createdBy?: string }) {
         return this.prisma.$transaction(async (tx) => {
             // 1. Check Waste Balance
             const wasteAgg = await tx.wasteInventory.aggregate({ _sum: { quantity: true } });
@@ -450,6 +466,7 @@ export class InventoryService {
                     quantity: -data.quantity,
                     balance: (lastWaste?.balance || 0) - data.quantity,
                     reference: data.buyer ? `SOLD-${data.buyer}` : 'EXPORT',
+                    createdBy: data.createdBy,
                 }
             });
 

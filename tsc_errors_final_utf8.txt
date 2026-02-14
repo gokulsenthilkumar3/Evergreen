@@ -1,0 +1,218 @@
+﻿apps/web/src/App.tsx(1,46): error TS7016: Could not find a declaration file for module 'react'. 'D:/EverGreen/node_modules/react/index.js' implicitly has an 'any' type.
+  If the 'react' package actually exposes this module, consider sending a pull request to amend 'https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/react'
+apps/web/src/App.tsx(81,14): error TS7006: Parameter 'prevMode' implicitly has an 'any' type.
+apps/web/src/components/Login.tsx(1,44): error TS7016: Could not find a declaration file for module 'react'. 'D:/EverGreen/node_modules/react/index.js' implicitly has an 'any' type.
+  If the 'react' package actually exposes this module, consider sending a pull request to amend 'https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/react'
+apps/web/src/components/Login.tsx(62,40): error TS7031: Binding element 'onLoginSuccess' implicitly has an 'any' type.
+apps/web/src/components/Login.tsx(163,29): error TS2322: Type '{ children: Element; in: true; style: { transitionDelay: string; }; }' is not assignable to type 'IntrinsicAttributes & ZoomProps'.
+  Property 'style' does not exist on type 'IntrinsicAttributes & ZoomProps'.
+apps/web/src/components/Login.tsx(257,40): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/components/Login.tsx(284,40): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/components/LoginAvatar.tsx(1,50): error TS7016: Could not find a declaration file for module 'react'. 'D:/EverGreen/node_modules/react/index.js' implicitly has an 'any' type.
+  If the 'react' package actually exposes this module, consider sending a pull request to amend 'https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/react'
+apps/web/src/components/LoginAvatar.tsx(159,50): error TS7006: Parameter 'props' implicitly has an 'any' type.
+apps/web/src/main.tsx(1,19): error TS7016: Could not find a declaration file for module 'react'. 'D:/EverGreen/node_modules/react/index.js' implicitly has an 'any' type.
+  If the 'react' package actually exposes this module, consider sending a pull request to amend 'https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/react'
+apps/web/src/pages/Billing.tsx(1,33): error TS7016: Could not find a declaration file for module 'react'. 'D:/EverGreen/node_modules/react/index.js' implicitly has an 'any' type.
+  If the 'react' package actually exposes this module, consider sending a pull request to amend 'https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/react'
+apps/web/src/pages/Billing.tsx(36,44): error TS7031: Binding element 'userRole' implicitly has an 'any' type.
+apps/web/src/pages/Billing.tsx(66,18): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+apps/web/src/pages/Billing.tsx(66,35): error TS7006: Parameter 'item' implicitly has an 'any' type.
+apps/web/src/pages/Billing.tsx(70,46): error TS7006: Parameter 'i' implicitly has an 'any' type.
+apps/web/src/pages/Billing.tsx(76,22): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+apps/web/src/pages/Billing.tsx(76,42): error TS7006: Parameter 'item' implicitly has an 'any' type.
+apps/web/src/pages/Billing.tsx(81,40): error TS7006: Parameter 'sum' implicitly has an 'any' type.
+apps/web/src/pages/Billing.tsx(81,45): error TS7006: Parameter 'item' implicitly has an 'any' type.
+apps/web/src/pages/Billing.tsx(169,36): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/Billing.tsx(176,36): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/Billing.tsx(182,36): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/Billing.tsx(188,36): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/Billing.tsx(193,36): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/Billing.tsx(202,36): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/Billing.tsx(211,36): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/Billing.tsx(236,41): error TS7006: Parameter 'item' implicitly has an 'any' type.
+apps/web/src/pages/Billing.tsx(245,60): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/Billing.tsx(260,60): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/Billing.tsx(269,60): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/Billing.tsx(278,60): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/Billing.tsx(363,48): error TS2322: Type '{ children: string; colSpan: number; align: "center"; }' is not assignable to type 'IntrinsicAttributes & TableCellProps'.
+  Property 'colSpan' does not exist on type 'IntrinsicAttributes & TableCellProps'.
+apps/web/src/pages/Costing.tsx(1,33): error TS7016: Could not find a declaration file for module 'react'. 'D:/EverGreen/node_modules/react/index.js' implicitly has an 'any' type.
+  If the 'react' package actually exposes this module, consider sending a pull request to amend 'https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/react'
+apps/web/src/pages/Costing.tsx(263,48): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/Costing.tsx(271,48): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/Costing.tsx(347,57): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+apps/web/src/pages/Costing.tsx(496,60): error TS2322: Type '{ children: string; colSpan: number; align: "center"; }' is not assignable to type 'IntrinsicAttributes & TableCellProps'.
+  Property 'colSpan' does not exist on type 'IntrinsicAttributes & TableCellProps'.
+apps/web/src/pages/CostingEntry.tsx(1,44): error TS7016: Could not find a declaration file for module 'react'. 'D:/EverGreen/node_modules/react/index.js' implicitly has an 'any' type.
+  If the 'react' package actually exposes this module, consider sending a pull request to amend 'https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/react'
+apps/web/src/pages/CostingEntry.tsx(39,54): error TS7031: Binding element 'onSuccess' implicitly has an 'any' type.
+apps/web/src/pages/CostingEntry.tsx(140,36): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+apps/web/src/pages/CostingEntry.tsx(141,50): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+apps/web/src/pages/CostingEntry.tsx(142,54): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+apps/web/src/pages/CostingEntry.tsx(293,32): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/CostingEntry.tsx(316,40): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/CostingEntry.tsx(322,40): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/CostingEntry.tsx(328,40): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/CostingEntry.tsx(344,114): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/CostingEntry.tsx(346,120): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/CostingEntry.tsx(347,128): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/CostingEntry.tsx(349,117): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/CostingEntry.tsx(368,48): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/CostingEntry.tsx(381,48): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/CostingEntry.tsx(408,48): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/CostingEntry.tsx(422,115): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/CostingEntry.tsx(423,103): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/CostingEntry.tsx(425,128): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/CostingEntry.tsx(438,87): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/CostingEntry.tsx(439,92): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/CostingEntry.tsx(443,103): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/CostingEntry.tsx(444,118): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/CostingHistory.tsx(1,33): error TS7016: Could not find a declaration file for module 'react'. 'D:/EverGreen/node_modules/react/index.js' implicitly has an 'any' type.
+  If the 'react' package actually exposes this module, consider sending a pull request to amend 'https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/react'
+apps/web/src/pages/CostingHistory.tsx(210,44): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/CostingHistory.tsx(218,44): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/CostingHistory.tsx(283,53): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+apps/web/src/pages/CostingHistory.tsx(385,52): error TS2322: Type '{ children: string; colSpan: number; align: "center"; }' is not assignable to type 'IntrinsicAttributes & TableCellProps'.
+  Property 'colSpan' does not exist on type 'IntrinsicAttributes & TableCellProps'.
+apps/web/src/pages/CostingList.tsx(1,33): error TS7016: Could not find a declaration file for module 'react'. 'D:/EverGreen/node_modules/react/index.js' implicitly has an 'any' type.
+  If the 'react' package actually exposes this module, consider sending a pull request to amend 'https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/react'
+apps/web/src/pages/CostingList.tsx(130,56): error TS2322: Type '{ children: string; colSpan: number; align: "center"; }' is not assignable to type 'IntrinsicAttributes & TableCellProps'.
+  Property 'colSpan' does not exist on type 'IntrinsicAttributes & TableCellProps'.
+apps/web/src/pages/Dashboard.tsx(1,33): error TS7016: Could not find a declaration file for module 'react'. 'D:/EverGreen/node_modules/react/index.js' implicitly has an 'any' type.
+  If the 'react' package actually exposes this module, consider sending a pull request to amend 'https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/react'
+apps/web/src/pages/Dashboard.tsx(141,44): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/Dashboard.tsx(149,44): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/Inventory.tsx(1,33): error TS7016: Could not find a declaration file for module 'react'. 'D:/EverGreen/node_modules/react/index.js' implicitly has an 'any' type.
+  If the 'react' package actually exposes this module, consider sending a pull request to amend 'https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/react'
+apps/web/src/pages/Inventory.tsx(400,54): error TS2322: Type '{ children: string; colSpan: number; align: "center"; }' is not assignable to type 'IntrinsicAttributes & TableCellProps'.
+  Property 'colSpan' does not exist on type 'IntrinsicAttributes & TableCellProps'.
+apps/web/src/pages/Inventory.tsx(463,108): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/Inventory.tsx(464,104): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/Inventory.tsx(570,62): error TS2322: Type '{ children: string; colSpan: number; align: "center"; }' is not assignable to type 'IntrinsicAttributes & TableCellProps'.
+  Property 'colSpan' does not exist on type 'IntrinsicAttributes & TableCellProps'.
+apps/web/src/pages/Inventory.tsx(644,52): error TS2322: Type '{ children: string; colSpan: number; align: "center"; }' is not assignable to type 'IntrinsicAttributes & TableCellProps'.
+  Property 'colSpan' does not exist on type 'IntrinsicAttributes & TableCellProps'.
+apps/web/src/pages/Inventory.tsx(695,36): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/Inventory.tsx(705,36): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/Inventory.tsx(715,44): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/Inventory.tsx(723,44): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/InwardEntry.tsx(1,44): error TS7016: Could not find a declaration file for module 'react'. 'D:/EverGreen/node_modules/react/index.js' implicitly has an 'any' type.
+  If the 'react' package actually exposes this module, consider sending a pull request to amend 'https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/react'
+apps/web/src/pages/InwardEntry.tsx(55,52): error TS7031: Binding element 'userRole' implicitly has an 'any' type.
+apps/web/src/pages/InwardEntry.tsx(115,22): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+apps/web/src/pages/InwardEntry.tsx(119,21): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+apps/web/src/pages/InwardEntry.tsx(124,22): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+apps/web/src/pages/InwardEntry.tsx(124,42): error TS7006: Parameter 's' implicitly has an 'any' type.
+apps/web/src/pages/InwardEntry.tsx(253,44): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/InwardEntry.tsx(261,44): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/InwardEntry.tsx(316,45): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+apps/web/src/pages/InwardEntry.tsx(323,51): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/InwardEntry.tsx(398,48): error TS2322: Type '{ children: string; colSpan: number; align: "center"; }' is not assignable to type 'IntrinsicAttributes & TableCellProps'.
+  Property 'colSpan' does not exist on type 'IntrinsicAttributes & TableCellProps'.
+apps/web/src/pages/Logs.tsx(1,33): error TS7016: Could not find a declaration file for module 'react'. 'D:/EverGreen/node_modules/react/index.js' implicitly has an 'any' type.
+  If the 'react' package actually exposes this module, consider sending a pull request to amend 'https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/react'
+apps/web/src/pages/Logs.tsx(94,36): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/Logs.tsx(134,48): error TS2322: Type '{ children: string; colSpan: number; align: "center"; }' is not assignable to type 'IntrinsicAttributes & TableCellProps'.
+  Property 'colSpan' does not exist on type 'IntrinsicAttributes & TableCellProps'.
+apps/web/src/pages/OutwardEntry.tsx(1,33): error TS7016: Could not find a declaration file for module 'react'. 'D:/EverGreen/node_modules/react/index.js' implicitly has an 'any' type.
+  If the 'react' package actually exposes this module, consider sending a pull request to amend 'https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/react'
+apps/web/src/pages/OutwardEntry.tsx(53,54): error TS7031: Binding element 'userRole' implicitly has an 'any' type.
+apps/web/src/pages/OutwardEntry.tsx(132,18): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+apps/web/src/pages/OutwardEntry.tsx(132,35): error TS7006: Parameter 'item' implicitly has an 'any' type.
+apps/web/src/pages/OutwardEntry.tsx(146,46): error TS7006: Parameter 'i' implicitly has an 'any' type.
+apps/web/src/pages/OutwardEntry.tsx(152,22): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+apps/web/src/pages/OutwardEntry.tsx(152,42): error TS7006: Parameter 'item' implicitly has an 'any' type.
+apps/web/src/pages/OutwardEntry.tsx(156,46): error TS7006: Parameter 'sum' implicitly has an 'any' type.
+apps/web/src/pages/OutwardEntry.tsx(156,51): error TS7006: Parameter 'item' implicitly has an 'any' type.
+apps/web/src/pages/OutwardEntry.tsx(157,48): error TS7006: Parameter 'sum' implicitly has an 'any' type.
+apps/web/src/pages/OutwardEntry.tsx(157,53): error TS7006: Parameter 'item' implicitly has an 'any' type.
+apps/web/src/pages/OutwardEntry.tsx(172,41): error TS7006: Parameter 'i' implicitly has an 'any' type.
+apps/web/src/pages/OutwardEntry.tsx(197,39): error TS7006: Parameter 'item' implicitly has an 'any' type.
+apps/web/src/pages/OutwardEntry.tsx(297,44): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/OutwardEntry.tsx(306,44): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/OutwardEntry.tsx(398,48): error TS2322: Type '{ children: Element; colSpan: number; align: "center"; sx: { py: number; }; }' is not assignable to type 'IntrinsicAttributes & TableCellProps'.
+  Property 'colSpan' does not exist on type 'IntrinsicAttributes & TableCellProps'.
+apps/web/src/pages/OutwardEntry.tsx(421,48): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/OutwardEntry.tsx(430,48): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/OutwardEntry.tsx(440,48): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/OutwardEntry.tsx(452,48): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/OutwardEntry.tsx(476,49): error TS7006: Parameter 'item' implicitly has an 'any' type.
+apps/web/src/pages/OutwardEntry.tsx(484,64): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/OutwardEntry.tsx(504,64): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/ProductionEntry.tsx(1,33): error TS7016: Could not find a declaration file for module 'react'. 'D:/EverGreen/node_modules/react/index.js' implicitly has an 'any' type.
+  If the 'react' package actually exposes this module, consider sending a pull request to amend 'https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/react'
+apps/web/src/pages/ProductionEntry.tsx(90,60): error TS7031: Binding element 'userRole' implicitly has an 'any' type.
+apps/web/src/pages/ProductionEntry.tsx(137,21): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+apps/web/src/pages/ProductionEntry.tsx(137,38): error TS7006: Parameter 'item' implicitly has an 'any' type.
+apps/web/src/pages/ProductionEntry.tsx(141,49): error TS7006: Parameter 'i' implicitly has an 'any' type.
+apps/web/src/pages/ProductionEntry.tsx(147,25): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+apps/web/src/pages/ProductionEntry.tsx(147,45): error TS7006: Parameter 'item' implicitly has an 'any' type.
+apps/web/src/pages/ProductionEntry.tsx(153,21): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+apps/web/src/pages/ProductionEntry.tsx(153,38): error TS7006: Parameter 'item' implicitly has an 'any' type.
+apps/web/src/pages/ProductionEntry.tsx(168,49): error TS7006: Parameter 'i' implicitly has an 'any' type.
+apps/web/src/pages/ProductionEntry.tsx(174,25): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+apps/web/src/pages/ProductionEntry.tsx(174,45): error TS7006: Parameter 'item' implicitly has an 'any' type.
+apps/web/src/pages/ProductionEntry.tsx(180,18): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+apps/web/src/pages/ProductionEntry.tsx(184,33): error TS7006: Parameter 'sum' implicitly has an 'any' type.
+apps/web/src/pages/ProductionEntry.tsx(184,38): error TS7006: Parameter 'item' implicitly has an 'any' type.
+apps/web/src/pages/ProductionEntry.tsx(188,33): error TS7006: Parameter 'sum' implicitly has an 'any' type.
+apps/web/src/pages/ProductionEntry.tsx(188,38): error TS7006: Parameter 'item' implicitly has an 'any' type.
+apps/web/src/pages/ProductionEntry.tsx(192,58): error TS18046: 'sum' is of type 'unknown'.
+apps/web/src/pages/ProductionEntry.tsx(192,76): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+apps/web/src/pages/ProductionEntry.tsx(198,49): error TS7006: Parameter 'item' implicitly has an 'any' type.
+apps/web/src/pages/ProductionEntry.tsx(208,30): error TS7006: Parameter 'item' implicitly has an 'any' type.
+apps/web/src/pages/ProductionEntry.tsx(243,24): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+apps/web/src/pages/ProductionEntry.tsx(247,24): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+apps/web/src/pages/ProductionEntry.tsx(255,61): error TS18046: 'totalWaste' is of type 'unknown'.
+apps/web/src/pages/ProductionEntry.tsx(268,43): error TS7006: Parameter 'item' implicitly has an 'any' type.
+apps/web/src/pages/ProductionEntry.tsx(269,43): error TS7006: Parameter 'item' implicitly has an 'any' type.
+apps/web/src/pages/ProductionEntry.tsx(435,48): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/ProductionEntry.tsx(452,60): error TS2322: Type '{ width: number; }' is not assignable to type 'IntrinsicAttributes & TableCellProps'.
+  Property 'width' does not exist on type 'IntrinsicAttributes & TableCellProps'.
+apps/web/src/pages/ProductionEntry.tsx(456,60): error TS7006: Parameter 'item' implicitly has an 'any' type.
+apps/web/src/pages/ProductionEntry.tsx(463,72): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/ProductionEntry.tsx(479,72): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/ProductionEntry.tsx(506,72): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/ProductionEntry.tsx(581,68): error TS2322: Type '{ width: number; }' is not assignable to type 'IntrinsicAttributes & TableCellProps'.
+  Property 'width' does not exist on type 'IntrinsicAttributes & TableCellProps'.
+apps/web/src/pages/ProductionEntry.tsx(585,68): error TS7006: Parameter 'item' implicitly has an 'any' type.
+apps/web/src/pages/ProductionEntry.tsx(592,80): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/ProductionEntry.tsx(605,80): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/ProductionEntry.tsx(651,60): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/ProductionEntry.tsx(658,60): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/ProductionEntry.tsx(665,60): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/ProductionEntry.tsx(672,60): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/ProductionEntry.tsx(679,71): error TS2571: Object is of type 'unknown'.
+apps/web/src/pages/ProductionEntry.tsx(699,92): error TS2571: Object is of type 'unknown'.
+apps/web/src/pages/ProductionEntry.tsx(706,103): error TS2571: Object is of type 'unknown'.
+apps/web/src/pages/ProductionEntry.tsx(708,89): error TS2571: Object is of type 'unknown'.
+apps/web/src/pages/Settings.tsx(1,44): error TS7016: Could not find a declaration file for module 'react'. 'D:/EverGreen/node_modules/react/index.js' implicitly has an 'any' type.
+  If the 'react' package actually exposes this module, consider sending a pull request to amend 'https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/react'
+apps/web/src/pages/Settings.tsx(149,44): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/Settings.tsx(155,44): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/Settings.tsx(163,44): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/Settings.tsx(169,44): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/Settings.tsx(176,44): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/Settings.tsx(197,52): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/Settings.tsx(206,52): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/Settings.tsx(215,52): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/Settings.tsx(224,44): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/Settings.tsx(231,44): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/Settings.tsx(239,44): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/Settings.tsx(247,44): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/TodayDashboard.tsx(1,19): error TS7016: Could not find a declaration file for module 'react'. 'D:/EverGreen/node_modules/react/index.js' implicitly has an 'any' type.
+  If the 'react' package actually exposes this module, consider sending a pull request to amend 'https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/react'
+apps/web/src/pages/TodayDashboard.tsx(156,56): error TS2322: Type '{ children: Element; colSpan: number; align: "center"; sx: { py: number; }; }' is not assignable to type 'IntrinsicAttributes & TableCellProps'.
+  Property 'colSpan' does not exist on type 'IntrinsicAttributes & TableCellProps'.
+apps/web/src/pages/UserManagement.tsx(1,33): error TS7016: Could not find a declaration file for module 'react'. 'D:/EverGreen/node_modules/react/index.js' implicitly has an 'any' type.
+  If the 'react' package actually exposes this module, consider sending a pull request to amend 'https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/react'
+apps/web/src/pages/UserManagement.tsx(51,58): error TS7031: Binding element 'currentUserRole' implicitly has an 'any' type.
+apps/web/src/pages/UserManagement.tsx(227,48): error TS2322: Type '{ children: Element; colSpan: number; align: "center"; sx: { py: number; }; }' is not assignable to type 'IntrinsicAttributes & TableCellProps'.
+  Property 'colSpan' does not exist on type 'IntrinsicAttributes & TableCellProps'.
+apps/web/src/pages/UserManagement.tsx(233,48): error TS2322: Type '{ children: Element; colSpan: number; align: "center"; sx: { py: number; }; }' is not assignable to type 'IntrinsicAttributes & TableCellProps'.
+  Property 'colSpan' does not exist on type 'IntrinsicAttributes & TableCellProps'.
+apps/web/src/pages/UserManagement.tsx(288,40): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/UserManagement.tsx(295,40): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/UserManagement.tsx(301,40): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/UserManagement.tsx(308,40): error TS7006: Parameter 'e' implicitly has an 'any' type.

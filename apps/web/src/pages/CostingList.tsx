@@ -12,6 +12,7 @@ import {
     Tabs,
     Tab,
     Chip,
+    Tooltip,
 } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import api from '../utils/api';
@@ -104,7 +105,13 @@ const CostingList: React.FC = () => {
                                             {index === 0 ? (
                                                 // EB (Electricity) data
                                                 <>
-                                                    <TableCell>{new Date(entry.date || entry.createdAt).toLocaleDateString()}</TableCell>
+                                                    <TableCell>
+                                                        <Tooltip title={new Date(entry.date || entry.createdAt).toLocaleString()} arrow placement="top">
+                                                            <Box component="span" sx={{ cursor: 'help', borderBottom: '1px dotted', borderColor: 'divider' }}>
+                                                                {new Date(entry.date || entry.createdAt).toLocaleDateString()}
+                                                            </Box>
+                                                        </Tooltip>
+                                                    </TableCell>
                                                     <TableCell align="right">{entry.unitsConsumed || '-'}</TableCell>
                                                     <TableCell align="right">₹{entry.ratePerUnit || '-'}</TableCell>
                                                     <TableCell align="center">{entry.noOfShifts || '-'}</TableCell>
@@ -113,7 +120,13 @@ const CostingList: React.FC = () => {
                                             ) : (
                                                 // Other categories data
                                                 <>
-                                                    <TableCell>{new Date(entry.date || entry.createdAt).toLocaleDateString()}</TableCell>
+                                                    <TableCell>
+                                                        <Tooltip title={new Date(entry.date || entry.createdAt).toLocaleString()} arrow placement="top">
+                                                            <Box component="span" sx={{ cursor: 'help', borderBottom: '1px dotted', borderColor: 'divider' }}>
+                                                                {new Date(entry.date || entry.createdAt).toLocaleDateString()}
+                                                            </Box>
+                                                        </Tooltip>
+                                                    </TableCell>
                                                     <TableCell>{entry.details}</TableCell>
                                                     <TableCell align="right">₹{entry.totalCost?.toLocaleString()}</TableCell>
                                                     {index === 4 && (

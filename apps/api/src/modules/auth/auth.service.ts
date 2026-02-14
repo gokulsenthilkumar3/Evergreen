@@ -94,6 +94,7 @@ export class AuthService {
                 password: userDto.password, // In real app, hash this!
                 role: userDto.role || 'VIEWER',
                 email: userDto.email || `${userDto.username}-${Date.now()}@temp.local`,
+                createdBy: userDto.createdBy,
             },
         });
 
@@ -120,9 +121,11 @@ export class AuthService {
                 role: true,
                 createdAt: true,
                 updatedAt: true,
+                createdBy: true,
+                updatedBy: true,
             }
         });
-        console.log(`📋 Fetched ${users.length} users:`, users.map(u => u.username).join(', '));
+        console.log(`📋 Fetched ${users.length} users:`, users.map((u: any) => u.username).join(', '));
         return users;
     }
 
@@ -200,6 +203,7 @@ export class AuthService {
         }
 
         if (userDto.role) updateData.role = userDto.role;
+        if (userDto.updatedBy) updateData.updatedBy = userDto.updatedBy;
 
         console.log('📡 Sending update to Prisma:', updateData);
 

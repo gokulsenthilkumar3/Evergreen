@@ -32,11 +32,12 @@ function TabPanel(props: TabPanelProps) {
 
 interface CostingEntryProps {
     userRole?: string; // Optional now
+    username?: string;
     onSuccess?: () => void;
     initialTab?: number;
 }
 
-const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, initialTab = 0 }) => {
+const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, initialTab = 0, username }) => {
     const [tabValue, setTabValue] = useState(initialTab || 0);
 
     // Sync tab with prop if it changes and matches context
@@ -205,7 +206,7 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, initialTab = 0 }
         }
         try {
             const totalCost = units * rate;
-            const payload = { date, ...ebData, totalCost };
+            const payload = { date, ...ebData, totalCost, createdBy: username };
             if (existingEB) await api.put(`/costing/${existingEB.id}`, payload);
             else await api.post('/costing/eb', payload);
             setNotification({ open: true, message: 'EB Saved', severity: 'success' });
@@ -226,7 +227,7 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, initialTab = 0 }
                 return;
             }
             const cost = (workers * rate) + (parseFloat(employeeData.overtime) || 0);
-            const payload = { date, ...employeeData, totalCost: cost };
+            const payload = { date, ...employeeData, totalCost: cost, createdBy: username };
             if (existingEmployee) await api.put(`/costing/${existingEmployee.id}`, payload);
             else await api.post('/costing/employee', payload);
             setNotification({ open: true, message: 'Employee Saved', severity: 'success' });
@@ -244,7 +245,7 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, initialTab = 0 }
         }
         try {
             const cost = yarnKg * rate;
-            const payload = { date, yarnProduced: yarnKg, ratePerKg: rate, totalCost: cost };
+            const payload = { date, yarnProduced: yarnKg, ratePerKg: rate, totalCost: cost, createdBy: username };
             if (existingPackaging) await api.put(`/costing/${existingPackaging.id}`, payload);
             else await api.post('/costing/packaging', payload);
             setNotification({ open: true, message: 'Packaging Saved', severity: 'success' });
@@ -258,7 +259,7 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, initialTab = 0 }
         const cost = parseFloat(maintenanceData.totalCost);
         if (isNaN(cost) || cost <= 0) { setNotification({ open: true, message: 'Invalid cost', severity: 'error' }); return; }
         try {
-            const payload = { date, description: maintenanceData.description || 'Daily', totalCost: cost, ratePerKg: maintenanceData.ratePerKg };
+            const payload = { date, description: maintenanceData.description || 'Daily', totalCost: cost, ratePerKg: maintenanceData.ratePerKg, createdBy: username };
             if (existingMaintenance) await api.put(`/costing/${existingMaintenance.id}`, payload);
             else await api.post('/costing/maintenance', payload);
             setNotification({ open: true, message: 'Maintenance Saved', severity: 'success' });
@@ -270,7 +271,7 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, initialTab = 0 }
     const handleExpenseSubmit = async () => {
         if (!expenseData.title || parseFloat(expenseData.amount) <= 0) return;
         try {
-            await api.post('/costing/expense', { date, ...expenseData });
+            await api.post('/costing/expense', { date, ...expenseData, createdBy: username });
             setNotification({ open: true, message: 'Expense Saved', severity: 'success' });
             setExpenseData({ title: '', amount: '', description: '', type: 'Asset' });
             if (onSuccess) onSuccess();

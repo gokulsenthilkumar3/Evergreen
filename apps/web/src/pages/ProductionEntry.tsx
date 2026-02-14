@@ -23,6 +23,7 @@ import {
     StepLabel,
     Tabs,
     Tab,
+    Tooltip,
 } from '@mui/material';
 import {
     Add as AddIcon,
@@ -85,9 +86,10 @@ const BAG_WEIGHT_KG = 60;
 
 interface ProductionEntryProps {
     userRole?: string;
+    username?: string;
 }
 
-const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole }) => {
+const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username }) => {
     const { data: recentProduction, refetch: refetchProduction } = useQuery({
         queryKey: ['productionHistory'],
         queryFn: async () => {
@@ -100,6 +102,14 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole }) => {
         queryKey: ['availableBatches'],
         queryFn: async () => {
             const response = await api.get('/inventory/available-batches');
+            return response.data;
+        },
+    });
+
+    const { data: yarnStock } = useQuery({
+        queryKey: ['yarnStock'],
+        queryFn: async () => {
+            const response = await api.get('/inventory/yarn-stock');
             return response.data;
         },
     });
@@ -271,6 +281,7 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole }) => {
                 totalConsumed,
                 totalProduced,
                 totalWaste,
+                createdBy: username,
             };
 
             await api.post('/production', productionData);
@@ -346,9 +357,9 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole }) => {
                     Production / Mixing
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 2 }}>
-                    <Button startIcon={<EmailIcon />} variant="outlined" onClick={() => handleExport('email')}>Email</Button>
-                    <Button startIcon={<ExcelIcon />} variant="outlined" onClick={() => handleExport('excel')}>Excel</Button>
-                    <Button startIcon={<PdfIcon />} variant="outlined" onClick={() => handleExport('pdf')}>PDF</Button>
+                    <Button startIcon={<EmailIcon />} variant="outlined" color="info" onClick={() => handleExport('email')}>Email</Button>
+                    <Button startIcon={<ExcelIcon />} variant="outlined" color="info" onClick={() => handleExport('excel')}>Excel</Button>
+                    <Button startIcon={<PdfIcon />} variant="outlined" color="info" onClick={() => handleExport('pdf')}>PDF</Button>
                     <Button
                         variant="contained"
                         startIcon={<AddIcon />}
@@ -375,7 +386,13 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole }) => {
                     <TableBody>
                         {recentProduction?.map((row: any) => (
                             <TableRow key={row.id}>
-                                <TableCell>{new Date(row.date).toLocaleDateString()}</TableCell>
+                                <TableCell>
+                                    <Tooltip title={row.entryTimestamp ? new Date(row.entryTimestamp).toLocaleString() : new Date(row.date).toLocaleString()} arrow placement="top">
+                                        <Box component="span" sx={{ cursor: 'help', borderBottom: '1px dotted', borderColor: 'divider' }}>
+                                            {new Date(row.date).toLocaleDateString()}
+                                        </Box>
+                                    </Tooltip>
+                                </TableCell>
                                 <TableCell align="right">{row.totalConsumed}</TableCell>
                                 <TableCell align="right">{row.totalProduced}</TableCell>
                                 <TableCell align="right">{row.totalWaste}</TableCell>
@@ -592,9 +609,15 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole }) => {
                                                                     onChange={(e) => handleProducedChange(item.id, 'count', e.target.value)}
                                                                     fullWidth
                                                                 >
-                                                                    {['2', '4', '6', '8', '10', '12', '14', '16', '18', '20'].map(c => (
-                                                                        <MenuItem key={c} value={c}>{c}</MenuItem>
-                                                                    ))}
+                                                                    {Object.keys(yarnStock || {}).length > 0 ? (
+                                                                        Object.keys(yarnStock || {}).sort((a, b) => Number(a) - Number(b)).map(c => (
+                                                                            <MenuItem key={c} value={c}>{c}</MenuItem>
+                                                                        ))
+                                                                    ) : (
+                                                                        ['2', '4', '6', '8', '10', '12', '14', '16', '20'].map(c => (
+                                                                            <MenuItem key={c} value={c}>{c}</MenuItem>
+                                                                        ))
+                                                                    )}
                                                                 </TextField>
                                                             </TableCell>
                                                             <TableCell>

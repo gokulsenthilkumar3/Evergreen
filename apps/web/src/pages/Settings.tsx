@@ -13,7 +13,9 @@ import {
     Snackbar,
 } from '@mui/material';
 import {
-    Save as SaveIcon
+    Save as SaveIcon,
+    CloudUpload as UploadIcon,
+    Delete as DeleteIcon
 } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../utils/api';
@@ -35,7 +37,11 @@ function TabPanel(props: TabPanelProps) {
     );
 }
 
-const Settings: React.FC = () => {
+interface SettingsProps {
+    username?: string;
+}
+
+const Settings: React.FC<SettingsProps> = ({ username }) => {
     const [tabValue, setTabValue] = useState(0);
     const [notification, setNotification] = useState({
         open: false,
@@ -61,6 +67,7 @@ const Settings: React.FC = () => {
         gstin: '',
         phone: '',
         email: '',
+        logo: '',
     });
 
     // System Settings State
@@ -83,6 +90,7 @@ const Settings: React.FC = () => {
                 gstin: settings.gstin || '',
                 phone: settings.phone || '',
                 email: settings.email || '',
+                logo: settings.logo || '',
             });
             setSystemSettings({
                 autoBackup: settings.autoBackup ?? true,
@@ -110,13 +118,15 @@ const Settings: React.FC = () => {
 
     const handleSaveCompanySettings = () => {
         updateSettingsMutation.mutate({
-            ...companySettings
+            ...companySettings,
+            updatedBy: username,
         });
     };
 
     const handleSaveSystemSettings = () => {
         updateSettingsMutation.mutate({
-            ...systemSettings
+            ...systemSettings,
+            updatedBy: username,
         });
     };
 
@@ -143,6 +153,74 @@ const Settings: React.FC = () => {
                             Company Information
                         </Typography>
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            {/* Logo Upload Section */}
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                                <Box
+                                    sx={{
+                                        width: 100,
+                                        height: 100,
+                                        borderRadius: 2,
+                                        border: '1px dashed grey',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        overflow: 'hidden',
+                                        bgcolor: 'background.default'
+                                    }}
+                                >
+                                    {companySettings.logo ? (
+                                        <img src={companySettings.logo} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                    ) : (
+                                        <Typography variant="caption" color="text.secondary">No Logo</Typography>
+                                    )}
+                                </Box>
+                                <Box>
+                                    <Button
+                                        variant="outlined"
+                                        component="label"
+                                        startIcon={<UploadIcon />}
+                                        size="small"
+                                        sx={{ mb: 1 }}
+                                    >
+                                        Upload Logo
+                                        <input
+                                            type="file"
+                                            hidden
+                                            accept="image/*"
+                                            onChange={(e) => {
+                                                const file = e.target.files?.[0];
+                                                if (file) {
+                                                    if (file.size > 500 * 1024) { // 500KB limit
+                                                        setNotification({ open: true, message: 'Image must be less than 500KB', severity: 'error' });
+                                                        return;
+                                                    }
+                                                    const reader = new FileReader();
+                                                    reader.onloadend = () => {
+                                                        setCompanySettings({ ...companySettings, logo: reader.result as string });
+                                                    };
+                                                    reader.readAsDataURL(file);
+                                                }
+                                            }}
+                                        />
+                                    </Button>
+                                    {companySettings.logo && (
+                                        <Button
+                                            variant="text"
+                                            color="error"
+                                            size="small"
+                                            startIcon={<DeleteIcon />}
+                                            onClick={() => setCompanySettings({ ...companySettings, logo: '' })}
+                                            sx={{ display: 'block' }}
+                                        >
+                                            Remove
+                                        </Button>
+                                    )}
+                                    <Typography variant="caption" display="block" color="text.secondary">
+                                        Max 500KB.
+                                    </Typography>
+                                </Box>
+                            </Box>
+
                             <TextField
                                 label="Company Name"
                                 value={companySettings.companyName}

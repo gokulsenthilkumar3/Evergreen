@@ -1,0 +1,27 @@
+﻿apps/web/src/App.tsx(139,22): error TS7006: Parameter 'theme' implicitly has an 'any' type.
+apps/web/src/components/Login.tsx(236,22): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: string; } & BoxOwnProps<Theme> & Omit<{}, keyof BoxOwnProps<Theme>>): Element | null', gave the following error.
+    Type '{ children: Element[]; component: string; onSubmit: (e: FormEvent<Element>) => Promise<void>; sx: { width: string; animation: `${Keyframes} 0.6s ease-out 0.4s forwards`; opacity: number; display: "flex"; flexDirection: "column"; gap: number; }; }' is not assignable to type 'IntrinsicAttributes & { component: string; } & BoxOwnProps<Theme> & Omit<{}, keyof BoxOwnProps<Theme>>'.
+      Property 'onSubmit' does not exist on type 'IntrinsicAttributes & { component: string; } & BoxOwnProps<Theme> & Omit<{}, keyof BoxOwnProps<Theme>>'.
+  Overload 2 of 2, '(props: DefaultComponentProps<BoxTypeMap<{}, "div", Theme>>): Element | null', gave the following error.
+    Type '{ children: Element[]; component: string; onSubmit: (e: FormEvent<Element>) => Promise<void>; sx: { width: string; animation: `${Keyframes} 0.6s ease-out 0.4s forwards`; opacity: number; display: "flex"; flexDirection: "column"; gap: number; }; }' is not assignable to type 'IntrinsicAttributes & BoxOwnProps<Theme> & Omit<DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>, keyof BoxOwnProps<...>>'.
+      Property 'component' does not exist on type 'IntrinsicAttributes & BoxOwnProps<Theme> & Omit<DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>, keyof BoxOwnProps<...>>'.
+apps/web/src/components/LoginAvatar.tsx(3,28): error TS1484: 'RootState' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+apps/web/src/components/LoginAvatar.tsx(3,39): error TS1484: 'ThreeElements' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+apps/web/src/components/LoginAvatar.tsx(5,24): error TS7016: Could not find a declaration file for module 'three'. 'D:/EverGreen/node_modules/three/build/three.cjs' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/three` if it exists or add a new declaration (.d.ts) file containing `declare module 'three';`
+apps/web/src/pages/Costing.tsx(291,51): error TS7006: Parameter '_' implicitly has an 'any' type.
+apps/web/src/pages/Costing.tsx(291,54): error TS7006: Parameter 'newValue' implicitly has an 'any' type.
+apps/web/src/pages/CostingEntry.tsx(300,51): error TS7006: Parameter '_' implicitly has an 'any' type.
+apps/web/src/pages/CostingEntry.tsx(300,54): error TS7006: Parameter 'newValue' implicitly has an 'any' type.
+apps/web/src/pages/CostingHistory.tsx(227,50): error TS7006: Parameter '_' implicitly has an 'any' type.
+apps/web/src/pages/CostingHistory.tsx(227,53): error TS7006: Parameter 'newValue' implicitly has an 'any' type.
+apps/web/src/pages/CostingList.tsx(67,51): error TS7006: Parameter '_' implicitly has an 'any' type.
+apps/web/src/pages/CostingList.tsx(67,54): error TS7006: Parameter 'newValue' implicitly has an 'any' type.
+apps/web/src/pages/Inventory.tsx(471,51): error TS7006: Parameter '_' implicitly has an 'any' type.
+apps/web/src/pages/Inventory.tsx(471,54): error TS7006: Parameter 'newValue' implicitly has an 'any' type.
+apps/web/src/pages/InwardEntry.tsx(323,51): error TS7006: Parameter 'e' implicitly has an 'any' type.
+apps/web/src/pages/ProductionEntry.tsx(563,72): error TS7006: Parameter '_' implicitly has an 'any' type.
+apps/web/src/pages/ProductionEntry.tsx(563,75): error TS7006: Parameter 'v' implicitly has an 'any' type.
+apps/web/src/pages/Settings.tsx(132,51): error TS7006: Parameter '_' implicitly has an 'any' type.
+apps/web/src/pages/Settings.tsx(132,54): error TS7006: Parameter 'newValue' implicitly has an 'any' type.

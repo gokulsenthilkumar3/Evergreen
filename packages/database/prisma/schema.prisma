@@ -17,6 +17,8 @@ model User {
   sessions  Session[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+  createdBy String?
+  updatedBy String?
 }
 
 model Session {
@@ -44,6 +46,9 @@ model CottonInventory {
   productionId Int?
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
+  entryTimestamp DateTime  @default(now())
+  createdBy    String?
+  updatedBy    String?
   production   Production? @relation("CottonProduction", fields: [productionId], references: [id])
 }
 
@@ -58,6 +63,9 @@ model YarnInventory {
   productionId Int?
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
+  entryTimestamp DateTime  @default(now())
+  createdBy    String?
+  updatedBy    String?
   production   Production? @relation("YarnProduction", fields: [productionId], references: [id])
 }
 
@@ -75,6 +83,9 @@ model WasteInventory {
   productionId  Int?
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
+  entryTimestamp DateTime  @default(now())
+  createdBy     String?
+  updatedBy     String?
   production    Production? @relation("WasteProduction", fields: [productionId], references: [id])
 }
 
@@ -87,6 +98,9 @@ model InwardBatch {
   kg        Float
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  entryTimestamp DateTime @default(now())
+  createdBy    String?
+  updatedBy    String?
 }
 
 model Production {
@@ -101,6 +115,9 @@ model Production {
   wasteOthers     Float                   @default(0)
   createdAt       DateTime                @default(now())
   updatedAt       DateTime                @updatedAt
+  entryTimestamp  DateTime                @default(now())
+  createdBy       String?
+  updatedBy       String?
   cottonInventory CottonInventory[]       @relation("CottonProduction")
   consumedBatches ProductionConsumption[]
   producedYarn    ProductionOutput[]
@@ -114,6 +131,9 @@ model ProductionConsumption {
   batchNo      String
   weight       Float
   createdAt    DateTime   @default(now())
+  entryTimestamp DateTime @default(now())
+  createdBy    String?
+  updatedBy    String?
   production   Production @relation(fields: [productionId], references: [id], onDelete: Cascade)
 }
 
@@ -125,6 +145,9 @@ model ProductionOutput {
   bags         Int
   remainingLog Float
   createdAt    DateTime   @default(now())
+  entryTimestamp DateTime @default(now())
+  createdBy    String?
+  updatedBy    String?
   production   Production @relation(fields: [productionId], references: [id], onDelete: Cascade)
 }
 
@@ -138,6 +161,9 @@ model Outward {
   totalWeight  Float          @default(0)
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
+  entryTimestamp DateTime     @default(now())
+  createdBy    String?
+  updatedBy    String?
   items        OutwardItem[]
 }
 
@@ -148,6 +174,9 @@ model OutwardItem {
   bags      Int
   weight    Float
   createdAt DateTime @default(now())
+  entryTimestamp DateTime @default(now())
+  createdBy    String?
+  updatedBy    String?
   outward   Outward  @relation(fields: [outwardId], references: [id], onDelete: Cascade)
 }
 
@@ -158,6 +187,7 @@ model ActivityLog {
   details   String
   username  String
   createdAt DateTime @default(now())
+  entryTimestamp DateTime @default(now())
 }
 
 model SystemSettings {
@@ -167,6 +197,7 @@ model SystemSettings {
   gstin               String   @default("33XXXXX1234X1Z5")
   phone               String   @default("+91 98765 43210")
   email               String   @default("info@evergreenyarn.com")
+  logo                String?
   autoBackup          Boolean  @default(true)
   emailNotifications  Boolean  @default(true)
   lowStockAlert       Boolean  @default(true)
@@ -175,6 +206,9 @@ model SystemSettings {
   ebRate              String   @default("10")
   packageRate         String   @default("1.6")
   updatedAt           DateTime @updatedAt
+  entryTimestamp      DateTime @default(now())
+  createdBy           String?
+  updatedBy           String?
 }
 
 model CostingEntry {
@@ -196,4 +230,42 @@ model CostingEntry {
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+  entryTimestamp  DateTime @default(now())
+  createdBy       String?
+  updatedBy       String?
+}
+
+model Invoice {
+  id              Int           @id @default(autoincrement())
+  invoiceNo       String        @unique
+  date            DateTime
+  customerName    String
+  customerAddress String?
+  customerGSTIN   String?
+  transportMode   String?
+  vehicleNo       String?
+  
+  subtotal        Float
+  cgst            Float
+  sgst            Float
+  total           Float
+
+  items           InvoiceItem[]
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  entryTimestamp  DateTime      @default(now())
+  createdBy       String?
+  updatedBy       String?
+}
+
+model InvoiceItem {
+  id        Int      @id @default(autoincrement())
+  invoiceId Int
+  yarnCount String
+  bags      Int
+  weight    Float
+  rate      Float
+
+  invoice   Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 }

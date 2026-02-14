@@ -36,7 +36,8 @@ import {
   Brightness7 as LightModeIcon,
   People as UsersIcon,
 } from '@mui/icons-material';
-
+import { useQuery } from '@tanstack/react-query';
+import api from './utils/api';
 import getTheme from './theme';
 import Login from './components/Login';
 import Dashboard from './pages/Dashboard';
@@ -54,10 +55,18 @@ const drawerWidth = 260;
 
 const App = () => {
   const [user, setUser] = useState<any>(JSON.parse(localStorage.getItem('user') || 'null'));
+  const [mode, setMode] = useState<PaletteMode>((localStorage.getItem('themeMode') as PaletteMode) || 'light');
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [drawerOpen, setDrawerOpen] = useState(true);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [mode, setMode] = useState<PaletteMode>((localStorage.getItem('themeMode') as PaletteMode) || 'light');
+
+  const { data: settings } = useQuery({
+    queryKey: ['settings'],
+    queryFn: async () => {
+      const response = await api.get('/settings');
+      return response.data;
+    },
+  });
 
   // Fix: Ensure demo users have correct permissions even if DB is stale
   useEffect(() => {
@@ -117,10 +126,17 @@ const App = () => {
     return (
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <Login onLoginSuccess={handleLogin} />
+        <Login onLoginSuccess={handleLogin} settings={settings} />
       </ThemeProvider>
     );
   }
+
+  // Update document title
+  useEffect(() => {
+    if (settings?.companyName) {
+      document.title = settings.companyName;
+    }
+  }, [settings]);
 
   return (
     <ThemeProvider theme={theme}>
@@ -149,8 +165,17 @@ const App = () => {
             >
               <MenuIcon />
             </IconButton>
-            <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, fontWeight: 'bold' }}>
-              <span style={{ color: mode === 'dark' ? '#4caf50' : '#2e7d32' }}>EVER GREEN</span> <span style={{ color: mode === 'dark' ? '#94a3b8' : '#64748b' }}>YARN SMS</span>
+            <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, fontWeight: 800, letterSpacing: '-0.02em', display: 'flex', alignItems: 'center' }}>
+              {settings?.logo && (
+                <Box
+                  component="img"
+                  src={settings.logo}
+                  alt="Logo"
+                  sx={{ height: 40, width: 'auto', mr: 2, borderRadius: 1 }}
+                />
+              )}
+              <Box component="span" sx={{ color: 'primary.main', mr: 1 }}>{settings?.companyName?.split(' ')[0] || 'EVER GREEN'}</Box>
+              <Box component="span" sx={{ color: 'text.secondary', fontWeight: 500 }}>{settings?.companyName?.split(' ').slice(1).join(' ') || 'YARN SMS'}</Box>
             </Typography>
 
             <IconButton onClick={toggleTheme} color="inherit" sx={{ mr: 2 }}>
@@ -218,17 +243,28 @@ const App = () => {
                       minHeight: 48,
                       justifyContent: drawerOpen ? 'initial' : 'center',
                       px: 2.5,
-                      mx: 1,
-                      borderRadius: 2,
+                      mx: 1.5,
+                      borderRadius: '12px',
+                      transition: 'all 0.2s ease',
                       '&.Mui-selected': {
-                        bgcolor: mode === 'dark' ? 'rgba(76, 175, 80, 0.15)' : 'rgba(46, 125, 50, 0.08)',
-                        color: mode === 'dark' ? '#81c784' : 'primary.main',
+                        bgcolor: mode === 'dark'
+                          ? 'rgba(16, 185, 129, 0.12)'
+                          : 'rgba(16, 185, 129, 0.08)',
+                        color: 'primary.main',
+                        boxShadow: mode === 'dark' ? 'inset 0 0 12px rgba(16, 185, 129, 0.1)' : 'none',
                         '& .MuiListItemIcon-root': {
-                          color: mode === 'dark' ? '#81c784' : 'primary.main',
+                          color: 'primary.main',
+                          filter: mode === 'dark' ? 'drop-shadow(0 0 8px rgba(16, 185, 129, 0.4))' : 'none',
                         },
+                        '&:hover': {
+                          bgcolor: mode === 'dark'
+                            ? 'rgba(16, 185, 129, 0.18)'
+                            : 'rgba(16, 185, 129, 0.12)',
+                        }
                       },
                       '&:hover': {
-                        bgcolor: mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.04)',
+                        bgcolor: mode === 'dark' ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.03)',
+                        transform: 'translateX(4px)',
                       }
                     }}
                   >
@@ -237,7 +273,8 @@ const App = () => {
                         minWidth: 0,
                         mr: drawerOpen ? 2 : 'auto',
                         justifyContent: 'center',
-                        color: currentPage === item.page ? (mode === 'dark' ? '#81c784' : 'primary.main') : 'inherit'
+                        color: currentPage === item.page ? 'primary.main' : 'text.secondary',
+                        transition: 'color 0.2s ease',
                       }}
                     >
                       {item.icon}
@@ -248,7 +285,8 @@ const App = () => {
                         primaryTypographyProps={{
                           variant: 'body2',
                           fontWeight: currentPage === item.page ? 700 : 500,
-                          color: currentPage === item.page ? 'inherit' : 'text.secondary'
+                          color: currentPage === item.page ? 'text.primary' : 'text.secondary',
+                          sx: { transition: 'color 0.2s ease' }
                         }}
                       />
                     )}
@@ -262,22 +300,25 @@ const App = () => {
           component="main"
           sx={{
             flexGrow: 1,
-            p: { xs: 2, md: 3 },
+            p: { xs: 2.5, md: 4 },
             width: { sm: `calc(100% - ${drawerOpen ? drawerWidth : 70}px)` },
             height: '100vh',
             display: 'flex',
             flexDirection: 'column',
             overflowY: 'auto',
-            bgcolor: 'background.default',
+            bgcolor: (theme) => theme.palette.mode === 'dark' ? '#0f172a' : '#f8fafc',
+            backgroundImage: (theme) => theme.palette.mode === 'dark'
+              ? 'radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.03) 0, transparent 50%), radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.03) 0, transparent 50%)'
+              : 'none',
             transition: (theme) => theme.transitions.create(['width', 'margin'], {
               easing: theme.transitions.easing.sharp,
               duration: theme.transitions.duration.enteringScreen,
             }),
           }}
         >
-          <Toolbar />
+          <Toolbar sx={{ mb: 1 }} />
           <Container
-            maxWidth={false}
+            maxWidth="xl"
             sx={{
               flexGrow: 1,
               width: '100%',
@@ -289,14 +330,14 @@ const App = () => {
           >
             {currentPage === 'dashboard' && <Dashboard />}
             {currentPage === 'today' && <TodayDashboard />}
-            {currentPage === 'inventory' && <Inventory userRole={user.role} />}
-            {currentPage === 'costing' && <Costing userRole={user.role} />}
-            {currentPage === 'inward' && <InwardEntry userRole={user.role} />}
-            {currentPage === 'outward' && <OutwardEntry userRole={user.role} />}
-            {currentPage === 'production' && <ProductionEntry userRole={user.role} />}
-            {currentPage === 'billing' && <Billing userRole={user.role} />}
-            {currentPage === 'users' && <UserManagement currentUserRole={user.role} />}
-            {currentPage === 'settings' && <Settings />}
+            {currentPage === 'inventory' && <Inventory userRole={user.role} username={user.username} />}
+            {currentPage === 'costing' && <Costing userRole={user.role} username={user.username} />}
+            {currentPage === 'inward' && <InwardEntry userRole={user.role} username={user.username} />}
+            {currentPage === 'outward' && <OutwardEntry userRole={user.role} username={user.username} />}
+            {currentPage === 'production' && <ProductionEntry userRole={user.role} username={user.username} />}
+            {currentPage === 'billing' && <Billing userRole={user.role} username={user.username} />}
+            {currentPage === 'users' && <UserManagement currentUserRole={user.role} username={user.username} />}
+            {currentPage === 'settings' && <Settings username={user.username} />}
 
             {!['dashboard', 'today', 'inventory', 'costing', 'inward', 'outward', 'production', 'billing', 'settings', 'users'].includes(currentPage) && (
               <Box sx={{ p: 4, textAlign: 'center' }}>

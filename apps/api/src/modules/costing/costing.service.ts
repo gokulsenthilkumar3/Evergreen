@@ -25,6 +25,7 @@ export class CostingService {
                 description: data.description,
                 type: data.type,
                 title: data.title,
+                createdBy: data.createdBy,
             }
         });
     }
@@ -75,6 +76,7 @@ export class CostingService {
                     description: data.description,
                     type: data.type,
                     title: data.title,
+                    updatedBy: data.createdBy,
                 }
             });
         } catch (e) {
