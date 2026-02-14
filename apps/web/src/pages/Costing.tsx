@@ -30,6 +30,7 @@ import {
     Add as AddIcon,
     Close as CloseIcon,
     Delete as DeleteIcon,
+    Edit as EditIcon,
     ArrowUpward,
     ArrowDownward,
 } from '@mui/icons-material';
@@ -37,6 +38,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ResponsiveContainer, LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, CartesianGrid, Legend, PieChart, Pie, Cell } from 'recharts';
 import api from '../utils/api';
 import CostingEntry from './CostingEntry';
+import { useConfirm } from '../context/ConfirmContext';
+import { toast } from 'sonner';
 
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -66,163 +69,129 @@ const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole 
     const [tabValue, setTabValue] = useState(0); // 0 = Dashboard
     const [openWizard, setOpenWizard] = useState(false);
     const queryClient = useQueryClient();
+    const { confirm: confirmDialog } = useConfirm();
+    const [editDate, setEditDate] = useState<string | undefined>(undefined);
 
     // Dashboard Filter State
     const [dateFilter, setDateFilter] = useState<string>('month');
     const [customFrom, setCustomFrom] = useState<string>('');
     const [customTo, setCustomTo] = useState<string>('');
 
-    const [notification, setNotification] = useState({
-        open: false,
-        message: '',
-        severity: 'success' as 'success' | 'error' | 'info',
-    });
-
-    // Fetch Entries List
-    const { data: entries } = useQuery({
-        queryKey: ['costingEntries'],
+    const { data: costingData = [], isLoading } = useQuery({
+        queryKey: ['costingEntries', dateFilter],
         queryFn: async () => {
-            const response = await api.get('/costing/entries');
-            return response.data;
-        },
-    });
-
-    // Dashboard Date Range Calculation
-    const getDateRange = () => {
-        const today = new Date();
-        let from = new Date();
-        let to = new Date();
-
-        switch (dateFilter) {
-            case 'today': from = to = today; break;
-            case 'yesterday': from = to = new Date(today.setDate(today.getDate() - 1)); break;
-            case 'week': from = new Date(today.setDate(today.getDate() - 7)); to = new Date(); break;
-            case 'month': from = new Date(today.setMonth(today.getMonth() - 1)); to = new Date(); break;
-            case '3months': from = new Date(today.setMonth(today.getMonth() - 3)); to = new Date(); break;
-            case '6months': from = new Date(today.setMonth(today.getMonth() - 6)); to = new Date(); break;
-            case 'year': from = new Date(today.setFullYear(today.getFullYear() - 1)); to = new Date(); break;
-            case 'custom':
-                if (customFrom && customTo) {
-                    from = new Date(customFrom);
-                    to = new Date(customTo);
-                }
-                break;
-        }
-        return { from: from.toISOString().split('T')[0], to: to.toISOString().split('T')[0] };
-    };
-
-    const dateRange = getDateRange();
-
-    // Fetch Summary for Production Data (to calculate Avg Cost/Kg)
-    const { data: summaryData } = useQuery({
-        queryKey: ['dashboardSummary', dateRange],
-        queryFn: async () => {
-            const response = await api.get(`/dashboard/summary?from=${dateRange.from}&to=${dateRange.to}`);
-            return response.data;
-        },
-        enabled: tabValue === 0 // Only fetch on Dashboard tab
-    });
-
-    // Fetch Dashboard Data
-    // Compute Dashboard Data from Entries
-    const dashboardData = React.useMemo(() => {
-        if (!entries || entries.length === 0) return null;
-
-        const fromDate = new Date(dateRange.from);
-        const toDate = new Date(dateRange.to);
-
-        // Filter by Date Range
-        const filtered = entries.filter((e: any) => {
-            const d = new Date(e.date);
-            return d >= fromDate && d <= toDate;
-        });
-
-        // Calculate Category Totals
-        const totals = {
-            eb: 0,
-            employee: 0,
-            packaging: 0,
-            maintenance: 0,
-            expense: 0
-        };
-
-        const dailyMap = new Map<string, any>();
-
-        filtered.forEach((e: any) => {
-            const cost = parseFloat(e.totalCost) || 0;
-            const dateStr = e.date.split('T')[0];
-
-            // Category Totals
-            if (e.category === 'EB (Electricity)') totals.eb += cost;
-            else if (e.category === 'Employee') totals.employee += cost;
-            else if (e.category === 'Packaging') totals.packaging += cost;
-            else if (e.category === 'Maintenance') totals.maintenance += cost;
-            else totals.expense += cost;
-
-            // Daily Trend Aggregation
-            if (!dailyMap.has(dateStr)) {
-                dailyMap.set(dateStr, { date: dateStr, cost: 0, packaging: 0, maintenance: 0, expense: 0 });
+            const params: any = {};
+            const today = new Date();
+            if (dateFilter === 'today') {
+                params.from = today.toISOString().split('T')[0];
+                params.to = params.from;
+            } else if (dateFilter === 'week') {
+                const past = new Date(today);
+                past.setDate(today.getDate() - 7);
+                params.from = past.toISOString().split('T')[0];
+                params.to = today.toISOString().split('T')[0];
+            } else if (dateFilter === 'month') {
+                const past = new Date(today);
+                past.setMonth(today.getMonth() - 1);
+                params.from = past.toISOString().split('T')[0];
+                params.to = today.toISOString().split('T')[0];
             }
-            const day = dailyMap.get(dateStr);
-            day.cost += cost;
-            if (e.category === 'Packaging') day.packaging += cost;
-            if (e.category === 'Maintenance') day.maintenance += cost;
-            if (e.category !== 'EB (Electricity)' && e.category !== 'Employee' && e.category !== 'Packaging' && e.category !== 'Maintenance') day.expense += cost;
-        });
 
-        const sortedDaily = Array.from(dailyMap.values()).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+            const response = await api.get('/costing/entries', { params });
+            return response.data;
+        },
+    });
 
-        const grandTotal = totals.eb + totals.employee + totals.packaging + totals.maintenance + totals.expense;
-        const production = summaryData?.meta?.periodProduction || 0;
-        const avgCostPerKg = production > 0 ? grandTotal / production : 0;
-
-        return {
-            kpis: [
-                { label: 'Total Cost', value: `₹${grandTotal.toLocaleString()}`, color: '#000000', hasData: grandTotal > 0 },
-                { label: 'Avg Cost/Kg', value: `₹${avgCostPerKg.toFixed(2)}`, color: '#7c3aed', hasData: avgCostPerKg > 0, subValue: production > 0 ? `${production.toLocaleString()} kg` : '' },
-                { label: 'Electricity (EB)', value: `₹${totals.eb.toLocaleString()}`, color: '#f59e0b', hasData: totals.eb > 0 },
-                { label: 'Employee Costs', value: `₹${totals.employee.toLocaleString()}`, color: '#3b82f6', hasData: totals.employee > 0 },
-                { label: 'Packaging', value: `₹${totals.packaging.toLocaleString()}`, color: '#10b981', hasData: totals.packaging > 0 },
-                { label: 'Maintenance', value: `₹${totals.maintenance.toLocaleString()}`, color: '#ef4444', hasData: totals.maintenance > 0 },
-            ],
-            breakdown: [
-                { name: 'EB', value: totals.eb, color: '#f59e0b' },
-                { name: 'Employee', value: totals.employee, color: '#3b82f6' },
-                { name: 'Packaging', value: totals.packaging, color: '#10b981' },
-                { name: 'Maintenance', value: totals.maintenance, color: '#ef4444' },
-                { name: 'Expenses', value: totals.expense, color: '#8b5cf6' },
-            ].filter(i => i.value > 0),
-            dailyTrend: sortedDaily,
-            packagingTrend: sortedDaily.map(d => ({ date: d.date, cost: d.packaging })),
-            maintenanceTrend: sortedDaily.map(d => ({ date: d.date, cost: d.maintenance })),
-            expensesTrend: sortedDaily.map(d => ({ date: d.date, cost: d.expense })),
-        };
-    }, [entries, dateRange, summaryData]);
-
-    const categories = ['EB (Electricity)', 'Employee', 'Packaging', 'Maintenance', 'Expense'];
+    const categories = ['EB (Electricity)', 'Employee', 'Packaging', 'Maintenance', 'Expenses'];
 
     const getFilteredEntries = (category: string) => {
-        if (!entries) return [];
-        return entries
-            .filter((e: any) => e.category === category || (category === 'Expense' && !['EB (Electricity)', 'Employee', 'Packaging', 'Maintenance'].includes(e.category)))
-            .slice().reverse();
+        return costingData.filter((entry: any) => entry.category === category);
     };
 
+    const kpis: CostingKPI[] = React.useMemo(() => {
+        if (!costingData.length) return [
+            { label: 'Total Cost', value: '₹0', color: 'primary.main', hasData: false },
+            { label: 'Avg Cost/Kg', value: '₹0', color: 'secondary.main', hasData: false },
+            { label: 'Electricity Cost', value: '₹0', color: 'warning.main', hasData: false },
+            { label: 'Labor Cost', value: '₹0', color: 'success.main', hasData: false },
+        ];
+
+        const totalCost = costingData.reduce((sum: number, item: any) => sum + (parseFloat(item.totalCost || item.amount) || 0), 0);
+        // Assuming we can derive production from somewhere, or just show total costs for now
+        const ebCost = costingData.filter((i: any) => i.category === 'EB (Electricity)').reduce((sum: number, item: any) => sum + (parseFloat(item.totalCost || item.amount) || 0), 0);
+        const laborCost = costingData.filter((i: any) => i.category === 'Employee').reduce((sum: number, item: any) => sum + (parseFloat(item.totalCost || item.amount) || 0), 0);
+
+        return [
+            { label: 'Total Cost', value: `₹${totalCost.toLocaleString()}`, color: 'primary.main', hasData: true },
+            { label: 'Avg Cost/Kg', value: '-', color: 'secondary.main', hasData: true }, // Placeholder
+            { label: 'Electricity Cost', value: `₹${ebCost.toLocaleString()}`, color: 'warning.main', hasData: true },
+            { label: 'Labor Cost', value: `₹${laborCost.toLocaleString()}`, color: 'success.main', hasData: true },
+        ];
+    }, [costingData]);
+
+    const chartData = React.useMemo(() => {
+        if (!costingData.length) return [];
+        const grouped: Record<string, any> = {};
+        costingData.forEach((item: any) => {
+            const d = new Date(item.date).toLocaleDateString();
+            if (!grouped[d]) grouped[d] = { date: d, cost: 0 };
+            grouped[d].cost += (parseFloat(item.totalCost || item.amount) || 0);
+        });
+        return Object.values(grouped).sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    }, [costingData]);
+
+    const dashboardData = React.useMemo(() => {
+        const eb = costingData.filter((i: any) => i.category === 'EB (Electricity)').reduce((sum: number, item: any) => sum + (parseFloat(item.totalCost || item.amount) || 0), 0);
+        const labor = costingData.filter((i: any) => i.category === 'Employee').reduce((sum: number, item: any) => sum + (parseFloat(item.totalCost || item.amount) || 0), 0);
+        const pkg = costingData.filter((i: any) => i.category === 'Packaging').reduce((sum: number, item: any) => sum + (parseFloat(item.totalCost || item.amount) || 0), 0);
+        const maint = costingData.filter((i: any) => i.category === 'Maintenance').reduce((sum: number, item: any) => sum + (parseFloat(item.totalCost || item.amount) || 0), 0);
+
+        const breakdown = [
+            { name: 'Electricity', value: eb, color: '#FF9800' }, // Orange
+            { name: 'Labor', value: labor, color: '#4CAF50' }, // Green
+            { name: 'Packaging', value: pkg, color: '#03A9F4' }, // Light Blue
+            { name: 'Maintenance', value: maint, color: '#F44336' }, // Red
+        ].filter(i => i.value > 0);
+
+        const packagingTrend = costingData.filter((i: any) => i.category === 'Packaging').map((item: any) => ({
+            date: new Date(item.date).toLocaleDateString(),
+            cost: parseFloat(item.totalCost || item.amount) || 0
+        })).sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+        const maintenanceTrend = costingData.filter((i: any) => i.category === 'Maintenance').map((item: any) => ({
+            date: new Date(item.date).toLocaleDateString(),
+            cost: parseFloat(item.totalCost || item.amount) || 0
+        })).sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+        const expensesTrend = costingData.filter((i: any) => i.category === 'Expenses').map((item: any) => ({
+            date: new Date(item.date).toLocaleDateString(),
+            cost: parseFloat(item.totalCost || item.amount) || 0
+        })).sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+        return {
+            kpis,
+            breakdown,
+            dailyTrend: chartData,
+            packagingTrend,
+            maintenanceTrend,
+            expensesTrend
+        };
+    }, [kpis, costingData, chartData]);
+
     const handleSuccess = () => {
-        queryClient.invalidateQueries({ queryKey: ['costingEntries'] });
         setOpenWizard(false);
-        setNotification({ open: true, message: 'Entry saved successfully', severity: 'success' });
+        queryClient.invalidateQueries({ queryKey: ['costingEntries'] });
     };
 
     const handleDeleteEntry = async (id: string) => {
-        if (!window.confirm('Are you sure you want to delete this costing entry?')) return;
+        if (!await confirmDialog({ title: 'Delete Entry', message: 'Are you sure you want to delete this entry?', severity: 'error', confirmText: 'Delete', cancelText: 'Cancel' })) return;
 
         try {
             await api.delete(`/costing/${id}`);
             queryClient.invalidateQueries({ queryKey: ['costingEntries'] });
-            setNotification({ open: true, message: 'Entry deleted successfully', severity: 'success' });
+            toast.success('Entry deleted successfully');
         } catch (error) {
-            setNotification({ open: true, message: 'Failed to delete cost entry', severity: 'error' });
+            toast.error('Failed to delete cost entry');
         }
     };
 
@@ -279,7 +248,10 @@ const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole 
                     <Button
                         variant="contained"
                         startIcon={<AddIcon />}
-                        onClick={() => setOpenWizard(true)}
+                        onClick={() => {
+                            setEditDate(undefined);
+                            setOpenWizard(true);
+                        }}
                     >
                         Add Cost
                     </Button>
@@ -439,6 +411,7 @@ const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole 
                                                     <TableCell align="right">Cost of 1 Unit (₹)</TableCell>
                                                     <TableCell align="center">Shifts</TableCell>
                                                     <TableCell align="right">Amount (₹)</TableCell>
+                                                    <TableCell align="center">Actions</TableCell>
                                                 </>
                                             ) : (
                                                 // Other categories
@@ -469,6 +442,30 @@ const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole 
                                                         <TableCell align="right">₹{entry.ratePerUnit || '-'}</TableCell>
                                                         <TableCell align="center">{entry.noOfShifts || '-'}</TableCell>
                                                         <TableCell align="right">₹{entry.totalCost?.toLocaleString()}</TableCell>
+                                                        <TableCell align="center">
+                                                            {(userRole === 'ADMIN' || userRole === 'AUTHOR') && (
+                                                                <>
+                                                                    <IconButton
+                                                                        size="small"
+                                                                        color="primary"
+                                                                        onClick={() => {
+                                                                            setEditDate(new Date(entry.date).toISOString().split('T')[0]);
+                                                                            setOpenWizard(true);
+                                                                        }}
+                                                                        sx={{ mr: 1 }}
+                                                                    >
+                                                                        <EditIcon fontSize="small" />
+                                                                    </IconButton>
+                                                                    <IconButton
+                                                                        size="small"
+                                                                        color="error"
+                                                                        onClick={() => handleDeleteEntry(entry.id)}
+                                                                    >
+                                                                        <DeleteIcon fontSize="small" />
+                                                                    </IconButton>
+                                                                </>
+                                                            )}
+                                                        </TableCell>
                                                     </>
                                                 ) : (
                                                     // Other categories data
@@ -489,13 +486,26 @@ const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole 
                                                         )}
                                                         <TableCell align="center">
                                                             {(userRole === 'ADMIN' || userRole === 'AUTHOR') && (
-                                                                <IconButton
-                                                                    size="small"
-                                                                    color="error"
-                                                                    onClick={() => handleDeleteEntry(entry.id)}
-                                                                >
-                                                                    <DeleteIcon fontSize="small" />
-                                                                </IconButton>
+                                                                <>
+                                                                    <IconButton
+                                                                        size="small"
+                                                                        color="primary"
+                                                                        onClick={() => {
+                                                                            setEditDate(new Date(entry.date).toISOString().split('T')[0]);
+                                                                            setOpenWizard(true);
+                                                                        }}
+                                                                        sx={{ mr: 1 }}
+                                                                    >
+                                                                        <EditIcon fontSize="small" />
+                                                                    </IconButton>
+                                                                    <IconButton
+                                                                        size="small"
+                                                                        color="error"
+                                                                        onClick={() => handleDeleteEntry(entry.id)}
+                                                                    >
+                                                                        <DeleteIcon fontSize="small" />
+                                                                    </IconButton>
+                                                                </>
                                                             )}
                                                         </TableCell>
                                                     </>
@@ -504,7 +514,7 @@ const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole 
                                         ))}
                                         {(!currentEntries || currentEntries.length === 0) && (
                                             <TableRow>
-                                                <TableCell colSpan={index === 0 ? 5 : (index === 4 ? 4 : 3)} align="center">No entries found</TableCell>
+                                                <TableCell colSpan={index === 0 ? 6 : (index === 4 ? 5 : 4)} align="center">No entries found</TableCell>
                                             </TableRow>
                                         )}
                                     </TableBody>
@@ -533,25 +543,12 @@ const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole 
                         username={username}
                         onSuccess={handleSuccess}
                         initialTab={tabValue > 0 ? tabValue - 1 : 0}
+                        initialDate={editDate}
                     />
                 </DialogContent>
             </Dialog>
 
-            <Snackbar
-                open={notification.open}
-                autoHideDuration={6000}
-                onClose={() => setNotification({ ...notification, open: false })}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-            >
-                <Alert
-                    onClose={() => setNotification({ ...notification, open: false })}
-                    severity={notification.severity}
-                    sx={{ width: '100%' }}
-                >
-                    {notification.message}
-                </Alert>
-            </Snackbar>
-        </Box >
+        </Box>
     );
 };
 

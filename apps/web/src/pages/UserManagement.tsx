@@ -21,8 +21,6 @@ import {
     FormControl,
     InputLabel,
     Chip,
-    Alert,
-    Snackbar,
     CircularProgress,
     Tooltip,
 } from '@mui/material';
@@ -33,8 +31,10 @@ import {
     Person as PersonIcon,
     Security as SecurityIcon
 } from '@mui/icons-material';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import api from '../utils/api';
+import { useConfirm } from '../context/ConfirmContext';
+import { toast } from 'sonner';
 
 interface User {
     id: number;
@@ -56,11 +56,8 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole, userna
     const queryClient = useQueryClient();
     const [openDialog, setOpenDialog] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
-    const [notification, setNotification] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
-        open: false,
-        message: '',
-        severity: 'success'
-    });
+    const { confirm } = useConfirm();
+
 
     const [formData, setFormData] = useState({
         username: '',
@@ -84,11 +81,11 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole, userna
         mutationFn: (newUser: any) => api.post('/auth/users', newUser),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['users'] });
-            setNotification({ open: true, message: 'User created successfully', severity: 'success' });
+            toast.success('User created successfully');
             handleCloseDialog();
         },
         onError: (error: any) => {
-            setNotification({ open: true, message: error.response?.data?.message || 'Failed to create user', severity: 'error' });
+            toast.error(error.response?.data?.message || 'Failed to create user');
         }
     });
 
@@ -97,11 +94,11 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole, userna
         mutationFn: ({ id, data }: { id: number; data: any }) => api.put(`/auth/users/${id}`, data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['users'] });
-            setNotification({ open: true, message: 'User updated successfully', severity: 'success' });
+            toast.success('User updated successfully');
             handleCloseDialog();
         },
         onError: (error: any) => {
-            setNotification({ open: true, message: error.response?.data?.message || 'Failed to update user', severity: 'error' });
+            toast.error(error.response?.data?.message || 'Failed to update user');
         }
     });
 
@@ -110,10 +107,10 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole, userna
         mutationFn: (id: number) => api.delete(`/auth/users/${id}`),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['users'] });
-            setNotification({ open: true, message: 'User deleted successfully', severity: 'success' });
+            toast.success('User deleted successfully');
         },
         onError: (error: any) => {
-            setNotification({ open: true, message: error.response?.data?.message || 'Failed to delete user', severity: 'error' });
+            toast.error(error.response?.data?.message || 'Failed to delete user');
         }
     });
 
@@ -147,7 +144,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole, userna
 
     const handleSubmit = () => {
         if (!formData.username) {
-            setNotification({ open: true, message: 'Username is required', severity: 'error' });
+            toast.error('Username is required');
             return;
         }
 
@@ -158,15 +155,15 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole, userna
             updateUserMutation.mutate({ id: editingUser.id, data: updateData });
         } else {
             if (!formData.password) {
-                setNotification({ open: true, message: 'Password is required for new users', severity: 'error' });
+                toast.error('Password is required for new users');
                 return;
             }
             createUserMutation.mutate({ ...formData, createdBy: username });
         }
     };
 
-    const handleDelete = (id: number) => {
-        if (window.confirm('Are you sure you want to delete this user?')) {
+    const handleDelete = async (id: number) => {
+        if (await confirm({ title: 'Delete User', message: 'Are you sure you want to delete this user?', severity: 'error', confirmText: 'Delete', cancelText: 'Cancel' })) {
             deleteUserMutation.mutate(id);
         }
     };
@@ -363,16 +360,6 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole, userna
                 </DialogActions>
             </Dialog>
 
-            <Snackbar
-                open={notification.open}
-                autoHideDuration={6000}
-                onClose={() => setNotification({ ...notification, open: false })}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-            >
-                <Alert severity={notification.severity} onClose={() => setNotification({ ...notification, open: false })}>
-                    {notification.message}
-                </Alert>
-            </Snackbar>
         </Box>
     );
 };

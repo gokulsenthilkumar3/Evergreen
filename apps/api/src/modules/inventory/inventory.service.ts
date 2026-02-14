@@ -475,4 +475,55 @@ export class InventoryService {
             return { success: true };
         });
     }
+
+    async deleteWaste(id: number) {
+        return this.prisma.$transaction(async (tx) => {
+            const waste = await tx.wasteInventory.findUnique({ where: { id } });
+            if (!waste) throw new BadRequestException('Waste entry not found');
+
+            if (waste.type === 'PRODUCTION') {
+                throw new BadRequestException('Cannot delete production waste directly. Please delete the production entry.');
+            }
+
+            // 1. If it was RECYCLE, remove from Cotton Inventory
+            if (waste.type === 'RECYCLE') {
+                await tx.cottonInventory.deleteMany({
+                    where: {
+                        type: 'RECYCLED_WASTE',
+                        date: waste.date,
+                        quantity: Math.abs(waste.quantity)
+                    }
+                });
+
+                // Recalculate Cotton Inventory
+                const cottonMovements = await tx.cottonInventory.findMany({
+                    orderBy: [{ date: 'asc' }, { id: 'asc' }]
+                });
+                let runningCotton = 0;
+                for (const mov of cottonMovements) {
+                    runningCotton += mov.quantity;
+                    if (Math.abs(mov.balance - runningCotton) > 0.001) {
+                        await tx.cottonInventory.update({ where: { id: mov.id }, data: { balance: runningCotton } });
+                    }
+                }
+            }
+
+            // 2. Delete Waste Entry
+            await tx.wasteInventory.delete({ where: { id } });
+
+            // 3. Recalculate Waste Balances
+            const wasteMovements = await tx.wasteInventory.findMany({
+                orderBy: [{ date: 'asc' }, { id: 'asc' }]
+            });
+            let runningWaste = 0;
+            for (const mov of wasteMovements) {
+                runningWaste += mov.quantity;
+                if (Math.abs(mov.balance - runningWaste) > 0.001) {
+                    await tx.wasteInventory.update({ where: { id: mov.id }, data: { balance: runningWaste } });
+                }
+            }
+
+            return { success: true };
+        });
+    }
 }

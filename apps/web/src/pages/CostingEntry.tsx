@@ -9,11 +9,12 @@ import {
     Tab,
     MenuItem,
     Alert,
-    Snackbar,
 } from '@mui/material';
 import { Save as SaveIcon } from '@mui/icons-material';
 import api from '../utils/api';
 import { useQuery } from '@tanstack/react-query';
+import { useConfirm } from '../context/ConfirmContext';
+import { toast } from 'sonner';
 
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -35,9 +36,10 @@ interface CostingEntryProps {
     username?: string;
     onSuccess?: () => void;
     initialTab?: number;
+    initialDate?: string;
 }
 
-const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, initialTab = 0, username }) => {
+const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, initialTab = 0, username, initialDate }) => {
     const [tabValue, setTabValue] = useState(initialTab || 0);
 
     // Sync tab with prop if it changes and matches context
@@ -47,16 +49,19 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, initialTab = 0, 
         }
     }, [initialTab]);
 
-    const [notification, setNotification] = useState({
-        open: false,
-        message: '',
-        severity: 'success' as 'success' | 'error' | 'warning' | 'info',
-    });
+    const { confirm: confirmDialog } = useConfirm();
 
     // Fetch Production Data for Auto-Calculation
 
-    const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+    const [date, setDate] = useState(initialDate || new Date().toISOString().split('T')[0]);
     const [packagingDate, setPackagingDate] = useState(date);
+
+    // Sync date and packaging date when initialDate prop changes
+    useEffect(() => {
+        if (initialDate) {
+            setDate(initialDate);
+        }
+    }, [initialDate]);
 
     // Sync packaging date when global date changes (reset)
     useEffect(() => {
@@ -183,17 +188,15 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, initialTab = 0, 
         }
     }, [existingMaintenance]);
 
-
-
     // Handlers
     const handleDelete = async (id: string) => {
-        if (!window.confirm('Delete this entry?')) return;
+        if (!await confirmDialog({ title: 'Delete Cost Entry', message: 'Are you sure you want to remove this cost entry?', severity: 'error', confirmText: 'Delete', cancelText: 'Cancel' })) return;
         try {
             await api.delete(`/costing/${id}`);
-            setNotification({ open: true, message: 'Deleted', severity: 'success' });
+            toast.success('Deleted');
             refetchEntries();
         } catch (error) {
-            setNotification({ open: true, message: 'Failed to delete', severity: 'error' });
+            toast.error('Failed to delete');
         }
     };
 
@@ -201,7 +204,7 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, initialTab = 0, 
         const units = parseFloat(ebData.unitsConsumed);
         const rate = parseFloat(ebData.ratePerUnit);
         if (units <= 0 || rate <= 0) {
-            setNotification({ open: true, message: 'Invalid values', severity: 'error' });
+            toast.error('Invalid values');
             return;
         }
         try {
@@ -209,11 +212,11 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, initialTab = 0, 
             const payload = { date, ...ebData, totalCost, createdBy: username };
             if (existingEB) await api.put(`/costing/${existingEB.id}`, payload);
             else await api.post('/costing/eb', payload);
-            setNotification({ open: true, message: 'EB Saved', severity: 'success' });
+            toast.success('EB Saved');
             if (onSuccess) onSuccess();
             refetchEntries();
         } catch (error) {
-            setNotification({ open: true, message: 'Failed to save', severity: 'error' });
+            toast.error('Failed to save');
         }
     };
 
@@ -223,24 +226,24 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, initialTab = 0, 
             const workers = parseFloat(employeeData.workers) || 0;
             const rate = parseFloat(employeeData.workerRate) || 0;
             if (workers <= 0 || rate <= 0) {
-                setNotification({ open: true, message: 'Invalid values', severity: 'error' });
+                toast.error('Invalid values');
                 return;
             }
             const cost = (workers * rate) + (parseFloat(employeeData.overtime) || 0);
             const payload = { date, ...employeeData, totalCost: cost, createdBy: username };
             if (existingEmployee) await api.put(`/costing/${existingEmployee.id}`, payload);
             else await api.post('/costing/employee', payload);
-            setNotification({ open: true, message: 'Employee Saved', severity: 'success' });
+            toast.success('Employee Saved');
             if (onSuccess) onSuccess();
             refetchEntries();
-        } catch (error) { setNotification({ open: true, message: 'Failed', severity: 'error' }); }
+        } catch (error) { toast.error('Failed'); }
     };
 
     const handlePackagingSubmit = async () => {
         const yarnKg = productionData?.totalProduced || 0;
         const rate = parseFloat(packagingData.rate);
         if (yarnKg <= 0) {
-            setNotification({ open: true, message: 'No yarn production for this date', severity: 'warning' });
+            toast.warning('No yarn production for this date');
             return;
         }
         try {
@@ -248,34 +251,34 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, initialTab = 0, 
             const payload = { date, yarnProduced: yarnKg, ratePerKg: rate, totalCost: cost, createdBy: username };
             if (existingPackaging) await api.put(`/costing/${existingPackaging.id}`, payload);
             else await api.post('/costing/packaging', payload);
-            setNotification({ open: true, message: 'Packaging Saved', severity: 'success' });
+            toast.success('Packaging Saved');
             if (onSuccess) onSuccess();
             refetchEntries();
-        } catch (error) { setNotification({ open: true, message: 'Failed', severity: 'error' }); }
+        } catch (error) { toast.error('Failed'); }
     };
 
     const handleMaintenanceSubmit = async () => {
         // Logic same as before
         const cost = parseFloat(maintenanceData.totalCost);
-        if (isNaN(cost) || cost <= 0) { setNotification({ open: true, message: 'Invalid cost', severity: 'error' }); return; }
+        if (isNaN(cost) || cost <= 0) { toast.error('Invalid cost'); return; }
         try {
             const payload = { date, description: maintenanceData.description || 'Daily', totalCost: cost, ratePerKg: maintenanceData.ratePerKg, createdBy: username };
             if (existingMaintenance) await api.put(`/costing/${existingMaintenance.id}`, payload);
             else await api.post('/costing/maintenance', payload);
-            setNotification({ open: true, message: 'Maintenance Saved', severity: 'success' });
+            toast.success('Maintenance Saved');
             if (onSuccess) onSuccess();
             refetchEntries();
-        } catch (error) { setNotification({ open: true, message: 'Failed', severity: 'error' }); }
+        } catch (error) { toast.error('Failed'); }
     };
 
     const handleExpenseSubmit = async () => {
         if (!expenseData.title || parseFloat(expenseData.amount) <= 0) return;
         try {
             await api.post('/costing/expense', { date, ...expenseData, createdBy: username });
-            setNotification({ open: true, message: 'Expense Saved', severity: 'success' });
+            toast.success('Expense Saved');
             setExpenseData({ title: '', amount: '', description: '', type: 'Asset' });
             if (onSuccess) onSuccess();
-        } catch (error) { setNotification({ open: true, message: 'Failed', severity: 'error' }); }
+        } catch (error) { toast.error('Failed'); }
     };
 
     // UI Calcs
@@ -448,9 +451,6 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, initialTab = 0, 
                 </TabPanel>
             </Paper>
 
-            <Snackbar open={notification.open} autoHideDuration={4000} onClose={() => setNotification({ ...notification, open: false })}>
-                <Alert severity={notification.severity}>{notification.message}</Alert>
-            </Snackbar>
         </Box>
     );
 };

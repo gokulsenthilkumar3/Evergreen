@@ -167,4 +167,9 @@ export class InventoryController {
     async exportWaste(@Body() data: any) {
         return this.inventoryService.exportWaste(data);
     }
+
+    @Delete('waste/:id')
+    async deleteWaste(@Param('id') id: string) {
+        return this.inventoryService.deleteWaste(parseInt(id));
+    }
 }

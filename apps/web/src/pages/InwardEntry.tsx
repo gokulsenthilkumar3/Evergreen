@@ -39,6 +39,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../utils/api';
 import { generatePDF } from '../utils/pdfGenerator';
 import { generateExcel } from '../utils/excelGenerator';
+import { useConfirm } from '../context/ConfirmContext';
+import { toast } from 'sonner';
 
 interface BatchEntry {
     id: number;
@@ -70,6 +72,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
         kg: '',
     });
     const [generatedBatchId, setGeneratedBatchId] = useState('');
+    const { confirm: confirmDialog } = useConfirm();
 
     const queryClient = useQueryClient();
 
@@ -96,15 +99,6 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
         return Array.from(uniqueSuppliers).sort();
     }, [batchHistory]);
 
-    const [notification, setNotification] = useState<{
-        open: boolean;
-        message: string;
-        severity: 'success' | 'error' | 'info';
-    }>({
-        open: false,
-        message: '',
-        severity: 'success',
-    });
 
     // Generate Batch ID on component mount
     useEffect(() => {
@@ -132,22 +126,22 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
 
 
     const handleDeleteBatch = async (id: number) => {
-        if (!window.confirm('Are you sure you want to delete this batch? This will also remove associated inventory records.')) return;
+        if (!await confirmDialog({ title: 'Delete Batch', message: 'Are you sure you want to delete this batch? This will also remove associated inventory records.', severity: 'error', confirmText: 'Delete', cancelText: 'Cancel' })) return;
 
         try {
             await api.delete(`/inventory/inward/${id}`);
-            setNotification({ open: true, message: 'Batch deleted and inventory updated!', severity: 'success' });
+            toast.success('Batch deleted and inventory updated!');
             queryClient.invalidateQueries({ queryKey: ['inwardHistory'] });
             queryClient.invalidateQueries({ queryKey: ['dashboardSummary'] });
         } catch (error) {
-            setNotification({ open: true, message: 'Failed to delete batch.', severity: 'error' });
+            toast.error('Failed to delete batch.');
         }
     };
 
     const handleSubmit = async () => {
         try {
             if (!formData.supplier || !formData.bale || !formData.kg) {
-                setNotification({ open: true, message: 'Please fill in all required fields.', severity: 'error' });
+                toast.error('Please fill in all required fields.');
                 return;
             }
 
@@ -166,7 +160,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
             queryClient.invalidateQueries({ queryKey: ['dashboardSummary'] });
             queryClient.invalidateQueries({ queryKey: ['inventoryHistory'] });
 
-            setNotification({ open: true, message: 'Batch added and inventory updated!', severity: 'success' });
+            toast.success('Batch added and inventory updated!');
 
             // Reset form
             setFormData({
@@ -179,14 +173,14 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
             setOpenWizard(false);
 
         } catch (error) {
-            setNotification({ open: true, message: 'Failed to save batch to database.', severity: 'error' });
+            toast.error('Failed to save batch to database.');
         }
     };
 
     const handleExport = (type: 'email' | 'excel' | 'pdf') => {
         const data = batchHistory;
         if (data.length === 0) {
-            setNotification({ open: true, message: 'No data to export', severity: 'error' });
+            toast.error('No data to export');
             return;
         }
 
@@ -202,7 +196,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                 row.kg?.toLocaleString() || '0'
             ]);
             generatePDF('Inward Batch History', headers, rows, filename);
-            setNotification({ open: true, message: 'Exported as PDF successfully', severity: 'success' });
+            toast.success('Exported as PDF successfully');
         } else if (type === 'excel') {
             const excelData = data.map((row: BatchEntry) => ({
                 'Batch ID': row.batchId,
@@ -212,12 +206,12 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                 'Total Kg': row.kg
             }));
             generateExcel(excelData, filename);
-            setNotification({ open: true, message: 'Exported as Excel successfully', severity: 'success' });
+            toast.success('Exported as Excel successfully');
         } else if (type === 'email') {
             const subject = encodeURIComponent(`Inward Batch Report: ${new Date().toISOString().split('T')[0]}`);
             const body = encodeURIComponent(`Please find the attached Inward Batch Report.\n\n(Note: Please export and attach the PDF/Excel file manually)`);
             window.location.href = `mailto:?subject=${subject}&body=${body}`;
-            setNotification({ open: true, message: 'Opening email client...', severity: 'info' });
+            toast.info('Opening email client...');
         }
     };
 
@@ -431,20 +425,6 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                 </TableContainer>
             </Paper>
 
-            <Snackbar
-                open={notification.open}
-                autoHideDuration={6000}
-                onClose={() => setNotification({ ...notification, open: false })}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-            >
-                <Alert
-                    onClose={() => setNotification({ ...notification, open: false })}
-                    severity={notification.severity}
-                    sx={{ width: '100%' }}
-                >
-                    {notification.message}
-                </Alert>
-            </Snackbar>
         </Box>
     );
 };

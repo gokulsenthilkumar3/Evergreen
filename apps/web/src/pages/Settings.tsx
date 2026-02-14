@@ -19,6 +19,7 @@ import {
 } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../utils/api';
+import { toast } from 'sonner';
 
 import Logs from './Logs';
 
@@ -43,11 +44,7 @@ interface SettingsProps {
 
 const Settings: React.FC<SettingsProps> = ({ username }) => {
     const [tabValue, setTabValue] = useState(0);
-    const [notification, setNotification] = useState({
-        open: false,
-        message: '',
-        severity: 'success' as 'success' | 'error',
-    });
+
 
     const queryClient = useQueryClient();
 
@@ -109,10 +106,10 @@ const Settings: React.FC<SettingsProps> = ({ username }) => {
         mutationFn: (data: any) => api.put('/settings', data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['settings'] });
-            setNotification({ open: true, message: 'Settings saved successfully!', severity: 'success' });
+            toast.success('Settings saved successfully!');
         },
         onError: () => {
-            setNotification({ open: true, message: 'Failed to save settings', severity: 'error' });
+            toast.error('Failed to save settings');
         }
     });
 
@@ -191,7 +188,7 @@ const Settings: React.FC<SettingsProps> = ({ username }) => {
                                                 const file = e.target.files?.[0];
                                                 if (file) {
                                                     if (file.size > 500 * 1024) { // 500KB limit
-                                                        setNotification({ open: true, message: 'Image must be less than 500KB', severity: 'error' });
+                                                        toast.error('Image must be less than 500KB');
                                                         return;
                                                     }
                                                     const reader = new FileReader();
@@ -349,9 +346,6 @@ const Settings: React.FC<SettingsProps> = ({ username }) => {
                 </TabPanel>
             </Paper>
 
-            <Snackbar open={notification.open} autoHideDuration={4000} onClose={() => setNotification({ ...notification, open: false })}>
-                <Alert severity={notification.severity}>{notification.message}</Alert>
-            </Snackbar>
 
 
         </Box>

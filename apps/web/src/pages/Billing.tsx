@@ -42,6 +42,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 // @ts-ignore
 import { useReactToPrint } from 'react-to-print';
 import api from '../utils/api';
+import { useConfirm } from '../context/ConfirmContext';
+import { toast } from 'sonner';
 
 // --- Types ---
 interface InvoiceItem {
@@ -89,7 +91,7 @@ const InvoiceEditor = ({
     ]);
 
     const handlePrint = useReactToPrint({
-        content: () => componentRef.current,
+        contentRef: componentRef,
         documentTitle: `Invoice-${invoiceData.invoiceNo}`,
     });
 
@@ -514,7 +516,8 @@ const BillingDashboard = ({ invoices, onCreateNew, onDelete }: { invoices: any[]
 const Billing: React.FC<BillingProps> = ({ userRole, username }) => {
     const queryClient = useQueryClient();
     const [view, setView] = useState<'list' | 'create'>('list');
-    const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
+    const { confirm } = useConfirm();
+
 
     // Queries
     const { data: invoices = [] } = useQuery({
@@ -535,22 +538,22 @@ const Billing: React.FC<BillingProps> = ({ userRole, username }) => {
     const handleSaveInvoice = async (data: any) => {
         try {
             await api.post('/billing/invoice', { ...data, createdBy: username });
-            setNotification({ open: true, message: 'Invoice created successfully', severity: 'success' });
+            toast.success('Invoice created successfully');
             queryClient.invalidateQueries({ queryKey: ['invoices'] });
             setView('list');
         } catch (error) {
-            setNotification({ open: true, message: 'Failed to create invoice', severity: 'error' });
+            toast.error('Failed to create invoice');
         }
     };
 
     const handleDeleteInvoice = async (id: string) => {
-        if (!window.confirm('Are you sure you want to delete this invoice?')) return;
+        if (!await confirm({ title: 'Delete Invoice', message: 'Are you sure you want to delete this invoice?', severity: 'error', confirmText: 'Delete', cancelText: 'Cancel' })) return;
         try {
             await api.delete(`/billing/invoice/${id}`);
-            setNotification({ open: true, message: 'Invoice deleted', severity: 'success' });
+            toast.success('Invoice deleted');
             queryClient.invalidateQueries({ queryKey: ['invoices'] });
         } catch (error) {
-            setNotification({ open: true, message: 'Failed to delete invoice', severity: 'error' });
+            toast.error('Failed to delete invoice');
         }
     };
 
@@ -576,9 +579,6 @@ const Billing: React.FC<BillingProps> = ({ userRole, username }) => {
                 />
             )}
 
-            <Snackbar open={notification.open} autoHideDuration={4000} onClose={() => setNotification({ ...notification, open: false })}>
-                <Alert severity={notification.severity}>{notification.message}</Alert>
-            </Snackbar>
         </Box>
     );
 };

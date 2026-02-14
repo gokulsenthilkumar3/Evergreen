@@ -85,7 +85,7 @@ const TodayDashboard: React.FC = () => {
                             </Box>
                             <Box>
                                 <Typography variant="overline" sx={{ fontWeight: 700, opacity: 0.7, letterSpacing: '0.1em' }}>TOTAL COST (TODAY)</Typography>
-                                <Typography variant="h3" sx={{ fontWeight: 800 }}>₹{totalCost.toLocaleString('en-IN')}</Typography>
+                                <Typography variant="h4" sx={{ fontWeight: 800, fontSize: { xs: '2rem', lg: '2.5rem' } }}>₹{totalCost.toLocaleString('en-IN')}</Typography>
                             </Box>
                         </Box>
                     </Paper>
@@ -100,7 +100,7 @@ const TodayDashboard: React.FC = () => {
                             </Box>
                             <Box>
                                 <Typography variant="overline" sx={{ fontWeight: 700, opacity: 0.7, letterSpacing: '0.1em' }}>TOTAL PRODUCED</Typography>
-                                <Typography variant="h3" sx={{ fontWeight: 800 }}>{totalProduced.toLocaleString()} <Box component="span" sx={{ fontSize: '1.2rem', fontWeight: 500, opacity: 0.8 }}>kg</Box></Typography>
+                                <Typography variant="h4" sx={{ fontWeight: 800, fontSize: { xs: '2rem', lg: '2.5rem' } }}>{totalProduced.toLocaleString()} <Box component="span" sx={{ fontSize: '1.2rem', fontWeight: 500, opacity: 0.8 }}>kg</Box></Typography>
                             </Box>
                         </Box>
                     </Paper>
@@ -115,7 +115,7 @@ const TodayDashboard: React.FC = () => {
                             </Box>
                             <Box>
                                 <Typography variant="overline" sx={{ fontWeight: 700, opacity: 0.7, letterSpacing: '0.1em' }}>AVG COST / KG</Typography>
-                                <Typography variant="h3" sx={{ fontWeight: 800 }}>₹{avgCostPerKg.toFixed(2)}</Typography>
+                                <Typography variant="h4" sx={{ fontWeight: 800, fontSize: { xs: '2rem', lg: '2.5rem' } }}>₹{avgCostPerKg.toFixed(2)}</Typography>
                             </Box>
                         </Box>
                     </Paper>
