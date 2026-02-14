@@ -157,4 +157,14 @@ export class InventoryController {
     async deleteOutward(@Param('id') id: string) {
         return this.inventoryService.deleteOutward(parseInt(id));
     }
+
+    @Post('waste/recycle')
+    async recycleWaste(@Body() data: any) {
+        return this.inventoryService.recycleWaste(data);
+    }
+
+    @Post('waste/export')
+    async exportWaste(@Body() data: any) {
+        return this.inventoryService.exportWaste(data);
+    }
 }

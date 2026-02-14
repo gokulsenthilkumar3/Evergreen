@@ -22,6 +22,7 @@ import {
     Dialog,
     DialogTitle,
     DialogContent,
+    Tooltip,
     type SelectChangeEvent,
 } from '@mui/material';
 import {
@@ -46,13 +47,15 @@ interface BatchEntry {
     supplier: string;
     bale: number;
     kg: number;
+    entryTimestamp?: string;
 }
 
 interface InwardEntryProps {
     userRole?: string;
+    username?: string;
 }
 
-const InwardEntry: React.FC<InwardEntryProps> = ({ userRole }) => {
+const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
     // Filter State
     const [dateFilter, setDateFilter] = useState<string>('today');
     const [customFrom, setCustomFrom] = useState<string>('');
@@ -84,7 +87,15 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole }) => {
         }
     });
 
-    const [suppliers, setSuppliers] = useState<string[]>([]);
+    // Extract unique suppliers from history
+    const suppliers = React.useMemo(() => {
+        const uniqueSuppliers = new Set<string>();
+        batchHistory.forEach((batch: BatchEntry) => {
+            if (batch.supplier) uniqueSuppliers.add(batch.supplier);
+        });
+        return Array.from(uniqueSuppliers).sort();
+    }, [batchHistory]);
+
     const [notification, setNotification] = useState<{
         open: boolean;
         message: string;
@@ -119,10 +130,6 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole }) => {
         setFormData(prev => ({ ...prev, supplier: newValue || '' }));
     };
 
-    const handleRemoveSupplier = (e: React.MouseEvent, supplierToRemove: string) => {
-        e.stopPropagation();
-        setSuppliers(prev => prev.filter(s => s !== supplierToRemove));
-    };
 
     const handleDeleteBatch = async (id: number) => {
         if (!window.confirm('Are you sure you want to delete this batch? This will also remove associated inventory records.')) return;
@@ -151,6 +158,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole }) => {
                 supplier: formData.supplier,
                 bale: Number(formData.bale),
                 kg: Number(formData.kg),
+                createdBy: username,
             });
 
             // Invalidate queries to refresh data across the app
@@ -266,10 +274,8 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole }) => {
                     {(userRole === 'AUTHOR' || userRole === 'MODIFIER') && (
                         <Button
                             variant="contained"
-                            size="small"
                             startIcon={<AddIcon />}
                             onClick={() => setOpenWizard(true)}
-                            sx={{ borderRadius: 2 }}
                         >
                             Add Batch
                         </Button>
@@ -317,13 +323,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole }) => {
                             }}
                             renderOption={(props, option) => (
                                 <li {...props}>
-                                    <Box component="span" sx={{ flexGrow: 1 }}>{option}</Box>
-                                    <IconButton
-                                        size="small"
-                                        onClick={(e) => handleRemoveSupplier(e, option)}
-                                    >
-                                        <CloseIcon fontSize="small" />
-                                    </IconButton>
+                                    {option}
                                 </li>
                             )}
                             sx={{ flex: '2 1 300px' }}
@@ -401,7 +401,13 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole }) => {
                                 batchHistory.map((row: BatchEntry) => (
                                     <TableRow key={row.id} hover>
                                         <TableCell sx={{ fontFamily: 'monospace', fontWeight: 'bold' }}>{row.batchId}</TableCell>
-                                        <TableCell>{new Date(row.date).toLocaleDateString()}</TableCell>
+                                        <TableCell>
+                                            <Tooltip title={row.entryTimestamp ? new Date(row.entryTimestamp).toLocaleString() : new Date(row.date).toLocaleString()} arrow placement="top">
+                                                <Box component="span" sx={{ cursor: 'help', borderBottom: '1px dotted', borderColor: 'divider' }}>
+                                                    {new Date(row.date).toLocaleDateString()}
+                                                </Box>
+                                            </Tooltip>
+                                        </TableCell>
                                         <TableCell>{row.supplier}</TableCell>
                                         <TableCell align="right">{row.bale}</TableCell>
                                         <TableCell align="right">{row.kg?.toLocaleString()} kg</TableCell>

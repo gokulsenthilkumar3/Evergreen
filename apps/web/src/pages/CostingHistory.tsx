@@ -19,6 +19,7 @@ import {
     TableRow,
     Chip,
     type SelectChangeEvent,
+    Tooltip as MuiTooltip,
 } from '@mui/material';
 import {
     ArrowUpward,
@@ -49,6 +50,7 @@ interface CostingHistoryEntry {
     description: string;
     amount: number;
     details: string;
+    entryTimestamp?: string;
 }
 
 const CostingHistory: React.FC = () => {
@@ -387,7 +389,13 @@ const CostingHistory: React.FC = () => {
                                 ) : (
                                     historyList?.map((row: CostingHistoryEntry) => (
                                         <TableRow key={row.id} hover>
-                                            <TableCell>{new Date(row.date).toLocaleDateString()}</TableCell>
+                                            <TableCell>
+                                                <MuiTooltip title={row.entryTimestamp ? new Date(row.entryTimestamp).toLocaleString() : new Date(row.date).toLocaleString()} arrow placement="top">
+                                                    <Box component="span" sx={{ cursor: 'help', borderBottom: '1px dotted', borderColor: 'divider' }}>
+                                                        {new Date(row.date).toLocaleDateString()}
+                                                    </Box>
+                                                </MuiTooltip>
+                                            </TableCell>
                                             <TableCell>
                                                 <Chip
                                                     label={row.category}

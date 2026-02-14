@@ -1,182 +1,201 @@
-import React, { useEffect, useState } from 'react';
-import { Box, useTheme, keyframes } from '@mui/material';
+import React, { useRef, useMemo, Suspense } from 'react';
+import { Box } from '@mui/material';
+import { Canvas, useFrame } from '@react-three/fiber';
+import type { RootState, ThreeElements } from '@react-three/fiber';
+import { OrbitControls, Stars, Float, Environment } from '@react-three/drei';
+import * as THREE from 'three';
+
+// Extend JSX namespace for Three.js elements
+declare global {
+    namespace JSX {
+        interface IntrinsicElements extends ThreeElements { }
+    }
+}
 
 interface LoginAvatarProps {
     isPasswordFocused: boolean;
     isTyping: boolean;
+    isLoading?: boolean;
+    hasError?: boolean;
 }
 
-const bounce = keyframes`
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-3px); }
-`;
+// --- CUSTOM IRIDESCENT SHADER ---
+const IridescentMaterial = () => {
+    const materialRef = useRef<THREE.ShaderMaterial>(null);
 
-const LoginAvatar: React.FC<LoginAvatarProps> = ({ isPasswordFocused, isTyping }) => {
-    const theme = useTheme();
-    const primaryColor = theme.palette.primary.main;
+    useFrame((state: RootState) => {
+        if (materialRef.current) {
+            materialRef.current.uniforms.uTime.value = state.clock.getElapsedTime();
+        }
+    });
 
-    // Mouse tracking state
-    const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+    const shaderArgs = useMemo(() => ({
+        uniforms: {
+            uTime: { value: 0 },
+            uColor: { value: new THREE.Color(0xffffff) }
+        },
+        vertexShader: `
+            varying vec3 vNormal;
+            varying vec3 vViewPosition;
+            void main() {
+                vNormal = normalMatrix * normal;
+                vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+                vViewPosition = -mvPosition.xyz;
+                gl_Position = projectionMatrix * mvPosition;
+            }
+        `,
+        fragmentShader: `
+            varying vec3 vNormal;
+            varying vec3 vViewPosition;
+            uniform float uTime;
+            uniform vec3 uColor;
+            void main() {
+                vec3 normal = normalize(vNormal);
+                vec3 viewDir = normalize(vViewPosition);
+                float fresnel = pow(1.0 - dot(normal, viewDir), 3.0);
+                vec3 iridescent = 0.5 + 0.5 * sin(2.0 * 3.1416 * (fresnel + uTime * 0.2 + normal));
+                gl_FragColor = vec4(uColor * iridescent + fresnel * 0.5, 0.85);
+            }
+        `
+    }), []);
 
-    useEffect(() => {
-        const handleMouseMove = (event: MouseEvent) => {
-            // Calculate position relative to center of screen
-            // Range: -1 to 1
-            const x = (event.clientX / window.innerWidth) * 2 - 1;
-            const y = (event.clientY / window.innerHeight) * 2 - 1;
-            setMousePos({ x, y });
-        };
+    return <shaderMaterial ref={materialRef} args={[shaderArgs]} transparent side={THREE.DoubleSide} />;
+};
 
-        window.addEventListener('mousemove', handleMouseMove);
-        return () => window.removeEventListener('mousemove', handleMouseMove);
+// --- CHARACTER COMPONENT ---
+const Character = ({ isPasswordFocused, isLoading, hasError }: Partial<LoginAvatarProps>) => {
+    const group = useRef<THREE.Group>(null);
+    const eyesRef = useRef<THREE.Group>(null);
+
+    useFrame((state: RootState, delta: number) => {
+        if (!group.current) return;
+        const time = state.clock.getElapsedTime();
+
+        // Base idle animation
+        let targetY = Math.sin(time * 0.6) * 0.1 - 0.5;
+        let targetRotY = Math.sin(time * 0.4) * 0.05;
+
+        // Logic Tweaks
+        if (isPasswordFocused) targetY -= 0.2;
+        if (hasError) {
+            targetRotY += Math.sin(time * 60) * 0.15;
+            targetY += Math.cos(time * 40) * 0.08;
+        }
+
+        group.current.position.y = THREE.MathUtils.lerp(group.current.position.y, targetY, 0.1);
+        group.current.rotation.y = THREE.MathUtils.lerp(group.current.rotation.y, targetRotY, 0.1);
+
+        // Eyes Animation
+        if (eyesRef.current) {
+            if (isLoading) {
+                eyesRef.current.rotation.z -= delta * 10;
+            } else {
+                eyesRef.current.rotation.z = THREE.MathUtils.lerp(eyesRef.current.rotation.z, 0, 0.1);
+            }
+        }
+    });
+
+    const hairPositions = useMemo(() => {
+        const arr = new Float32Array(6000 * 3);
+        for (let i = 0; i < 6000; i++) {
+            const r = 1.0 + Math.random() * 0.8;
+            const theta = Math.random() * Math.PI * 2;
+            const phi = Math.acos(2 * Math.random() - 1) * 0.72;
+            arr[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+            arr[i * 3 + 1] = 1.72 + r * Math.cos(phi) * 1.4 - 0.95;
+            arr[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta) - 0.4;
+        }
+        return arr;
     }, []);
 
-    // Eye movement limits
-    const maxMoveX = 15;
-    const maxMoveY = 10;
+    return (
+        <group ref={group}>
+            {/* FACE */}
+            <mesh position={[0, 1.7, 0]}>
+                <sphereGeometry args={[0.95, 64, 64]} />
+                <meshStandardMaterial color="#fff2e5" roughness={0.6} metalness={0.05} emissive="#220044" emissiveIntensity={0.1} />
+            </mesh>
 
-    // Current eye position
-    const eyeX = mousePos.x * maxMoveX;
-    const eyeY = mousePos.y * maxMoveY;
+            {/* EYES */}
+            <group ref={eyesRef} position={[0, 1.75, 0.85]}>
+                {/* Left */}
+                <group position={[-0.34, 0, 0]}>
+                    <mesh><sphereGeometry args={[0.16, 32, 32]} /><meshBasicMaterial color="#aa22ff" /></mesh>
+                    <mesh scale={1.6}><sphereGeometry args={[0.16, 24, 24]} /><meshBasicMaterial color="#dd55ff" transparent opacity={0.6} blending={THREE.AdditiveBlending} /></mesh>
+                </group>
+                {/* Right */}
+                <group position={[0.34, 0, 0]}>
+                    <mesh><sphereGeometry args={[0.16, 32, 32]} /><meshBasicMaterial color="#aa22ff" /></mesh>
+                    <mesh scale={1.6}><sphereGeometry args={[0.16, 24, 24]} /><meshBasicMaterial color="#dd55ff" transparent opacity={0.6} blending={THREE.AdditiveBlending} /></mesh>
+                </group>
+            </group>
 
+            {/* HAIR PARTICLES */}
+            <points>
+                <bufferGeometry>
+                    <bufferAttribute
+                        attach="attributes-position"
+                        args={[hairPositions, 3]}
+                    />
+                </bufferGeometry>
+                <pointsMaterial color="#e8e8ff" size={0.035} transparent opacity={0.8} blending={THREE.AdditiveBlending} />
+            </points>
+
+            {/* JACKET */}
+            <mesh position={[0, 0.9, 0]} rotation={[Math.PI, 0, 0]}>
+                <cylinderGeometry args={[1.4, 1.0, 2.5, 48, 1, true]} />
+                <IridescentMaterial />
+            </mesh>
+
+            {/* INNER SHIRT */}
+            <mesh position={[0, 1.3, 0]}>
+                <cylinderGeometry args={[1.0, 0.85, 1.2, 32]} />
+                <meshStandardMaterial color="#080808" roughness={0.8} />
+            </mesh>
+        </group>
+    );
+};
+
+const LoginAvatar: React.FC<LoginAvatarProps> = (props: LoginAvatarProps) => {
     return (
         <Box
             sx={{
-                width: 140,
-                height: 140,
+                width: 280,
+                height: 320,
                 position: 'relative',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'flex-end',
-                mb: 2,
-                overflow: 'hidden'
+                overflow: 'hidden',
+                borderRadius: '16px',
+                background: 'linear-gradient(180deg, #05000f 0%, #0a001a 100%)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+                border: '1px solid rgba(255,255,255,0.1)'
             }}
         >
-            <svg
-                width="120"
-                height="120"
-                viewBox="0 0 120 120"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                style={{ overflow: 'visible' }}
-            >
-                <g style={{
-                    animation: isTyping ? `${bounce} 0.3s infinite` : 'none',
-                    transformOrigin: 'bottom center'
-                }}>
-                    {/* EAR LEFT */}
-                    <circle cx="20" cy="30" r="15" fill={primaryColor} />
-                    <circle cx="20" cy="30" r="8" fill={theme.palette.background.paper} opacity="0.3" />
+            <Canvas camera={{ position: [0, 1.6, 7], fov: 45 }}>
+                <Suspense fallback={null}>
+                    <color attach="background" args={['#05000f']} />
+                    <fog attach="fog" args={['#0a001a', 2, 20]} />
 
-                    {/* EAR RIGHT */}
-                    <circle cx="100" cy="30" r="15" fill={primaryColor} />
-                    <circle cx="100" cy="30" r="8" fill={theme.palette.background.paper} opacity="0.3" />
+                    <ambientLight intensity={0.5} color="#404080" />
+                    <pointLight position={[12, 7, -15]} color="#ff00bb" intensity={8} />
+                    <pointLight position={[-14, 6, -10]} color="#00ccff" intensity={6} />
 
-                    {/* HEAD */}
-                    <rect x="10" y="20" width="100" height="90" rx="40" fill={primaryColor} />
+                    <Stars radius={50} depth={50} count={2000} factor={4} saturation={0} fade speed={1} />
 
-                    {/* FACE SHADOW/HIGHLIGHT */}
-                    <mask id="faceMask">
-                        <rect x="10" y="20" width="100" height="90" rx="40" fill="white" />
-                    </mask>
-                    <circle cx="60" cy="120" r="50" fill="white" fillOpacity="0.1" mask="url(#faceMask)" />
+                    <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
+                        <Character {...props} />
+                    </Float>
 
-                    {/* EYES GROUP */}
-                    <g
-                        style={{
-                            transition: 'transform 0.1s ease-out',
-                            transform: isPasswordFocused
-                                ? 'translateY(-10px) scale(0.9)'
-                                : `translate(${eyeX}px, ${eyeY}px)`
-                        }}
-                    >
-                        {/* EYE LEFT */}
-                        <circle cx="40" cy="60" r="10" fill="white" />
-                        <circle
-                            cx="40"
-                            cy="60"
-                            r={isTyping ? 5 : 4}
-                            fill="#333"
-                            style={{
-                                transition: 'transform 0.1s',
-                                transform: isPasswordFocused ? 'translate(0, 0)' : `translate(${eyeX * 0.2}px, ${eyeY * 0.2}px)`
-                            }}
-                        />
-
-                        {/* EYE RIGHT */}
-                        <circle cx="80" cy="60" r="10" fill="white" />
-                        <circle
-                            cx="80"
-                            cy="60"
-                            r={isTyping ? 5 : 4}
-                            fill="#333"
-                            style={{
-                                transition: 'transform 0.1s',
-                                transform: isPasswordFocused ? 'translate(0, 0)' : `translate(${eyeX * 0.2}px, ${eyeY * 0.2}px)`
-                            }}
-                        />
-                    </g>
-
-                    {/* CHEEKS (Blush) - Visible when typing */}
-                    <circle
-                        cx="35"
-                        cy="80"
-                        r="8"
-                        fill="#ff8a80"
-                        opacity={isTyping ? "0.6" : "0"}
-                        style={{ transition: 'opacity 0.3s' }}
-                    />
-                    <circle
-                        cx="85"
-                        cy="80"
-                        r="8"
-                        fill="#ff8a80"
-                        opacity={isTyping ? "0.6" : "0"}
-                        style={{ transition: 'opacity 0.3s' }}
+                    <OrbitControls
+                        enablePan={false}
+                        enableZoom={false}
+                        minPolarAngle={Math.PI / 2.5}
+                        maxPolarAngle={Math.PI / 1.5}
+                        makeDefault
                     />
 
-                    {/* MUZZLE */}
-                    <ellipse cx="60" cy="80" rx="20" ry="16" fill={theme.palette.background.paper} />
-                    <ellipse cx="60" cy="74" rx="8" ry="5" fill="#333" /> {/* Nose */}
-
-                    {/* MOUTH */}
-                    <path
-                        d={
-                            isPasswordFocused ? "M 55 88 Q 60 85 65 88" :
-                                isTyping ? "M 52 86 Q 60 98 68 86" : // Happy open smile
-                                    "M 55 88 Q 60 92 65 88" // Normal smile
-                        }
-                        stroke="#333"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        style={{ transition: 'd 0.3s' }}
-                    />
-                </g>
-
-                {/* HANDS (Left and Right) */}
-                <g
-                    style={{
-                        transformOrigin: '50% 100%',
-                        transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                        transform: isPasswordFocused ? 'translateY(-15px) rotate(0deg)' : 'translateY(80px) rotate(45deg)'
-                    }}
-                >
-                    <path d="M 10 110 C 10 90 25 55 45 55 C 55 55 60 65 50 75" stroke={primaryColor} strokeWidth="22" strokeLinecap="round" />
-                    <circle cx="40" cy="60" r="7" fill={theme.palette.background.paper} opacity="0.6" style={{ transformOrigin: 'center' }} />
-                </g>
-
-                <g
-                    style={{
-                        transformOrigin: '50% 100%',
-                        transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                        transform: isPasswordFocused ? 'translateY(-15px) rotate(0deg)' : 'translateY(80px) rotate(-45deg)'
-                    }}
-                >
-                    <path d="M 110 110 C 110 90 95 55 75 55 C 65 55 60 65 70 75" stroke={primaryColor} strokeWidth="22" strokeLinecap="round" />
-                    <circle cx="80" cy="60" r="7" fill={theme.palette.background.paper} opacity="0.6" />
-                </g>
-
-            </svg>
+                    <Environment preset="city" />
+                </Suspense>
+            </Canvas>
         </Box>
     );
 };

@@ -77,45 +77,48 @@ const TodayDashboard: React.FC = () => {
 
             <Grid container spacing={3} sx={{ mb: 4 }}>
                 <Grid size={{ xs: 12, md: 4 }}>
-                    <Card sx={{ bgcolor: 'primary.dark', color: 'white', borderRadius: 4 }}>
-                        <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                            <Box sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 3 }}>
-                                <AccountBalance fontSize="large" />
+                    <Paper sx={{ p: 4, position: 'relative', overflow: 'hidden', bgcolor: 'primary.dark', color: 'white' }}>
+                        <Box sx={{ position: 'absolute', top: -10, right: -10, width: 100, height: 100, bgcolor: 'primary.light', opacity: 0.1, borderRadius: '50%' }} />
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                            <Box sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.15)', borderRadius: 4, backdropFilter: 'blur(4px)' }}>
+                                <AccountBalance fontSize="large" sx={{ opacity: 0.9 }} />
                             </Box>
                             <Box>
-                                <Typography variant="subtitle2" sx={{ opacity: 0.8 }}>Total Cost (Today)</Typography>
-                                <Typography variant="h4" fontWeight="bold">₹{totalCost.toLocaleString('en-IN')}</Typography>
+                                <Typography variant="overline" sx={{ fontWeight: 700, opacity: 0.7, letterSpacing: '0.1em' }}>TOTAL COST (TODAY)</Typography>
+                                <Typography variant="h3" sx={{ fontWeight: 800 }}>₹{totalCost.toLocaleString('en-IN')}</Typography>
                             </Box>
-                        </CardContent>
-                    </Card>
+                        </Box>
+                    </Paper>
                 </Grid>
 
                 <Grid size={{ xs: 12, md: 4 }}>
-                    <Card sx={{ bgcolor: 'secondary.dark', color: 'white', borderRadius: 4 }}>
-                        <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                            <Box sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 3 }}>
-                                <Category fontSize="large" />
+                    <Paper sx={{ p: 4, position: 'relative', overflow: 'hidden', bgcolor: 'secondary.dark', color: 'white' }}>
+                        <Box sx={{ position: 'absolute', top: -10, right: -10, width: 100, height: 100, bgcolor: 'secondary.light', opacity: 0.1, borderRadius: '50%' }} />
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                            <Box sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.15)', borderRadius: 4, backdropFilter: 'blur(4px)' }}>
+                                <Category fontSize="large" sx={{ opacity: 0.9 }} />
                             </Box>
                             <Box>
-                                <Typography variant="subtitle2" sx={{ opacity: 0.8 }}>Total Produced</Typography>
-                                <Typography variant="h4" fontWeight="bold">{totalProduced.toLocaleString()} kg</Typography>
+                                <Typography variant="overline" sx={{ fontWeight: 700, opacity: 0.7, letterSpacing: '0.1em' }}>TOTAL PRODUCED</Typography>
+                                <Typography variant="h3" sx={{ fontWeight: 800 }}>{totalProduced.toLocaleString()} <Box component="span" sx={{ fontSize: '1.2rem', fontWeight: 500, opacity: 0.8 }}>kg</Box></Typography>
                             </Box>
-                        </CardContent>
-                    </Card>
+                        </Box>
+                    </Paper>
                 </Grid>
 
                 <Grid size={{ xs: 12, md: 4 }}>
-                    <Card sx={{ bgcolor: 'success.dark', color: 'white', borderRadius: 4 }}>
-                        <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                            <Box sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 3 }}>
-                                <Opacity fontSize="large" />
+                    <Paper sx={{ p: 4, position: 'relative', overflow: 'hidden', bgcolor: (theme) => theme.palette.mode === 'dark' ? '#047857' : '#059669', color: 'white' }}>
+                        <Box sx={{ position: 'absolute', top: -10, right: -10, width: 100, height: 100, bgcolor: 'white', opacity: 0.05, borderRadius: '50%' }} />
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                            <Box sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.15)', borderRadius: 4, backdropFilter: 'blur(4px)' }}>
+                                <Opacity fontSize="large" sx={{ opacity: 0.9 }} />
                             </Box>
                             <Box>
-                                <Typography variant="subtitle2" sx={{ opacity: 0.8 }}>Avg Cost / kg</Typography>
-                                <Typography variant="h4" fontWeight="bold">₹{avgCostPerKg.toFixed(2)}</Typography>
+                                <Typography variant="overline" sx={{ fontWeight: 700, opacity: 0.7, letterSpacing: '0.1em' }}>AVG COST / KG</Typography>
+                                <Typography variant="h3" sx={{ fontWeight: 800 }}>₹{avgCostPerKg.toFixed(2)}</Typography>
                             </Box>
-                        </CardContent>
-                    </Card>
+                        </Box>
+                    </Paper>
                 </Grid>
             </Grid>
 

@@ -1,7 +1,58 @@
 {
-  "files": [],
-  "references": [
-    { "path": "./tsconfig.app.json" },
-    { "path": "./tsconfig.node.json" }
+  "compilerOptions": {
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "react": [
+        "../../node_modules/@types/react",
+        "../../node_modules/react"
+      ],
+      "react/*": [
+        "../../node_modules/@types/react/*",
+        "../../node_modules/react/*"
+      ],
+      "react-dom": [
+        "../../node_modules/@types/react-dom",
+        "../../node_modules/react-dom"
+      ],
+      "react-dom/*": [
+        "../../node_modules/@types/react-dom/*",
+        "../../node_modules/react-dom/*"
+      ],
+      "@react-three/fiber": [
+        "../../node_modules/@react-three/fiber"
+      ],
+      "@react-three/drei": [
+        "../../node_modules/@react-three/drei"
+      ],
+      "three": [
+        "../../node_modules/@types/three",
+        "../../node_modules/three"
+      ],
+      "three/*": [
+        "../../node_modules/three/*"
+      ],
+      "vite/client": [
+        "../../node_modules/vite/client.d.ts"
+      ]
+    }
+  },
+  "include": [
+    "src"
   ]
 }

@@ -24,6 +24,7 @@ import {
     Select,
     MenuItem,
     TextField,
+    Tooltip as MuiTooltip,
 } from '@mui/material';
 import {
     Add as AddIcon,
@@ -33,7 +34,7 @@ import {
     ArrowDownward,
 } from '@mui/icons-material';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ResponsiveContainer, LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend, PieChart, Pie, Cell } from 'recharts';
+import { ResponsiveContainer, LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, CartesianGrid, Legend, PieChart, Pie, Cell } from 'recharts';
 import api from '../utils/api';
 import CostingEntry from './CostingEntry';
 
@@ -61,7 +62,7 @@ interface CostingKPI {
     hasData: boolean;
 }
 
-const Costing: React.FC<{ userRole?: string }> = ({ userRole = 'admin' }) => {
+const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole = 'admin', username }) => {
     const [tabValue, setTabValue] = useState(0); // 0 = Dashboard
     const [openWizard, setOpenWizard] = useState(false);
     const queryClient = useQueryClient();
@@ -277,10 +278,8 @@ const Costing: React.FC<{ userRole?: string }> = ({ userRole = 'admin' }) => {
 
                     <Button
                         variant="contained"
-                        size="small"
                         startIcon={<AddIcon />}
                         onClick={() => setOpenWizard(true)}
-                        sx={{ borderRadius: 2 }}
                     >
                         Add Cost
                     </Button>
@@ -350,7 +349,7 @@ const Costing: React.FC<{ userRole?: string }> = ({ userRole = 'admin' }) => {
                                                     <Cell key={`cell-${index}`} fill={entry.color} />
                                                 ))}
                                             </Pie>
-                                            <Tooltip />
+                                            <RechartsTooltip />
                                         </PieChart>
                                     </ResponsiveContainer>
                                 </Paper>
@@ -365,7 +364,7 @@ const Costing: React.FC<{ userRole?: string }> = ({ userRole = 'admin' }) => {
                                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
                                             <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#b2bac2' }} />
                                             <YAxis axisLine={false} tickLine={false} tick={{ fill: '#b2bac2' }} />
-                                            <Tooltip contentStyle={{ backgroundColor: '#132f4c', border: 'none', borderRadius: 8 }} itemStyle={{ color: '#f3f6f9' }} />
+                                            <RechartsTooltip contentStyle={{ backgroundColor: '#132f4c', border: 'none', borderRadius: 8 }} itemStyle={{ color: '#f3f6f9' }} />
                                             <Legend />
                                             <Line type="monotone" dataKey="cost" stroke="#3b82f6" strokeWidth={2} />
                                         </LineChart>
@@ -381,7 +380,7 @@ const Costing: React.FC<{ userRole?: string }> = ({ userRole = 'admin' }) => {
                                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
                                             <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#b2bac2' }} />
                                             <YAxis axisLine={false} tickLine={false} tick={{ fill: '#b2bac2' }} />
-                                            <Tooltip contentStyle={{ backgroundColor: '#132f4c', border: 'none', borderRadius: 8 }} itemStyle={{ color: '#f3f6f9' }} />
+                                            <RechartsTooltip contentStyle={{ backgroundColor: '#132f4c', border: 'none', borderRadius: 8 }} itemStyle={{ color: '#f3f6f9' }} />
                                             <Bar dataKey="cost" fill="#10b981" radius={[4, 4, 0, 0]} />
                                         </BarChart>
                                     </ResponsiveContainer>
@@ -397,7 +396,7 @@ const Costing: React.FC<{ userRole?: string }> = ({ userRole = 'admin' }) => {
                                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
                                             <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#b2bac2' }} />
                                             <YAxis axisLine={false} tickLine={false} tick={{ fill: '#b2bac2' }} />
-                                            <Tooltip contentStyle={{ backgroundColor: '#132f4c', border: 'none', borderRadius: 8 }} itemStyle={{ color: '#f3f6f9' }} />
+                                            <RechartsTooltip contentStyle={{ backgroundColor: '#132f4c', border: 'none', borderRadius: 8 }} itemStyle={{ color: '#f3f6f9' }} />
                                             <Line type="monotone" dataKey="cost" stroke="#ef4444" strokeWidth={2} />
                                         </LineChart>
                                     </ResponsiveContainer>
@@ -413,7 +412,7 @@ const Costing: React.FC<{ userRole?: string }> = ({ userRole = 'admin' }) => {
                                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
                                             <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#b2bac2' }} />
                                             <YAxis axisLine={false} tickLine={false} tick={{ fill: '#b2bac2' }} />
-                                            <Tooltip contentStyle={{ backgroundColor: '#132f4c', border: 'none', borderRadius: 8 }} itemStyle={{ color: '#f3f6f9' }} />
+                                            <RechartsTooltip contentStyle={{ backgroundColor: '#132f4c', border: 'none', borderRadius: 8 }} itemStyle={{ color: '#f3f6f9' }} />
                                             <Bar dataKey="cost" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
                                         </BarChart>
                                     </ResponsiveContainer>
@@ -459,7 +458,13 @@ const Costing: React.FC<{ userRole?: string }> = ({ userRole = 'admin' }) => {
                                                 {index === 0 ? (
                                                     // EB (Electricity) data
                                                     <>
-                                                        <TableCell>{new Date(entry.date || entry.createdAt).toLocaleDateString()}</TableCell>
+                                                        <TableCell>
+                                                            <MuiTooltip title={entry.entryTimestamp ? new Date(entry.entryTimestamp).toLocaleString() : (entry.createdAt ? new Date(entry.createdAt).toLocaleString() : new Date(entry.date).toLocaleString())} arrow placement="top">
+                                                                <Box component="span" sx={{ cursor: 'help', borderBottom: '1px dotted', borderColor: 'divider' }}>
+                                                                    {new Date(entry.date || entry.createdAt).toLocaleDateString()}
+                                                                </Box>
+                                                            </MuiTooltip>
+                                                        </TableCell>
                                                         <TableCell align="right">{entry.unitsConsumed || '-'}</TableCell>
                                                         <TableCell align="right">₹{entry.ratePerUnit || '-'}</TableCell>
                                                         <TableCell align="center">{entry.noOfShifts || '-'}</TableCell>
@@ -468,7 +473,13 @@ const Costing: React.FC<{ userRole?: string }> = ({ userRole = 'admin' }) => {
                                                 ) : (
                                                     // Other categories data
                                                     <>
-                                                        <TableCell>{new Date(entry.date || entry.createdAt).toLocaleDateString()}</TableCell>
+                                                        <TableCell>
+                                                            <MuiTooltip title={entry.entryTimestamp ? new Date(entry.entryTimestamp).toLocaleString() : (entry.createdAt ? new Date(entry.createdAt).toLocaleString() : new Date(entry.date).toLocaleString())} arrow placement="top">
+                                                                <Box component="span" sx={{ cursor: 'help', borderBottom: '1px dotted', borderColor: 'divider' }}>
+                                                                    {new Date(entry.date || entry.createdAt).toLocaleDateString()}
+                                                                </Box>
+                                                            </MuiTooltip>
+                                                        </TableCell>
                                                         <TableCell>{entry.details}</TableCell>
                                                         <TableCell align="right">₹{entry.totalCost?.toLocaleString()}</TableCell>
                                                         {index === 4 && (
@@ -519,6 +530,7 @@ const Costing: React.FC<{ userRole?: string }> = ({ userRole = 'admin' }) => {
                 <DialogContent dividers>
                     <CostingEntry
                         userRole={userRole}
+                        username={username}
                         onSuccess={handleSuccess}
                         initialTab={tabValue > 0 ? tabValue - 1 : 0}
                     />

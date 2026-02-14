@@ -155,34 +155,112 @@ const Dashboard: React.FC = () => {
             </Box>
 
             {/* KPI Cards */}
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+            <Box sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: '1fr 1fr 1fr 1fr' },
+                gap: 3
+            }}>
                 {summary?.kpis?.map((kpi: KPI, index: number) => (
-                    <Box key={index} sx={{ flex: '1 1 calc(25% - 18px)', minWidth: 250 }}>
-                        <Paper sx={{ p: 3, borderRadius: 2, borderLeft: `6px solid ${kpi.color}` }}>
-                            <Typography variant="subtitle2" color="text.secondary">{kpi.label}</Typography>
-                            {kpi.hasData ? (
-                                <>
-                                    <Box sx={{ display: 'flex', alignItems: 'baseline', mt: 1 }}>
-                                        <Typography variant="h4" sx={{ fontWeight: 'bold' }}>{kpi.value}</Typography>
-                                        {kpi.subValue && (
-                                            <Typography variant="caption" sx={{ ml: 1, color: 'text.secondary' }}>
-                                                {kpi.subValue}
-                                            </Typography>
-                                        )}
-                                    </Box>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', mt: 1, color: kpi.trend.startsWith('+') ? 'success.main' : 'error.main' }}>
-                                        {kpi.trend.startsWith('+') ? <ArrowUpward fontSize="small" /> : <ArrowDownward fontSize="small" />}
-                                        <Typography variant="caption" sx={{ ml: 0.5, fontWeight: 'medium' }}>{kpi.trend}</Typography>
-                                        <Typography variant="caption" sx={{ ml: 1, color: 'text.secondary' }}>{kpi.comparison}</Typography>
-                                    </Box>
-                                </>
-                            ) : (
-                                <Box sx={{ mt: 2 }}>
-                                    <Typography variant="body2" color="text.secondary">No data available</Typography>
+                    <Paper
+                        key={index}
+                        sx={{
+                            p: 3,
+                            position: 'relative',
+                            overflow: 'hidden',
+                            '&:hover': {
+                                transform: 'translateY(-4px)',
+                                boxShadow: (theme) => theme.palette.mode === 'dark'
+                                    ? `0 12px 24px -1px rgba(0, 0, 0, 0.4), 0 0 0 1px ${kpi.color}22`
+                                    : `0 12px 24px -1px rgba(0, 0, 0, 0.08), 0 0 0 1px ${kpi.color}22`,
+                            }
+                        }}
+                    >
+                        {/* Status Bar */}
+                        <Box sx={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '4px',
+                            height: '100%',
+                            bgcolor: kpi.color,
+                            opacity: 0.8
+                        }} />
+
+                        {/* Background Decoration */}
+                        <Box sx={{
+                            position: 'absolute',
+                            top: -20,
+                            right: -20,
+                            width: 100,
+                            height: 100,
+                            borderRadius: '50%',
+                            bg: kpi.color,
+                            opacity: 0.03,
+                            filter: 'blur(20px)'
+                        }} />
+
+                        <Typography
+                            variant="overline"
+                            sx={{
+                                fontWeight: 700,
+                                color: 'text.secondary',
+                                letterSpacing: '0.1em',
+                                display: 'block',
+                                mb: 1,
+                                opacity: 0.8
+                            }}
+                        >
+                            {kpi.label}
+                        </Typography>
+
+                        {kpi.hasData ? (
+                            <>
+                                <Box sx={{ display: 'flex', alignItems: 'baseline', mt: 0.5, mb: 2 }}>
+                                    <Typography variant="h3" sx={{ fontWeight: 800 }}>
+                                        {kpi.value.split(' ')[0]}
+                                    </Typography>
+                                    <Typography variant="h6" sx={{ ml: 1, color: 'text.secondary', fontWeight: 500, fontSize: '0.9rem' }}>
+                                        {kpi.value.split(' ').slice(1).join(' ')}
+                                    </Typography>
                                 </Box>
-                            )}
-                        </Paper>
-                    </Box>
+
+                                {kpi.subValue && (
+                                    <Typography variant="caption" sx={{ display: 'block', mt: -1, mb: 2, color: 'text.secondary', fontStyle: 'italic' }}>
+                                        {kpi.subValue}
+                                    </Typography>
+                                )}
+
+                                <Box sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    p: 1,
+                                    borderRadius: 2,
+                                    bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)',
+                                    alignSelf: 'flex-start',
+                                    width: 'fit-content'
+                                }}>
+                                    <Box sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        color: kpi.trend.startsWith('+') ? 'success.main' : 'error.main',
+                                        mr: 1.5
+                                    }}>
+                                        {kpi.trend.startsWith('+') ? <ArrowUpward sx={{ fontSize: 16 }} /> : <ArrowDownward sx={{ fontSize: 16 }} />}
+                                        <Typography variant="caption" sx={{ ml: 0.5, fontWeight: 700 }}>
+                                            {kpi.trend}
+                                        </Typography>
+                                    </Box>
+                                    <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                                        {kpi.comparison}
+                                    </Typography>
+                                </Box>
+                            </>
+                        ) : (
+                            <Box sx={{ mt: 2, py: 1 }}>
+                                <Typography variant="body2" color="text.secondary">No data available for this period</Typography>
+                            </Box>
+                        )}
+                    </Paper>
                 ))}
             </Box>
         </Box>

@@ -25,6 +25,7 @@ import {
     DialogContent,
     DialogContentText,
     DialogActions,
+    Tooltip as MuiTooltip,
     type SelectChangeEvent,
 } from '@mui/material';
 import {
@@ -43,7 +44,7 @@ import {
     Bar,
     XAxis,
     YAxis,
-    Tooltip,
+    Tooltip as RechartsTooltip,
     CartesianGrid,
     Legend
 } from 'recharts';
@@ -86,6 +87,8 @@ interface InventoryItem {
     date: string;
     type: 'INWARD' | 'OUTWARD' | 'PRODUCTION' | 'WASTE';
     item?: string;
+    originalDate?: Date;
+    count?: string;
     quantity: number;
     balance?: number;
     bale?: number;
@@ -96,9 +99,10 @@ interface InventoryItem {
 
 interface InventoryProps {
     userRole?: string;
+    username?: string;
 }
 
-const Inventory: React.FC<InventoryProps> = () => {
+const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
     const [tabValue, setTabValue] = useState(0);
     const [dateFilter, setDateFilter] = useState<string>('month');
     const [customFrom, setCustomFrom] = useState<string>('');
@@ -117,9 +121,9 @@ const Inventory: React.FC<InventoryProps> = () => {
                 return;
             }
             if (wasteAction === 'export') {
-                await api.post('/inventory/waste/export', { ...wasteForm, quantity: parseFloat(wasteForm.quantity) });
+                await api.post('/inventory/waste/export', { ...wasteForm, quantity: parseFloat(wasteForm.quantity), createdBy: username });
             } else {
-                await api.post('/inventory/waste/recycle', { date: wasteForm.date, quantity: parseFloat(wasteForm.quantity) });
+                await api.post('/inventory/waste/recycle', { date: wasteForm.date, quantity: parseFloat(wasteForm.quantity), createdBy: username });
             }
             setNotification({ open: true, message: 'Waste processed successfully', severity: 'success' });
             setWasteModalOpen(false);
@@ -208,8 +212,8 @@ const Inventory: React.FC<InventoryProps> = () => {
         ...(dashboardData?.history || []).map((h: any) => ({
             id: h.id || Math.random().toString(),
             date: new Date(h.date).toISOString().split('T')[0],
-            originalDate: new Date(h.date), // Keep original date object for sorting
-            type: h.type === 'INWARD' ? 'INWARD' : (h.type === 'OUTWARD' ? 'OUTWARD' : 'PRODUCTION'),
+            originalDate: h.entryTimestamp ? new Date(h.entryTimestamp) : (h.createdAt ? new Date(h.createdAt) : new Date(h.date)),
+            type: h.type as 'INWARD' | 'OUTWARD' | 'PRODUCTION' | 'WASTE',
             item: h.material,
             quantity: h.quantity || 0,
             balance: h.balance || 0,
@@ -227,6 +231,7 @@ const Inventory: React.FC<InventoryProps> = () => {
         if (historyTypeFilter === 'all') return true;
         if (historyTypeFilter === 'cotton') return item.item?.toLowerCase().includes('cotton');
         if (historyTypeFilter === 'yarn') return item.item?.toLowerCase().includes('yarn');
+        if (historyTypeFilter === 'waste') return item.type === 'WASTE' || item.item?.toLowerCase().includes('waste');
         return true;
     });
 
@@ -272,72 +277,51 @@ const Inventory: React.FC<InventoryProps> = () => {
         let totalKgFromAllCounts = 0;
 
         if (isYarn) {
-            // Group yarn data by count
-            ['2', '4', '6', '8', '10'].forEach(count => {
-                const countData = data.filter(d => d.reference?.includes(`Count ${count}`) || d.details?.includes(count));
+            const counts = Array.from(new Set(data.map(d => d.count || (d.reference?.match(/Count (\d+)/)?.[1])).filter((c): c is string => Boolean(c)))).sort((a, b) => parseInt(a) - parseInt(b));
+
+            counts.forEach(count => {
+                const countData = data.filter(d => (d.count === count) || (d.reference && d.reference.includes(`Count ${count}`)) || (d.details && d.details.includes(count)));
                 const latestCountEntry = countData.length > 0 ? countData[0] : null;
                 const totalKg = latestCountEntry?.balance || 0;
                 const bags = Math.floor(totalKg / 60);
                 const remainder = totalKg % 60;
-                yarnByCount[count] = { bags, kg: totalKg, remainder };
+                yarnByCount[count as string] = { bags, kg: totalKg, remainder };
 
-                // Sum up bags, remainders, and total kg from all counts
                 totalBagsFromCounts += bags;
                 totalRemainderFromCounts += remainder;
                 totalKgFromAllCounts += totalKg;
             });
-
-            // For yarn, use the sum of all count balances
             currentBalance = totalKgFromAllCounts;
         }
 
-        // Calculate additional bags from combined remainders
-        // FIX: Do not combine remainders from different counts into bags. 
-        // Different yarn counts cannot be mixed to form a bag.
-        // const additionalBagsFromRemainder = Math.floor(totalRemainderFromCounts / 60);
-        // const finalRemainder = totalRemainderFromCounts % 60;
-
-        // Calculate bales/bags
-        // For Cotton: Sum the actual bale movements from the current filtered data
-        // Calculate bales/bags
-        // For Cotton: Sum the actual bale movements (API returns signed values now)
-        const currentBaleBalance = isCotton ? data.reduce((sum, item) => {
-            return sum + (item.bale || 0);
-        }, 0) : 0;
-
-        // Calculate Total Balance (kg) by summing quantities (Ledger approach) instead of trusting stale snapshots
+        const currentBaleBalance = isCotton ? data.reduce((sum, item) => sum + (item.bale || 0), 0) : 0;
         if (isCotton) {
             currentBalance = data.reduce((sum, item) => sum + (item.quantity || 0), 0);
         }
 
         const totalBales = isCotton ? currentBaleBalance : 0;
-        // FIX: Total bags is just sum of bags from each count
         const totalBags = isYarn ? totalBagsFromCounts : 0;
         const remainderKg = isYarn ? totalRemainderFromCounts : 0;
 
         return (
             <Box sx={{ maxWidth: '100%', width: '100%' }}>
                 <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>{title}</Typography>
-
-                {/* Balance Summary Section */}
                 <Paper sx={{ p: 3, mb: 3, borderRadius: 2, bgcolor: 'primary.dark' }}>
                     {isCotton && (
-                        <>
-                            <Box sx={{ display: 'flex', gap: 4, alignItems: 'center', flexWrap: 'wrap' }}>
-                                <Box>
-                                    <Typography variant="subtitle2" color="text.secondary">Balance Cotton Bales</Typography>
-                                    <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.light' }}>
-                                        {totalBales.toLocaleString()}
-                                    </Typography>
-                                </Box>
-                                <Box>
-                                    <Typography variant="subtitle2" color="text.secondary">Total Balance (kg)</Typography>
-                                    <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'success.light' }}>
-                                        {currentBalance.toLocaleString()} kg
-                                    </Typography>
-                                </Box>
+                        <Box sx={{ display: 'flex', gap: 4, alignItems: 'center', flexWrap: 'wrap' }}>
+                            <Box>
+                                <Typography variant="subtitle2" color="text.secondary">Balance Cotton Bales</Typography>
+                                <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.light' }}>
+                                    {totalBales.toLocaleString()}
+                                </Typography>
                             </Box>
-                        </>
+                            <Box>
+                                <Typography variant="subtitle2" color="text.secondary">Total Balance (kg)</Typography>
+                                <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'success.light' }}>
+                                    {currentBalance.toLocaleString()} kg
+                                </Typography>
+                            </Box>
+                        </Box>
                     )}
                     {isYarn && (
                         <>
@@ -400,13 +384,18 @@ const Inventory: React.FC<InventoryProps> = () => {
                                 <TableRow><TableCell colSpan={isCotton || isYarn ? 7 : 6} align="center">No data found</TableCell></TableRow>
                             ) : (
                                 data.map((row) => {
-                                    // Use actual bale data from backend for cotton
                                     const baleCount = isCotton ? (row.bale || 0) : 0;
                                     const bagCount = isYarn ? Math.floor(Math.abs(row.quantity) / 60) : 0;
 
                                     return (
                                         <TableRow key={row.id}>
-                                            <TableCell>{row.date}</TableCell>
+                                            <TableCell>
+                                                <MuiTooltip title={row.originalDate ? row.originalDate.toLocaleString() : row.date} arrow placement="top">
+                                                    <Box component="span" sx={{ cursor: 'help', borderBottom: '1px dotted', borderColor: 'divider' }}>
+                                                        {row.date}
+                                                    </Box>
+                                                </MuiTooltip>
+                                            </TableCell>
                                             <TableCell>
                                                 <Chip
                                                     icon={row.quantity >= 0 ? <ArrowUpward /> : <ArrowDownward />}
@@ -502,7 +491,7 @@ const Inventory: React.FC<InventoryProps> = () => {
                                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
                                         <XAxis dataKey="name" />
                                         <YAxis />
-                                        <Tooltip />
+                                        <RechartsTooltip />
                                         <Bar dataKey="bags" fill="#2e7d32" name="Bags in Stock" radius={[4, 4, 0, 0]} />
                                     </BarChart>
                                 </ResponsiveContainer>
@@ -516,7 +505,7 @@ const Inventory: React.FC<InventoryProps> = () => {
                                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
                                         <XAxis dataKey="date" />
                                         <YAxis />
-                                        <Tooltip />
+                                        <RechartsTooltip />
                                         <Legend />
                                         <Line type="monotone" dataKey="kg" stroke="#ed6c02" name="Inward (kg)" />
                                         <Line type="monotone" dataKey="outward" stroke="#2e7d32" name="Outward (kg)" />
@@ -534,8 +523,13 @@ const Inventory: React.FC<InventoryProps> = () => {
                     <Box sx={{ maxWidth: '100%', width: '100%' }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                             <Typography variant="h6" sx={{ fontWeight: 'bold' }}>Waste Logs</Typography>
-                            <Button variant="contained" color="secondary" onClick={() => setWasteModalOpen(true)}>
-                                Manage Waste
+                            <Button
+                                variant="contained"
+                                color="secondary"
+                                onClick={() => setWasteModalOpen(true)}
+                                sx={{ px: 4 }}
+                            >
+                                Manage Waste stock
                             </Button>
                         </Box>
 
@@ -571,7 +565,13 @@ const Inventory: React.FC<InventoryProps> = () => {
                                     ) : (
                                         (dashboardData?.wasteHistory || []).map((row: any) => (
                                             <TableRow key={row.id}>
-                                                <TableCell>{new Date(row.date).toISOString().split('T')[0]}</TableCell>
+                                                <TableCell>
+                                                    <MuiTooltip title={new Date(row.date).toLocaleString()} arrow placement="top">
+                                                        <Box component="span" sx={{ cursor: 'help', borderBottom: '1px dotted', borderColor: 'divider' }}>
+                                                            {new Date(row.date).toISOString().split('T')[0]}
+                                                        </Box>
+                                                    </MuiTooltip>
+                                                </TableCell>
                                                 <TableCell align="right" sx={{ fontWeight: 'bold', color: 'warning.main' }}>
                                                     {row.quantity}
                                                 </TableCell>
@@ -598,12 +598,13 @@ const Inventory: React.FC<InventoryProps> = () => {
                                 <MenuItem value="all">All Movements</MenuItem>
                                 <MenuItem value="cotton">Cotton Only</MenuItem>
                                 <MenuItem value="yarn">Yarn Only</MenuItem>
+                                <MenuItem value="waste">Waste Movements</MenuItem>
                             </Select>
                         </FormControl>
                         <Box sx={{ display: 'flex', gap: 2 }}>
-                            <Button startIcon={<EmailIcon />} variant="outlined" onClick={() => handleExport('email')}>Email</Button>
-                            <Button startIcon={<ExcelIcon />} variant="outlined" onClick={() => handleExport('excel')}>Excel</Button>
-                            <Button startIcon={<PdfIcon />} variant="outlined" onClick={() => handleExport('pdf')}>PDF</Button>
+                            <Button startIcon={<EmailIcon />} variant="outlined" color="info" onClick={() => handleExport('email')}>Email</Button>
+                            <Button startIcon={<ExcelIcon />} variant="outlined" color="info" onClick={() => handleExport('excel')}>Excel</Button>
+                            <Button startIcon={<PdfIcon />} variant="outlined" color="info" onClick={() => handleExport('pdf')}>PDF</Button>
                         </Box>
                     </Box>
                     <TableContainer component={Paper} variant="outlined">
@@ -621,7 +622,13 @@ const Inventory: React.FC<InventoryProps> = () => {
                             <TableBody>
                                 {filteredFullHistory.map((row) => (
                                     <TableRow key={`${row.item}-${row.id}`}>
-                                        <TableCell>{row.date}</TableCell>
+                                        <TableCell>
+                                            <MuiTooltip title={row.originalDate ? row.originalDate.toLocaleString() : row.date} arrow placement="top">
+                                                <Box component="span" sx={{ cursor: 'help', borderBottom: '1px dotted', borderColor: 'divider' }}>
+                                                    {row.date}
+                                                </Box>
+                                            </MuiTooltip>
+                                        </TableCell>
                                         <TableCell>
                                             <Chip
                                                 label={row.type}

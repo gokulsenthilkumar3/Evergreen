@@ -57,9 +57,10 @@ const fadeInUp = keyframes`
 
 interface LoginProps {
     onLoginSuccess: (user: any) => void;
+    settings?: any;
 }
 
-const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
+const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings }) => {
     const [username, setUsername] = useState('admin');
     const [password, setPassword] = useState('admin123');
     const [showPassword, setShowPassword] = useState(false);
@@ -192,17 +193,32 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                 >
                     <Box sx={{ animation: `${fadeInUp} 0.6s ease-out forwards`, opacity: 0, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
 
-                        {/* Interactive Avatar */}
+                        {/* Interactive Avatar - Hidden for now */}
+                        {/* 
                         <Box sx={{ mt: -4, mb: 2 }}>
                             <LoginAvatar
                                 isPasswordFocused={showPassword}
                                 isTyping={isTyping}
                             />
                         </Box>
+                        */}
 
                         <Box sx={{ textAlign: 'center', mb: 3 }}>
+                            {settings?.logo ? (
+                                <Box
+                                    component="img"
+                                    src={settings.logo}
+                                    alt="Logo"
+                                    sx={{
+                                        height: 80,
+                                        width: 'auto',
+                                        mb: 2,
+                                        objectFit: 'contain'
+                                    }}
+                                />
+                            ) : null}
                             <Typography variant="h4" sx={{ fontWeight: 800, color: 'primary.main', letterSpacing: '-0.5px', mb: 0.5 }}>
-                                EVER GREEN
+                                {settings?.companyName?.toUpperCase() || 'EVER GREEN'}
                             </Typography>
                             <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, opacity: 0.8 }}>
                                 Yarn Management Solution
@@ -390,7 +406,8 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                 </Paper>
             </Zoom>
 
-            {/* Footer Branding */}
+            {/* Footer Branding - Hidden for now */}
+            {/* 
             <Typography
                 variant="caption"
                 align="center"
@@ -405,6 +422,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
             >
                 © {new Date().getFullYear()} Ever Green Yarn Mills. All rights reserved.
             </Typography>
+            */}
         </Box>
     );
 };

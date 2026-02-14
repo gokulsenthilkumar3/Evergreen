@@ -24,6 +24,7 @@ import {
     Menu,
     ListItemIcon,
     ListItemText,
+    Tooltip,
 } from '@mui/material';
 import {
     Add as AddIcon,
@@ -48,9 +49,10 @@ interface OutwardItem {
 
 interface OutwardEntryProps {
     userRole?: string;
+    username?: string;
 }
 
-const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole }) => {
+const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
     const [openDialog, setOpenDialog] = useState(false);
     const [historyFrom, setHistoryFrom] = useState('');
     const [historyTo, setHistoryTo] = useState('');
@@ -194,6 +196,7 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole }) => {
                 customerName,
                 vehicleNo,
                 driverName,
+                createdBy: username,
                 items: validItems.map(item => ({
                     ...item,
                     bags: Number(item.bags),
@@ -314,16 +317,7 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole }) => {
                         variant="contained"
                         startIcon={<AddIcon />}
                         onClick={() => setOpenDialog(true)}
-                        sx={{
-                            fontWeight: 'bold',
-                            whiteSpace: 'nowrap',
-                            bgcolor: 'success.main',
-                            '&:hover': { bgcolor: 'success.dark' },
-                            borderRadius: '20px',
-                            px: 3,
-                            textTransform: 'none',
-                            fontSize: '1rem'
-                        }}
+                        sx={{ whiteSpace: 'nowrap' }}
                     >
                         Add Outward
                     </Button>
@@ -333,6 +327,7 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole }) => {
                     <Button
                         startIcon={<ExportIcon />}
                         variant="outlined"
+                        color="info"
                         onClick={handleMenuOpen}
                         sx={{ borderRadius: '20px', textTransform: 'none' }}
                     >
@@ -376,7 +371,13 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole }) => {
                         <TableBody>
                             {outwardHistory?.map((row: any) => (
                                 <TableRow key={row.id} hover>
-                                    <TableCell>{new Date(row.date).toLocaleDateString()}</TableCell>
+                                    <TableCell>
+                                        <Tooltip title={row.entryTimestamp ? new Date(row.entryTimestamp).toLocaleString() : new Date(row.date).toLocaleString()} arrow placement="top">
+                                            <Box component="span" sx={{ cursor: 'help', borderBottom: '1px dotted', borderColor: 'divider' }}>
+                                                {new Date(row.date).toLocaleDateString()}
+                                            </Box>
+                                        </Tooltip>
+                                    </TableCell>
                                     <TableCell sx={{ fontWeight: 'bold' }}>{row.customerName}</TableCell>
                                     <TableCell>
                                         <Typography variant="body2">{row.vehicleNo}</Typography>
@@ -533,13 +534,25 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole }) => {
                         </TableContainer>
 
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 1 }}>
-                            <Button startIcon={<AddIcon />} onClick={addItemRow} variant="outlined" color="primary">
+                            <Button
+                                startIcon={<AddIcon />}
+                                onClick={addItemRow}
+                                variant="outlined"
+                            >
                                 Add Row
                             </Button>
-                            <Box sx={{ textAlign: 'right', p: 2, bgcolor: 'primary.50', borderRadius: 2, minWidth: 200, boxShadow: 1 }}>
+                            <Box sx={{
+                                textAlign: 'right',
+                                p: 2,
+                                bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(16, 185, 129, 0.05)' : 'rgba(16, 185, 129, 0.03)',
+                                borderRadius: 3,
+                                minWidth: 200,
+                                border: '1px solid',
+                                borderColor: 'divider'
+                            }}>
                                 <Typography variant="body2" color="text.secondary">Total Bags: <strong>{getTotalBags()}</strong></Typography>
-                                <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold' }}>
-                                    Weight: {getTotalWeight().toFixed(2)} kg
+                                <Typography variant="h5" color="primary.main" sx={{ fontWeight: 800 }}>
+                                    {getTotalWeight().toFixed(1)} <Box component="span" sx={{ fontSize: '0.9rem', fontWeight: 500 }}>kg</Box>
                                 </Typography>
                             </Box>
                         </Box>
@@ -548,7 +561,13 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole }) => {
                 </DialogContent>
                 <DialogActions sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
                     <Button onClick={() => setOpenDialog(false)} color="inherit">Cancel</Button>
-                    <Button onClick={handleSave} variant="contained" startIcon={<SaveIcon />}>Save Entry</Button>
+                    <Button
+                        onClick={handleSave}
+                        variant="contained"
+                        startIcon={<SaveIcon />}
+                    >
+                        Save Entry
+                    </Button>
                 </DialogActions>
             </Dialog>
 

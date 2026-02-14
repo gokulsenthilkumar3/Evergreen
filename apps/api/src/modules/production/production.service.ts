@@ -50,6 +50,7 @@ export class ProductionService {
                     totalConsumed: data.totalConsumed,
                     totalProduced: data.totalProduced,
                     totalWaste: data.totalWaste,
+                    createdBy: data.createdBy,
                     wasteBlowRoom: parseFloat(data.waste.blowRoom) || 0,
                     wasteCarding: parseFloat(data.waste.carding) || 0,
                     wasteOE: parseFloat(data.waste.oe) || 0,
@@ -85,7 +86,8 @@ export class ProductionService {
                         balance: currentBalance - weight,
                         reference: `PROD-${production.id}`,
                         batchId: c.batchNo,
-                        productionId: production.id
+                        productionId: production.id,
+                        createdBy: data.createdBy
                     }
                 });
             }
@@ -108,7 +110,8 @@ export class ProductionService {
                         balance: currentBalanceForCount + weight,
                         reference: `PROD-${production.id} Count ${p.count}`,
                         count: p.count,
-                        productionId: production.id
+                        productionId: production.id,
+                        createdBy: data.createdBy
                     }
                 });
             }
@@ -129,7 +132,8 @@ export class ProductionService {
                         wasteCarding: parseFloat(data.waste.carding) || 0,
                         wasteOE: parseFloat(data.waste.oe) || 0,
                         wasteOthers: parseFloat(data.waste.others) || 0,
-                        productionId: production.id
+                        productionId: production.id,
+                        createdBy: data.createdBy
                     }
                 });
             }
