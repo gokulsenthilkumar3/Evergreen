@@ -216,7 +216,7 @@ const Dashboard: React.FC = () => {
                         {kpi.hasData ? (
                             <>
                                 <Box sx={{ display: 'flex', alignItems: 'baseline', mt: 0.5, mb: 2 }}>
-                                    <Typography variant="h3" sx={{ fontWeight: 800 }}>
+                                    <Typography variant="h4" sx={{ fontWeight: 800, fontSize: { xs: '1.5rem', md: '2rem' } }}>
                                         {kpi.value.split(' ')[0]}
                                     </Typography>
                                     <Typography variant="h6" sx={{ ml: 1, color: 'text.secondary', fontWeight: 500, fontSize: '0.9rem' }}>

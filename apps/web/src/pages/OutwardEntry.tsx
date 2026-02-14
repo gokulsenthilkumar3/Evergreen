@@ -39,6 +39,8 @@ import { useQuery } from '@tanstack/react-query';
 import api from '../utils/api';
 import { generateExcel } from '../utils/excelGenerator';
 import { generatePDF } from '../utils/pdfGenerator';
+import { useConfirm } from '../context/ConfirmContext';
+import { toast } from 'sonner';
 
 interface OutwardItem {
     id: number;
@@ -58,6 +60,8 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
     const [historyTo, setHistoryTo] = useState('');
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [filterType, setFilterType] = useState('all');
+    const [showErrors, setShowErrors] = useState(false);
+    const { confirm: confirmDialog } = useConfirm();
 
     const handleMenuOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
         setAnchorEl(event.currentTarget);
@@ -124,11 +128,6 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
         { id: 1, count: '2', bags: 0, weight: 0 },
     ]);
 
-    const [notification, setNotification] = useState({
-        open: false,
-        message: '',
-        severity: 'success' as 'success' | 'error',
-    });
 
     const handleItemChange = (id: number, field: keyof OutwardItem, value: any) => {
         setItems(prev => prev.map(item => {
@@ -159,21 +158,22 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
     const getTotalWeight = () => items.reduce((sum, item) => sum + (Number(item.weight) || 0), 0);
 
     const handleSave = async () => {
+        setShowErrors(true);
         if (!customerName || !vehicleNo || !driverName) {
-            setNotification({ open: true, message: 'Please fill Customer Name, Vehicle No, and Driver Name', severity: 'error' });
+            toast.error('Please fill Customer Name, Vehicle No, and Driver Name');
             return;
         }
 
         // Vehicle Number Validation (Basic Indian Format)
         const vehicleRegex = /^[A-Z]{2}[ -]?[0-9]{1,2}(?:[ -]?[A-Z]{1,2})?[ -]?[0-9]{4}$/i;
         if (!vehicleRegex.test(vehicleNo)) {
-            setNotification({ open: true, message: 'Invalid Vehicle Number format (e.g., TN 01 AB 1234)', severity: 'error' });
+            toast.error('Invalid Vehicle Number format (e.g., TN 01 AB 1234)');
             return;
         }
 
         const validItems = items.filter(i => Number(i.bags) > 0);
         if (validItems.length === 0) {
-            setNotification({ open: true, message: 'Please add at least one item with bags', severity: 'error' });
+            toast.error('Please add at least one item with bags');
             return;
         }
 
@@ -181,11 +181,7 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
         for (const item of validItems) {
             const currentStock = yarnStock[item.count] || 0;
             if (Number(item.weight) > currentStock) {
-                setNotification({
-                    open: true,
-                    message: `Insufficient stock for Count ${item.count}. Available: ${(currentStock / 60).toFixed(0)} bags (${currentStock.toFixed(2)}kg)`,
-                    severity: 'error'
-                });
+                toast.error(`Insufficient stock for Count ${item.count}. Available: ${(currentStock / 60).toFixed(0)} bags (${currentStock.toFixed(2)}kg)`);
                 return;
             }
         }
@@ -203,8 +199,7 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
                     weight: Number(item.weight)
                 }))
             });
-            setNotification({ open: true, message: 'Outward entry saved successfully!', severity: 'success' });
-            // Reset form
+            toast.success('Outward entry saved successfully!');
             setCustomerName('');
             setVehicleNo('');
             setDriverName('');
@@ -212,28 +207,29 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
             refetchHistory();
             refetchStock();
             setOpenDialog(false);
+            setShowErrors(false);
         } catch (error) {
-            setNotification({ open: true, message: 'Failed to save outward entry', severity: 'error' });
+            toast.error('Failed to save outward entry');
         }
     };
 
     const handleDeleteOutward = async (id: number) => {
-        if (!window.confirm('Are you sure you want to delete this outward entry? This will also revert inventory changes.')) return;
+        if (!await confirmDialog({ title: 'Delete Outward Entry', message: 'Are you sure you want to delete this outward entry? This will also revert inventory changes.', severity: 'error', confirmText: 'Delete', cancelText: 'Cancel' })) return;
 
         try {
             await api.delete(`/inventory/outward/${id}`);
-            setNotification({ open: true, message: 'Outward entry deleted successfully', severity: 'success' });
+            toast.success('Outward entry deleted successfully');
             refetchHistory();
             refetchStock();
         } catch (error) {
-            setNotification({ open: true, message: 'Failed to delete outward entry', severity: 'error' });
+            toast.error('Failed to delete outward entry');
         }
     };
 
     const handleExport = (type: 'email' | 'excel' | 'pdf') => {
         const data = outwardHistory || [];
         if (data.length === 0) {
-            setNotification({ open: true, message: 'No data to export', severity: 'error' });
+            toast.error('No data to export');
             return;
         }
 
@@ -406,7 +402,7 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
                 </TableContainer>
             </Paper>
 
-            <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="md" fullWidth>
+            <Dialog open={openDialog} onClose={() => { setOpenDialog(false); setShowErrors(false); }} maxWidth="md" fullWidth>
                 <DialogTitle sx={{ fontWeight: 'bold', borderBottom: 1, borderColor: 'divider' }}>
                     New Outward Entry
                 </DialogTitle>
@@ -430,7 +426,7 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
                                     value={customerName}
                                     onChange={(e) => setCustomerName(e.target.value)}
                                     required
-                                    error={!customerName && notification.severity === 'error'}
+                                    error={showErrors && !customerName}
                                 />
                             </Grid>
                             <Grid size={{ xs: 12, sm: 6 }}>
@@ -441,7 +437,7 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
                                     onChange={(e) => setVehicleNo(e.target.value.toUpperCase())}
                                     required
                                     placeholder="TN 01 AB 1234"
-                                    error={!vehicleNo && notification.severity === 'error'}
+                                    error={showErrors && !vehicleNo}
                                     helperText="Format: TN 01 AB 1234"
                                 />
                             </Grid>
@@ -452,7 +448,7 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
                                     value={driverName}
                                     onChange={(e) => setDriverName(e.target.value)}
                                     required
-                                    error={!driverName && notification.severity === 'error'}
+                                    error={showErrors && !driverName}
                                 />
                             </Grid>
                         </Grid>
@@ -560,7 +556,7 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
                     </Box>
                 </DialogContent>
                 <DialogActions sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
-                    <Button onClick={() => setOpenDialog(false)} color="inherit">Cancel</Button>
+                    <Button onClick={() => { setOpenDialog(false); setShowErrors(false); }} color="inherit">Cancel</Button>
                     <Button
                         onClick={handleSave}
                         variant="contained"
@@ -571,15 +567,6 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
                 </DialogActions>
             </Dialog>
 
-            <Snackbar
-                open={notification.open}
-                autoHideDuration={4000}
-                onClose={() => setNotification({ ...notification, open: false })}
-            >
-                <Alert severity={notification.severity} onClose={() => setNotification({ ...notification, open: false })}>
-                    {notification.message}
-                </Alert>
-            </Snackbar>
         </Box>
     );
 };

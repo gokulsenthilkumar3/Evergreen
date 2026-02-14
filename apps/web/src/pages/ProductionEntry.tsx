@@ -40,6 +40,8 @@ import { useQuery } from '@tanstack/react-query';
 import api from '../utils/api';
 import { generateExcel } from '../utils/excelGenerator';
 import { generatePDF } from '../utils/pdfGenerator';
+import { useConfirm } from '../context/ConfirmContext';
+import { toast } from 'sonner';
 
 interface ConsumptionItem {
     id: number;
@@ -133,18 +135,30 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
         oe: '',
         others: '',
     });
+    const { confirm: confirmDialog } = useConfirm();
 
-    const [notification, setNotification] = useState({
-        open: false,
-        message: '',
-        severity: 'success' as 'success' | 'error',
-    });
+
+    const getAvailableConsumption = (batchNo: string) => {
+        const batch = availableBatches.find((b: any) => b.batchId === batchNo);
+        return {
+            bale: batch?.bale || 0,
+            weight: batch?.kg || 0,
+        };
+    };
 
     const steps = ['Input (Cotton Consumption)', 'Output (Yarn & Waste)'];
 
     // Consumed handlers
-    const handleConsumedChange = (id: number, field: keyof ConsumptionItem, value: string) => {
-        setConsumed(prev => prev.map(item => (item.id === id ? { ...item, [field]: value } : item)));
+    const handleConsumedChange = (id: number, field: keyof ConsumptionItem, value: any) => {
+        setConsumed(prev => prev.map(item => {
+            if (item.id === id) {
+                const updatedItem = { ...item, [field]: value };
+
+                // Auto validation logic can go here if needed per field change
+                return updatedItem;
+            }
+            return item;
+        }));
     };
 
     const addConsumed = () => {
@@ -159,7 +173,7 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
     };
 
     // Produced handlers
-    const handleProducedChange = (id: number, field: keyof ProductionItem, value: string) => {
+    const handleProducedChange = (id: number, field: keyof ProductionItem, value: any) => {
         setProduced(prev => prev.map(item => {
             if (item.id === id) {
                 const updated = { ...item, [field]: value };
@@ -207,7 +221,7 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
             // Validate input
             const hasValidInput = consumed.some(item => item.batchNo && parseFloat(item.weight) > 0 && parseFloat(item.bale) > 0);
             if (!hasValidInput) {
-                setNotification({ open: true, message: 'Please add at least one valid consumption entry with batch, bale, and weight', severity: 'error' });
+                toast.error('Please add at least one valid consumption entry with batch, bale, and weight');
                 return;
             }
 
@@ -232,20 +246,12 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                 const maxWeight = selectedBatch?.kg || 0;
 
                 if (consumption.totalBales <= 0 || consumption.totalBales > maxBale) {
-                    setNotification({
-                        open: true,
-                        message: `Total bales for batch ${batchNo} (${consumption.totalBales}) exceeds available bales (${maxBale})`,
-                        severity: 'error'
-                    });
+                    toast.error(`Total bales for batch ${batchNo} (${consumption.totalBales}) exceeds available bales (${maxBale})`);
                     return;
                 }
 
                 if (consumption.totalWeight <= 0 || consumption.totalWeight > maxWeight) {
-                    setNotification({
-                        open: true,
-                        message: `Total weight for batch ${batchNo} (${consumption.totalWeight} kg) exceeds available weight (${maxWeight} kg)`,
-                        severity: 'error'
-                    });
+                    toast.error(`Total weight for batch ${batchNo} (${consumption.totalWeight} kg) exceeds available weight (${maxWeight} kg)`);
                     return;
                 }
             }
@@ -265,11 +271,7 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
             const balance = totalConsumed - totalProduced - totalWaste;
 
             if (Math.abs(balance) > 0.01) {
-                setNotification({
-                    open: true,
-                    message: `Material balance mismatch: ${balance.toFixed(2)} kg difference`,
-                    severity: 'error'
-                });
+                toast.error(`Material balance mismatch: ${balance.toFixed(2)} kg difference`);
                 return;
             }
 
@@ -285,24 +287,24 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
             };
 
             await api.post('/production', productionData);
-            setNotification({ open: true, message: 'Production entry saved successfully!', severity: 'success' });
+            toast.success('Production entry saved successfully!');
             refetchProduction();
             handleCloseWizard();
         } catch (error: any) {
             const message = error.response?.data?.message || 'Failed to save production entry';
-            setNotification({ open: true, message: Array.isArray(message) ? message.join(', ') : message, severity: 'error' });
+            toast.error(Array.isArray(message) ? message.join(', ') : message);
         }
     };
 
     const handleDeleteProduction = async (id: number) => {
-        if (!window.confirm('Are you sure you want to delete this production entry? This will also revert inventory changes.')) return;
+        if (!await confirmDialog({ title: 'Delete Production Entry', message: 'Are you sure you want to delete this production entry? This will also revert inventory changes.', severity: 'error', confirmText: 'Delete', cancelText: 'Cancel' })) return;
 
         try {
             await api.delete(`/production/${id}`);
-            setNotification({ open: true, message: 'Production entry deleted successfully', severity: 'success' });
+            toast.success('Production entry deleted successfully');
             refetchProduction();
         } catch (error) {
-            setNotification({ open: true, message: 'Failed to delete production entry', severity: 'error' });
+            toast.error('Failed to delete production entry');
         }
     };
 
@@ -318,7 +320,7 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
     const handleExport = (type: 'email' | 'excel' | 'pdf') => {
         const data = recentProduction || [];
         if (data.length === 0) {
-            setNotification({ open: true, message: 'No data to export', severity: 'error' });
+            toast.error('No data to export');
             return;
         }
 
@@ -470,89 +472,75 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                                             </TableRow>
                                         </TableHead>
                                         <TableBody>
-                                            {consumed.map((item) => (
-                                                <TableRow key={item.id}>
-                                                    <TableCell>
-                                                        <TextField
-                                                            select
-                                                            size="small"
-                                                            value={item.batchNo}
-                                                            onChange={(e) => handleConsumedChange(item.id, 'batchNo', e.target.value)}
-                                                            fullWidth
-                                                            label="Select Batch"
-                                                        >
-                                                            {availableBatches.map((b: any) => (
-                                                                <MenuItem key={b.batchId} value={b.batchId}>
-                                                                    {b.batchId} ({b.supplier} - {b.kg}kg)
-                                                                </MenuItem>
-                                                            ))}
-                                                        </TextField>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <TextField
-                                                            size="small"
-                                                            type="number"
-                                                            value={item.bale}
-                                                            onChange={(e) => {
-                                                                const selectedBatch = availableBatches.find((b: any) => b.batchId === item.batchNo);
-                                                                const maxBale = selectedBatch?.bale || 0;
-                                                                const value = parseFloat(e.target.value) || 0;
-                                                                if (value <= maxBale) {
-                                                                    handleConsumedChange(item.id, 'bale', e.target.value);
-                                                                }
-                                                            }}
-                                                            fullWidth
-                                                            error={(() => {
-                                                                const selectedBatch = availableBatches.find((b: any) => b.batchId === item.batchNo);
-                                                                const maxBale = selectedBatch?.bale || 0;
-                                                                const value = parseFloat(item.bale) || 0;
-                                                                return value > maxBale || value <= 0;
-                                                            })()}
-                                                            helperText={(() => {
-                                                                const selectedBatch = availableBatches.find((b: any) => b.batchId === item.batchNo);
-                                                                const maxBale = selectedBatch?.bale || 0;
-                                                                return item.batchNo ? `Max: ${maxBale}` : '';
-                                                            })()}
-                                                        />
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <TextField
-                                                            size="small"
-                                                            type="number"
-                                                            value={item.weight}
-                                                            onChange={(e) => {
-                                                                const selectedBatch = availableBatches.find((b: any) => b.batchId === item.batchNo);
-                                                                const maxWeight = selectedBatch?.kg || 0;
-                                                                const value = parseFloat(e.target.value) || 0;
-                                                                if (value <= maxWeight) {
-                                                                    handleConsumedChange(item.id, 'weight', e.target.value);
-                                                                }
-                                                            }}
-                                                            fullWidth
-                                                            error={(() => {
-                                                                const selectedBatch = availableBatches.find((b: any) => b.batchId === item.batchNo);
-                                                                const maxWeight = selectedBatch?.kg || 0;
-                                                                const value = parseFloat(item.weight) || 0;
-                                                                return value > maxWeight || value <= 0;
-                                                            })()}
-                                                            helperText={(() => {
-                                                                const selectedBatch = availableBatches.find((b: any) => b.batchId === item.batchNo);
-                                                                const maxWeight = selectedBatch?.kg || 0;
-                                                                return item.batchNo ? `Max: ${maxWeight} kg` : '';
-                                                            })()}
-                                                        />
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <IconButton
-                                                            size="small"
-                                                            onClick={() => removeConsumed(item.id)}
-                                                            disabled={consumed.length === 1}
-                                                        >
-                                                            <DeleteIcon fontSize="small" />
-                                                        </IconButton>
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))}
+                                            {consumed.map((item) => {
+                                                const selectedBatch = availableBatches.find((b: any) => b.batchId === item.batchNo);
+                                                const maxBale = selectedBatch?.bale || 0;
+                                                const maxWeight = selectedBatch?.kg || 0;
+                                                const baleVal = parseFloat(item.bale) || 0;
+                                                const weightVal = parseFloat(item.weight) || 0;
+
+                                                return (
+                                                    <TableRow key={item.id}>
+                                                        <TableCell>
+                                                            <TextField
+                                                                select
+                                                                size="small"
+                                                                value={item.batchNo}
+                                                                onChange={(e) => handleConsumedChange(item.id, 'batchNo', e.target.value)}
+                                                                fullWidth
+                                                                label="Select Batch"
+                                                            >
+                                                                {availableBatches.map((b: any) => (
+                                                                    <MenuItem key={b.batchId} value={b.batchId}>
+                                                                        {b.batchId} ({b.supplier} - {b.kg}kg)
+                                                                    </MenuItem>
+                                                                ))}
+                                                            </TextField>
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <TextField
+                                                                size="small"
+                                                                type="number"
+                                                                value={item.bale}
+                                                                onChange={(e) => {
+                                                                    const val = parseFloat(e.target.value) || 0;
+                                                                    if (val <= maxBale) {
+                                                                        handleConsumedChange(item.id, 'bale', e.target.value);
+                                                                    }
+                                                                }}
+                                                                fullWidth
+                                                                error={baleVal > maxBale || baleVal <= 0}
+                                                                helperText={item.batchNo ? `Max: ${maxBale}` : ''}
+                                                            />
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <TextField
+                                                                size="small"
+                                                                type="number"
+                                                                value={item.weight}
+                                                                onChange={(e) => {
+                                                                    const val = parseFloat(e.target.value) || 0;
+                                                                    if (val <= maxWeight) {
+                                                                        handleConsumedChange(item.id, 'weight', e.target.value);
+                                                                    }
+                                                                }}
+                                                                fullWidth
+                                                                error={weightVal > maxWeight || weightVal <= 0}
+                                                                helperText={item.batchNo ? `Max: ${maxWeight} kg` : ''}
+                                                            />
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <IconButton
+                                                                size="small"
+                                                                onClick={() => removeConsumed(item.id)}
+                                                                disabled={consumed.length === 1}
+                                                            >
+                                                                <DeleteIcon fontSize="small" />
+                                                            </IconButton>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                );
+                                            })}
                                         </TableBody>
                                     </Table>
                                 </TableContainer>
@@ -768,15 +756,6 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                 </DialogContent>
             </Dialog>
 
-            <Snackbar
-                open={notification.open}
-                autoHideDuration={4000}
-                onClose={() => setNotification({ ...notification, open: false })}
-            >
-                <Alert severity={notification.severity} onClose={() => setNotification({ ...notification, open: false })}>
-                    {notification.message}
-                </Alert>
-            </Snackbar>
         </Box>
     );
 };

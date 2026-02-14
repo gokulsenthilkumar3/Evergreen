@@ -25,6 +25,7 @@ import {
     DialogContent,
     DialogContentText,
     DialogActions,
+    IconButton,
     Tooltip as MuiTooltip,
     type SelectChangeEvent,
 } from '@mui/material';
@@ -34,6 +35,8 @@ import {
     Email as EmailIcon,
     PictureAsPdf as PdfIcon,
     TableView as ExcelIcon,
+    Delete as DeleteIcon,
+    Edit as EditIcon,
 } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -51,6 +54,8 @@ import {
 import { generateExcel } from '../utils/excelGenerator';
 import { generatePDF } from '../utils/pdfGenerator';
 import api from '../utils/api';
+import { toast } from 'sonner';
+import { useConfirm } from '../context/ConfirmContext';
 
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -108,16 +113,35 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
     const [customFrom, setCustomFrom] = useState<string>('');
     const [customTo, setCustomTo] = useState<string>('');
     const [historyTypeFilter, setHistoryTypeFilter] = useState<string>('all');
+    const { confirm: confirmDialog } = useConfirm();
 
     // Waste Management State
     const [wasteModalOpen, setWasteModalOpen] = useState(false);
     const [wasteAction, setWasteAction] = useState<'recycle' | 'export'>('recycle');
     const [wasteForm, setWasteForm] = useState({ date: new Date().toISOString().split('T')[0], quantity: '', buyer: '', price: '' });
 
+    const handleDeleteWaste = async (id: number) => {
+        if (!await confirmDialog({
+            title: 'Delete Waste Entry',
+            message: 'Are you sure you want to delete this waste entry? If it was a recycle action, the corresponding cotton stock will also be reverted.',
+            severity: 'error',
+            confirmText: 'Delete',
+            cancelText: 'Cancel'
+        })) return;
+
+        try {
+            await api.delete(`/inventory/waste/${id}`);
+            toast.success('Waste entry deleted');
+            refetch();
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || 'Failed to delete waste entry');
+        }
+    };
+
     const handleWasteSubmit = async () => {
         try {
             if (!wasteForm.quantity || parseFloat(wasteForm.quantity) <= 0) {
-                setNotification({ open: true, message: 'Invalid quantity', severity: 'error' });
+                toast.error('Invalid quantity');
                 return;
             }
             if (wasteAction === 'export') {
@@ -125,20 +149,14 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
             } else {
                 await api.post('/inventory/waste/recycle', { date: wasteForm.date, quantity: parseFloat(wasteForm.quantity), createdBy: username });
             }
-            setNotification({ open: true, message: 'Waste processed successfully', severity: 'success' });
+            toast.success('Waste processed successfully');
             setWasteModalOpen(false);
             setWasteForm({ date: new Date().toISOString().split('T')[0], quantity: '', buyer: '', price: '' });
             refetch();
         } catch (error: any) {
-            setNotification({ open: true, message: error.response?.data?.message || 'Failed to process waste', severity: 'error' });
+            toast.error(error.response?.data?.message || 'Failed to process waste');
         }
     };
-
-    const [notification, setNotification] = useState({
-        open: false,
-        message: '',
-        severity: 'success' as 'success' | 'error' | 'info',
-    });
 
     const handleDateFilterChange = (event: SelectChangeEvent) => {
         setDateFilter(event.target.value);
@@ -247,17 +265,17 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
 
         if (type === 'excel') {
             generateExcel(dataToExport, "Inventory_Report");
-            setNotification({ open: true, message: 'Exported as Excel', severity: 'success' });
+            toast.success('Exported as Excel');
         } else if (type === 'pdf') {
             const headers = ['Date', 'Type', 'Item', 'Quantity (kg)', 'Balance (kg)', 'Reference'];
             const data = dataToExport.map(row => Object.values(row));
             generatePDF("Inventory Report", headers, data, "Inventory_Report");
-            setNotification({ open: true, message: 'Exported as PDF', severity: 'success' });
+            toast.success('Exported as PDF');
         } else if (type === 'email') {
             const subject = encodeURIComponent("Inventory Report");
             const body = encodeURIComponent("Please attach the exported report manually.");
             window.location.href = `mailto:?subject=${subject}&body=${body}`;
-            setNotification({ open: true, message: 'Opening email client...', severity: 'info' });
+            toast.info('Opening email client...');
         }
     };
 
@@ -557,6 +575,7 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
                                         <TableCell align="right">Others (kg)</TableCell>
                                         <TableCell align="right">Balance (kg)</TableCell>
                                         <TableCell>Reference</TableCell>
+                                        <TableCell align="center">Actions</TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
@@ -581,6 +600,44 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
                                                 <TableCell align="right">{row.wasteOthers || 0}</TableCell>
                                                 <TableCell align="right" sx={{ fontWeight: 'bold' }}>{row.balance}</TableCell>
                                                 <TableCell>{row.reference}</TableCell>
+                                                <TableCell align="center">
+                                                    {row.type !== 'PRODUCTION' && (userRole === 'ADMIN' || userRole === 'AUTHOR') && (
+                                                        <>
+                                                            <IconButton
+                                                                size="small"
+                                                                color="primary"
+                                                                onClick={() => {
+                                                                    setWasteAction(row.type === 'EXPORT' ? 'export' : 'recycle');
+                                                                    setWasteForm({
+                                                                        date: new Date(row.date).toISOString().split('T')[0],
+                                                                        quantity: Math.abs(row.quantity).toString(),
+                                                                        buyer: row.reference.startsWith('SOLD-') ? row.reference.replace('SOLD-', '') : '',
+                                                                        price: '' // Price is not stored in inventory log currently
+                                                                    });
+                                                                    // Since we don't have PUT, we'll suggest deleting and re-adding
+                                                                    toast.info('Editing will delete the old entry and create a new one');
+                                                                    setWasteModalOpen(true);
+                                                                    // We could set editingWasteId here if we wanted to handle it in submit
+                                                                }}
+                                                                sx={{ mr: 1 }}
+                                                            >
+                                                                <EditIcon fontSize="small" />
+                                                            </IconButton>
+                                                            <IconButton
+                                                                size="small"
+                                                                color="error"
+                                                                onClick={() => handleDeleteWaste(row.id)}
+                                                            >
+                                                                <DeleteIcon fontSize="small" />
+                                                            </IconButton>
+                                                        </>
+                                                    )}
+                                                    {row.type === 'PRODUCTION' && (
+                                                        <MuiTooltip title="Derived from Production. Edit production entry to change.">
+                                                            <Typography variant="caption" color="text.disabled">Derived</Typography>
+                                                        </MuiTooltip>
+                                                    )}
+                                                </TableCell>
                                             </TableRow>
                                         ))
                                     )}
@@ -657,20 +714,6 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
                 </TabPanel>
             </Paper>
 
-            <Snackbar
-                open={notification.open}
-                autoHideDuration={6000}
-                onClose={() => setNotification({ ...notification, open: false })}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-            >
-                <Alert
-                    onClose={() => setNotification({ ...notification, open: false })}
-                    severity={notification.severity}
-                    sx={{ width: '100%' }}
-                >
-                    {notification.message}
-                </Alert>
-            </Snackbar>
 
 
             {/* Waste Management Dialog */}
