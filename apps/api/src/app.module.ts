@@ -11,6 +11,7 @@ import { ProductionModule } from './modules/production/production.module';
 import { BillingModule } from './modules/billing/billing.module';
 import { LogsModule } from './modules/logs/logs.module';
 import { SettingsModule } from './modules/settings/settings.module';
+import { SearchModule } from './modules/search/search.module';
 
 import { DatabaseModule } from './modules/database/database.module';
 
@@ -28,6 +29,7 @@ import { DatabaseModule } from './modules/database/database.module';
     BillingModule,
     LogsModule,
     SettingsModule,
+    SearchModule,
   ],
   controllers: [AppController],
   providers: [AppService],

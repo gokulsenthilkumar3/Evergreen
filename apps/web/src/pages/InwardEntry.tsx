@@ -15,14 +15,17 @@ import {
     InputLabel,
     Select,
     MenuItem,
-    Alert,
-    Snackbar,
     Autocomplete,
     IconButton,
     Dialog,
     DialogTitle,
     DialogContent,
+    DialogActions,
     Tooltip,
+    Chip,
+    InputAdornment,
+    LinearProgress,
+    Alert,
     type SelectChangeEvent,
 } from '@mui/material';
 import {
@@ -33,6 +36,8 @@ import {
     Close as CloseIcon,
     Delete as DeleteIcon,
     Add as AddIcon,
+    Refresh as RefreshIcon,
+    WarningAmber as WarnIcon,
 } from '@mui/icons-material';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -41,6 +46,19 @@ import { generatePDF } from '../utils/pdfGenerator';
 import { generateExcel } from '../utils/excelGenerator';
 import { useConfirm } from '../context/ConfirmContext';
 import { toast } from 'sonner';
+import {
+    validateBale,
+    validateWeight,
+    validateSupplier,
+    validateDate,
+    validateBaleAndWeight,
+    isFutureDate,
+    safeParseFloat,
+} from '../utils/validators';
+import { SUCCESS_MESSAGES, ERROR_MESSAGES, CONFIRM_TITLES, CONFIRM_MESSAGES, formatApiError } from '../utils/messages';
+import EmptyState from '../components/common/EmptyState';
+import TableSkeleton from '../components/common/TableSkeleton';
+import RequiredLabel from '../components/common/RequiredLabel';
 
 interface BatchEntry {
     id: number;
@@ -58,26 +76,24 @@ interface InwardEntryProps {
 }
 
 const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
-    // Filter State
     const [dateFilter, setDateFilter] = useState<string>('today');
     const [customFrom, setCustomFrom] = useState<string>('');
     const [customTo, setCustomTo] = useState<string>('');
-    const [openWizard, setOpenWizard] = useState(false); // Wizard State
+    const [openWizard, setOpenWizard] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [touched, setTouched] = useState<Record<string, boolean>>({});
 
-    // Form State
     const [formData, setFormData] = useState({
-        date: new Date().toISOString().split('T')[0],
+        date: new Date().toLocaleDateString('en-CA'),
         supplier: '',
         bale: '',
         kg: '',
     });
-    const [generatedBatchId, setGeneratedBatchId] = useState('');
+    const [batchSuffix, setBatchSuffix] = useState('');
     const { confirm: confirmDialog } = useConfirm();
-
     const queryClient = useQueryClient();
 
-    // Data State (Fetch from API)
-    const { data: batchHistory = [] } = useQuery({
+    const { data: batchHistory = [], isLoading } = useQuery({
         queryKey: ['inwardHistory', dateFilter, customFrom, customTo],
         queryFn: async () => {
             const response = await api.get('/inventory/inward', {
@@ -90,7 +106,6 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
         }
     });
 
-    // Extract unique suppliers from history
     const suppliers = React.useMemo(() => {
         const uniqueSuppliers = new Set<string>();
         batchHistory.forEach((batch: BatchEntry) => {
@@ -99,141 +114,164 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
         return Array.from(uniqueSuppliers).sort();
     }, [batchHistory]);
 
+    useEffect(() => { generateRandomSuffix(); }, []);
 
-    // Generate Batch ID on component mount
-    useEffect(() => {
-        generateBatchId();
-    }, []);
-
-    const generateBatchId = () => {
-        const datePart = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-        const randomPart = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-        setGeneratedBatchId(`IB-${datePart}-${randomPart}`);
+    const generateRandomSuffix = () => {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let suffix = '';
+        for (let i = 0; i < 3; i++) suffix += chars.charAt(Math.floor(Math.random() * chars.length));
+        setBatchSuffix(suffix);
     };
 
-    const handleDateFilterChange = (event: SelectChangeEvent) => {
-        setDateFilter(event.target.value);
+    const getBatchPrefix = () => {
+        if (!formData.date) return '';
+        const [y, m] = formData.date.split('-');
+        return `${y}${m}`;
     };
+
+    const handleDateFilterChange = (event: SelectChangeEvent) => setDateFilter(event.target.value);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
+        setTouched(prev => ({ ...prev, [name]: true }));
     };
 
     const handleSupplierChange = (_event: any, newValue: string | null) => {
         setFormData(prev => ({ ...prev, supplier: newValue || '' }));
+        setTouched(prev => ({ ...prev, supplier: true }));
     };
 
+    // ─── Live Validation ───────────────────────────────────────────────────────
+    const validations = {
+        date: validateDate(formData.date),
+        supplier: validateSupplier(formData.supplier),
+        bale: validateBale(formData.bale),
+        weight: validateWeight(formData.kg),
+    };
+    const baleWeightWarn = validateBaleAndWeight(formData.bale, formData.kg);
+    const isFormValid = Object.values(validations).every(v => v.valid);
+
+    const getFieldError = (field: keyof typeof validations) => {
+        if (!touched[field]) return '';
+        return validations[field].valid ? '' : (validations[field].message || '');
+    };
+
+    const markAllTouched = () => {
+        setTouched({ date: true, supplier: true, bale: true, weight: true });
+    };
 
     const handleDeleteBatch = async (id: number) => {
-        if (!await confirmDialog({ title: 'Delete Batch', message: 'Are you sure you want to delete this batch? This will also remove associated inventory records.', severity: 'error', confirmText: 'Delete', cancelText: 'Cancel' })) return;
+        const confirmed = await confirmDialog({
+            title: CONFIRM_TITLES.DELETE,
+            message: CONFIRM_MESSAGES.DELETE,
+            severity: 'error',
+            confirmText: 'Delete',
+            cancelText: 'Cancel'
+        });
+        if (!confirmed) return;
 
         try {
             await api.delete(`/inventory/inward/${id}`);
-            toast.success('Batch deleted and inventory updated!');
+            toast.success(SUCCESS_MESSAGES.DELETE);
             queryClient.invalidateQueries({ queryKey: ['inwardHistory'] });
-            queryClient.invalidateQueries({ queryKey: ['dashboardSummary'] });
-        } catch (error) {
-            toast.error('Failed to delete batch.');
+        } catch (error: any) {
+            toast.error(formatApiError(error, ERROR_MESSAGES.DELETE_FAILED));
         }
     };
 
     const handleSubmit = async () => {
-        try {
-            if (!formData.supplier || !formData.bale || !formData.kg) {
-                toast.error('Please fill in all required fields.');
-                return;
-            }
+        markAllTouched();
+        if (!isFormValid) {
+            toast.error(ERROR_MESSAGES.VALIDATION_FAILED);
+            return;
+        }
 
-            // Call API to save batch
+        setIsSubmitting(true);
+        try {
+            const batchId = `${getBatchPrefix()}${batchSuffix}`;
             await api.post('/inventory/inward', {
-                batchId: generatedBatchId,
+                batchId,
                 date: formData.date,
-                supplier: formData.supplier,
+                supplier: formData.supplier.trim(),
                 bale: Number(formData.bale),
-                kg: Number(formData.kg),
+                kg: safeParseFloat(formData.kg),
                 createdBy: username,
             });
 
-            // Invalidate queries to refresh data across the app
             queryClient.invalidateQueries({ queryKey: ['inwardHistory'] });
             queryClient.invalidateQueries({ queryKey: ['dashboardSummary'] });
             queryClient.invalidateQueries({ queryKey: ['inventoryHistory'] });
 
-            toast.success('Batch added and inventory updated!');
-
-            // Reset form
+            toast.success(SUCCESS_MESSAGES.INWARD_SAVED);
+            queryClient.invalidateQueries({ queryKey: ['inwardHistory'] });
+            setOpenWizard(false);
             setFormData({
-                date: new Date().toISOString().split('T')[0],
+                date: new Date().toLocaleDateString('en-CA'),
                 supplier: '',
                 bale: '',
-                kg: ''
+                kg: '',
             });
-            generateBatchId();
-            setOpenWizard(false);
-
-        } catch (error) {
-            toast.error('Failed to save batch to database.');
+            generateRandomSuffix();
+        } catch (error: any) {
+            toast.error(formatApiError(error, ERROR_MESSAGES.SAVE_FAILED));
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
     const handleExport = (type: 'email' | 'excel' | 'pdf') => {
         const data = batchHistory;
-        if (data.length === 0) {
-            toast.error('No data to export');
-            return;
-        }
-
-        const filename = `Inward_Batch_Report_${new Date().toISOString().split('T')[0]}`;
-
+        if (data.length === 0) { toast.error(ERROR_MESSAGES.NO_DATA); return; }
+        const filename = `Inward_Batch_Report_${new Date().toLocaleDateString('en-CA')}`;
         if (type === 'pdf') {
             const headers = ['Batch ID', 'Date', 'Supplier', 'Bale', 'Total Kg'];
-            const rows = data.map((row: BatchEntry) => [
-                row.batchId,
-                new Date(row.date).toLocaleDateString(),
-                row.supplier,
-                row.bale,
-                row.kg?.toLocaleString() || '0'
-            ]);
+            const rows = data.map((row: BatchEntry) => [row.batchId, new Date(row.date).toLocaleDateString(), row.supplier, row.bale, row.kg?.toLocaleString() || '0']);
             generatePDF('Inward Batch History', headers, rows, filename);
-            toast.success('Exported as PDF successfully');
+            toast.success(SUCCESS_MESSAGES.EXPORT_PDF);
         } else if (type === 'excel') {
-            const excelData = data.map((row: BatchEntry) => ({
-                'Batch ID': row.batchId,
-                Date: new Date(row.date).toLocaleDateString(),
-                Supplier: row.supplier,
-                Bale: row.bale,
-                'Total Kg': row.kg
-            }));
+            const excelData = data.map((row: BatchEntry) => ({ 'Batch ID': row.batchId, Date: new Date(row.date).toLocaleDateString(), Supplier: row.supplier, Bale: row.bale, 'Total Kg': row.kg }));
             generateExcel(excelData, filename);
-            toast.success('Exported as Excel successfully');
-        } else if (type === 'email') {
-            const subject = encodeURIComponent(`Inward Batch Report: ${new Date().toISOString().split('T')[0]}`);
-            const body = encodeURIComponent(`Please find the attached Inward Batch Report.\n\n(Note: Please export and attach the PDF/Excel file manually)`);
-            window.location.href = `mailto:?subject=${subject}&body=${body}`;
-            toast.info('Opening email client...');
+            toast.success(SUCCESS_MESSAGES.EXPORT_EXCEL);
+        } else {
+            window.location.href = `mailto:?subject=${encodeURIComponent(`Inward Report ${new Date().toLocaleDateString()}`)}&body=${encodeURIComponent('Please find the attached Inward Batch Report.')}`;
         }
     };
 
+    // ─── Summary Stats ─────────────────────────────────────────────────────────
+    const totalBales = batchHistory.reduce((s: number, b: BatchEntry) => s + b.bale, 0);
+    const totalKg = batchHistory.reduce((s: number, b: BatchEntry) => s + b.kg, 0);
+
     return (
         <Box sx={{ maxWidth: '100%', width: '100%' }}>
-            {/* Header & Controls */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+            {/* Header */}
+            <Box sx={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: { xs: 'stretch', sm: 'flex-start' }, 
+                mb: 3, 
+                flexDirection: { xs: 'column', sm: 'row' },
+                gap: 2 
+            }}>
+                <Box>
+                    <Typography variant="h4" sx={{ fontWeight: 800, letterSpacing: '-0.5px', fontSize: { xs: '1.5rem', sm: '2rem' } }}>
                         Inward Batch Entry
                     </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                        Track cotton bale receipts and update inventory automatically
+                    </Typography>
                 </Box>
-
-                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                    {/* Data Filter */}
-                    <FormControl sx={{ minWidth: 200 }} size="small">
+                <Box sx={{ 
+                    display: 'flex', 
+                    gap: 2, 
+                    alignItems: 'center', 
+                    flexWrap: 'wrap',
+                    flexDirection: { xs: 'column', sm: 'row' },
+                    width: { xs: '100%', sm: 'auto' }
+                }}>
+                    <FormControl sx={{ minWidth: { xs: '100%', sm: 180 } }} size="small">
                         <InputLabel>Date Filter</InputLabel>
-                        <Select
-                            value={dateFilter}
-                            label="Date Filter"
-                            onChange={handleDateFilterChange}
-                        >
+                        <Select value={dateFilter} label="Date Filter" onChange={handleDateFilterChange}>
                             <MenuItem value="today">Today</MenuItem>
                             <MenuItem value="yesterday">Yesterday</MenuItem>
                             <MenuItem value="week">Past Week</MenuItem>
@@ -244,32 +282,34 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                             <MenuItem value="custom">Custom Range</MenuItem>
                         </Select>
                     </FormControl>
-
                     {dateFilter === 'custom' && (
                         <>
-                            <TextField
-                                type="date"
-                                label="From"
-                                size="small"
+                            <TextField 
+                                type="date" 
+                                label="From" 
+                                size="small" 
                                 value={customFrom}
-                                onChange={(e) => setCustomFrom(e.target.value)}
-                                InputLabelProps={{ shrink: true }}
+                                onChange={(e) => setCustomFrom(e.target.value)} 
+                                InputLabelProps={{ shrink: true }} 
+                                sx={{ width: { xs: '100%', sm: 145 } }} 
                             />
-                            <TextField
-                                type="date"
-                                label="To"
-                                size="small"
+                            <TextField 
+                                type="date" 
+                                label="To" 
+                                size="small" 
                                 value={customTo}
-                                onChange={(e) => setCustomTo(e.target.value)}
-                                InputLabelProps={{ shrink: true }}
+                                onChange={(e) => setCustomTo(e.target.value)} 
+                                InputLabelProps={{ shrink: true }} 
+                                sx={{ width: { xs: '100%', sm: 145 } }} 
                             />
                         </>
                     )}
                     {(userRole === 'AUTHOR' || userRole === 'MODIFIER') && (
-                        <Button
-                            variant="contained"
-                            startIcon={<AddIcon />}
-                            onClick={() => setOpenWizard(true)}
+                        <Button 
+                            variant="contained" 
+                            startIcon={<AddIcon />} 
+                            onClick={() => setOpenWizard(true)} 
+                            sx={{ height: 40, width: { xs: '100%', sm: 'auto' } }}
                         >
                             Add Batch
                         </Button>
@@ -277,154 +317,256 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                 </Box>
             </Box>
 
-            {/* Entry Wizard Dialog */}
-            <Dialog open={openWizard} onClose={() => setOpenWizard(false)} maxWidth="md" fullWidth>
-                <DialogTitle sx={{ fontWeight: 'bold', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    Add Batches
-                    <IconButton
-                        onClick={() => setOpenWizard(false)}
-                        sx={{ color: 'text.secondary' }}
-                    >
-                        <CloseIcon />
-                    </IconButton>
+            {/* Summary Strip */}
+            {batchHistory.length > 0 && (
+                <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
+                    <Chip label={`${batchHistory.length} Batches`} color="default" variant="outlined" />
+                    <Chip label={`${totalBales.toLocaleString()} Bales`} color="primary" variant="outlined" />
+                    <Chip label={`${totalKg.toLocaleString()} kg Cotton`} color="success" variant="filled" sx={{ fontWeight: 700 }} />
+                </Box>
+            )}
+
+            {/* Add Batch Dialog */}
+            <Dialog 
+                open={openWizard} 
+                onClose={() => { setOpenWizard(false); setTouched({}); }} 
+                maxWidth="sm" 
+                fullWidth
+                aria-labelledby="add-batch-dialog-title"
+                aria-describedby="add-batch-dialog-description"
+            >
+                <DialogTitle id="add-batch-dialog-title" sx={{ fontWeight: 800, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: 1, borderColor: 'divider' }}>
+                    <Box>
+                        Add Cotton Batch
+                        <Typography id="add-batch-dialog-description" variant="caption" display="block" color="text.secondary" sx={{ fontWeight: 400 }}>
+                            All fields are required. Inventory updates automatically.
+                        </Typography>
+                    </Box>
+                    <IconButton onClick={() => { setOpenWizard(false); setTouched({}); }} aria-label="Close dialog"><CloseIcon /></IconButton>
                 </DialogTitle>
-                <DialogContent>
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, alignItems: 'center', mt: 1 }}>
-                        <TextField
-                            label="Date"
-                            name="date"
-                            type="date"
-                            value={formData.date}
-                            onChange={handleInputChange}
-                            required
-                            InputLabelProps={{ shrink: true }}
-                            sx={{ flex: '1 1 200px' }}
-                        />
-                        <TextField
-                            label="Batch ID"
-                            value={generatedBatchId}
-                            disabled
-                            sx={{ flex: '1 1 200px', bgcolor: 'action.hover' }}
-                        />
+                <DialogContent sx={{ pt: 3 }}>
+                    {isSubmitting && <LinearProgress sx={{ mb: 2 }} />}
+
+                    {/* Batch ID Preview */}
+                    <Paper variant="outlined" sx={{ p: 2, mb: 3, bgcolor: 'action.hover', borderRadius: 2 }}>
+                        <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 700, letterSpacing: 1 }}>
+                            Batch ID Preview
+                        </Typography>
+                        <Typography variant="h5" sx={{ fontFamily: 'monospace', fontWeight: 800, letterSpacing: 2, mt: 0.5 }}>
+                            {getBatchPrefix()}<Box component="span" sx={{ color: 'primary.main' }}>{batchSuffix}</Box>
+                        </Typography>
+                    </Paper>
+
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+                        <Box sx={{ display: 'flex', gap: 2 }}>
+                            <TextField
+                                label={<RequiredLabel label="Date" required />}
+                                name="date"
+                                type="date"
+                                value={formData.date}
+                                onChange={handleInputChange}
+                                onBlur={() => setTouched(p => ({ ...p, date: true }))}
+                                required
+                                fullWidth
+                                InputLabelProps={{ shrink: true }}
+                                error={!!getFieldError('date')}
+                                helperText={getFieldError('date') || (isFutureDate(formData.date) ? '⚠️ Future date not allowed' : ' ')}
+                            />
+                            <TextField
+                                label="Batch Suffix"
+                                value={batchSuffix}
+                                onChange={(e) => setBatchSuffix(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 3))}
+                                helperText="3-char alphanumeric"
+                                InputProps={{
+                                    endAdornment: (
+                                        <Tooltip title="Regenerate random suffix">
+                                            <IconButton size="small" onClick={generateRandomSuffix}>
+                                                <RefreshIcon fontSize="small" />
+                                            </IconButton>
+                                        </Tooltip>
+                                    )
+                                }}
+                                sx={{ width: 180, flexShrink: 0 }}
+                            />
+                        </Box>
 
                         <Autocomplete
                             freeSolo
                             options={suppliers}
                             value={formData.supplier}
                             onChange={handleSupplierChange}
-                            onInputChange={(_e, newInputValue) => {
-                                setFormData(prev => ({ ...prev, supplier: newInputValue }));
-                            }}
-                            renderOption={(props, option) => (
-                                <li {...props}>
-                                    {option}
-                                </li>
-                            )}
-                            sx={{ flex: '2 1 300px' }}
+                            onInputChange={(_e, val) => { setFormData(p => ({ ...p, supplier: val })); setTouched(p => ({ ...p, supplier: true })); }}
                             renderInput={(params) => (
                                 <TextField
                                     {...params}
-                                    label="Supplier"
+                                    label={<RequiredLabel label="Supplier Name" required />}
                                     required
-                                    name="supplier"
+                                    error={!!getFieldError('supplier')}
+                                    helperText={getFieldError('supplier') || 'Type to search existing suppliers or enter a new name'}
+                                    onBlur={() => setTouched(p => ({ ...p, supplier: true }))}
                                 />
                             )}
                         />
 
-                        <TextField
-                            label="Total Bale"
-                            name="bale"
-                            type="number"
-                            value={formData.bale}
-                            onChange={handleInputChange}
-                            required
-                            InputProps={{ inputProps: { min: 0 } }}
-                            sx={{ flex: '1 1 200px' }}
-                        />
-                        <TextField
-                            label="Total Kg"
-                            name="kg"
-                            type="number"
-                            value={formData.kg}
-                            onChange={handleInputChange}
-                            required
-                            InputProps={{ inputProps: { min: 0 } }}
-                            sx={{ flex: '1 1 200px' }}
-                        />
-                        <Button
-                            variant="contained"
-                            startIcon={<SaveIcon />}
-                            onClick={handleSubmit}
-                            sx={{ flex: '0 0 auto', height: 56, px: 4 }}
-                        >
-                            Add Batch
-                        </Button>
+                        <Box sx={{ display: 'flex', gap: 2 }}>
+                            <TextField
+                                label={<RequiredLabel label="Total Bales" required />}
+                                name="bale"
+                                type="number"
+                                value={formData.bale}
+                                onChange={handleInputChange}
+                                onBlur={() => setTouched(p => ({ ...p, bale: true }))}
+                                required
+                                fullWidth
+                                InputProps={{ inputProps: { min: 1, step: 1 } }}
+                                error={!!getFieldError('bale')}
+                                helperText={getFieldError('bale') || 'Whole number (1–9999)'}
+                            />
+                            <TextField
+                                label={<RequiredLabel label="Total Weight (kg)" required />}
+                                name="kg"
+                                type="number"
+                                value={formData.kg}
+                                onChange={handleInputChange}
+                                onBlur={() => setTouched(p => ({ ...p, weight: true }))}
+                                required
+                                fullWidth
+                                InputProps={{
+                                    inputProps: { min: 0.01, step: 0.01 },
+                                    endAdornment: <InputAdornment position="end">kg</InputAdornment>
+                                }}
+                                error={!!getFieldError('weight')}
+                                helperText={
+                                    getFieldError('weight') ||
+                                    (formData.bale && formData.kg
+                                        ? `Avg: ${(safeParseFloat(formData.kg) / safeParseFloat(formData.bale)).toFixed(1)} kg/bale`
+                                        : '0.01–999,999 kg')
+                                }
+                            />
+                        </Box>
+
+                        {/* Avg bale weight warning */}
+                        {formData.bale && formData.kg && !baleWeightWarn.valid === false && baleWeightWarn.message && (
+                            <Alert severity="warning" icon={<WarnIcon />} sx={{ mt: -1 }}>
+                                {baleWeightWarn.message}
+                            </Alert>
+                        )}
                     </Box>
                 </DialogContent>
+                <DialogActions sx={{ p: 2.5, borderTop: 1, borderColor: 'divider', gap: 1 }}>
+                    <Button onClick={() => { setOpenWizard(false); setTouched({}); }} color="inherit" disabled={isSubmitting}>
+                        Cancel
+                    </Button>
+                    <Button
+                        variant="contained"
+                        startIcon={<SaveIcon />}
+                        onClick={handleSubmit}
+                        disabled={isSubmitting}
+                        sx={{ minWidth: 140 }}
+                    >
+                        {isSubmitting ? 'Saving...' : 'Add Batch'}
+                    </Button>
+                </DialogActions>
             </Dialog>
 
-            {/* List Table */}
-            <Paper sx={{ p: 3, borderRadius: 2 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                    <Typography variant="h6" fontWeight="bold">Batch History</Typography>
-                    <Box sx={{ display: 'flex', gap: 2 }}>
-                        <Button startIcon={<EmailIcon />} variant="outlined" onClick={() => handleExport('email')}>Email</Button>
-                        <Button startIcon={<ExcelIcon />} variant="outlined" onClick={() => handleExport('excel')}>Excel</Button>
-                        <Button startIcon={<PdfIcon />} variant="outlined" onClick={() => handleExport('pdf')}>PDF</Button>
+            {/* Batch History Table */}
+            <Paper sx={{ borderRadius: 2 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2.5, borderBottom: 1, borderColor: 'divider' }}>
+                    <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                        Batch History
+                        {isLoading && <LinearProgress sx={{ mt: 1, borderRadius: 1 }} />}
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 1.5 }}>
+                        <Button size="small" startIcon={<EmailIcon />} variant="outlined" onClick={() => handleExport('email')}>Email</Button>
+                        <Button size="small" startIcon={<ExcelIcon />} variant="outlined" onClick={() => handleExport('excel')}>Excel</Button>
+                        <Button size="small" startIcon={<PdfIcon />} variant="outlined" onClick={() => handleExport('pdf')}>PDF</Button>
                     </Box>
                 </Box>
 
-                <TableContainer>
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>Batch ID</TableCell>
-                                <TableCell>Date</TableCell>
-                                <TableCell>Supplier</TableCell>
-                                <TableCell align="right">Bale</TableCell>
-                                <TableCell align="right">Total Kg</TableCell>
-                                <TableCell align="center">Actions</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {batchHistory.length === 0 ? (
+                <TableContainer sx={{ maxHeight: 'calc(100vh - 400px)' }}>
+                    {isLoading ? (
+                        <TableSkeleton columns={7} hasActions={userRole === 'AUTHOR'} />
+                    ) : (
+                        <Table stickyHeader>
+                            <TableHead>
                                 <TableRow>
-                                    <TableCell colSpan={6} align="center">No batch data found for this period</TableCell>
+                                    <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5, bgcolor: 'background.paper' }}>Batch ID</TableCell>
+                                    <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5, bgcolor: 'background.paper' }}>Date</TableCell>
+                                    <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5, bgcolor: 'background.paper' }}>Supplier</TableCell>
+                                    <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5, bgcolor: 'background.paper' }}>Bales</TableCell>
+                                    <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5, bgcolor: 'background.paper' }}>Weight (kg)</TableCell>
+                                    <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5, bgcolor: 'background.paper' }}>Avg kg/Bale</TableCell>
+                                    <TableCell align="center" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5, bgcolor: 'background.paper' }}>Actions</TableCell>
                                 </TableRow>
-                            ) : (
-                                batchHistory.map((row: BatchEntry) => (
-                                    <TableRow key={row.id} hover>
-                                        <TableCell sx={{ fontFamily: 'monospace', fontWeight: 'bold' }}>{row.batchId}</TableCell>
-                                        <TableCell>
-                                            <Tooltip title={row.entryTimestamp ? new Date(row.entryTimestamp).toLocaleString() : new Date(row.date).toLocaleString()} arrow placement="top">
-                                                <Box component="span" sx={{ cursor: 'help', borderBottom: '1px dotted', borderColor: 'divider' }}>
-                                                    {new Date(row.date).toLocaleDateString()}
-                                                </Box>
-                                            </Tooltip>
-                                        </TableCell>
-                                        <TableCell>{row.supplier}</TableCell>
-                                        <TableCell align="right">{row.bale}</TableCell>
-                                        <TableCell align="right">{row.kg?.toLocaleString()} kg</TableCell>
-                                        <TableCell align="center">
-                                            {(userRole === 'AUTHOR') && (
-                                                <IconButton
-                                                    size="small"
-                                                    color="error"
-                                                    onClick={() => handleDeleteBatch(row.id)}
-                                                    title="Delete Batch (Admin/Author Only)"
-                                                >
-                                                    <DeleteIcon fontSize="small" />
-                                                </IconButton>
-                                            )}
+                            </TableHead>
+                            <TableBody>
+                                {batchHistory.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell colSpan={7} sx={{ py: 4 }}>
+                                            <EmptyState
+                                                type="empty"
+                                                title="No Batches Found"
+                                                message="No inward batches found for the selected period. Try changing the date filter or add a new batch."
+                                                actionLabel="Add First Batch"
+                                                onAction={() => setOpenWizard(true)}
+                                            />
                                         </TableCell>
                                     </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
+                                ) : (
+                                    batchHistory.map((row: BatchEntry) => (
+                                        <TableRow key={row.id} hover sx={{ '&:hover': { bgcolor: 'action.hover' } }}>
+                                            <TableCell>
+                                                <Typography sx={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '0.875rem' }}>
+                                                    {row.batchId}
+                                                </Typography>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Tooltip title={`Entry recorded: ${row.entryTimestamp ? new Date(row.entryTimestamp).toLocaleString() : 'N/A'}`} arrow>
+                                                    <Box component="span" sx={{ cursor: 'help', borderBottom: '1px dashed', borderColor: 'text.disabled' }}>
+                                                        {new Date(row.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                                    </Box>
+                                                </Tooltip>
+                                            </TableCell>
+                                            <TableCell sx={{ fontWeight: 500 }}>{row.supplier}</TableCell>
+                                            <TableCell align="right">{row.bale}</TableCell>
+                                            <TableCell align="right" sx={{ fontWeight: 600, color: 'success.main' }}>
+                                                {row.kg?.toLocaleString()} kg
+                                            </TableCell>
+                                            <TableCell align="right" sx={{ color: 'text.secondary' }}>
+                                                {row.bale > 0 ? `${(row.kg / row.bale).toFixed(1)} kg` : '—'}
+                                            </TableCell>
+                                            <TableCell align="center">
+                                                {userRole === 'AUTHOR' && (
+                                                    <Tooltip title="Delete Batch (Admin only)">
+                                                        <IconButton size="small" color="error" onClick={() => handleDeleteBatch(row.id)}>
+                                                            <DeleteIcon fontSize="small" />
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                )}
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+                                )}
+                            </TableBody>
+                        </Table>
+                    )}
                 </TableContainer>
-            </Paper>
 
+                {/* Footer totals */}
+                {batchHistory.length > 0 && (
+                    <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider', display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
+                        <Typography variant="body2" color="text.secondary">
+                            Showing <strong>{batchHistory.length}</strong> batches
+                        </Typography>
+                        <Typography variant="body2">
+                            Total Bales: <strong>{totalBales.toLocaleString()}</strong>
+                        </Typography>
+                        <Typography variant="body2" color="success.main">
+                            Total Weight: <strong>{totalKg.toLocaleString()} kg</strong>
+                        </Typography>
+                    </Box>
+                )}
+            </Paper>
         </Box>
     );
 };

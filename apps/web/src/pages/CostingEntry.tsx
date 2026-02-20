@@ -15,6 +15,7 @@ import api from '../utils/api';
 import { useQuery } from '@tanstack/react-query';
 import { useConfirm } from '../context/ConfirmContext';
 import { toast } from 'sonner';
+import { SUCCESS_MESSAGES, ERROR_MESSAGES, CONFIRM_TITLES, CONFIRM_MESSAGES, formatApiError } from '../utils/messages';
 
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -35,11 +36,12 @@ interface CostingEntryProps {
     userRole?: string; // Optional now
     username?: string;
     onSuccess?: () => void;
+    onItemSaved?: () => void;
     initialTab?: number;
     initialDate?: string;
 }
 
-const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, initialTab = 0, username, initialDate }) => {
+const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, initialTab = 0, username, initialDate }) => {
     const [tabValue, setTabValue] = useState(initialTab || 0);
 
     // Sync tab with prop if it changes and matches context
@@ -53,13 +55,16 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, initialTab = 0, 
 
     // Fetch Production Data for Auto-Calculation
 
-    const [date, setDate] = useState(initialDate || new Date().toISOString().split('T')[0]);
+    const [date, setDate] = useState(initialDate || new Date().toLocaleDateString('en-CA'));
     const [packagingDate, setPackagingDate] = useState(date);
 
     // Sync date and packaging date when initialDate prop changes
     useEffect(() => {
         if (initialDate) {
             setDate(initialDate);
+        } else {
+            // If initialDate is cleared, reset to current date
+            setDate(new Date().toLocaleDateString('en-CA'));
         }
     }, [initialDate]);
 
@@ -132,21 +137,32 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, initialTab = 0, 
         },
     });
 
-    const existingEB = entries?.find((e: any) => e.date === date && e.category === 'EB (Electricity)');
-    const existingEmployee = entries?.find((e: any) => e.date === date && e.category === 'Employee');
-    const existingPackaging = entries?.find((e: any) => e.date === date && e.category === 'Packaging');
-    const existingMaintenance = entries?.find((e: any) => e.date === date && e.category === 'Maintenance');
+    const existingEB = entries?.find((e: any) => new Date(e.date).toISOString().split('T')[0] === date && e.category === 'EB (Electricity)');
+    const existingEmployee = entries?.find((e: any) => new Date(e.date).toISOString().split('T')[0] === date && e.category === 'Employee');
+    const existingPackaging = entries?.find((e: any) => new Date(e.date).toISOString().split('T')[0] === date && e.category === 'Packaging');
+    const existingMaintenance = entries?.find((e: any) => new Date(e.date).toISOString().split('T')[0] === date && e.category === 'Maintenance');
 
-    // Load rates from localStorage on mount
+    // Fetch System Settings for default rates
+    const { data: settings } = useQuery({
+        queryKey: ['settings'],
+        queryFn: async () => {
+            const res = await api.get('/settings');
+            return res.data;
+        }
+    });
+
+    // Populate default rates from settings when data is available
     useEffect(() => {
-        const savedEB = localStorage.getItem('ebRate') || '10';
-        const savedPkg = localStorage.getItem('packageRate') || '1.6';
-        const savedMaint = localStorage.getItem('maintenanceRate') || '4';
+        if (settings) {
+            const savedEB = settings.ebRate || '10';
+            const savedPkg = settings.packageRate || '1.6';
+            const savedMaint = settings.maintenanceRate || '4';
 
-        if (!existingEB) setEbData(prev => ({ ...prev, ratePerUnit: savedEB }));
-        if (!existingPackaging) setPackagingData(prev => ({ ...prev, rate: savedPkg }));
-        if (!existingMaintenance) setMaintenanceData(prev => ({ ...prev, ratePerKg: savedMaint }));
-    }, [existingEB, existingPackaging, existingMaintenance]);
+            if (!existingEB) setEbData(prev => ({ ...prev, ratePerUnit: savedEB }));
+            if (!existingPackaging) setPackagingData(prev => ({ ...prev, rate: savedPkg }));
+            if (!existingMaintenance) setMaintenanceData(prev => ({ ...prev, ratePerKg: savedMaint }));
+        }
+    }, [settings, existingEB, existingPackaging, existingMaintenance]);
 
     // Populate Forms if Entry Exists
     useEffect(() => {
@@ -156,27 +172,42 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, initialTab = 0, 
                 ratePerUnit: existingEB.ratePerUnit,
                 noOfShifts: existingEB.noOfShifts || '1',
             });
+        } else {
+            setEbData(prev => ({
+                ...prev,
+                unitsConsumed: '',
+                noOfShifts: '1',
+                // Keep ratePerUnit from settings if possible
+                ratePerUnit: settings?.ebRate || '10'
+            }));
         }
-    }, [existingEB]);
+    }, [existingEB, settings]);
 
     useEffect(() => {
         if (existingEmployee) {
             setEmployeeData({
                 workers: existingEmployee.workers,
-                workerRate: existingEmployee.workerRate || '',
+                workerRate: existingEmployee.rate || '', // DB field name is 'rate'
                 noOfShifts: existingEmployee.noOfShifts || '1',
                 overtime: existingEmployee.overtime || '',
             });
         } else {
-            setEmployeeData({ workers: '', workerRate: '', noOfShifts: '1', overtime: '' });
+            setEmployeeData({
+                workers: '',
+                workerRate: settings?.workerRate || '',
+                noOfShifts: '1',
+                overtime: ''
+            });
         }
-    }, [existingEmployee]);
+    }, [existingEmployee, settings]);
 
     useEffect(() => {
         if (existingPackaging) {
             setPackagingData({ rate: existingPackaging.ratePerKg || '1.6' });
+        } else {
+            setPackagingData({ rate: settings?.packageRate || '1.6' });
         }
-    }, [existingPackaging]);
+    }, [existingPackaging, settings]);
 
     useEffect(() => {
         if (existingMaintenance) {
@@ -185,104 +216,153 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, initialTab = 0, 
                 totalCost: existingMaintenance.totalCost || '',
                 ratePerKg: existingMaintenance.ratePerKg || '4',
             });
+        } else {
+            setMaintenanceData({
+                description: '',
+                totalCost: '',
+                ratePerKg: settings?.maintenanceRate || '4',
+            });
         }
-    }, [existingMaintenance]);
+    }, [existingMaintenance, settings]);
 
     // Handlers
     const handleDelete = async (id: string) => {
         if (!await confirmDialog({ title: 'Delete Cost Entry', message: 'Are you sure you want to remove this cost entry?', severity: 'error', confirmText: 'Delete', cancelText: 'Cancel' })) return;
         try {
             await api.delete(`/costing/${id}`);
-            toast.success('Deleted');
+            toast.success(SUCCESS_MESSAGES.DELETE);
             refetchEntries();
         } catch (error) {
-            toast.error('Failed to delete');
+            toast.error(ERROR_MESSAGES.DELETE_FAILED);
         }
     };
 
     const handleEBSubmit = async () => {
         const units = parseFloat(ebData.unitsConsumed);
         const rate = parseFloat(ebData.ratePerUnit);
-        if (units <= 0 || rate <= 0) {
-            toast.error('Invalid values');
+        if (isNaN(units) || units <= 0) {
+            toast.error(ERROR_MESSAGES.INVALID_NUMBER);
+            return;
+        }
+        if (isNaN(rate) || rate <= 0) {
+            toast.error(ERROR_MESSAGES.INVALID_NUMBER);
             return;
         }
         try {
-            const totalCost = units * rate;
-            const payload = { date, ...ebData, totalCost, createdBy: username };
+            const totalCost = units * rate * (parseFloat(ebData.noOfShifts) || 1);
+            const payload = { date, category: 'EB (Electricity)', ...ebData, totalCost, createdBy: username };
             if (existingEB) await api.put(`/costing/${existingEB.id}`, payload);
             else await api.post('/costing/eb', payload);
-            toast.success('EB Saved');
-            if (onSuccess) onSuccess();
+            toast.success(SUCCESS_MESSAGES.COSTING_SAVED);
+            if (onItemSaved) onItemSaved();
             refetchEntries();
-        } catch (error) {
-            toast.error('Failed to save');
+        } catch (error: any) {
+            toast.error(formatApiError(error, ERROR_MESSAGES.SAVE_FAILED));
         }
     };
 
     const handleEmployeeSubmit = async () => {
-        // Logic same as before
         try {
             const workers = parseFloat(employeeData.workers) || 0;
             const rate = parseFloat(employeeData.workerRate) || 0;
-            if (workers <= 0 || rate <= 0) {
-                toast.error('Invalid values');
+            if (workers <= 0) {
+                toast.error(ERROR_MESSAGES.REQUIRED_FIELD('Workers'));
                 return;
             }
-            const cost = (workers * rate) + (parseFloat(employeeData.overtime) || 0);
-            const payload = { date, ...employeeData, totalCost: cost, createdBy: username };
+            if (rate <= 0) {
+                toast.error(ERROR_MESSAGES.REQUIRED_FIELD('Rate'));
+                return;
+            }
+            const shifts = parseFloat(employeeData.noOfShifts) || 1;
+            const cost = (workers * rate * shifts) + (parseFloat(employeeData.overtime) || 0);
+            const payload = {
+                date,
+                category: 'Employee',
+                ...employeeData,
+                rate: rate, // Map frontend workerRate to backend 'rate' field
+                totalCost: cost,
+                createdBy: username
+            };
             if (existingEmployee) await api.put(`/costing/${existingEmployee.id}`, payload);
             else await api.post('/costing/employee', payload);
-            toast.success('Employee Saved');
-            if (onSuccess) onSuccess();
+            toast.success(SUCCESS_MESSAGES.COSTING_SAVED);
+            if (onItemSaved) onItemSaved();
             refetchEntries();
-        } catch (error) { toast.error('Failed'); }
+        } catch (error: any) {
+            toast.error(formatApiError(error, ERROR_MESSAGES.SAVE_FAILED));
+        }
     };
 
     const handlePackagingSubmit = async () => {
         const yarnKg = productionData?.totalProduced || 0;
         const rate = parseFloat(packagingData.rate);
         if (yarnKg <= 0) {
-            toast.warning('No yarn production for this date');
+            toast.warning('No production records found for the selected date. Packaging costs cannot be calculated without production data.');
+            return;
+        }
+        if (isNaN(rate) || rate <= 0) {
+            toast.error(ERROR_MESSAGES.INVALID_NUMBER);
             return;
         }
         try {
             const cost = yarnKg * rate;
-            const payload = { date, yarnProduced: yarnKg, ratePerKg: rate, totalCost: cost, createdBy: username };
+            const payload = { date, category: 'Packaging', yarnProduced: yarnKg, ratePerKg: rate, totalCost: cost, createdBy: username };
             if (existingPackaging) await api.put(`/costing/${existingPackaging.id}`, payload);
             else await api.post('/costing/packaging', payload);
-            toast.success('Packaging Saved');
-            if (onSuccess) onSuccess();
+            toast.success(SUCCESS_MESSAGES.COSTING_SAVED);
+            if (onItemSaved) onItemSaved();
             refetchEntries();
-        } catch (error) { toast.error('Failed'); }
+        } catch (error: any) {
+            toast.error(formatApiError(error, ERROR_MESSAGES.SAVE_FAILED));
+        }
     };
 
     const handleMaintenanceSubmit = async () => {
-        // Logic same as before
+        if (yarnProduction <= 0) {
+            toast.warning('No production records found for the selected date. Maintenance costs cannot be calculated without production data.');
+            return;
+        }
+
         const cost = parseFloat(maintenanceData.totalCost);
-        if (isNaN(cost) || cost <= 0) { toast.error('Invalid cost'); return; }
+        if (isNaN(cost) || cost <= 0) {
+            toast.error(ERROR_MESSAGES.INVALID_NUMBER);
+            return;
+        }
         try {
-            const payload = { date, description: maintenanceData.description || 'Daily', totalCost: cost, ratePerKg: maintenanceData.ratePerKg, createdBy: username };
+            const payload = { date, category: 'Maintenance', description: maintenanceData.description || 'Daily Maintenance', totalCost: cost, ratePerKg: maintenanceData.ratePerKg, createdBy: username };
             if (existingMaintenance) await api.put(`/costing/${existingMaintenance.id}`, payload);
             else await api.post('/costing/maintenance', payload);
-            toast.success('Maintenance Saved');
-            if (onSuccess) onSuccess();
+            toast.success(SUCCESS_MESSAGES.COSTING_SAVED);
+            if (onItemSaved) onItemSaved();
             refetchEntries();
-        } catch (error) { toast.error('Failed'); }
+        } catch (error: any) {
+            toast.error(formatApiError(error, ERROR_MESSAGES.SAVE_FAILED));
+        }
     };
 
     const handleExpenseSubmit = async () => {
-        if (!expenseData.title || parseFloat(expenseData.amount) <= 0) return;
+        if (!expenseData.title) {
+            toast.error(ERROR_MESSAGES.REQUIRED_FIELD('Title'));
+            return;
+        }
+        if (parseFloat(expenseData.amount) <= 0 || isNaN(parseFloat(expenseData.amount))) {
+            toast.error(ERROR_MESSAGES.INVALID_NUMBER);
+            return;
+        }
         try {
             await api.post('/costing/expense', { date, ...expenseData, createdBy: username });
-            toast.success('Expense Saved');
+            toast.success(SUCCESS_MESSAGES.COSTING_SAVED);
             setExpenseData({ title: '', amount: '', description: '', type: 'Asset' });
-            if (onSuccess) onSuccess();
-        } catch (error) { toast.error('Failed'); }
+            if (onItemSaved) onItemSaved();
+            refetchEntries();
+        } catch (error: any) {
+            toast.error(formatApiError(error, ERROR_MESSAGES.SAVE_FAILED));
+        }
     };
 
     // UI Calcs
-    const ebTotal = (parseFloat(ebData.unitsConsumed) || 0) * (parseFloat(ebData.ratePerUnit) || 0);
+    const ebTotal = (parseFloat(ebData.unitsConsumed) || 0) * (parseFloat(ebData.ratePerUnit) || 0) * (parseFloat(ebData.noOfShifts) || 1);
+    const employeeTotal = ((parseFloat(employeeData.workers) || 0) * (parseFloat(employeeData.workerRate) || 0) * (parseFloat(employeeData.noOfShifts) || 1)) + (parseFloat(employeeData.overtime) || 0);
     const yarnProduction = productionData?.totalProduced || 0;
     const packageCost = yarnProduction * (parseFloat(packagingData.rate) || 0); // Dynamic calc
     const maintenanceFormulaCost = yarnProduction * (parseFloat(maintenanceData.ratePerKg) || 0);
@@ -336,7 +416,6 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, initialTab = 0, 
                         </Paper>
                         <Box sx={{ display: 'flex', gap: 2 }}>
                             <Button variant="contained" fullWidth startIcon={<SaveIcon />} onClick={handleEBSubmit}>{existingEB ? 'Update' : 'Save'}</Button>
-                            {existingEB && <Button color="error" variant="outlined" onClick={() => handleDelete(existingEB.id)}>Delete</Button>}
                         </Box>
                     </Box>
                 </TabPanel>
@@ -345,15 +424,25 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, initialTab = 0, 
                 <TabPanel value={tabValue} index={1}>
                     <Box sx={{ maxWidth: 600, mx: 'auto', display: 'flex', flexDirection: 'column', gap: 2 }}>
                         {existingEmployee && <Alert severity="info">Entry exists.</Alert>}
-                        <TextField label="No of Shifts" type="number" value={employeeData.noOfShifts} onChange={(e) => setEmployeeData({ ...employeeData, noOfShifts: e.target.value })} />
+                        <TextField
+                            select
+                            label="No of Shifts"
+                            value={employeeData.noOfShifts}
+                            onChange={(e) => setEmployeeData({ ...employeeData, noOfShifts: e.target.value })}
+                        >
+                            <MenuItem value="1">1</MenuItem>
+                            <MenuItem value="2">2</MenuItem>
+                        </TextField>
                         <Box sx={{ display: 'flex', gap: 2 }}>
                             <TextField label="Workers" type="number" fullWidth value={employeeData.workers} onChange={(e) => setEmployeeData({ ...employeeData, workers: e.target.value })} />
                             <TextField label="Rate (₹/day)" type="number" fullWidth value={employeeData.workerRate} onChange={(e) => setEmployeeData({ ...employeeData, workerRate: e.target.value })} />
                         </Box>
                         <TextField label="Overtime Cost (₹)" type="number" value={employeeData.overtime} onChange={(e) => setEmployeeData({ ...employeeData, overtime: e.target.value })} />
+                        <Paper sx={{ p: 2, bgcolor: 'background.default' }}>
+                            <Typography variant="h6" align="center">Total: ₹{employeeTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Typography>
+                        </Paper>
                         <Box sx={{ display: 'flex', gap: 2 }}>
                             <Button variant="contained" fullWidth startIcon={<SaveIcon />} onClick={handleEmployeeSubmit}>{existingEmployee ? 'Update' : 'Save'}</Button>
-                            {existingEmployee && <Button color="error" variant="outlined" onClick={() => handleDelete(existingEmployee.id)}>Delete</Button>}
                         </Box>
                     </Box>
                 </TabPanel>
@@ -361,7 +450,12 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, initialTab = 0, 
                 {/* Packaging Tab */}
                 <TabPanel value={tabValue} index={2}>
                     <Box sx={{ maxWidth: 600, mx: 'auto', textAlign: 'center' }}>
-                        {existingPackaging && <Alert severity="info" sx={{ mb: 2 }}>Entry exists.</Alert>}
+                        {existingPackaging && <Alert severity="info" sx={{ mb: 2 }}>This entry already exists and can be updated.</Alert>}
+                        {yarnProduction <= 0 && (
+                            <Alert severity="warning" sx={{ mb: 2, textAlign: 'left' }}>
+                                No production data found for this date. Please ensure production entries are recorded before calculating packaging costs.
+                            </Alert>
+                        )}
                         <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 3 }}>
                             <Paper sx={{ p: 2 }}>
                                 <TextField
@@ -392,7 +486,6 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, initialTab = 0, 
                         <Typography variant="h4" color="primary" sx={{ mb: 3 }}>₹{packageCost.toFixed(2)}</Typography>
                         <Box sx={{ display: 'flex', gap: 2 }}>
                             <Button variant="contained" fullWidth startIcon={<SaveIcon />} onClick={handlePackagingSubmit}>{existingPackaging ? 'Update' : 'Confirm'}</Button>
-                            {existingPackaging && <Button color="error" variant="outlined" onClick={() => handleDelete(existingPackaging.id)}>Delete</Button>}
                         </Box>
                     </Box>
                 </TabPanel>
@@ -400,7 +493,12 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, initialTab = 0, 
                 {/* Maintenance Tab */}
                 <TabPanel value={tabValue} index={3}>
                     <Box sx={{ maxWidth: 600, mx: 'auto', display: 'flex', flexDirection: 'column', gap: 2 }}>
-                        {existingMaintenance && <Alert severity="info">Entry exists.</Alert>}
+                        {existingMaintenance && <Alert severity="info" sx={{ mb: 2 }}>This entry already exists and can be updated.</Alert>}
+                        {yarnProduction <= 0 && (
+                            <Alert severity="warning" sx={{ mb: 2 }}>
+                                No production data found for this date. formula-based maintenance costs cannot be auto-calculated.
+                            </Alert>
+                        )}
 
                         <Paper sx={{ p: 2, bgcolor: 'background.default' }}>
                             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 2 }}>
@@ -431,7 +529,6 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, initialTab = 0, 
                         </Box>
                         <Box sx={{ display: 'flex', gap: 2 }}>
                             <Button variant="contained" fullWidth startIcon={<SaveIcon />} onClick={handleMaintenanceSubmit}>{existingMaintenance ? 'Update' : 'Save'}</Button>
-                            {existingMaintenance && <Button color="error" variant="outlined" onClick={() => handleDelete(existingMaintenance.id)}>Delete</Button>}
                         </Box>
                     </Box>
                 </TabPanel>

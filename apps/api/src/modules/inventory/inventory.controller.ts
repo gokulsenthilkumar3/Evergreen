@@ -120,8 +120,8 @@ export class InventoryController {
     }
 
     @Get('available-batches')
-    async getAvailableBatches() {
-        return this.inventoryService.getAvailableBatches();
+    async getAvailableBatches(@Query('date') date?: string) {
+        return this.inventoryService.getAvailableBatches(date);
     }
 
     @Get('cotton-inventory')
@@ -135,8 +135,8 @@ export class InventoryController {
     }
 
     @Get('yarn-stock')
-    async getStockByCount() {
-        return this.inventoryService.getYarnStockByCount();
+    async getStockByCount(@Query('date') date?: string) {
+        return this.inventoryService.getYarnStockByCount(date);
     }
 
     @Get('yarn-inventory')

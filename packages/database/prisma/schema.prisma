@@ -40,6 +40,7 @@ model CottonInventory {
   date         DateTime
   type         String
   quantity     Float
+  bale         Float       @default(0)
   balance      Float
   reference    String
   batchId      String?
@@ -109,6 +110,7 @@ model Production {
   totalConsumed   Float
   totalProduced   Float
   totalWaste      Float
+  totalIntermediate Float                 @default(0)
   wasteBlowRoom   Float                   @default(0)
   wasteCarding    Float                   @default(0)
   wasteOE         Float                   @default(0)
@@ -129,6 +131,7 @@ model ProductionConsumption {
   id           Int        @id @default(autoincrement())
   productionId Int
   batchNo      String
+  bale         Float      @default(0)
   weight       Float
   createdAt    DateTime   @default(now())
   entryTimestamp DateTime @default(now())
@@ -205,6 +208,8 @@ model SystemSettings {
   maintenanceRate     String   @default("4")
   ebRate              String   @default("10")
   packageRate         String   @default("1.6")
+  gstPercent          String   @default("18")
+  supportedCounts     String?  @default("2,4,6,8,10,12,14,16,20")
   updatedAt           DateTime @updatedAt
   entryTimestamp      DateTime @default(now())
   createdBy           String?
@@ -250,7 +255,12 @@ model Invoice {
   sgst            Float
   total           Float
 
+  // Payment tracking
+  status          String        @default("UNPAID")  // UNPAID, PARTIAL, PAID
+  amountPaid      Float         @default(0)
+
   items           InvoiceItem[]
+  payments        Payment[]
 
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
@@ -268,4 +278,18 @@ model InvoiceItem {
   rate      Float
 
   invoice   Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+}
+
+model Payment {
+  id          Int      @id @default(autoincrement())
+  invoiceId   Int
+  date        DateTime
+  amount      Float
+  method      String   @default("CASH")   // CASH, BANK, UPI, CHEQUE
+  reference   String?                      // cheque number, UPI ref, etc.
+  notes       String?
+  createdAt   DateTime @default(now())
+  createdBy   String?
+
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 }

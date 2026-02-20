@@ -8,7 +8,7 @@ export class CostingService {
     async addEntry(data: any) {
         // Map frontend/controller data structure to Prisma Model
         // ensure numeric fields are numbers, dates are Dates.
-        return (this.prisma as any).costingEntry.create({
+        return this.prisma.costingEntry.create({
             data: {
                 date: new Date(data.date),
                 category: data.category,
@@ -31,7 +31,7 @@ export class CostingService {
     }
 
     async getCostEntries() {
-        return (this.prisma as any).costingEntry.findMany({
+        return this.prisma.costingEntry.findMany({
             orderBy: { date: 'desc' }
         });
     }
@@ -47,7 +47,7 @@ export class CostingService {
         if (isNaN(numId)) return false; // Or throw
 
         try {
-            await (this.prisma as any).costingEntry.delete({ where: { id: numId } });
+            await this.prisma.costingEntry.delete({ where: { id: numId } });
             return true;
         } catch (e) {
             return false;
@@ -59,7 +59,7 @@ export class CostingService {
         if (isNaN(numId)) return null;
 
         try {
-            return await (this.prisma as any).costingEntry.update({
+            return await this.prisma.costingEntry.update({
                 where: { id: numId },
                 data: {
                     // Allow updating fields
@@ -93,7 +93,7 @@ export class CostingService {
         const start = new Date(d.setHours(0, 0, 0, 0));
         const end = new Date(d.setHours(23, 59, 59, 999));
 
-        const count = await (this.prisma as any).costingEntry.count({
+        const count = await this.prisma.costingEntry.count({
             where: {
                 category,
                 date: {
@@ -113,7 +113,7 @@ export class CostingService {
             }
         } : {};
 
-        const agg = await (this.prisma as any).costingEntry.aggregate({
+        const agg = await this.prisma.costingEntry.aggregate({
             _sum: { totalCost: true },
             where
         });
@@ -123,7 +123,7 @@ export class CostingService {
 
     // Helper for aggregation
     async getCostSummary(from: Date, to: Date) {
-        const groupBy = await (this.prisma as any).costingEntry.groupBy({
+        const groupBy = await this.prisma.costingEntry.groupBy({
             by: ['category'],
             _sum: { totalCost: true },
             where: {
@@ -159,7 +159,7 @@ export class CostingService {
         // Group by Date.
         // Prisma groupBy date? Not directly supported for date truncation in all DBs.
         // Simplest: Fetch all entries in range for category, modify in memory.
-        const entries = await (this.prisma as any).costingEntry.findMany({
+        const entries = await this.prisma.costingEntry.findMany({
             where: {
                 category: category === 'Expense' ? { notIn: ['EB (Electricity)', 'Employee', 'Packaging', 'Maintenance'] } : category,
                 date: { gte: from, lte: to }
@@ -181,7 +181,7 @@ export class CostingService {
     }
 
     async getDailyCostSummary(from: Date, to: Date) {
-        const entries = await (this.prisma as any).costingEntry.findMany({
+        const entries = await this.prisma.costingEntry.findMany({
             where: { date: { gte: from, lte: to } }
         });
 

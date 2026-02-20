@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { getDateRange, DATE_FILTER_OPTIONS_WITH_ALL, type DateFilterType } from '../utils/dateFilters';
+import { validateVehicleNo, validateDate, validateCustomerName, isEmptyOrWhitespace } from '../utils/validators';
 import {
     Box,
     Paper,
@@ -25,6 +27,7 @@ import {
     ListItemIcon,
     ListItemText,
     Tooltip,
+    LinearProgress,
 } from '@mui/material';
 import {
     Add as AddIcon,
@@ -41,6 +44,8 @@ import { generateExcel } from '../utils/excelGenerator';
 import { generatePDF } from '../utils/pdfGenerator';
 import { useConfirm } from '../context/ConfirmContext';
 import { toast } from 'sonner';
+import { SUCCESS_MESSAGES, ERROR_MESSAGES, WARNING_MESSAGES, INFO_MESSAGES, CONFIRM_TITLES, CONFIRM_MESSAGES, formatApiError } from '../utils/messages';
+import EmptyState from '../components/common/EmptyState';
 
 interface OutwardItem {
     id: number;
@@ -59,8 +64,9 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
     const [historyFrom, setHistoryFrom] = useState('');
     const [historyTo, setHistoryTo] = useState('');
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-    const [filterType, setFilterType] = useState('all');
+    const [filterType, setFilterType] = useState<DateFilterType>('all');
     const [showErrors, setShowErrors] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const { confirm: confirmDialog } = useConfirm();
 
     const handleMenuOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -72,28 +78,11 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
     };
 
     const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const type = e.target.value;
+        const type = e.target.value as DateFilterType;
         setFilterType(type);
-        const today = new Date();
-
-        if (type === 'today') {
-            const str = today.toISOString().split('T')[0];
-            setHistoryFrom(str);
-            setHistoryTo(str);
-        } else if (type === 'week') {
-            const past = new Date(today);
-            past.setDate(today.getDate() - 7);
-            setHistoryFrom(past.toISOString().split('T')[0]);
-            setHistoryTo(today.toISOString().split('T')[0]);
-        } else if (type === 'month') {
-            const past = new Date(today);
-            past.setMonth(today.getMonth() - 1);
-            setHistoryFrom(past.toISOString().split('T')[0]);
-            setHistoryTo(today.toISOString().split('T')[0]);
-        } else if (type === 'all') {
-            setHistoryFrom('');
-            setHistoryTo('');
-        }
+        const range = getDateRange(type, historyFrom, historyTo);
+        setHistoryFrom(range.from);
+        setHistoryTo(range.to);
     };
 
     const handleExportAction = (type: 'email' | 'excel' | 'pdf') => {
@@ -101,7 +90,7 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
         handleMenuClose();
     };
 
-    const { data: outwardHistory, refetch: refetchHistory } = useQuery({
+    const { data: outwardHistory, refetch: refetchHistory, isLoading } = useQuery({
         queryKey: ['outwardHistory', historyFrom, historyTo],
         queryFn: async () => {
             const params: any = {};
@@ -112,18 +101,18 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
         },
     });
 
-    const { data: yarnStock = {}, refetch: refetchStock } = useQuery<{ [key: string]: number }>({
-        queryKey: ['yarnStock'],
-        queryFn: async () => {
-            const res = await api.get('/inventory/yarn-stock');
-            return res.data;
-        }
-    });
-
-    const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+    const [date, setDate] = useState(new Date().toLocaleDateString('en-CA'));
     const [customerName, setCustomerName] = useState('');
     const [vehicleNo, setVehicleNo] = useState('');
     const [driverName, setDriverName] = useState('');
+
+    const { data: yarnStock = {}, refetch: refetchStock, isFetching: isFetchingStock } = useQuery<{ [key: string]: number }>({
+        queryKey: ['yarnStock', date],
+        queryFn: async () => {
+            const res = await api.get('/inventory/yarn-stock', { params: { date } });
+            return res.data;
+        }
+    });
     const [items, setItems] = useState<OutwardItem[]>([
         { id: 1, count: '2', bags: 0, weight: 0 },
     ]);
@@ -159,39 +148,59 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
 
     const handleSave = async () => {
         setShowErrors(true);
-        if (!customerName || !vehicleNo || !driverName) {
-            toast.error('Please fill Customer Name, Vehicle No, and Driver Name');
-            return;
-        }
 
-        // Vehicle Number Validation (Basic Indian Format)
-        const vehicleRegex = /^[A-Z]{2}[ -]?[0-9]{1,2}(?:[ -]?[A-Z]{1,2})?[ -]?[0-9]{4}$/i;
-        if (!vehicleRegex.test(vehicleNo)) {
-            toast.error('Invalid Vehicle Number format (e.g., TN 01 AB 1234)');
-            return;
+        // ── Field Validations (centralised validators) ──────────────────────
+        const customerCheck = validateCustomerName(customerName);
+        if (!customerCheck.valid) { toast.error(customerCheck.message); return; }
+
+        const vehicleCheck = validateVehicleNo(vehicleNo);
+        if (!vehicleCheck.valid) { toast.error(vehicleCheck.message); return; }
+
+        if (isEmptyOrWhitespace(driverName)) { toast.error(ERROR_MESSAGES.REQUIRED_FIELD('Driver name')); return; }
+
+        const dateCheck = validateDate(date, false);
+        if (!dateCheck.valid) { toast.error(dateCheck.message); return; }
+
+        const todayLocal = new Date().toLocaleDateString('en-CA');
+        if (date < todayLocal) {
+            toast.info(INFO_MESSAGES.PAST_DATE_STOCK_INFO(date));
         }
 
         const validItems = items.filter(i => Number(i.bags) > 0);
         if (validItems.length === 0) {
-            toast.error('Please add at least one item with bags');
+            toast.error(ERROR_MESSAGES.NO_DATA);
             return;
         }
 
-        // Validate Stock Availability
+        // ── Stock availability check ────────────────────────────────────────
         for (const item of validItems) {
             const currentStock = yarnStock[item.count] || 0;
             if (Number(item.weight) > currentStock) {
-                toast.error(`Insufficient stock for Count ${item.count}. Available: ${(currentStock / 60).toFixed(0)} bags (${currentStock.toFixed(2)}kg)`);
+                toast.error(
+                    WARNING_MESSAGES.INSUFFICIENT_STOCK_DETAIL(
+                        `Count ${item.count}`,
+                        Math.floor(currentStock / 60),
+                        currentStock
+                    )
+                );
                 return;
             }
         }
 
+        // ── Duplicate count check ───────────────────────────────────────────
+        const countValues = validItems.map(i => i.count);
+        if (new Set(countValues).size !== countValues.length) {
+            toast.error(WARNING_MESSAGES.DUPLICATE_COUNTS);
+            return;
+        }
+
+        setIsSubmitting(true);
         try {
             await api.post('/inventory/outward', {
                 date,
-                customerName,
-                vehicleNo,
-                driverName,
+                customerName: customerName.trim(),
+                vehicleNo: vehicleNo.trim().toUpperCase(),
+                driverName: driverName.trim(),
                 createdBy: username,
                 items: validItems.map(item => ({
                     ...item,
@@ -199,17 +208,20 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
                     weight: Number(item.weight)
                 }))
             });
-            toast.success('Outward entry saved successfully!');
+            toast.success(SUCCESS_MESSAGES.OUTWARD_SAVED);
             setCustomerName('');
             setVehicleNo('');
             setDriverName('');
             setItems([{ id: 1, count: '2', bags: 0, weight: 0 }]);
+            setDate(new Date().toLocaleDateString('en-CA'));
             refetchHistory();
             refetchStock();
             setOpenDialog(false);
             setShowErrors(false);
-        } catch (error) {
-            toast.error('Failed to save outward entry');
+        } catch (error: any) {
+            toast.error(formatApiError(error, ERROR_MESSAGES.SAVE_FAILED));
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -218,18 +230,18 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
 
         try {
             await api.delete(`/inventory/outward/${id}`);
-            toast.success('Outward entry deleted successfully');
+            toast.success(SUCCESS_MESSAGES.DELETE);
             refetchHistory();
             refetchStock();
         } catch (error) {
-            toast.error('Failed to delete outward entry');
+            toast.error(ERROR_MESSAGES.DELETE_FAILED);
         }
     };
 
     const handleExport = (type: 'email' | 'excel' | 'pdf') => {
         const data = outwardHistory || [];
         if (data.length === 0) {
-            toast.error('No data to export');
+            toast.error(ERROR_MESSAGES.NO_DATA);
             return;
         }
 
@@ -268,7 +280,8 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
             {/* Header and Actions */}
             <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'stretch', md: 'center' }, gap: 2, mb: 3 }}>
                 <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-                    Outward History
+                    Outward Entry
+                    {isLoading && <LinearProgress sx={{ mt: 1, borderRadius: 1 }} />}
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
                     <TextField
@@ -279,11 +292,9 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
                         onChange={handleFilterChange}
                         sx={{ width: 150 }}
                     >
-                        <MenuItem value="all">All Time</MenuItem>
-                        <MenuItem value="today">Today</MenuItem>
-                        <MenuItem value="week">Past Week</MenuItem>
-                        <MenuItem value="month">Past Month</MenuItem>
-                        <MenuItem value="custom">Custom Range</MenuItem>
+                        {DATE_FILTER_OPTIONS_WITH_ALL.map(opt => (
+                            <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
+                        ))}
                     </TextField>
 
                     {filterType === 'custom' && (
@@ -356,12 +367,12 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
                     <Table stickyHeader>
                         <TableHead>
                             <TableRow sx={{ bgcolor: 'action.hover' }}>
-                                <TableCell sx={{ fontWeight: 'bold' }}>Date</TableCell>
-                                <TableCell sx={{ fontWeight: 'bold' }}>Customer</TableCell>
-                                <TableCell sx={{ fontWeight: 'bold' }}>Vehicle / Driver</TableCell>
-                                <TableCell sx={{ fontWeight: 'bold' }} align="center">Total Bags</TableCell>
-                                <TableCell sx={{ fontWeight: 'bold' }} align="center">Total Weight</TableCell>
-                                <TableCell sx={{ fontWeight: 'bold' }} align="center">Action</TableCell>
+                                <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Date</TableCell>
+                                <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Customer</TableCell>
+                                <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Vehicle / Driver</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Total Bags</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Total Weight</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Action</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -392,8 +403,9 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
                             ))}
                             {(!outwardHistory || outwardHistory.length === 0) && (
                                 <TableRow>
-                                    <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
-                                        <Typography variant="h6" color="text.secondary">No Outwards Found</Typography>
+                                    <TableCell colSpan={6} align="center" sx={{ py: 8 }}>
+                                        <Typography color="text.secondary" variant="body1">No outward records found</Typography>
+                                        <Typography color="text.secondary" variant="caption">Start by recording a new outward entry using the button above</Typography>
                                     </TableCell>
                                 </TableRow>
                             )}
@@ -556,13 +568,14 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
                     </Box>
                 </DialogContent>
                 <DialogActions sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
-                    <Button onClick={() => { setOpenDialog(false); setShowErrors(false); }} color="inherit">Cancel</Button>
+                    <Button onClick={() => { setOpenDialog(false); setShowErrors(false); }} color="inherit" disabled={isSubmitting}>Cancel</Button>
                     <Button
                         onClick={handleSave}
                         variant="contained"
                         startIcon={<SaveIcon />}
+                        disabled={isSubmitting}
                     >
-                        Save Entry
+                        {isSubmitting ? 'Saving...' : 'Save Entry'}
                     </Button>
                 </DialogActions>
             </Dialog>

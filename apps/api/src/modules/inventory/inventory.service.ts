@@ -6,12 +6,17 @@ export class InventoryService {
     constructor(private prisma: PrismaService) { }
 
     async getInwardHistory(from?: string, to?: string) {
-        const whereClause = from && to ? {
-            date: {
-                gte: new Date(from),
-                lte: new Date(to),
-            }
-        } : {};
+        let whereClause = {};
+        if (from && to) {
+            const toDate = new Date(to);
+            toDate.setHours(23, 59, 59, 999);
+            whereClause = {
+                date: {
+                    gte: new Date(from),
+                    lte: toDate,
+                }
+            };
+        }
 
         return this.prisma.inwardBatch.findMany({
             where: whereClause,
@@ -19,47 +24,83 @@ export class InventoryService {
         });
     }
 
-    async getAvailableBatches() {
-        // Find batches with remaining balance via CottonInventory aggregation
+    async getAvailableBatches(asOfDate?: string) {
+        const dateLimit = asOfDate ? new Date(asOfDate) : new Date();
+        // Set to end of day to include all transactions on the selected date
+        dateLimit.setHours(23, 59, 59, 999);
+
+        // Find batches with remaining weight balance via CottonInventory aggregation
         const balances = await this.prisma.cottonInventory.groupBy({
             by: ['batchId'],
             _sum: { quantity: true },
-            where: { batchId: { not: null } }
+            where: {
+                batchId: { not: null },
+                date: { lte: dateLimit }
+            }
         });
 
-        // Filter active batches (balance > 0)
+        // Filter active batches (remaining weight > 0 at that time)
         const activeBatches = balances
-            .filter(b => (b._sum.quantity || 0) > 0.01);
+            .filter(b => (b._sum.quantity ?? 0) > 0.01);
 
         if (activeBatches.length === 0) return [];
 
-        // Fetch details for active batches
+        // Fetch original batch details (including original kg and bale)
         const ids = activeBatches.map(b => b.batchId!).filter(Boolean);
         const details = await this.prisma.inwardBatch.findMany({
             where: { batchId: { in: ids } },
-            select: { batchId: true, supplier: true, bale: true },
+            select: { batchId: true, supplier: true, bale: true, kg: true },
             orderBy: { date: 'desc' }
         });
 
-        // Combine details with remaining balance
+        // Calculate bales and weight used per batch using typed Prisma aggregate
+        const baleUsageByBatch = await this.prisma.productionConsumption.groupBy({
+            by: ['batchNo'],
+            _sum: { bale: true, weight: true },
+            where: { batchNo: { in: ids } }
+        });
+        const usageByBatch: Record<string, { bale: number; weight: number }> = {};
+        for (const row of baleUsageByBatch) {
+            usageByBatch[row.batchNo] = {
+                bale: Number(row._sum.bale ?? 0),
+                weight: Number(row._sum.weight ?? 0),
+            };
+        }
+
+        // Combine details with remaining balance and usage stats
         return details.map(d => {
             const bal = activeBatches.find(x => x.batchId === d.batchId);
+            const usage = usageByBatch[d.batchId!] ?? { bale: 0, weight: 0 };
+            const remainingBale = d.bale - usage.bale;
+            const remainingKg = bal?._sum.quantity ?? 0;
             return {
                 batchId: d.batchId,
                 supplier: d.supplier,
-                bale: d.bale,
-                kg: bal?._sum.quantity || 0 // current remaining balance
+                // Original totals
+                originalKg: d.kg,
+                originalBale: d.bale,
+                // Used totals
+                usedKg: parseFloat((d.kg - remainingKg).toFixed(2)),
+                usedBale: usage.bale,
+                // Remaining (what can still be consumed)
+                bale: Math.max(0, remainingBale),
+                kg: remainingKg,
             };
         });
     }
 
     async getOutwardHistory(from?: string, to?: string) {
-        const whereClause = from && to ? {
-            date: {
-                gte: new Date(from),
-                lte: new Date(to),
-            }
-        } : {};
+        let whereClause = {};
+        if (from && to) {
+            const toDate = new Date(to);
+            toDate.setHours(23, 59, 59, 999);
+            whereClause = {
+                date: {
+                    gte: new Date(from),
+                    lte: toDate,
+                }
+            };
+        }
 
         return this.prisma.outward.findMany({
             where: whereClause,
@@ -79,6 +120,18 @@ export class InventoryService {
         return this.prisma.$transaction(async (tx) => {
             const totalBags = data.items.reduce((sum, item) => sum + item.bags, 0);
             const totalWeight = data.items.reduce((sum, item) => sum + item.weight, 0);
+
+            // 0. Validation: Check stock as of the specific date
+            const stockAtDate = await this.getYarnStockByCount(data.date);
+            for (const item of data.items) {
+                const available = stockAtDate[item.count] || 0;
+                if (item.weight > available) {
+                    throw new BadRequestException(
+                        `Insufficient yarn stock for count ${item.count} on ${new Date(data.date).toLocaleDateString()}. ` +
+                        `Available then: ${available.toFixed(2)} kg, Requested: ${item.weight.toFixed(2)} kg.`
+                    );
+                }
+            }
 
             // 1. Create Outward record
             const outward = await tx.outward.create({
@@ -117,7 +170,7 @@ export class InventoryService {
                         type: 'OUTWARD',
                         quantity: -item.weight,
                         balance: currentBalance - item.weight,
-                        reference: `OUT-${outward.id}`,
+                        reference: `O-${outward.id}`,
                         count: item.count,
                         createdBy: data.createdBy
                     }
@@ -166,12 +219,17 @@ export class InventoryService {
     }
 
     async getHistory(from?: string, to?: string) {
-        const whereClause = from && to ? {
-            date: {
-                gte: new Date(from),
-                lte: new Date(to),
-            }
-        } : {};
+        let whereClause = {};
+        if (from && to) {
+            const toDate = new Date(to);
+            toDate.setHours(23, 59, 59, 999);
+            whereClause = {
+                date: {
+                    gte: new Date(from),
+                    lte: toDate,
+                }
+            };
+        }
 
         const cottonMovements = await this.prisma.cottonInventory.findMany({
             where: whereClause,
@@ -222,33 +280,39 @@ export class InventoryService {
 
     async getDashboardMetrics(from?: string, to?: string) {
         // Calculate total remaining cotton and yarn
-        const lastCotton = await this.prisma.cottonInventory.findFirst({ orderBy: { id: 'desc' } });
+        // For dashboard, we usually want current total, but if 'to' is provided, we use it
+        let asOf = new Date();
+        if (to) {
+            asOf = new Date(to);
+            asOf.setHours(23, 59, 59, 999);
+        }
 
-        // Calculate Total Yarn by summing latest balance of each count
+        // Calculate Total Yarn by summing latest balance of each count as of 'to' date
         const yarnCounts = await this.prisma.yarnInventory.findMany({
             distinct: ['count'],
             select: { count: true },
-            where: { count: { not: null } }
+            where: {
+                count: { not: null },
+                date: { lte: asOf }
+            }
         });
 
         let totalYarnKg = 0;
         let totalYarnBags = 0;
         let totalYarnLooseKg = 0;
 
-        for (const c of yarnCounts) {
-            if (!c.count) continue;
-            const last = await this.prisma.yarnInventory.findFirst({
-                where: { count: c.count },
-                orderBy: { id: 'desc' },
-                select: { balance: true }
-            });
-            const balance = last?.balance || 0;
+        const yarnStockByCount = await this.getYarnStockByCount(to); // Pass 'to' date to get stock as of that date
+        for (const count in yarnStockByCount) {
+            const balance = yarnStockByCount[count];
             totalYarnKg += balance;
             totalYarnBags += Math.floor(balance / 60);
             totalYarnLooseKg += (balance % 60);
         }
 
-        const cottonAgg = await this.prisma.cottonInventory.aggregate({ _sum: { quantity: true } });
+        const cottonAgg = await this.prisma.cottonInventory.aggregate({
+            _sum: { quantity: true },
+            where: { date: { lte: asOf } }
+        });
         const totalCotton = cottonAgg._sum.quantity || 0;
 
         // Calculate Cotton Bales (Estimate based on Avg Bale Weight from Inward History)
@@ -263,12 +327,17 @@ export class InventoryService {
         const cottonBales = Math.round(totalCotton / avgBaleWeight);
 
         // Production & Waste Metrics (Period Based)
-        const whereClause = from && to ? {
-            date: {
-                gte: new Date(from),
-                lte: new Date(to),
-            }
-        } : {};
+        let whereClause = {};
+        if (from && to) {
+            const toDate = new Date(to);
+            toDate.setHours(23, 59, 59, 999);
+            whereClause = {
+                date: {
+                    gte: new Date(from),
+                    lte: toDate,
+                }
+            };
+        }
 
         const productionAgg = await this.prisma.production.aggregate({
             _sum: { totalProduced: true, totalWaste: true },
@@ -287,12 +356,17 @@ export class InventoryService {
     }
 
     async getWasteHistory(from?: string, to?: string) {
-        const whereClause = from && to ? {
-            date: {
-                gte: new Date(from),
-                lte: new Date(to),
-            }
-        } : {};
+        let whereClause = {};
+        if (from && to) {
+            const toDate = new Date(to);
+            toDate.setHours(23, 59, 59, 999);
+            whereClause = {
+                date: {
+                    gte: new Date(from),
+                    lte: toDate,
+                }
+            };
+        }
 
         return this.prisma.wasteInventory.findMany({
             where: whereClause,
@@ -306,9 +380,18 @@ export class InventoryService {
                 where: { id }
             });
 
-            if (!batch) throw new Error('Batch not found');
+            if (!batch) throw new BadRequestException('Batch not found');
 
-            // 1. Delete inward movements from inventory (reference is batchId)
+            // 1. Dependency Check: Check if batch is used in any production
+            const consumption = await tx.productionConsumption.findFirst({
+                where: { batchNo: batch.batchId }
+            });
+
+            if (consumption) {
+                throw new BadRequestException(`Cannot delete batch ${batch.batchId} because it has been used in production. Delete the corresponding production entry first.`);
+            }
+
+            // 2. Delete inward movements from inventory (reference is batchId)
             await tx.cottonInventory.deleteMany({
                 where: { reference: batch.batchId }
             });
@@ -385,35 +468,54 @@ export class InventoryService {
             return { success: true };
         });
     }
-    async getYarnStockByCount() {
+    async getYarnStockByCount(asOfDate?: string) {
+        let dateLimit = new Date();
+        if (asOfDate) {
+            dateLimit = new Date(asOfDate);
+            dateLimit.setHours(23, 59, 59, 999);
+        }
+
         const counts = await this.prisma.yarnInventory.findMany({
             distinct: ['count'],
             select: { count: true },
-            where: { count: { not: null } }
+            where: {
+                count: { not: null },
+                date: { lte: dateLimit }
+            }
         });
 
         const stock: Record<string, number> = {};
         for (const c of counts) {
             if (!c.count) continue;
-            const last = await this.prisma.yarnInventory.findFirst({
-                where: { count: c.count },
-                orderBy: { id: 'desc' },
-                select: { balance: true }
+            const entries = await this.prisma.yarnInventory.aggregate({
+                where: {
+                    count: c.count,
+                    date: { lte: dateLimit }
+                },
+                _sum: { quantity: true }
             });
-            stock[c.count] = last?.balance || 0;
+            const balance = entries._sum.quantity || 0;
+            if (balance > 0.01) {
+                stock[c.count] = balance;
+            }
         }
         return stock;
     }
 
     async recycleWaste(data: { date: string; quantity: number; createdBy?: string }) {
         return this.prisma.$transaction(async (tx) => {
-            // 1. Check Waste Balance
-            const wasteAgg = await tx.wasteInventory.aggregate({ _sum: { quantity: true } });
+            // 1. Check Waste Balance as of the requested date
+            const wasteAgg = await tx.wasteInventory.aggregate({
+                _sum: { quantity: true },
+                where: { date: { lte: new Date(data.date) } }
+            });
             const wasteBalance = wasteAgg._sum.quantity || 0;
 
             if (wasteBalance < data.quantity) {
-                // If waste is negative (impossible?), handle it
-                throw new BadRequestException(`Insufficient Waste Stock! Available: ${wasteBalance.toFixed(2)} kg`);
+                throw new BadRequestException(
+                    `Insufficient Waste Stock on ${new Date(data.date).toLocaleDateString()}! ` +
+                    `Available then: ${wasteBalance.toFixed(2)} kg, Requested: ${data.quantity.toFixed(2)} kg.`
+                );
             }
 
             // 2. Reduce Waste Inventory
@@ -449,12 +551,18 @@ export class InventoryService {
 
     async exportWaste(data: { date: string; quantity: number; buyer?: string; price?: number; createdBy?: string }) {
         return this.prisma.$transaction(async (tx) => {
-            // 1. Check Waste Balance
-            const wasteAgg = await tx.wasteInventory.aggregate({ _sum: { quantity: true } });
+            // 1. Check Waste Balance as of the requested date
+            const wasteAgg = await tx.wasteInventory.aggregate({
+                _sum: { quantity: true },
+                where: { date: { lte: new Date(data.date) } }
+            });
             const wasteBalance = wasteAgg._sum.quantity || 0;
 
             if (wasteBalance < data.quantity) {
-                throw new BadRequestException(`Insufficient Waste Stock! Available: ${wasteBalance.toFixed(2)} kg`);
+                throw new BadRequestException(
+                    `Insufficient Waste Stock on ${new Date(data.date).toLocaleDateString()}! ` +
+                    `Available then: ${wasteBalance.toFixed(2)} kg, Requested: ${data.quantity.toFixed(2)} kg.`
+                );
             }
 
             // 2. Reduce Waste Inventory
