@@ -20,21 +20,25 @@
         },
         "win": {
             "target": [
-                "dir"
+                "nsis"
             ],
             "artifactName": "${productName}-${version}-win.${ext}"
         },
         "files": [
             "main.js",
             "preload.js",
-            "assets/**/*"
+            "assets/**/*",
+            "web-dist/**/*"
         ],
         "nsis": {
             "oneClick": false,
             "allowToChangeInstallationDirectory": true,
             "createDesktopShortcut": true,
             "runAfterFinish": true
-        }
+        },
+        "extraResources": [
+            "backend/**/*"
+        ]
     },
     "devDependencies": {
         "electron": "33.0.0",

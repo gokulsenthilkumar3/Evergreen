@@ -24,13 +24,14 @@ import {
     Select,
     MenuItem,
     TextField,
+    DialogActions,
+    LinearProgress,
     Tooltip as MuiTooltip,
 } from '@mui/material';
 import {
     Add as AddIcon,
     Close as CloseIcon,
     Delete as DeleteIcon,
-    Edit as EditIcon,
     ArrowUpward,
     ArrowDownward,
 } from '@mui/icons-material';
@@ -40,6 +41,8 @@ import api from '../utils/api';
 import CostingEntry from './CostingEntry';
 import { useConfirm } from '../context/ConfirmContext';
 import { toast } from 'sonner';
+import { SUCCESS_MESSAGES, ERROR_MESSAGES, formatApiError } from '../utils/messages';
+import { getDateRange as getStandardDateRange, DATE_FILTER_OPTIONS, type DateFilterType } from '../utils/dateFilters';
 
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -70,34 +73,23 @@ const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole 
     const [openWizard, setOpenWizard] = useState(false);
     const queryClient = useQueryClient();
     const { confirm: confirmDialog } = useConfirm();
-    const [editDate, setEditDate] = useState<string | undefined>(undefined);
 
     // Dashboard Filter State
-    const [dateFilter, setDateFilter] = useState<string>('month');
+    const [dateFilter, setDateFilter] = useState<DateFilterType>('month');
     const [customFrom, setCustomFrom] = useState<string>('');
     const [customTo, setCustomTo] = useState<string>('');
 
-    const { data: costingData = [], isLoading } = useQuery({
-        queryKey: ['costingEntries', dateFilter],
-        queryFn: async () => {
-            const params: any = {};
-            const today = new Date();
-            if (dateFilter === 'today') {
-                params.from = today.toISOString().split('T')[0];
-                params.to = params.from;
-            } else if (dateFilter === 'week') {
-                const past = new Date(today);
-                past.setDate(today.getDate() - 7);
-                params.from = past.toISOString().split('T')[0];
-                params.to = today.toISOString().split('T')[0];
-            } else if (dateFilter === 'month') {
-                const past = new Date(today);
-                past.setMonth(today.getMonth() - 1);
-                params.from = past.toISOString().split('T')[0];
-                params.to = today.toISOString().split('T')[0];
-            }
+    const dateRange = React.useMemo(() => getStandardDateRange(dateFilter, customFrom, customTo), [dateFilter, customFrom, customTo]);
 
-            const response = await api.get('/costing/entries', { params });
+    const { data: costingData = [], isLoading } = useQuery({
+        queryKey: ['costingEntries', dateRange.from, dateRange.to],
+        queryFn: async () => {
+            const response = await api.get('/costing/entries', {
+                params: {
+                    from: dateRange.from,
+                    to: dateRange.to
+                }
+            });
             return response.data;
         },
     });
@@ -183,15 +175,19 @@ const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole 
         queryClient.invalidateQueries({ queryKey: ['costingEntries'] });
     };
 
+    const handleItemSaved = () => {
+        queryClient.invalidateQueries({ queryKey: ['costingEntries'] });
+    };
+
     const handleDeleteEntry = async (id: string) => {
         if (!await confirmDialog({ title: 'Delete Entry', message: 'Are you sure you want to delete this entry?', severity: 'error', confirmText: 'Delete', cancelText: 'Cancel' })) return;
 
         try {
             await api.delete(`/costing/${id}`);
             queryClient.invalidateQueries({ queryKey: ['costingEntries'] });
-            toast.success('Entry deleted successfully');
+            toast.success(SUCCESS_MESSAGES.DELETE);
         } catch (error) {
-            toast.error('Failed to delete cost entry');
+            toast.error(ERROR_MESSAGES.DELETE_FAILED);
         }
     };
 
@@ -201,6 +197,7 @@ const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole 
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                 <Typography variant="h4" fontWeight="bold">
                     Costing Module
+                    {isLoading && <LinearProgress sx={{ mt: 1, borderRadius: 1 }} />}
                 </Typography>
 
                 <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
@@ -210,16 +207,11 @@ const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole 
                             <Select
                                 value={dateFilter}
                                 label="Date Filter"
-                                onChange={(e) => setDateFilter(e.target.value)}
+                                onChange={(e) => setDateFilter(e.target.value as DateFilterType)}
                             >
-                                <MenuItem value="today">Today</MenuItem>
-                                <MenuItem value="yesterday">Yesterday</MenuItem>
-                                <MenuItem value="week">Past Week</MenuItem>
-                                <MenuItem value="month">Past Month</MenuItem>
-                                <MenuItem value="3months">Past 3 Months</MenuItem>
-                                <MenuItem value="6months">Past 6 Months</MenuItem>
-                                <MenuItem value="year">Past Year</MenuItem>
-                                <MenuItem value="custom">Custom Range</MenuItem>
+                                {DATE_FILTER_OPTIONS.map(opt => (
+                                    <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
+                                ))}
                             </Select>
                         </FormControl>
 
@@ -249,7 +241,6 @@ const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole 
                         variant="contained"
                         startIcon={<AddIcon />}
                         onClick={() => {
-                            setEditDate(undefined);
                             setOpenWizard(true);
                         }}
                     >
@@ -406,21 +397,21 @@ const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole 
                                             {index === 0 ? (
                                                 // EB (Electricity) columns
                                                 <>
-                                                    <TableCell>Date</TableCell>
-                                                    <TableCell align="right">Units Usage (kWh)</TableCell>
-                                                    <TableCell align="right">Cost of 1 Unit (₹)</TableCell>
-                                                    <TableCell align="center">Shifts</TableCell>
-                                                    <TableCell align="right">Amount (₹)</TableCell>
-                                                    <TableCell align="center">Actions</TableCell>
+                                                    <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Date</TableCell>
+                                                    <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Units Usage (kWh)</TableCell>
+                                                    <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Cost/Unit (₹)</TableCell>
+                                                    <TableCell align="center" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Shifts</TableCell>
+                                                    <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Amount (₹)</TableCell>
+                                                    <TableCell align="center" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Actions</TableCell>
                                                 </>
                                             ) : (
                                                 // Other categories
                                                 <>
-                                                    <TableCell>Date</TableCell>
-                                                    <TableCell>Details</TableCell>
-                                                    <TableCell align="right">Amount (₹)</TableCell>
-                                                    {index === 4 && <TableCell>Type</TableCell>}
-                                                    <TableCell align="center">Actions</TableCell>
+                                                    <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Date</TableCell>
+                                                    <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Details</TableCell>
+                                                    <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Amount (₹)</TableCell>
+                                                    {index === 4 && <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Type</TableCell>}
+                                                    <TableCell align="center" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Actions</TableCell>
                                                 </>
                                             )}
                                         </TableRow>
@@ -444,26 +435,13 @@ const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole 
                                                         <TableCell align="right">₹{entry.totalCost?.toLocaleString()}</TableCell>
                                                         <TableCell align="center">
                                                             {(userRole === 'ADMIN' || userRole === 'AUTHOR') && (
-                                                                <>
-                                                                    <IconButton
-                                                                        size="small"
-                                                                        color="primary"
-                                                                        onClick={() => {
-                                                                            setEditDate(new Date(entry.date).toISOString().split('T')[0]);
-                                                                            setOpenWizard(true);
-                                                                        }}
-                                                                        sx={{ mr: 1 }}
-                                                                    >
-                                                                        <EditIcon fontSize="small" />
-                                                                    </IconButton>
-                                                                    <IconButton
-                                                                        size="small"
-                                                                        color="error"
-                                                                        onClick={() => handleDeleteEntry(entry.id)}
-                                                                    >
-                                                                        <DeleteIcon fontSize="small" />
-                                                                    </IconButton>
-                                                                </>
+                                                                <IconButton
+                                                                    size="small"
+                                                                    color="error"
+                                                                    onClick={() => handleDeleteEntry(entry.id)}
+                                                                >
+                                                                    <DeleteIcon fontSize="small" />
+                                                                </IconButton>
                                                             )}
                                                         </TableCell>
                                                     </>
@@ -486,26 +464,13 @@ const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole 
                                                         )}
                                                         <TableCell align="center">
                                                             {(userRole === 'ADMIN' || userRole === 'AUTHOR') && (
-                                                                <>
-                                                                    <IconButton
-                                                                        size="small"
-                                                                        color="primary"
-                                                                        onClick={() => {
-                                                                            setEditDate(new Date(entry.date).toISOString().split('T')[0]);
-                                                                            setOpenWizard(true);
-                                                                        }}
-                                                                        sx={{ mr: 1 }}
-                                                                    >
-                                                                        <EditIcon fontSize="small" />
-                                                                    </IconButton>
-                                                                    <IconButton
-                                                                        size="small"
-                                                                        color="error"
-                                                                        onClick={() => handleDeleteEntry(entry.id)}
-                                                                    >
-                                                                        <DeleteIcon fontSize="small" />
-                                                                    </IconButton>
-                                                                </>
+                                                                <IconButton
+                                                                    size="small"
+                                                                    color="error"
+                                                                    onClick={() => handleDeleteEntry(entry.id)}
+                                                                >
+                                                                    <DeleteIcon fontSize="small" />
+                                                                </IconButton>
                                                             )}
                                                         </TableCell>
                                                     </>
@@ -514,7 +479,10 @@ const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole 
                                         ))}
                                         {(!currentEntries || currentEntries.length === 0) && (
                                             <TableRow>
-                                                <TableCell colSpan={index === 0 ? 6 : (index === 4 ? 5 : 4)} align="center">No entries found</TableCell>
+                                                <TableCell colSpan={index === 0 ? 6 : (index === 4 ? 5 : 4)} align="center" sx={{ py: 8 }}>
+                                                    <Typography color="text.secondary" variant="body1">No {category} entries found</Typography>
+                                                    <Typography color="text.secondary" variant="caption">Start by adding a new costing record using the button above</Typography>
+                                                </TableCell>
                                             </TableRow>
                                         )}
                                     </TableBody>
@@ -542,8 +510,8 @@ const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole 
                         userRole={userRole}
                         username={username}
                         onSuccess={handleSuccess}
+                        onItemSaved={handleItemSaved}
                         initialTab={tabValue > 0 ? tabValue - 1 : 0}
-                        initialDate={editDate}
                     />
                 </DialogContent>
             </Dialog>

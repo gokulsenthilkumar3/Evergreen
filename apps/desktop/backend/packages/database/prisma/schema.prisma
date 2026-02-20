@@ -1,0 +1,290 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  username  String    @unique
+  name      String?
+  password  String
+  role      String    @default("VIEWER")
+  sessions  Session[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  createdBy String?
+  updatedBy String?
+}
+
+model Session {
+  id         String   @id @default(cuid())
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token      String?  // Optional: Store JWT signature if needed, or just use ID
+  ipAddress  String?
+  location   String?
+  device     String?
+  userAgent  String?
+  isValid    Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  lastActive DateTime @updatedAt
+}
+
+model CottonInventory {
+  id           Int         @id @default(autoincrement())
+  date         DateTime
+  type         String
+  quantity     Float
+  balance      Float
+  reference    String
+  batchId      String?
+  productionId Int?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  entryTimestamp DateTime  @default(now())
+  createdBy    String?
+  updatedBy    String?
+  production   Production? @relation("CottonProduction", fields: [productionId], references: [id])
+}
+
+model YarnInventory {
+  id           Int         @id @default(autoincrement())
+  date         DateTime
+  type         String
+  quantity     Float
+  balance      Float
+  reference    String
+  count        String?
+  productionId Int?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  entryTimestamp DateTime  @default(now())
+  createdBy    String?
+  updatedBy    String?
+  production   Production? @relation("YarnProduction", fields: [productionId], references: [id])
+}
+
+model WasteInventory {
+  id            Int         @id @default(autoincrement())
+  date          DateTime
+  type          String
+  quantity      Float
+  balance       Float
+  reference     String
+  wasteBlowRoom Float       @default(0)
+  wasteCarding  Float       @default(0)
+  wasteOE       Float       @default(0)
+  wasteOthers   Float       @default(0)
+  productionId  Int?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  entryTimestamp DateTime  @default(now())
+  createdBy     String?
+  updatedBy     String?
+  production    Production? @relation("WasteProduction", fields: [productionId], references: [id])
+}
+
+model InwardBatch {
+  id        Int      @id @default(autoincrement())
+  batchId   String   @unique
+  date      DateTime
+  supplier  String
+  bale      Int
+  kg        Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  entryTimestamp DateTime @default(now())
+  createdBy    String?
+  updatedBy    String?
+}
+
+model Production {
+  id              Int                     @id @default(autoincrement())
+  date            DateTime
+  totalConsumed   Float
+  totalProduced   Float
+  totalWaste      Float
+  wasteBlowRoom   Float                   @default(0)
+  wasteCarding    Float                   @default(0)
+  wasteOE         Float                   @default(0)
+  wasteOthers     Float                   @default(0)
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+  entryTimestamp  DateTime                @default(now())
+  createdBy       String?
+  updatedBy       String?
+  cottonInventory CottonInventory[]       @relation("CottonProduction")
+  consumedBatches ProductionConsumption[]
+  producedYarn    ProductionOutput[]
+  yarnInventory   YarnInventory[]         @relation("YarnProduction")
+  wasteInventory  WasteInventory[]        @relation("WasteProduction")
+}
+
+model ProductionConsumption {
+  id           Int        @id @default(autoincrement())
+  productionId Int
+  batchNo      String
+  weight       Float
+  createdAt    DateTime   @default(now())
+  entryTimestamp DateTime @default(now())
+  createdBy    String?
+  updatedBy    String?
+  production   Production @relation(fields: [productionId], references: [id], onDelete: Cascade)
+}
+
+model ProductionOutput {
+  id           Int        @id @default(autoincrement())
+  productionId Int
+  count        String
+  weight       Float
+  bags         Int
+  remainingLog Float
+  createdAt    DateTime   @default(now())
+  entryTimestamp DateTime @default(now())
+  createdBy    String?
+  updatedBy    String?
+  production   Production @relation(fields: [productionId], references: [id], onDelete: Cascade)
+}
+
+model Outward {
+  id           Int            @id @default(autoincrement())
+  date         DateTime
+  customerName String
+  vehicleNo    String
+  driverName   String?
+  totalBags    Int            @default(0)
+  totalWeight  Float          @default(0)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  entryTimestamp DateTime     @default(now())
+  createdBy    String?
+  updatedBy    String?
+  items        OutwardItem[]
+}
+
+model OutwardItem {
+  id        Int      @id @default(autoincrement())
+  outwardId Int
+  count     String
+  bags      Int
+  weight    Float
+  createdAt DateTime @default(now())
+  entryTimestamp DateTime @default(now())
+  createdBy    String?
+  updatedBy    String?
+  outward   Outward  @relation(fields: [outwardId], references: [id], onDelete: Cascade)
+}
+
+model ActivityLog {
+  id        Int      @id @default(autoincrement())
+  action    String
+  module    String
+  details   String
+  username  String
+  createdAt DateTime @default(now())
+  entryTimestamp DateTime @default(now())
+}
+
+model SystemSettings {
+  id                  Int      @id @default(autoincrement())
+  companyName         String   @default("Ever Green Yarn Mills")
+  address             String   @default("Industrial Area, Coimbatore")
+  gstin               String   @default("33XXXXX1234X1Z5")
+  phone               String   @default("+91 98765 43210")
+  email               String   @default("info@evergreenyarn.com")
+  logo                String?
+  autoBackup          Boolean  @default(true)
+  emailNotifications  Boolean  @default(true)
+  lowStockAlert       Boolean  @default(true)
+  lowStockThreshold   String   @default("500")
+  maintenanceRate     String   @default("4")
+  ebRate              String   @default("10")
+  packageRate         String   @default("1.6")
+  updatedAt           DateTime @updatedAt
+  entryTimestamp      DateTime @default(now())
+  createdBy           String?
+  updatedBy           String?
+}
+
+model CostingEntry {
+  id              Int      @id @default(autoincrement())
+  date            DateTime
+  category        String
+  details         String?
+  totalCost       Float
+
+  unitsConsumed   Float?
+  ratePerUnit     Float?
+  noOfShifts      Int?
+  workers         Int?
+  yarnProduced    Float?
+  rate            Float?
+  description     String?
+  type            String?
+  title           String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  entryTimestamp  DateTime @default(now())
+  createdBy       String?
+  updatedBy       String?
+}
+
+model Invoice {
+  id              Int           @id @default(autoincrement())
+  invoiceNo       String        @unique
+  date            DateTime
+  customerName    String
+  customerAddress String?
+  customerGSTIN   String?
+  transportMode   String?
+  vehicleNo       String?
+  
+  subtotal        Float
+  cgst            Float
+  sgst            Float
+  total           Float
+
+  // Payment tracking
+  status          String        @default("UNPAID")  // UNPAID, PARTIAL, PAID
+  amountPaid      Float         @default(0)
+
+  items           InvoiceItem[]
+  payments        Payment[]
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  entryTimestamp  DateTime      @default(now())
+  createdBy       String?
+  updatedBy       String?
+}
+
+model InvoiceItem {
+  id        Int      @id @default(autoincrement())
+  invoiceId Int
+  yarnCount String
+  bags      Int
+  weight    Float
+  rate      Float
+
+  invoice   Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+}
+
+model Payment {
+  id          Int      @id @default(autoincrement())
+  invoiceId   Int
+  date        DateTime
+  amount      Float
+  method      String   @default("CASH")   // CASH, BANK, UPI, CHEQUE
+  reference   String?                      // cheque number, UPI ref, etc.
+  notes       String?
+  createdAt   DateTime @default(now())
+  createdBy   String?
+
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+}

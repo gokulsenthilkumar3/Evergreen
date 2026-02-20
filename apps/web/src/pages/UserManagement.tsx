@@ -35,6 +35,7 @@ import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import api from '../utils/api';
 import { useConfirm } from '../context/ConfirmContext';
 import { toast } from 'sonner';
+import { SUCCESS_MESSAGES, ERROR_MESSAGES, formatApiError } from '../utils/messages';
 
 interface User {
     id: number;
@@ -81,11 +82,11 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole, userna
         mutationFn: (newUser: any) => api.post('/auth/users', newUser),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['users'] });
-            toast.success('User created successfully');
+            toast.success(SUCCESS_MESSAGES.USER_CREATE);
             handleCloseDialog();
         },
         onError: (error: any) => {
-            toast.error(error.response?.data?.message || 'Failed to create user');
+            toast.error(formatApiError(error, ERROR_MESSAGES.CREATE_FAILED));
         }
     });
 
@@ -94,11 +95,11 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole, userna
         mutationFn: ({ id, data }: { id: number; data: any }) => api.put(`/auth/users/${id}`, data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['users'] });
-            toast.success('User updated successfully');
+            toast.success(SUCCESS_MESSAGES.USER_UPDATE);
             handleCloseDialog();
         },
         onError: (error: any) => {
-            toast.error(error.response?.data?.message || 'Failed to update user');
+            toast.error(formatApiError(error, ERROR_MESSAGES.UPDATE_FAILED));
         }
     });
 
@@ -107,10 +108,10 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole, userna
         mutationFn: (id: number) => api.delete(`/auth/users/${id}`),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['users'] });
-            toast.success('User deleted successfully');
+            toast.success(SUCCESS_MESSAGES.USER_DELETE);
         },
         onError: (error: any) => {
-            toast.error(error.response?.data?.message || 'Failed to delete user');
+            toast.error(formatApiError(error, ERROR_MESSAGES.DELETE_FAILED));
         }
     });
 
@@ -144,18 +145,18 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole, userna
 
     const handleSubmit = () => {
         if (!formData.username) {
-            toast.error('Username is required');
+            toast.error(ERROR_MESSAGES.REQUIRED_FIELD('Username'));
             return;
         }
 
         if (editingUser) {
             const updateData: any = { ...formData };
-            if (!updateData.password) delete updateData.password; // Don't send empty password
+            if (!updateData.password) delete updateData.password;
             updateData.updatedBy = username;
             updateUserMutation.mutate({ id: editingUser.id, data: updateData });
         } else {
             if (!formData.password) {
-                toast.error('Password is required for new users');
+                toast.error(ERROR_MESSAGES.REQUIRED_FIELD('Password'));
                 return;
             }
             createUserMutation.mutate({ ...formData, createdBy: username });
