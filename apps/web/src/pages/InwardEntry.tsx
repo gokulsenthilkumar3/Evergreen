@@ -245,13 +245,13 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
     return (
         <Box sx={{ maxWidth: '100%', width: '100%' }}>
             {/* Header */}
-            <Box sx={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                alignItems: { xs: 'stretch', sm: 'flex-start' }, 
-                mb: 3, 
+            <Box sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: { xs: 'stretch', sm: 'flex-start' },
+                mb: 3,
                 flexDirection: { xs: 'column', sm: 'row' },
-                gap: 2 
+                gap: 2
             }}>
                 <Box>
                     <Typography variant="h4" sx={{ fontWeight: 800, letterSpacing: '-0.5px', fontSize: { xs: '1.5rem', sm: '2rem' } }}>
@@ -261,10 +261,10 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                         Track cotton bale receipts and update inventory automatically
                     </Typography>
                 </Box>
-                <Box sx={{ 
-                    display: 'flex', 
-                    gap: 2, 
-                    alignItems: 'center', 
+                <Box sx={{
+                    display: 'flex',
+                    gap: 2,
+                    alignItems: 'center',
                     flexWrap: 'wrap',
                     flexDirection: { xs: 'column', sm: 'row' },
                     width: { xs: '100%', sm: 'auto' }
@@ -284,31 +284,31 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                     </FormControl>
                     {dateFilter === 'custom' && (
                         <>
-                            <TextField 
-                                type="date" 
-                                label="From" 
-                                size="small" 
+                            <TextField
+                                type="date"
+                                label="From"
+                                size="small"
                                 value={customFrom}
-                                onChange={(e) => setCustomFrom(e.target.value)} 
-                                InputLabelProps={{ shrink: true }} 
-                                sx={{ width: { xs: '100%', sm: 145 } }} 
+                                onChange={(e) => setCustomFrom(e.target.value)}
+                                InputLabelProps={{ shrink: true }}
+                                sx={{ width: { xs: '100%', sm: 145 } }}
                             />
-                            <TextField 
-                                type="date" 
-                                label="To" 
-                                size="small" 
+                            <TextField
+                                type="date"
+                                label="To"
+                                size="small"
                                 value={customTo}
-                                onChange={(e) => setCustomTo(e.target.value)} 
-                                InputLabelProps={{ shrink: true }} 
-                                sx={{ width: { xs: '100%', sm: 145 } }} 
+                                onChange={(e) => setCustomTo(e.target.value)}
+                                InputLabelProps={{ shrink: true }}
+                                sx={{ width: { xs: '100%', sm: 145 } }}
                             />
                         </>
                     )}
                     {(userRole === 'AUTHOR' || userRole === 'MODIFIER') && (
-                        <Button 
-                            variant="contained" 
-                            startIcon={<AddIcon />} 
-                            onClick={() => setOpenWizard(true)} 
+                        <Button
+                            variant="contained"
+                            startIcon={<AddIcon />}
+                            onClick={() => setOpenWizard(true)}
                             sx={{ height: 40, width: { xs: '100%', sm: 'auto' } }}
                         >
                             Add Batch
@@ -327,10 +327,10 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
             )}
 
             {/* Add Batch Dialog */}
-            <Dialog 
-                open={openWizard} 
-                onClose={() => { setOpenWizard(false); setTouched({}); }} 
-                maxWidth="sm" 
+            <Dialog
+                open={openWizard}
+                onClose={() => { setOpenWizard(false); setTouched({}); }}
+                maxWidth="sm"
                 fullWidth
                 aria-labelledby="add-batch-dialog-title"
                 aria-describedby="add-batch-dialog-description"

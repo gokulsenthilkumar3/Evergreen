@@ -166,6 +166,18 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
             toast.info(INFO_MESSAGES.PAST_DATE_STOCK_INFO(date));
         }
 
+        // Date validation: cannot be in the future
+        const todayStr = new Date().toISOString().split('T')[0];
+        if (date > todayStr) {
+            toast.error('Outward date cannot be in the future');
+            return;
+        }
+
+        // Date validation: today's yarn production cannot go to yesterday's outward
+        if (date < todayStr) {
+            toast.warning('Note: Adding outward entry for a past date. Only yarn produced on or before that date will be counted.');
+        }
+
         const validItems = items.filter(i => Number(i.bags) > 0);
         if (validItems.length === 0) {
             toast.error(ERROR_MESSAGES.NO_DATA);

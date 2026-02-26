@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -31,10 +32,20 @@ async function bootstrap() {
     transform: true,
   }));
 
+  const config = new DocumentBuilder()
+    .setTitle('Ever Green Yarn Mills API')
+    .setDescription('Full REST API for the Ever Green Yarn Flow Software')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/docs', app, document);
+
   const port = process.env.PORT ?? 3001;
   await app.listen(port);
   console.log(`🚀 Application is running on: http://localhost:${port}`);
   console.log(`🔒 Security features enabled`);
-  console.log(`📊 API Documentation: http://localhost:${port}/api`);
+  console.log(`📊 API Documentation: http://localhost:${port}/api/docs`);
 }
 bootstrap();

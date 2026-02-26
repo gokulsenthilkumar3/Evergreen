@@ -182,40 +182,45 @@ export class InventoryService {
     }
 
     async createInward(data: { batchId: string; date: string; supplier: string; bale: number; kg: number; createdBy?: string }) {
-        return this.prisma.$transaction(async (tx) => {
-            // 1. Create Inward Batch record
-            const batch = await tx.inwardBatch.create({
-                data: {
-                    batchId: data.batchId,
-                    date: new Date(data.date),
-                    supplier: data.supplier,
-                    bale: data.bale,
-                    kg: data.kg,
-                    createdBy: data.createdBy,
-                }
-            });
+        console.log('[Inventory] createInward called with data:', data);
+        try {
+            return await this.prisma.$transaction(async (tx) => {
+                // 1. Create Inward Batch record
+                const batch = await tx.inwardBatch.create({
+                    data: {
+                        batchId: data.batchId,
+                        date: new Date(data.date),
+                        supplier: data.supplier,
+                        bale: data.bale,
+                        kg: data.kg,
+                        createdBy: data.createdBy,
+                    }
+                });
 
-            // 2. Get latest balance
-            const lastEntry = await tx.cottonInventory.findFirst({
-                orderBy: { id: 'desc' }
-            });
-            const currentBalance = lastEntry ? lastEntry.balance : 0;
+                // 2. Get latest balance
+                const lastEntry = await tx.cottonInventory.findFirst({
+                    orderBy: { id: 'desc' }
+                });
+                const currentBalance = lastEntry ? lastEntry.balance : 0;
 
-            // 3. Add to Cotton Inventory
-            await tx.cottonInventory.create({
-                data: {
-                    date: new Date(data.date),
-                    type: 'INWARD',
-                    quantity: data.kg,
-                    balance: currentBalance + data.kg,
-                    reference: data.batchId,
-                    batchId: data.batchId,
-                    createdBy: data.createdBy
-                }
-            });
+                // 3. Add to Cotton Inventory
+                await tx.cottonInventory.create({
+                    data: {
+                        date: new Date(data.date),
+                        type: 'INWARD',
+                        quantity: data.kg,
+                        balance: currentBalance + data.kg,
+                        reference: data.batchId,
+                        batchId: data.batchId,
+                        createdBy: data.createdBy
+                    }
+                });
 
-            return batch;
-        });
+            });
+        } catch (error: any) {
+            console.error('[Inventory] createInward error:', error);
+            return { error: true, details: error.message, stack: error.stack };
+        }
     }
 
     async getHistory(from?: string, to?: string) {
