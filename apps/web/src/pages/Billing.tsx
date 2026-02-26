@@ -633,11 +633,11 @@ const BillingDashboard = ({
     // Apply filters and sorting
     let filteredInvoices = invoices.filter(inv => {
         // Text search
-        const matchesSearch = !searchTerm || 
+        const matchesSearch = !searchTerm ||
             inv.invoiceNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
             inv.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
             inv.status?.toLowerCase().includes(searchTerm.toLowerCase());
-        
+
         // Column filters
         const matchesFilters = Object.entries(activeFilters).every(([key, value]) => {
             if (!value) return true;
@@ -646,7 +646,7 @@ const BillingDashboard = ({
             }
             return String(inv[key]).toLowerCase().includes(String(value).toLowerCase());
         });
-        
+
         return matchesSearch && matchesFilters;
     });
 
@@ -676,11 +676,13 @@ const BillingDashboard = ({
     const filterColumns = [
         { key: 'invoiceNo', label: 'Invoice No', type: 'text' as const },
         { key: 'customerName', label: 'Customer', type: 'text' as const },
-        { key: 'status', label: 'Status', type: 'select' as const, options: [
-            { value: 'PAID', label: 'Paid' },
-            { value: 'PARTIAL', label: 'Partial' },
-            { value: 'UNPAID', label: 'Unpaid' },
-        ]},
+        {
+            key: 'status', label: 'Status', type: 'select' as const, options: [
+                { value: 'PAID', label: 'Paid' },
+                { value: 'PARTIAL', label: 'Partial' },
+                { value: 'UNPAID', label: 'Unpaid' },
+            ]
+        },
         { key: 'date', label: 'Date', type: 'date' as const },
     ];
 
@@ -693,7 +695,7 @@ const BillingDashboard = ({
             confirmText: 'Delete',
             cancelText: 'Cancel'
         })) return;
-        
+
         for (const id of ids) {
             await onDelete(id);
         }
@@ -824,136 +826,136 @@ const BillingDashboard = ({
                                     paginatedInvoices.map((invoice) => {
                                         const paidPercent = invoice.total > 0 ? Math.min(100, (invoice.amountPaid / invoice.total) * 100) : 0;
                                         const isExpanded = expandedInvoice === invoice.id;
-                                    return (
-                                        <React.Fragment key={invoice.id}>
-                                            <TableRow hover>
-                                                <TableCell>
-                                                    <IconButton
-                                                        size="small"
-                                                        onClick={() => setExpandedInvoice(isExpanded ? null : invoice.id)}
-                                                    >
-                                                        {isExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-                                                    </IconButton>
-                                                </TableCell>
-                                                <TableCell sx={{ fontWeight: 500 }}>{invoice.invoiceNo}</TableCell>
-                                                <TableCell>{new Date(invoice.date).toLocaleDateString()}</TableCell>
-                                                <TableCell>{invoice.customerName}</TableCell>
-                                                <TableCell align="right" sx={{ fontWeight: 600 }}>₹{invoice.total?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</TableCell>
-                                                <TableCell align="right" sx={{ color: 'success.main', fontWeight: 500 }}>
-                                                    ₹{(invoice.amountPaid || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                                                </TableCell>
-                                                <TableCell align="center">
-                                                    <PaymentStatusChip status={invoice.status} />
-                                                </TableCell>
-                                                <TableCell align="center" sx={{ minWidth: 120 }}>
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                        <LinearProgress
-                                                            variant="determinate"
-                                                            value={paidPercent}
-                                                            color={paidPercent >= 100 ? 'success' : paidPercent > 0 ? 'warning' : 'error'}
-                                                            sx={{ flexGrow: 1, height: 8, borderRadius: 4 }}
-                                                        />
-                                                        <Typography variant="caption" sx={{ minWidth: 35 }}>{paidPercent.toFixed(0)}%</Typography>
-                                                    </Box>
-                                                </TableCell>
-                                                <TableCell align="center">
-                                                    <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
-                                                        {invoice.status !== 'PAID' && (
-                                                            <Tooltip title="Add Payment">
-                                                                <IconButton size="small" color="success" onClick={() => onAddPayment(invoice)}>
-                                                                    <PaymentIcon fontSize="small" />
+                                        return (
+                                            <React.Fragment key={invoice.id}>
+                                                <TableRow hover>
+                                                    <TableCell>
+                                                        <IconButton
+                                                            size="small"
+                                                            onClick={() => setExpandedInvoice(isExpanded ? null : invoice.id)}
+                                                        >
+                                                            {isExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                                                        </IconButton>
+                                                    </TableCell>
+                                                    <TableCell sx={{ fontWeight: 500 }}>{invoice.invoiceNo}</TableCell>
+                                                    <TableCell>{new Date(invoice.date).toLocaleDateString()}</TableCell>
+                                                    <TableCell>{invoice.customerName}</TableCell>
+                                                    <TableCell align="right" sx={{ fontWeight: 600 }}>₹{invoice.total?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</TableCell>
+                                                    <TableCell align="right" sx={{ color: 'success.main', fontWeight: 500 }}>
+                                                        ₹{(invoice.amountPaid || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                                                    </TableCell>
+                                                    <TableCell align="center">
+                                                        <PaymentStatusChip status={invoice.status} />
+                                                    </TableCell>
+                                                    <TableCell align="center" sx={{ minWidth: 120 }}>
+                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                            <LinearProgress
+                                                                variant="determinate"
+                                                                value={paidPercent}
+                                                                color={paidPercent >= 100 ? 'success' : paidPercent > 0 ? 'warning' : 'error'}
+                                                                sx={{ flexGrow: 1, height: 8, borderRadius: 4 }}
+                                                            />
+                                                            <Typography variant="caption" sx={{ minWidth: 35 }}>{paidPercent.toFixed(0)}%</Typography>
+                                                        </Box>
+                                                    </TableCell>
+                                                    <TableCell align="center">
+                                                        <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
+                                                            {invoice.status !== 'PAID' && (
+                                                                <Tooltip title="Add Payment">
+                                                                    <IconButton size="small" color="success" onClick={() => onAddPayment(invoice)}>
+                                                                        <PaymentIcon fontSize="small" />
+                                                                    </IconButton>
+                                                                </Tooltip>
+                                                            )}
+                                                            <Tooltip title="Delete">
+                                                                <IconButton size="small" color="error" onClick={() => onDelete(invoice.id)}>
+                                                                    <DeleteIcon fontSize="small" />
                                                                 </IconButton>
                                                             </Tooltip>
-                                                        )}
-                                                        <Tooltip title="Delete">
-                                                            <IconButton size="small" color="error" onClick={() => onDelete(invoice.id)}>
-                                                                <DeleteIcon fontSize="small" />
-                                                            </IconButton>
-                                                        </Tooltip>
-                                                    </Box>
-                                                </TableCell>
-                                            </TableRow>
-                                            {/* Payment History Drill-down */}
-                                            <TableRow>
-                                                <TableCell colSpan={9} sx={{ py: 0, borderBottom: isExpanded ? undefined : 'none' }}>
-                                                    <Collapse in={isExpanded} timeout="auto" unmountOnExit>
-                                                        <Box sx={{ p: 2, bgcolor: 'action.hover', borderRadius: 1, my: 1 }}>
-                                                            <Typography variant="subtitle2" fontWeight="bold" sx={{ mb: 1 }}>
-                                                                Payment History
-                                                            </Typography>
-                                                            {invoice.payments && invoice.payments.length > 0 ? (
-                                                                <Table size="small">
-                                                                    <TableHead>
-                                                                        <TableRow>
-                                                                            <TableCell>Date</TableCell>
-                                                                            <TableCell align="right">Amount</TableCell>
-                                                                            <TableCell>Method</TableCell>
-                                                                            <TableCell>Reference</TableCell>
-                                                                            <TableCell>Notes</TableCell>
-                                                                            <TableCell>By</TableCell>
-                                                                            <TableCell align="center">Action</TableCell>
-                                                                        </TableRow>
-                                                                    </TableHead>
-                                                                    <TableBody>
-                                                                        {invoice.payments.map((payment: PaymentEntry) => (
-                                                                            <TableRow key={payment.id}>
-                                                                                <TableCell>{new Date(payment.date).toLocaleDateString()}</TableCell>
-                                                                                <TableCell align="right" sx={{ fontWeight: 600, color: 'success.main' }}>
-                                                                                    ₹{payment.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                                                                                </TableCell>
-                                                                                <TableCell>
-                                                                                    <Chip label={payment.method} size="small" variant="outlined" />
-                                                                                </TableCell>
-                                                                                <TableCell>{payment.reference || '-'}</TableCell>
-                                                                                <TableCell>{payment.notes || '-'}</TableCell>
-                                                                                <TableCell>
-                                                                                    <Typography variant="caption">{payment.createdBy || '-'}</Typography>
-                                                                                </TableCell>
-                                                                                <TableCell align="center">
-                                                                                    {(userRole === 'ADMIN' || userRole === 'AUTHOR') && (
-                                                                                        <IconButton size="small" color="error" onClick={() => handleDeletePayment(payment.id)}>
-                                                                                            <DeleteIcon fontSize="small" />
-                                                                                        </IconButton>
-                                                                                    )}
-                                                                                </TableCell>
-                                                                            </TableRow>
-                                                                        ))}
-                                                                    </TableBody>
-                                                                </Table>
-                                                            ) : (
-                                                                <Typography variant="body2" color="text.secondary" sx={{ py: 2, textAlign: 'center' }}>
-                                                                    No payments recorded yet
-                                                                </Typography>
-                                                            )}
-                                                            {/* Summary */}
-                                                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 4, mt: 2, pt: 1, borderTop: 1, borderColor: 'divider' }}>
-                                                                <Typography variant="body2">
-                                                                    Total: <strong>₹{invoice.total?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</strong>
-                                                                </Typography>
-                                                                <Typography variant="body2" color="success.main">
-                                                                    Paid: <strong>₹{(invoice.amountPaid || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</strong>
-                                                                </Typography>
-                                                                <Typography variant="body2" color={invoice.status === 'PAID' ? 'success.main' : 'error.main'}>
-                                                                    Balance: <strong>₹{(invoice.total - (invoice.amountPaid || 0)).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</strong>
-                                                                </Typography>
-                                                            </Box>
                                                         </Box>
-                                                    </Collapse>
-                                                </TableCell>
-                                            </TableRow>
-                                        </React.Fragment>
-                                    );
-                                })
-                            ) : (
-                                <TableRow>
-                                    <TableCell colSpan={9} align="center" sx={{ py: 4 }}>
-                                        <Typography color="text.secondary">No invoices found matching your search.</Typography>
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                )}
+                                                    </TableCell>
+                                                </TableRow>
+                                                {/* Payment History Drill-down */}
+                                                <TableRow>
+                                                    <TableCell colSpan={9} sx={{ py: 0, borderBottom: isExpanded ? undefined : 'none' }}>
+                                                        <Collapse in={isExpanded} timeout="auto" unmountOnExit>
+                                                            <Box sx={{ p: 2, bgcolor: 'action.hover', borderRadius: 1, my: 1 }}>
+                                                                <Typography variant="subtitle2" fontWeight="bold" sx={{ mb: 1 }}>
+                                                                    Payment History
+                                                                </Typography>
+                                                                {invoice.payments && invoice.payments.length > 0 ? (
+                                                                    <Table size="small">
+                                                                        <TableHead>
+                                                                            <TableRow>
+                                                                                <TableCell>Date</TableCell>
+                                                                                <TableCell align="right">Amount</TableCell>
+                                                                                <TableCell>Method</TableCell>
+                                                                                <TableCell>Reference</TableCell>
+                                                                                <TableCell>Notes</TableCell>
+                                                                                <TableCell>By</TableCell>
+                                                                                <TableCell align="center">Action</TableCell>
+                                                                            </TableRow>
+                                                                        </TableHead>
+                                                                        <TableBody>
+                                                                            {invoice.payments.map((payment: PaymentEntry) => (
+                                                                                <TableRow key={payment.id}>
+                                                                                    <TableCell>{new Date(payment.date).toLocaleDateString()}</TableCell>
+                                                                                    <TableCell align="right" sx={{ fontWeight: 600, color: 'success.main' }}>
+                                                                                        ₹{payment.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                                                                                    </TableCell>
+                                                                                    <TableCell>
+                                                                                        <Chip label={payment.method} size="small" variant="outlined" />
+                                                                                    </TableCell>
+                                                                                    <TableCell>{payment.reference || '-'}</TableCell>
+                                                                                    <TableCell>{payment.notes || '-'}</TableCell>
+                                                                                    <TableCell>
+                                                                                        <Typography variant="caption">{payment.createdBy || '-'}</Typography>
+                                                                                    </TableCell>
+                                                                                    <TableCell align="center">
+                                                                                        {(userRole === 'ADMIN' || userRole === 'AUTHOR') && (
+                                                                                            <IconButton size="small" color="error" onClick={() => handleDeletePayment(payment.id)}>
+                                                                                                <DeleteIcon fontSize="small" />
+                                                                                            </IconButton>
+                                                                                        )}
+                                                                                    </TableCell>
+                                                                                </TableRow>
+                                                                            ))}
+                                                                        </TableBody>
+                                                                    </Table>
+                                                                ) : (
+                                                                    <Typography variant="body2" color="text.secondary" sx={{ py: 2, textAlign: 'center' }}>
+                                                                        No payments recorded yet
+                                                                    </Typography>
+                                                                )}
+                                                                {/* Summary */}
+                                                                <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 4, mt: 2, pt: 1, borderTop: 1, borderColor: 'divider' }}>
+                                                                    <Typography variant="body2">
+                                                                        Total: <strong>₹{invoice.total?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</strong>
+                                                                    </Typography>
+                                                                    <Typography variant="body2" color="success.main">
+                                                                        Paid: <strong>₹{(invoice.amountPaid || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</strong>
+                                                                    </Typography>
+                                                                    <Typography variant="body2" color={invoice.status === 'PAID' ? 'success.main' : 'error.main'}>
+                                                                        Balance: <strong>₹{(invoice.total - (invoice.amountPaid || 0)).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</strong>
+                                                                    </Typography>
+                                                                </Box>
+                                                            </Box>
+                                                        </Collapse>
+                                                    </TableCell>
+                                                </TableRow>
+                                            </React.Fragment>
+                                        );
+                                    })
+                                ) : (
+                                    <TableRow>
+                                        <TableCell colSpan={9} align="center" sx={{ py: 4 }}>
+                                            <Typography color="text.secondary">No invoices found matching your search.</Typography>
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+                    )}
                 </TableContainer>
 
                 {!isLoading && totalInvoices > 0 && (

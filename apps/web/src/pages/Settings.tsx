@@ -182,7 +182,7 @@ const Settings: React.FC<SettingsProps> = ({ username }) => {
         if (systemSettings.lowStockAlert) {
             const threshold = parseFloat(systemSettings.lowStockThreshold);
             if (!threshold || threshold <= 0) {
-            toast.error(ERROR_MESSAGES.LOW_STOCK_THRESHOLD);
+                toast.error(ERROR_MESSAGES.LOW_STOCK_THRESHOLD);
                 return;
             }
         }

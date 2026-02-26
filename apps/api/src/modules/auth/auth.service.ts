@@ -1,6 +1,9 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../services/prisma.service';
+import * as bcrypt from 'bcrypt';
+
+const SALT_ROUNDS = 10;
 
 @Injectable()
 export class AuthService {
@@ -30,7 +33,27 @@ export class AuthService {
             where: { username }
         });
 
-        if (user && user.password === pass) {
+        if (!user) return null;
+
+        // Support both bcrypt hashes and legacy plain-text passwords (for migration)
+        let passwordMatch = false;
+        if (user.password.startsWith('$2b$') || user.password.startsWith('$2a$')) {
+            // Already bcrypt-hashed
+            passwordMatch = await bcrypt.compare(pass, user.password);
+        } else {
+            // Legacy plain-text: compare directly, then auto-upgrade to bcrypt
+            passwordMatch = user.password === pass;
+            if (passwordMatch) {
+                const hashed = await bcrypt.hash(pass, SALT_ROUNDS);
+                await this.prisma.user.update({
+                    where: { id: user.id },
+                    data: { password: hashed }
+                });
+                console.log(`🔒 Auto-upgraded password hash for user: ${username}`);
+            }
+        }
+
+        if (passwordMatch) {
             const { password, ...result } = user;
             return result;
         }
@@ -44,7 +67,7 @@ export class AuthService {
                 userId: user.id,
                 ipAddress: requestInfo?.ip || 'Unknown',
                 userAgent: requestInfo?.userAgent || 'Unknown',
-                device: requestInfo?.device || 'Unknown', // Could parse UA for device type
+                device: requestInfo?.device || 'Unknown',
                 isValid: true,
             }
         });
@@ -87,11 +110,14 @@ export class AuthService {
             throw new UnauthorizedException('Username already exists');
         }
 
+        // Hash password before storing
+        const hashedPassword = await bcrypt.hash(userDto.password, SALT_ROUNDS);
+
         const newUser = await this.prisma.user.create({
             data: {
                 username: userDto.username,
                 name: userDto.name,
-                password: userDto.password, // In real app, hash this!
+                password: hashedPassword,
                 role: userDto.role || 'VIEWER',
                 email: userDto.email || `${userDto.username}-${Date.now()}@temp.local`,
                 createdBy: userDto.createdBy,
@@ -101,7 +127,6 @@ export class AuthService {
         console.log('✅ User created successfully:', newUser.id);
 
         await this.logActivity(
-            // Ideally we pass the admin username here, but for now we log the event
             'SYSTEM',
             'CREATE',
             `Created user: ${newUser.username} (${newUser.role})`
@@ -195,7 +220,10 @@ export class AuthService {
         const updateData: any = {};
         if (userDto.username) updateData.username = userDto.username;
         if (userDto.name) updateData.name = userDto.name;
-        if (userDto.password) updateData.password = userDto.password;
+        if (userDto.password) {
+            // Hash the new password
+            updateData.password = await bcrypt.hash(userDto.password, SALT_ROUNDS);
+        }
 
         // Handle email carefully: if empty string provided, we might want to keep it empty or set a temp
         if (userDto.email !== undefined) {
@@ -205,7 +233,7 @@ export class AuthService {
         if (userDto.role) updateData.role = userDto.role;
         if (userDto.updatedBy) updateData.updatedBy = userDto.updatedBy;
 
-        console.log('📡 Sending update to Prisma:', updateData);
+        console.log('📡 Sending update to Prisma:', { ...updateData, password: updateData.password ? '[HASHED]' : undefined });
 
         const updatedUser = await this.prisma.user.update({
             where: { id: userId },
