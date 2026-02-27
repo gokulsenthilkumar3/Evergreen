@@ -12,6 +12,7 @@
         "appId": "com.evergreen.yarnsms",
         "productName": "EverGreen",
         "electronVersion": "33.0.0",
+        "compression": "normal",
         "directories": {
             "output": "dist"
         },

@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, OnModuleInit } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../services/prisma.service';
 import * as bcrypt from 'bcrypt';
@@ -6,11 +6,33 @@ import * as bcrypt from 'bcrypt';
 const SALT_ROUNDS = 10;
 
 @Injectable()
-export class AuthService {
+export class AuthService implements OnModuleInit {
     constructor(
         private jwtService: JwtService,
         private prisma: PrismaService
     ) { }
+
+    async onModuleInit() {
+        try {
+            const count = await this.prisma.user.count();
+            if (count === 0) {
+                console.log('🌱 No users found in the database. Seeding default AUTHOR user...');
+                const hashedPassword = await bcrypt.hash('author123', SALT_ROUNDS);
+                await this.prisma.user.create({
+                    data: {
+                        username: 'author',
+                        password: hashedPassword,
+                        role: 'ADMIN',
+                        name: 'System Admin',
+                        email: 'admin@evergreenyarn.com'
+                    }
+                });
+                console.log('✅ Default user created. Username: author | Password: author123');
+            }
+        } catch (e) {
+            console.error('Failed to seed default user:', e);
+        }
+    }
 
     private async logActivity(username: string, action: string, details: string) {
         try {
