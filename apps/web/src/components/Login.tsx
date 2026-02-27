@@ -61,8 +61,8 @@ interface LoginProps {
 }
 
 const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings }) => {
-    const [username, setUsername] = useState('admin');
-    const [password, setPassword] = useState('admin123');
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [rememberMe, setRememberMe] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -399,9 +399,18 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings }) => {
                     </Box>
 
                     <Box sx={{ mt: 4, textAlign: 'center', animation: `${fadeInUp} 0.6s ease-out 0.6s forwards`, opacity: 0 }}>
-                        <Typography variant="body2" color="text.secondary">
-                            Don't have an account? <Link href="#" sx={{ fontWeight: 600, textDecoration: 'none', color: 'primary.main' }}>Contact Admin</Link>
-                        </Typography>
+                        <Alert severity="info" sx={{ textAlign: 'left', borderRadius: 2, '& .MuiAlert-message': { width: '100%' } }}>
+                            <Typography variant="body2" sx={{ mb: 0.5 }}>
+                                <strong>First time setup?</strong> A default admin has been created.
+                            </Typography>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', bgcolor: 'rgba(0,0,0,0.05)', p: 1, borderRadius: 1, mb: 1 }}>
+                                <Typography variant="caption" sx={{ fontFamily: 'monospace' }}>User: <b>author</b></Typography>
+                                <Typography variant="caption" sx={{ fontFamily: 'monospace' }}>Pass: <b>author123</b></Typography>
+                            </Box>
+                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontStyle: 'italic' }}>
+                                Please change this password in the Settings menu immediately after logging in.
+                            </Typography>
+                        </Alert>
                     </Box>
                 </Paper>
             </Zoom>
