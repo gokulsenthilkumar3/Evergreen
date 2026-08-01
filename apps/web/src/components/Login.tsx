@@ -59,9 +59,10 @@ const fadeInUp = keyframes`
 interface LoginProps {
     onLoginSuccess: (user: any) => void;
     settings?: any;
+    onSwitchToSignup?: () => void;
 }
 
-const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings }) => {
+const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings, onSwitchToSignup }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [totpCode, setTotpCode] = useState('');
@@ -457,6 +458,25 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings }) => {
                             </Button>
                         )}
                     </Box>
+
+                    {onSwitchToSignup && (
+                        <Box sx={{ mt: 2, textAlign: 'center', animation: `${fadeInUp} 0.6s ease-out 0.4s forwards`, opacity: 0 }}>
+                            <Typography variant="body2" color="text.secondary">
+                                Don't have an account?{' '}
+                                <Link
+                                    component="button"
+                                    variant="body2"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        onSwitchToSignup();
+                                    }}
+                                    sx={{ fontWeight: 600, cursor: 'pointer', textDecoration: 'none' }}
+                                >
+                                    Sign up
+                                </Link>
+                            </Typography>
+                        </Box>
+                    )}
 
                     <Box sx={{ mt: 4, textAlign: 'center', animation: `${fadeInUp} 0.6s ease-out 0.6s forwards`, opacity: 0 }}>
                         <Alert severity="info" sx={{ textAlign: 'left', borderRadius: 2, '& .MuiAlert-message': { width: '100%' } }}>

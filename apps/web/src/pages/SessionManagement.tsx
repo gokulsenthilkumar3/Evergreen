@@ -1,7 +1,22 @@
+import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+    Box,
+    Paper,
+    Typography,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    CircularProgress,
+    Button,
+    Chip
+} from '@mui/material';
+import { Security as SecurityIcon } from '@mui/icons-material';
 import api from '../utils/api';
 import { toast } from 'sonner';
-import { format } from 'date-fns';
 
 export default function SessionManagement() {
     const queryClient = useQueryClient();
@@ -28,78 +43,95 @@ export default function SessionManagement() {
     });
 
     if (isLoading) {
-        return <div className="p-8 text-center text-gray-500">Loading sessions...</div>;
+        return (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', p: 8 }}>
+                <CircularProgress />
+            </Box>
+        );
     }
 
     return (
-        <div className="p-8 space-y-6">
-            <div>
-                <h1 className="text-3xl font-semibold text-gray-900 tracking-tight">Session Management</h1>
-                <p className="text-gray-500 mt-1">View and manage active user sessions.</p>
-            </div>
+        <Box sx={{ maxWidth: '100%', width: '100%' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 4 }}>
+                <SecurityIcon sx={{ fontSize: 32, color: 'primary.main' }} />
+                <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                    Session Management
+                </Typography>
+            </Box>
+            <Typography color="text.secondary" sx={{ mb: 4 }}>
+                View and manage active user sessions.
+            </Typography>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left">
-                        <thead className="bg-gray-50/50 text-gray-500 text-xs uppercase tracking-wider">
-                            <tr>
-                                <th className="px-6 py-4 font-medium">User</th>
-                                <th className="px-6 py-4 font-medium">IP Address</th>
-                                <th className="px-6 py-4 font-medium">Location</th>
-                                <th className="px-6 py-4 font-medium">User Agent</th>
-                                <th className="px-6 py-4 font-medium">Status</th>
-                                <th className="px-6 py-4 font-medium">Last Active</th>
-                                <th className="px-6 py-4 font-medium text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100">
-                            {sessions.map((session: any) => (
-                                <tr key={session.id} className="hover:bg-gray-50/50 transition-colors">
-                                    <td className="px-6 py-4 font-medium text-gray-900">
-                                        {session.user?.username || 'Unknown'}
-                                        <span className="block text-xs text-gray-500 font-normal">{session.user?.role}</span>
-                                    </td>
-                                    <td className="px-6 py-4 text-gray-600">{session.ipAddress}</td>
-                                    <td className="px-6 py-4 text-gray-600">{session.location || 'Unknown'}</td>
-                                    <td className="px-6 py-4 text-gray-500 text-xs truncate max-w-[200px]" title={session.userAgent}>
-                                        {session.userAgent}
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${session.isValid ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                            {session.isValid ? 'Active' : 'Revoked'}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 text-gray-500 whitespace-nowrap">
-                                        {format(new Date(session.lastActive), 'dd MMM yyyy, HH:mm')}
-                                    </td>
-                                    <td className="px-6 py-4 text-right">
-                                        {session.isValid && (
-                                            <button
-                                                onClick={() => {
-                                                    if (window.confirm('Are you sure you want to revoke this session?')) {
-                                                        revokeSessionMutation.mutate(session.id);
-                                                    }
-                                                }}
-                                                disabled={revokeSessionMutation.isPending}
-                                                className="text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
-                                            >
-                                                Revoke
-                                            </button>
-                                        )}
-                                    </td>
-                                </tr>
-                            ))}
-                            {sessions.length === 0 && (
-                                <tr>
-                                    <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
-                                        No sessions found.
-                                    </td>
-                                </tr>
+            <Paper sx={{ width: '100%', borderRadius: 2, overflow: 'hidden' }}>
+                <TableContainer>
+                    <Table>
+                        <TableHead>
+                            <TableRow sx={{ bgcolor: 'action.hover' }}>
+                                <TableCell sx={{ fontWeight: 'bold' }}>User</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold' }}>IP Address</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold' }}>Location</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold' }}>User Agent</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold' }}>Status</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold' }}>Last Active</TableCell>
+                                <TableCell align="right" sx={{ fontWeight: 'bold' }}>Actions</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {sessions.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
+                                        <Typography color="text.secondary">No sessions found.</Typography>
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                sessions.map((session: any) => (
+                                    <TableRow key={session.id} hover>
+                                        <TableCell>
+                                            <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                                                {session.user?.username || 'Unknown'}
+                                            </Typography>
+                                            <Typography variant="caption" color="text.secondary">
+                                                {session.user?.role}
+                                            </Typography>
+                                        </TableCell>
+                                        <TableCell>{session.ipAddress}</TableCell>
+                                        <TableCell>{session.location || 'Unknown'}</TableCell>
+                                        <TableCell sx={{ maxWidth: 200, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={session.userAgent}>
+                                            {session.userAgent}
+                                        </TableCell>
+                                        <TableCell>
+                                            <Chip
+                                                label={session.isValid ? 'Active' : 'Revoked'}
+                                                color={session.isValid ? 'success' : 'error'}
+                                                size="small"
+                                            />
+                                        </TableCell>
+                                        <TableCell>
+                                            {new Date(session.lastActive).toLocaleString()}
+                                        </TableCell>
+                                        <TableCell align="right">
+                                            {session.isValid && (
+                                                <Button
+                                                    color="error"
+                                                    size="small"
+                                                    disabled={revokeSessionMutation.isPending}
+                                                    onClick={() => {
+                                                        if (window.confirm('Are you sure you want to revoke this session?')) {
+                                                            revokeSessionMutation.mutate(session.id);
+                                                        }
+                                                    }}
+                                                >
+                                                    Revoke
+                                                </Button>
+                                            )}
+                                        </TableCell>
+                                    </TableRow>
+                                ))
                             )}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            </Paper>
+        </Box>
     );
 }

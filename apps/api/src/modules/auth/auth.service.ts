@@ -54,6 +54,41 @@ export class AuthService implements OnModuleInit {
         }
     }
 
+    async signup(data: any): Promise<any> {
+        const { username, email, name, password } = data;
+
+        // Check if username or email already exists
+        const existingUser = await this.prisma.user.findFirst({
+            where: {
+                OR: [{ username }, { email }]
+            }
+        });
+
+        if (existingUser) {
+            if (existingUser.username === username) {
+                throw new BadRequestException('Username is already taken');
+            }
+            if (existingUser.email === email) {
+                throw new BadRequestException('Email is already registered');
+            }
+        }
+
+        const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+
+        const newUser = await this.prisma.user.create({
+            data: {
+                username,
+                email,
+                name,
+                password: hashedPassword,
+                role: 'VIEWER'
+            }
+        });
+
+        const { password: _, ...result } = newUser;
+        return { message: 'Signup successful', user: result };
+    }
+
     async validateUser(username: string, pass: string): Promise<any> {
         const user = await this.prisma.user.findUnique({
             where: { username }

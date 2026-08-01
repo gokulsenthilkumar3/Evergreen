@@ -250,6 +250,7 @@ const InvoiceEditor = ({
         customerGSTIN: initialData?.customerGSTIN || '',
         transportMode: initialData?.transportMode || 'Road',
         vehicleNo: initialData?.vehicleNo || '',
+        theme: initialData?.theme || settings?.defaultInvoiceTheme || 'CLASSIC',
     });
 
     const [items, setItems] = useState<InvoiceItem[]>(initialData?.items || [
@@ -342,7 +343,19 @@ const InvoiceEditor = ({
                 <Button startIcon={<ArrowBackIcon />} onClick={onCancel} sx={{ color: 'text.secondary' }}>
                     Back to List
                 </Button>
-                <Box sx={{ display: 'flex', gap: 2 }}>
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                    <TextField
+                        select
+                        size="small"
+                        label="Theme"
+                        value={invoiceData.theme}
+                        onChange={(e) => setInvoiceData({ ...invoiceData, theme: e.target.value })}
+                        sx={{ width: 120, bgcolor: 'background.paper' }}
+                    >
+                        <MenuItem value="CLASSIC">Classic</MenuItem>
+                        <MenuItem value="MODERN">Modern</MenuItem>
+                        <MenuItem value="MINIMAL">Minimal</MenuItem>
+                    </TextField>
                     <Button variant="outlined" startIcon={<ShareIcon />} onClick={handleShare} color="info">
                         Share
                     </Button>
@@ -363,11 +376,12 @@ const InvoiceEditor = ({
                     sx={{
                         width: '210mm', // A4 width
                         minHeight: '297mm', // A4 height
-                        p: '15mm',
+                        p: invoiceData.theme === 'MINIMAL' ? '10mm' : '15mm',
                         bgcolor: 'background.paper',
                         boxSizing: 'border-box',
                         display: 'flex',
                         flexDirection: 'column',
+                        border: invoiceData.theme === 'MINIMAL' ? 'none' : undefined,
                         '@media print': {
                             boxShadow: 'none',
                             margin: 0,
@@ -376,23 +390,33 @@ const InvoiceEditor = ({
                     }}
                 >
                     {/* Header */}
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4, borderBottom: '2px solid #eee', pb: 2 }}>
+                    <Box sx={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        mb: 4, 
+                        borderBottom: invoiceData.theme === 'MINIMAL' ? '1px solid #ccc' : '2px solid #eee',
+                        pb: 2,
+                        bgcolor: invoiceData.theme === 'MODERN' ? 'primary.main' : 'transparent',
+                        color: invoiceData.theme === 'MODERN' ? 'primary.contrastText' : 'inherit',
+                        p: invoiceData.theme === 'MODERN' ? 3 : 0,
+                        borderRadius: invoiceData.theme === 'MODERN' ? 2 : 0,
+                    }}>
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                             {settings?.logo && (
-                                <img src={settings.logo} alt="Company Logo" style={{ height: 60, width: 'auto', marginBottom: 8, objectFit: 'contain', alignSelf: 'flex-start' }} />
+                                <img src={settings.logo} alt="Company Logo" style={{ height: 60, width: 'auto', marginBottom: 8, objectFit: 'contain', alignSelf: 'flex-start', filter: invoiceData.theme === 'MODERN' ? 'brightness(0) invert(1)' : 'none' }} />
                             )}
-                            <Typography variant="h5" fontWeight="900" color="primary.main" sx={{ textTransform: 'uppercase' }}>
+                            <Typography variant="h5" fontWeight="900" color={invoiceData.theme === 'MODERN' ? 'inherit' : 'primary.main'} sx={{ textTransform: 'uppercase' }}>
                                 {settings?.companyName || 'EVER GREEN YARN MILLS'}
                             </Typography>
-                            <Typography variant="body2" sx={{ maxWidth: 300, whiteSpace: 'pre-wrap', color: 'text.secondary' }}>
+                            <Typography variant="body2" sx={{ maxWidth: 300, whiteSpace: 'pre-wrap', color: invoiceData.theme === 'MODERN' ? 'inherit' : 'text.secondary', opacity: 0.9 }}>
                                 {settings?.address || 'Industrial Area,\nCoimbatore, Tamil Nadu'}
                             </Typography>
-                            <Typography variant="caption" color="text.secondary">
+                            <Typography variant="caption" color={invoiceData.theme === 'MODERN' ? 'inherit' : 'text.secondary'} sx={{ opacity: 0.9 }}>
                                 GSTIN: <b>{settings?.gstin || '33XXXXX1234X1Z5'}</b> | Phone: {settings?.phone}
                             </Typography>
                         </Box>
                         <Box sx={{ textAlign: 'right' }}>
-                            <Typography variant="h3" color="text.disabled" fontWeight={800} sx={{ letterSpacing: 2, mb: 1 }}>
+                            <Typography variant="h3" color={invoiceData.theme === 'MODERN' ? 'inherit' : 'text.disabled'} fontWeight={800} sx={{ letterSpacing: 2, mb: 1, opacity: 0.8 }}>
                                 INVOICE
                             </Typography>
                             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 1 }}>
@@ -401,13 +425,13 @@ const InvoiceEditor = ({
                                     value={invoiceData.invoiceNo}
                                     onChange={(e) => setInvoiceData({ ...invoiceData, invoiceNo: e.target.value })}
                                     error={showErrors && !invoiceData.invoiceNo}
-                                    sx={{ width: 150, '& input': { textAlign: 'right', fontWeight: 'bold' } }}
+                                    sx={{ width: 150, '& input': { textAlign: 'right', fontWeight: 'bold', color: invoiceData.theme === 'MODERN' ? '#fff' : 'inherit' }, '& label': { color: invoiceData.theme === 'MODERN' ? 'rgba(255,255,255,0.7)' : 'inherit' } }}
                                 />
                                 <TextField
                                     type="date" size="small" variant="standard"
                                     value={invoiceData.date}
                                     onChange={(e) => setInvoiceData({ ...invoiceData, date: e.target.value })}
-                                    sx={{ width: 150, '& input': { textAlign: 'right' } }}
+                                    sx={{ width: 150, '& input': { textAlign: 'right', color: invoiceData.theme === 'MODERN' ? '#fff' : 'inherit' } }}
                                 />
                             </Box>
                         </Box>
@@ -416,8 +440,8 @@ const InvoiceEditor = ({
                     {/* Customer Details */}
                     <Grid container spacing={4} sx={{ mb: 4 }}>
                         <Grid size={{ xs: 6 }}>
-                            <Typography variant="overline" color="text.secondary" fontWeight="bold">Bill To:</Typography>
-                            <Paper variant="outlined" sx={{ p: 2, bgcolor: 'background.default' }}>
+                            <Typography variant="overline" color={invoiceData.theme === 'MODERN' ? 'primary.main' : 'text.secondary'} fontWeight="bold">Bill To:</Typography>
+                            <Paper variant={invoiceData.theme === 'MINIMAL' ? 'elevation' : 'outlined'} elevation={0} sx={{ p: 2, bgcolor: invoiceData.theme === 'MODERN' ? 'grey.50' : 'background.default', border: invoiceData.theme === 'MODERN' ? '1px solid' : undefined, borderColor: 'primary.light' }}>
                                 <TextField
                                     placeholder="Customer Name" fullWidth variant="standard" sx={{ mb: 1, '& input': { fontWeight: 600 } }}
                                     value={invoiceData.customerName}
@@ -465,17 +489,17 @@ const InvoiceEditor = ({
                     </Grid>
 
                     {/* Items Table */}
-                    <TableContainer component={Paper} elevation={0} variant="outlined" sx={{ mb: 4 }}>
+                    <TableContainer component={Paper} elevation={0} variant={invoiceData.theme === 'MINIMAL' ? 'elevation' : 'outlined'} sx={{ mb: 4 }}>
                         <Table size="small">
-                            <TableHead sx={{ bgcolor: 'grey.100' }}>
+                            <TableHead sx={{ bgcolor: invoiceData.theme === 'MODERN' ? 'primary.main' : invoiceData.theme === 'MINIMAL' ? 'transparent' : 'grey.100', '& th': { color: invoiceData.theme === 'MODERN' ? '#fff' : 'inherit' } }}>
                                 <TableRow>
-                                    <TableCell sx={{ fontWeight: 'bold' }}>#</TableCell>
-                                    <TableCell sx={{ fontWeight: 'bold' }}>Description (Yarn Count)</TableCell>
-                                    <TableCell align="right" sx={{ fontWeight: 'bold' }}>Bags</TableCell>
-                                    <TableCell align="right" sx={{ fontWeight: 'bold' }}>Weight (kg)</TableCell>
-                                    <TableCell align="right" sx={{ fontWeight: 'bold' }}>Rate (₹)</TableCell>
-                                    <TableCell align="right" sx={{ fontWeight: 'bold' }}>Amount (₹)</TableCell>
-                                    <TableCell sx={{ width: 50, '@media print': { display: 'none' } }}></TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', borderBottom: invoiceData.theme === 'MINIMAL' ? '2px solid #333' : undefined }}>#</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', borderBottom: invoiceData.theme === 'MINIMAL' ? '2px solid #333' : undefined }}>Description (Yarn Count)</TableCell>
+                                    <TableCell align="right" sx={{ fontWeight: 'bold', borderBottom: invoiceData.theme === 'MINIMAL' ? '2px solid #333' : undefined }}>Bags</TableCell>
+                                    <TableCell align="right" sx={{ fontWeight: 'bold', borderBottom: invoiceData.theme === 'MINIMAL' ? '2px solid #333' : undefined }}>Weight (kg)</TableCell>
+                                    <TableCell align="right" sx={{ fontWeight: 'bold', borderBottom: invoiceData.theme === 'MINIMAL' ? '2px solid #333' : undefined }}>Rate (₹)</TableCell>
+                                    <TableCell align="right" sx={{ fontWeight: 'bold', borderBottom: invoiceData.theme === 'MINIMAL' ? '2px solid #333' : undefined }}>Amount (₹)</TableCell>
+                                    <TableCell sx={{ width: 50, '@media print': { display: 'none' }, borderBottom: invoiceData.theme === 'MINIMAL' ? '2px solid #333' : undefined }}></TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -551,7 +575,13 @@ const InvoiceEditor = ({
 
                     {/* Footer / Totals */}
                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 'auto', pt: 4 }}>
-                        <Box sx={{ width: 300 }}>
+                        <Box sx={{ 
+                            width: 300, 
+                            p: invoiceData.theme === 'MODERN' ? 2 : 0, 
+                            bgcolor: invoiceData.theme === 'MODERN' ? 'grey.50' : 'transparent',
+                            borderRadius: invoiceData.theme === 'MODERN' ? 2 : 0,
+                            border: invoiceData.theme === 'MODERN' ? '1px solid #eee' : 'none'
+                        }}>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                                 <Typography color="text.secondary">Subtotal</Typography>
                                 <Typography fontWeight="600">₹{totals.subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</Typography>
@@ -564,10 +594,10 @@ const InvoiceEditor = ({
                                 <Typography color="text.secondary">SGST (9%)</Typography>
                                 <Typography>₹{totals.sgst.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</Typography>
                             </Box>
-                            <Divider sx={{ mb: 2 }} />
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            {invoiceData.theme !== 'MINIMAL' && <Divider sx={{ mb: 2 }} />}
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: invoiceData.theme === 'MINIMAL' ? 2 : 0, pt: invoiceData.theme === 'MINIMAL' ? 2 : 0, borderTop: invoiceData.theme === 'MINIMAL' ? '2px solid #333' : 'none' }}>
                                 <Typography variant="h6" fontWeight="bold">Total</Typography>
-                                <Typography variant="h5" color="primary.main" fontWeight="bold">
+                                <Typography variant="h5" color={invoiceData.theme === 'MINIMAL' ? 'inherit' : 'primary.main'} fontWeight="bold">
                                     ₹{totals.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                                 </Typography>
                             </Box>

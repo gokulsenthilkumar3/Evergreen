@@ -11,6 +11,7 @@ import {
     FormControlLabel,
     Alert,
     Snackbar,
+    MenuItem,
 } from '@mui/material';
 import {
     Save as SaveIcon,
@@ -75,6 +76,7 @@ const Settings: React.FC<SettingsProps> = ({ username }) => {
         emailNotifications: true,
         lowStockAlert: true,
         lowStockThreshold: '',
+        defaultInvoiceTheme: 'CLASSIC',
     });
 
     // Rates State
@@ -102,6 +104,7 @@ const Settings: React.FC<SettingsProps> = ({ username }) => {
                 emailNotifications: settings.emailNotifications ?? true,
                 lowStockAlert: settings.lowStockAlert ?? true,
                 lowStockThreshold: settings.lowStockThreshold || '500',
+                defaultInvoiceTheme: settings.defaultInvoiceTheme || 'CLASSIC',
             });
             setRateSettings({
                 ebRate: String(settings.ebRate || '10'),
@@ -400,6 +403,23 @@ const Settings: React.FC<SettingsProps> = ({ username }) => {
                                 <Typography variant="body2" color="info.main">
                                     💡 EB Rate, Packaging Rate, and Maintenance Rate are now managed in the <strong>Costing module</strong>.
                                 </Typography>
+                            </Paper>
+
+                            <Paper variant="outlined" sx={{ p: 2 }}>
+                                <Typography variant="subtitle2" fontWeight={600} mb={2}>Invoice Appearance</Typography>
+                                <TextField
+                                    select
+                                    label="Default Invoice Theme"
+                                    value={systemSettings.defaultInvoiceTheme}
+                                    onChange={(e) => setSystemSettings({ ...systemSettings, defaultInvoiceTheme: e.target.value })}
+                                    fullWidth
+                                    size="small"
+                                    helperText="Select the default visual theme for newly created invoices."
+                                >
+                                    <MenuItem value="CLASSIC">Classic (A4 Format)</MenuItem>
+                                    <MenuItem value="MODERN">Modern (Color Header)</MenuItem>
+                                    <MenuItem value="MINIMAL">Minimal (Clean Layout)</MenuItem>
+                                </TextField>
                             </Paper>
 
                             <Button variant="contained" startIcon={<SaveIcon />} onClick={handleSaveSystemSettings} sx={{ mt: 1 }}>

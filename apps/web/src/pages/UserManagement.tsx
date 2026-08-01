@@ -234,7 +234,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole, userna
                                 </TableRow>
                             ) : users.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                                    <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
                                         <Typography color="text.secondary">No users found.</Typography>
                                     </TableCell>
                                 </TableRow>

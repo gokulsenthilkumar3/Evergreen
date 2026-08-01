@@ -50,6 +50,7 @@ export class BillingController {
                 total: invoiceData.total,
                 status: 'UNPAID',
                 amountPaid: 0,
+                theme: invoiceData.theme || 'CLASSIC',
                 createdBy: invoiceData.createdBy,
                 items: {
                     create: items.map((item: any) => ({

@@ -225,6 +225,7 @@ model SystemSettings {
   autoBackup          Boolean  @default(true)
   emailNotifications  Boolean  @default(true)
   lowStockAlert       Boolean  @default(true)
+  defaultInvoiceTheme String   @default("CLASSIC")
   lowStockThreshold   String   @default("500")
   maintenanceRate     String   @default("4")
   ebRate              String   @default("10")
@@ -270,6 +271,7 @@ model Invoice {
   customerGSTIN   String?
   transportMode   String?
   vehicleNo       String?
+  theme           String        @default("CLASSIC")
   
   subtotal        Float
   cgst            Float

@@ -11,6 +11,14 @@ export class AuthController {
         private webAuthnService: WebAuthnService
     ) { }
 
+    @Post('signup')
+    async signup(@Body() signupDto: any) {
+        if (!signupDto.username || !signupDto.password || !signupDto.email) {
+            throw new UnauthorizedException('Missing required fields');
+        }
+        return this.authService.signup(signupDto);
+    }
+
     @Post('login')
     async login(@Body() loginDto: any, @Req() req: Request) {
         const user = await this.authService.validateUser(loginDto.username, loginDto.password);

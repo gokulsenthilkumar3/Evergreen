@@ -54,6 +54,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from './utils/api';
 import getTheme from './theme';
 import Login from './components/Login';
+import Signup from './components/Signup';
 import { KeyboardShortcutsProvider } from './context/KeyboardShortcutsContext';
 import { ScreenReaderAnnouncer } from './components/common/ScreenReaderAnnouncer';
 import Breadcrumbs from './components/common/Breadcrumbs';
@@ -315,6 +316,7 @@ const App: React.FC = () => {
   const [drawerOpen, setDrawerOpen] = useState(true);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [authView, setAuthView] = useState<'login' | 'signup'>('login');
   const queryClient = useQueryClient();
 
   const { data: settings } = useQuery({
@@ -364,6 +366,7 @@ const App: React.FC = () => {
 
   const handleLogout = () => {
     localStorage.removeItem('user');
+    localStorage.removeItem('token');
     setUser(null);
     handleProfileClose();
   };
@@ -466,7 +469,21 @@ const App: React.FC = () => {
     return (
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <Login onLoginSuccess={handleLogin} settings={settings} />
+        {authView === 'login' ? (
+          <Login 
+            onLoginSuccess={handleLogin} 
+            settings={settings} 
+            onSwitchToSignup={() => setAuthView('signup')} 
+          />
+        ) : (
+          <Signup 
+            onSignupSuccess={() => {
+              setAuthView('login');
+              toast.success('Account created successfully! Please log in.');
+            }} 
+            onSwitchToLogin={() => setAuthView('login')} 
+          />
+        )}
       </ThemeProvider>
     );
   }
