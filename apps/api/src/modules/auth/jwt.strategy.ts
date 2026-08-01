@@ -1,10 +1,11 @@
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { PrismaService } from '../../services/prisma.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-    constructor() {
+    constructor(private prisma: PrismaService) {
         super({
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
             ignoreExpiration: false,
@@ -13,6 +14,25 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     async validate(payload: any) {
-        return { userId: payload.sub, username: payload.username, role: payload.role };
+        // payload includes sessionId
+        if (!payload.sessionId) {
+            throw new UnauthorizedException('Invalid token structure');
+        }
+
+        const session = await this.prisma.session.findUnique({
+            where: { id: payload.sessionId }
+        });
+
+        if (!session || !session.isValid) {
+            throw new UnauthorizedException('Session has been revoked');
+        }
+
+        // Also update lastActive
+        await this.prisma.session.update({
+            where: { id: session.id },
+            data: { lastActive: new Date() }
+        }).catch(() => {}); // fire and forget
+
+        return { userId: payload.sub, username: payload.username, role: payload.role, sessionId: payload.sessionId };
     }
 }

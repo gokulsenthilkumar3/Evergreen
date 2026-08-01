@@ -1,10 +1,15 @@
-import { Controller, Post, Body, Get, Put, Delete, Param, UnauthorizedException, Req } from '@nestjs/common';
+import { Controller, Post, Body, Get, UseGuards, Req, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { WebAuthnService } from './webauthn.service';
+import { JwtAuthGuard } from '../../guards/jwt-auth.guard';
 import type { Request } from 'express';
 
 @Controller('auth')
 export class AuthController {
-    constructor(private authService: AuthService) { }
+    constructor(
+        private authService: AuthService,
+        private webAuthnService: WebAuthnService
+    ) { }
 
     @Post('login')
     async login(@Body() loginDto: any, @Req() req: Request) {
@@ -14,26 +19,57 @@ export class AuthController {
         }
         const ip = req.ip || req.socket.remoteAddress || 'Unknown';
         const userAgent = req.headers['user-agent'] || 'Unknown';
-        return this.authService.login(user, { ip, userAgent });
+        
+        return this.authService.login(user, { ip, userAgent }, loginDto.totpCode);
     }
 
-    @Post('users')
-    async register(@Body() createUserDto: any) {
-        return this.authService.createUser(createUserDto);
+    @UseGuards(JwtAuthGuard)
+    @Get('totp/generate')
+    async generateTotp(@Req() req: any) {
+        return this.authService.generateTotpSecret(req.user.userId, req.user.username);
     }
 
-    @Get('users')
-    async getUsers() {
-        return this.authService.findAllUsers();
+    @UseGuards(JwtAuthGuard)
+    @Post('totp/verify')
+    async verifyTotp(@Req() req: any, @Body('code') code: string) {
+        return this.authService.verifyAndEnableTotp(req.user.userId, code);
     }
 
-    @Put('users/:id')
-    async updateUser(@Param('id') id: string, @Body() updateDto: any) {
-        return this.authService.updateUser(id, updateDto);
+    @UseGuards(JwtAuthGuard)
+    @Post('totp/disable')
+    async disableTotp(@Req() req: any) {
+        return this.authService.disableTotp(req.user.userId);
     }
 
-    @Delete('users/:id')
-    async deleteUser(@Param('id') id: string) {
-        return this.authService.deleteUser(id);
+    // WebAuthn Passkeys Endpoints
+
+    @UseGuards(JwtAuthGuard)
+    @Get('passkey/register-options')
+    async generatePasskeyRegistrationOptions(@Req() req: any) {
+        return this.webAuthnService.getRegistrationOptions(req.user.userId, req.user.username);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Post('passkey/register-verify')
+    async verifyPasskeyRegistration(@Req() req: any, @Body() body: any) {
+        return this.webAuthnService.verifyRegistration(req.user.userId, body);
+    }
+
+    @Post('passkey/auth-options')
+    async generatePasskeyAuthenticationOptions(@Body('username') username: string) {
+        return this.webAuthnService.getAuthenticationOptions(username);
+    }
+
+    @Post('passkey/auth-verify')
+    async verifyPasskeyAuthentication(@Body() body: any, @Req() req: Request) {
+        const { username, response } = body;
+        const result = await this.webAuthnService.verifyAuthentication(username, response);
+        if (result.verified) {
+            const ip = req.ip || req.socket.remoteAddress || 'Unknown';
+            const userAgent = req.headers['user-agent'] || 'Unknown';
+            // Assuming no TOTP for passkey login, or we can prompt for it
+            return this.authService.login(result.user, { ip, userAgent });
+        }
+        throw new UnauthorizedException('Passkey verification failed');
     }
 }

@@ -1,7 +1,10 @@
-import { Injectable, UnauthorizedException, OnModuleInit } from '@nestjs/common';
+import { Injectable, UnauthorizedException, OnModuleInit, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../services/prisma.service';
+import { EmailService } from './email.service';
 import * as bcrypt from 'bcrypt';
+import { TOTP, generateURI } from 'otplib';
+const authenticator = new TOTP();
 
 const SALT_ROUNDS = 10;
 
@@ -9,7 +12,8 @@ const SALT_ROUNDS = 10;
 export class AuthService implements OnModuleInit {
     constructor(
         private jwtService: JwtService,
-        private prisma: PrismaService
+        private prisma: PrismaService,
+        private emailService: EmailService
     ) { }
 
     async onModuleInit() {
@@ -82,17 +86,53 @@ export class AuthService implements OnModuleInit {
         return null;
     }
 
-    async login(user: any, requestInfo?: { ip?: string, userAgent?: string, device?: string }) {
+    async login(user: any, requestInfo?: { ip?: string, userAgent?: string, device?: string }, totpCode?: string) {
+        // If TOTP is enabled, verify it
+        if (user.isTotpEnabled) {
+            if (!totpCode) {
+                // Return a special error indicating TOTP is required
+                throw new UnauthorizedException({ message: 'TOTP_REQUIRED', error: 'Unauthorized' });
+            }
+            
+            const isValid = await authenticator.verify(totpCode, { secret: user.totpSecret });
+            if (!isValid) {
+                throw new UnauthorizedException('Invalid 2FA code');
+            }
+        }
+
+        let location = 'Unknown Location';
+        const ip = requestInfo?.ip || 'Unknown';
+
+        if (ip === '::1' || ip === '127.0.0.1' || ip === 'Unknown') {
+            location = 'Local Development';
+        } else {
+            try {
+                const res = await fetch(`http://ip-api.com/json/${ip}`);
+                const data = await res.json();
+                if (data.status === 'success') {
+                    location = `${data.city}, ${data.country}`;
+                }
+            } catch (e) {
+                console.error('Failed to resolve IP location:', e);
+            }
+        }
+
         // Create a new session record
         const session = await this.prisma.session.create({
             data: {
                 userId: user.id,
-                ipAddress: requestInfo?.ip || 'Unknown',
+                ipAddress: ip,
+                location: location,
                 userAgent: requestInfo?.userAgent || 'Unknown',
                 device: requestInfo?.device || 'Unknown',
                 isValid: true,
             }
         });
+
+        // Fire and forget email notification
+        if (user.email) {
+            this.emailService.sendLoginNotification(user.email, ip, requestInfo?.userAgent || 'Unknown', location).catch(e => console.error(e));
+        }
 
         const payload = {
             username: user.username,
@@ -112,173 +152,42 @@ export class AuthService implements OnModuleInit {
         };
     }
 
-    async createUser(userDto: any) {
-        console.log('📝 Attempting to create user:', userDto.username);
-
-        if (!userDto.username) {
-            throw new UnauthorizedException('Username is required');
-        }
-        if (!userDto.password || userDto.password.length <= 5) {
-            throw new UnauthorizedException('Password must be greater than 5 characters');
-        }
-
-        // Check if user exists
-        const existingUser = await this.prisma.user.findUnique({
-            where: { username: userDto.username }
-        });
-
-        if (existingUser) {
-            console.warn('⚠️ User already exists:', userDto.username);
-            throw new UnauthorizedException('Username already exists');
-        }
-
-        // Hash password before storing
-        const hashedPassword = await bcrypt.hash(userDto.password, SALT_ROUNDS);
-
-        const newUser = await this.prisma.user.create({
-            data: {
-                username: userDto.username,
-                name: userDto.name,
-                password: hashedPassword,
-                role: userDto.role || 'VIEWER',
-                email: userDto.email || `${userDto.username}-${Date.now()}@temp.local`,
-                createdBy: userDto.createdBy,
-            },
-        });
-
-        console.log('✅ User created successfully:', newUser.id);
-
-        await this.logActivity(
-            'SYSTEM',
-            'CREATE',
-            `Created user: ${newUser.username} (${newUser.role})`
-        );
-
-        const { password, ...result } = newUser;
-        return result;
-    }
-
-    async findAllUsers() {
-        const users = await this.prisma.user.findMany({
-            select: {
-                id: true,
-                username: true,
-                name: true,
-                email: true,
-                role: true,
-                createdAt: true,
-                updatedAt: true,
-                createdBy: true,
-                updatedBy: true,
-            }
-        });
-        console.log(`📋 Fetched ${users.length} users:`, users.map((u: any) => u.username).join(', '));
-        return users;
-    }
-
-    async deleteUser(id: string) {
-        const userId = parseInt(id);
-        console.log('🗑️ Attempting to delete user ID:', userId);
-
-        if (isNaN(userId)) {
-            throw new UnauthorizedException('Invalid user ID');
-        }
-
-        const user = await this.prisma.user.findUnique({
-            where: { id: userId }
-        });
-
-        if (!user) {
-            throw new UnauthorizedException('User not found');
-        }
-
-        await this.prisma.user.delete({
-            where: { id: userId }
-        });
-
-        console.log('✅ User deleted successfully:', userId);
-
-        await this.logActivity(
-            'SYSTEM',
-            'DELETE',
-            `Deleted user ID: ${userId}`
-        );
-
-        return { message: 'User deleted successfully' };
-    }
-
-    async updateUser(id: string, userDto: any) {
-        const userId = parseInt(id);
-        console.log('🔄 Attempting to update user ID:', userId, 'with data:', userDto);
-
-        if (isNaN(userId)) {
-            throw new UnauthorizedException('Invalid user ID');
-        }
-
-        const user = await this.prisma.user.findUnique({
-            where: { id: userId }
-        });
-
-        if (!user) {
-            throw new UnauthorizedException('User not found');
-        }
-
-        // Check if username is being changed and if it already exists
-        if (userDto.username && userDto.username !== user.username) {
-            const existingUser = await this.prisma.user.findUnique({
-                where: { username: userDto.username }
-            });
-            if (existingUser) {
-                throw new UnauthorizedException('Username already exists');
-            }
-        }
-
-        // Validate password if provided
-        if (userDto.password && userDto.password.length <= 5) {
-            throw new UnauthorizedException('Password must be greater than 5 characters');
-        }
-
-        // Build update data
-        const updateData: any = {};
-        if (userDto.username) updateData.username = userDto.username;
-        if (userDto.name) updateData.name = userDto.name;
-        if (userDto.password) {
-            // Hash the new password
-            updateData.password = await bcrypt.hash(userDto.password, SALT_ROUNDS);
-        }
-
-        // Handle email carefully: if empty string provided, we might want to keep it empty or set a temp
-        if (userDto.email !== undefined) {
-            updateData.email = userDto.email;
-        }
-
-        if (userDto.role) updateData.role = userDto.role;
-        if (userDto.updatedBy) updateData.updatedBy = userDto.updatedBy;
-
-        console.log('📡 Sending update to Prisma:', { ...updateData, password: updateData.password ? '[HASHED]' : undefined });
-
-        const updatedUser = await this.prisma.user.update({
+    async generateTotpSecret(userId: number, email: string) {
+        const secret = authenticator.generateSecret();
+        const otpauth = generateURI({ issuer: 'Ever Green Yarn Mills', label: email, secret });
+        
+        await this.prisma.user.update({
             where: { id: userId },
-            data: updateData,
-            select: {
-                id: true,
-                username: true,
-                name: true,
-                email: true,
-                role: true,
-                createdAt: true,
-                updatedAt: true,
-            }
+            data: { totpSecret: secret }
         });
 
-        console.log('✅ User updated successfully:', updatedUser.id);
+        return { secret, otpauth };
+    }
 
-        await this.logActivity(
-            'SYSTEM',
-            'UPDATE',
-            `Updated user ${updatedUser.username}: ${Object.keys(updateData).join(', ')}`
-        );
+    async verifyAndEnableTotp(userId: number, code: string) {
+        const user = await this.prisma.user.findUnique({ where: { id: userId } });
+        if (!user || !user.totpSecret) {
+            throw new BadRequestException('TOTP not setup');
+        }
 
-        return updatedUser;
+        const isValid = await authenticator.verify(code, { secret: user.totpSecret });
+        if (!isValid) {
+            throw new BadRequestException('Invalid authentication code');
+        }
+
+        await this.prisma.user.update({
+            where: { id: userId },
+            data: { isTotpEnabled: true }
+        });
+
+        return { success: true };
+    }
+
+    async disableTotp(userId: number) {
+        await this.prisma.user.update({
+            where: { id: userId },
+            data: { isTotpEnabled: false, totpSecret: null }
+        });
+        return { success: true };
     }
 }

@@ -72,14 +72,14 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole, userna
     const { data: users = [], isLoading } = useQuery({
         queryKey: ['users'],
         queryFn: async () => {
-            const res = await api.get('/auth/users');
+            const res = await api.get('/users');
             return res.data;
         }
     });
 
     // Create User Mutation
     const createUserMutation = useMutation({
-        mutationFn: (newUser: any) => api.post('/auth/users', newUser),
+        mutationFn: (newUser: any) => api.post('/users', newUser),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['users'] });
             toast.success(SUCCESS_MESSAGES.USER_CREATE);
@@ -92,7 +92,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole, userna
 
     // Update User Mutation
     const updateUserMutation = useMutation({
-        mutationFn: ({ id, data }: { id: number; data: any }) => api.put(`/auth/users/${id}`, data),
+        mutationFn: ({ id, data }: { id: number; data: any }) => api.put(`/users/${id}`, data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['users'] });
             toast.success(SUCCESS_MESSAGES.USER_UPDATE);
@@ -105,7 +105,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole, userna
 
     // Delete User Mutation
     const deleteUserMutation = useMutation({
-        mutationFn: (id: number) => api.delete(`/auth/users/${id}`),
+        mutationFn: (id: number) => api.delete(`/users/${id}`),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['users'] });
             toast.success(SUCCESS_MESSAGES.USER_DELETE);

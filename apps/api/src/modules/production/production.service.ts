@@ -173,6 +173,42 @@ export class ProductionService {
                     });
                 }
 
+                // 5. Recalculate Balances
+                // Cotton
+                const cottonMovements = await tx.cottonInventory.findMany({ orderBy: [{ date: 'asc' }, { id: 'asc' }] });
+                let cottonRun = 0;
+                for (const mov of cottonMovements) {
+                    cottonRun += mov.quantity;
+                    if (Math.abs(mov.balance - cottonRun) > 0.001) {
+                        await tx.cottonInventory.update({ where: { id: mov.id }, data: { balance: cottonRun } });
+                    }
+                }
+
+                // Yarn (for affected counts)
+                const countsAffected = [...new Set(data.produced.map((p: any) => p.count))];
+                for (const count of countsAffected) {
+                    const yarnMovements = await tx.yarnInventory.findMany({ where: { count: count as string }, orderBy: [{ date: 'asc' }, { id: 'asc' }] });
+                    let yarnRun = 0;
+                    for (const mov of yarnMovements) {
+                        yarnRun += mov.quantity;
+                        if (Math.abs(mov.balance - yarnRun) > 0.001) {
+                            await tx.yarnInventory.update({ where: { id: mov.id }, data: { balance: yarnRun } });
+                        }
+                    }
+                }
+
+                // Waste
+                if (data.totalWaste > 0) {
+                    const wasteMovements = await tx.wasteInventory.findMany({ orderBy: [{ date: 'asc' }, { id: 'asc' }] });
+                    let wasteRun = 0;
+                    for (const mov of wasteMovements) {
+                        wasteRun += mov.quantity;
+                        if (Math.abs(mov.balance - wasteRun) > 0.001) {
+                            await tx.wasteInventory.update({ where: { id: mov.id }, data: { balance: wasteRun } });
+                        }
+                    }
+                }
+
                 return production;
             });
         } catch (error: any) {

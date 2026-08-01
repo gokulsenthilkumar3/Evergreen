@@ -100,7 +100,7 @@ const PaymentDialog = ({
     onSuccess: () => void;
 }) => {
     const [paymentData, setPaymentData] = useState({
-        date: new Date().toISOString().split('T')[0],
+        date: new Date().toLocaleDateString('en-CA'),
         amount: '',
         method: 'CASH',
         reference: '',
@@ -134,7 +134,7 @@ const PaymentDialog = ({
                 createdBy: username,
             });
             toast.success(SUCCESS_MESSAGES.PAYMENT_RECORDED);
-            setPaymentData({ date: new Date().toISOString().split('T')[0], amount: '', method: 'CASH', reference: '', notes: '' });
+            setPaymentData({ date: new Date().toLocaleDateString('en-CA'), amount: '', method: 'CASH', reference: '', notes: '' });
             setShowErrors(false);
             onSuccess();
             onClose();
@@ -244,7 +244,7 @@ const InvoiceEditor = ({
     // Form State
     const [invoiceData, setInvoiceData] = useState({
         invoiceNo: initialData?.invoiceNo || `INV-${Date.now().toString().slice(-6)}`,
-        date: initialData?.date || new Date().toISOString().split('T')[0],
+        date: initialData?.date || new Date().toLocaleDateString('en-CA'),
         customerName: initialData?.customerName || '',
         customerAddress: initialData?.customerAddress || '',
         customerGSTIN: initialData?.customerGSTIN || '',
@@ -496,7 +496,7 @@ const InvoiceEditor = ({
                                                             <MenuItem key={c} value={c}>Count {c}</MenuItem>
                                                         ))
                                                     ) : (
-                                                        ['20', '30', '40', '60'].map(c => <MenuItem key={c} value={c}>Count {c}</MenuItem>)
+                                                        ['2', '4', '6', '8', '10'].map(c => <MenuItem key={c} value={c}>Count {c}</MenuItem>)
                                                     )}
                                                 </TextField>
                                             </TableCell>

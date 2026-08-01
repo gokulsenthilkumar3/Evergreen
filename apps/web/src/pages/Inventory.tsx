@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
     Box,
     Paper,
@@ -207,38 +207,41 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
         },
     });
 
-    const fullHistory: InventoryItem[] = [
-        ...(dashboardData?.history || []).map((h: any) => ({
-            id: h.id || Math.random().toString(),
-            date: new Date(h.date).toLocaleDateString('en-CA'),
-            originalDate: h.entryTimestamp ? new Date(h.entryTimestamp) : (h.createdAt ? new Date(h.createdAt) : new Date(h.date)),
-            type: h.type as 'INWARD' | 'OUTWARD' | 'PRODUCTION' | 'WASTE',
-            item: h.material,
-            quantity: h.quantity || 0,
-            balance: h.balance || 0,
-            bale: h.bale || 0,
-            reference: h.reference || 'N/A'
-        }))
-    ].sort((a: any, b: any) => {
-        const dateDiff = b.originalDate.getTime() - a.originalDate.getTime();
-        if (dateDiff !== 0) return dateDiff;
-        // If dates are equal, sort by ID descending (assuming larger ID is newer)
-        return parseInt(b.id) - parseInt(a.id);
-    });
+    const fullHistory: InventoryItem[] = useMemo(() => {
+        return [
+            ...(dashboardData?.history || []).map((h: any) => ({
+                id: h.id || Math.random().toString(),
+                date: new Date(h.date).toLocaleDateString('en-CA'),
+                originalDate: h.entryTimestamp ? new Date(h.entryTimestamp) : (h.createdAt ? new Date(h.createdAt) : new Date(h.date)),
+                type: h.type as 'INWARD' | 'OUTWARD' | 'PRODUCTION' | 'WASTE',
+                item: h.material,
+                quantity: h.quantity || 0,
+                balance: h.balance || 0,
+                bale: h.bale || 0,
+                reference: h.reference || 'N/A'
+            }))
+        ].sort((a: any, b: any) => {
+            const dateDiff = b.originalDate.getTime() - a.originalDate.getTime();
+            if (dateDiff !== 0) return dateDiff;
+            return parseInt(b.id) - parseInt(a.id);
+        });
+    }, [dashboardData?.history]);
 
-    const filteredFullHistory = fullHistory.filter(item => {
-        const matchesType = historyTypeFilter === 'all' ||
-            (historyTypeFilter === 'cotton' && item.item?.toLowerCase().includes('cotton')) ||
-            (historyTypeFilter === 'yarn' && item.item?.toLowerCase().includes('yarn')) ||
-            (historyTypeFilter === 'waste' && (item.type === 'WASTE' || item.item?.toLowerCase().includes('waste')));
+    const filteredFullHistory = useMemo(() => {
+        return fullHistory.filter(item => {
+            const matchesType = historyTypeFilter === 'all' ||
+                (historyTypeFilter === 'cotton' && item.item?.toLowerCase().includes('cotton')) ||
+                (historyTypeFilter === 'yarn' && item.item?.toLowerCase().includes('yarn')) ||
+                (historyTypeFilter === 'waste' && (item.type === 'WASTE' || item.item?.toLowerCase().includes('waste')));
 
-        const matchesSearch = !searchQuery ||
-            item.reference?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            item.item?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            item.type.toLowerCase().includes(searchQuery.toLowerCase());
+            const matchesSearch = !searchQuery ||
+                item.reference?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                item.item?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                item.type.toLowerCase().includes(searchQuery.toLowerCase());
 
-        return matchesType && matchesSearch;
-    });
+            return matchesType && matchesSearch;
+        });
+    }, [fullHistory, historyTypeFilter, searchQuery]);
 
     const handleExport = (type: 'email' | 'excel' | 'pdf') => {
         const dataToExport = filteredFullHistory.map(row => ({

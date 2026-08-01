@@ -177,6 +177,25 @@ export class InventoryService {
                 });
             }
 
+            // 3. Recalculate Yarn Inventory Balances for affected counts
+            const countsAffected = [...new Set(data.items.map(i => i.count))];
+            for (const count of countsAffected) {
+                const movements = await tx.yarnInventory.findMany({
+                    where: { count },
+                    orderBy: [{ date: 'asc' }, { id: 'asc' }]
+                });
+                let running = 0;
+                for (const mov of movements) {
+                    running += mov.quantity;
+                    if (Math.abs(mov.balance - running) > 0.001) {
+                        await tx.yarnInventory.update({
+                            where: { id: mov.id },
+                            data: { balance: running }
+                        });
+                    }
+                }
+            }
+
             return outward;
         });
     }
@@ -216,6 +235,20 @@ export class InventoryService {
                     }
                 });
 
+                // 4. Recalculate Cotton Inventory Balances
+                const cottonMovements = await tx.cottonInventory.findMany({
+                    orderBy: [{ date: 'asc' }, { id: 'asc' }]
+                });
+                let runningBalance = 0;
+                for (const mov of cottonMovements) {
+                    runningBalance += mov.quantity;
+                    if (Math.abs(mov.balance - runningBalance) > 0.001) {
+                        await tx.cottonInventory.update({
+                            where: { id: mov.id },
+                            data: { balance: runningBalance }
+                        });
+                    }
+                }
             });
         } catch (error: any) {
             console.error('[Inventory] createInward error:', error);

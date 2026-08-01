@@ -75,7 +75,7 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
       // Download
       const pngUrl = canvas.toDataURL('image/png');
       const link = document.createElement('a');
-      link.download = `${title}_${new Date().toISOString().split('T')[0]}.png`;
+      link.download = `${title}_${new Date().toLocaleDateString('en-CA')}.png`;
       link.href = pngUrl;
       link.click();
       
@@ -98,7 +98,7 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
     const url = URL.createObjectURL(blob);
 
     const link = document.createElement('a');
-    link.download = `${title}_${new Date().toISOString().split('T')[0]}.svg`;
+    link.download = `${title}_${new Date().toLocaleDateString('en-CA')}.svg`;
     link.href = url;
     link.click();
 
@@ -132,8 +132,8 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
         break;
     }
     
-    const startStr = start.toISOString().split('T')[0];
-    const endStr = end.toISOString().split('T')[0];
+    const startStr = start.toLocaleDateString('en-CA');
+    const endStr = end.toLocaleDateString('en-CA');
     
     setStartDate(startStr);
     setEndDate(endStr);

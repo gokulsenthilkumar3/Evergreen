@@ -28,6 +28,7 @@ import {
 } from '@mui/icons-material';
 import api from '../utils/api';
 import LoginAvatar from './LoginAvatar';
+import { startAuthentication } from '@simplewebauthn/browser';
 
 // --- Animations ---
 const shake = keyframes`
@@ -63,6 +64,8 @@ interface LoginProps {
 const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [totpCode, setTotpCode] = useState('');
+    const [requiresTotp, setRequiresTotp] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [rememberMe, setRememberMe] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -102,7 +105,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings }) => {
         const startTime = Date.now();
 
         try {
-            const response = await api.post('/auth/login', { username, password });
+            const response = await api.post('/auth/login', { username, password, totpCode });
 
             const elapsed = Date.now() - startTime;
             if (elapsed < 800) await new Promise(r => setTimeout(r, 800 - elapsed));
@@ -115,7 +118,39 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings }) => {
             }, 1200);
 
         } catch (err: any) {
-            setError(err.response?.data?.message || 'Invalid credentials');
+            if (err.response?.data?.message === 'TOTP_REQUIRED') {
+                setRequiresTotp(true);
+                setError(null);
+            } else {
+                setError(err.response?.data?.message || 'Invalid credentials');
+            }
+            setLoading(false);
+        }
+    };
+
+    const handlePasskeyLogin = async () => {
+        if (!username) {
+            setError('Please enter your username first to use Passkey.');
+            return;
+        }
+
+        setError(null);
+        setLoading(true);
+        try {
+            const optsRes = await api.post('/auth/passkey/auth-options', { username });
+            const asseResp = await startAuthentication({ optionsJSON: optsRes.data });
+            
+            const verifyRes = await api.post('/auth/passkey/auth-verify', { username, response: asseResp });
+            
+            setSuccess(true);
+            localStorage.setItem('token', verifyRes.data.access_token);
+            setTimeout(() => {
+                onLoginSuccess(verifyRes.data.user);
+            }, 1200);
+
+        } catch (err: any) {
+            console.error(err);
+            setError(err.message || 'Passkey authentication failed');
             setLoading(false);
         }
     };
@@ -261,7 +296,9 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings }) => {
                             gap: 2
                         }}
                     >
-                        <TextField
+                        {!requiresTotp ? (
+                            <>
+                                <TextField
                             required
                             fullWidth
                             id="username"
@@ -322,6 +359,18 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings }) => {
                                 )
                             }}
                         />
+                        </>
+                        ) : (
+                            <TextField
+                                required
+                                fullWidth
+                                label="6-Digit Authenticator Code"
+                                value={totpCode}
+                                onChange={(e) => setTotpCode(e.target.value)}
+                                variant="outlined"
+                                autoFocus
+                            />
+                        )}
 
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <FormControlLabel
@@ -396,6 +445,17 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings }) => {
                                 )}
                             </Box>
                         </Button>
+                        {!requiresTotp && (
+                            <Button
+                                fullWidth
+                                variant="outlined"
+                                onClick={handlePasskeyLogin}
+                                disabled={loading || success}
+                                sx={{ mt: 1, borderRadius: 2, py: 1 }}
+                            >
+                                Sign in with Passkey
+                            </Button>
+                        )}
                     </Box>
 
                     <Box sx={{ mt: 4, textAlign: 'center', animation: `${fadeInUp} 0.6s ease-out 0.6s forwards`, opacity: 0 }}>

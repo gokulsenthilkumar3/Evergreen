@@ -40,13 +40,14 @@ import {
     TableView as ExcelIcon,
     PictureAsPdf as PdfIcon,
 } from '@mui/icons-material';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../utils/api';
 import { generateExcel } from '../utils/excelGenerator';
 import { generatePDF } from '../utils/pdfGenerator';
 import { useConfirm } from '../context/ConfirmContext';
 import { toast } from 'sonner';
 import { SUCCESS_MESSAGES, ERROR_MESSAGES, CONFIRM_TITLES, CONFIRM_MESSAGES, formatApiError } from '../utils/messages';
+import { validateDate } from '../utils/validators';
 import EmptyState from '../components/common/EmptyState';
 import TableSkeleton from '../components/common/TableSkeleton';
 
@@ -99,6 +100,7 @@ interface ProductionEntryProps {
 }
 
 const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username }) => {
+    const queryClient = useQueryClient();
     const { data: recentProduction, refetch: refetchProduction, isLoading } = useQuery({
         queryKey: ['productionHistory'],
         queryFn: async () => {
@@ -238,6 +240,9 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
 
     const handleNext = () => {
         if (activeStep === 0) {
+            const dateCheck = validateDate(date, false);
+            if (!dateCheck.valid) { toast.error(dateCheck.message); return; }
+
             // Validate input
             const hasValidInput = consumed.some(item => item.batchNo && parseFloat(item.weight) > 0 && parseFloat(item.bale) > 0);
             if (!hasValidInput) {
@@ -312,6 +317,10 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
             await api.post('/production', productionData);
             toast.success(SUCCESS_MESSAGES.PRODUCTION_SAVED);
             refetchProduction();
+            queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+            queryClient.invalidateQueries({ queryKey: ['inventoryHistory'] });
+            queryClient.invalidateQueries({ queryKey: ['yarnStock'] });
+            queryClient.invalidateQueries({ queryKey: ['cottonInventory'] });
             handleCloseWizard();
         } catch (error: any) {
             toast.error(formatApiError(error, ERROR_MESSAGES.SAVE_FAILED));
@@ -332,6 +341,10 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
             await api.delete(`/production/${id}`);
             toast.success(SUCCESS_MESSAGES.DELETE);
             refetchProduction();
+            queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+            queryClient.invalidateQueries({ queryKey: ['inventoryHistory'] });
+            queryClient.invalidateQueries({ queryKey: ['yarnStock'] });
+            queryClient.invalidateQueries({ queryKey: ['cottonInventory'] });
         } catch (error: any) {
             toast.error(formatApiError(error, ERROR_MESSAGES.DELETE_FAILED));
         }

@@ -12,6 +12,8 @@ import { BillingModule } from './modules/billing/billing.module';
 import { LogsModule } from './modules/logs/logs.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { SearchModule } from './modules/search/search.module';
+import { UsersModule } from './modules/users/users.module';
+import { SessionsModule } from './modules/sessions/sessions.module';
 
 import { DatabaseModule } from './modules/database/database.module';
 
@@ -30,6 +32,8 @@ import { DatabaseModule } from './modules/database/database.module';
     LogsModule,
     SettingsModule,
     SearchModule,
+    UsersModule,
+    SessionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,0 +1,196 @@
+{
+  "range": "month",
+  "kpis": [
+    {
+      "label": "Total Bale (Cotton)",
+      "value": "0 bales (0 kg)",
+      "color": "#0288d1",
+      "hasData": false
+    },
+    {
+      "label": "Total Bag (Yarn)",
+      "value": "0 bags (0 kg)",
+      "subValue": "",
+      "color": "#2e7d32",
+      "hasData": false
+    },
+    {
+      "label": "Total Inward",
+      "value": "4,559.97 kg",
+      "color": "#ed6c02",
+      "hasData": true
+    },
+    {
+      "label": "Total Outward (Sales)",
+      "value": "0 kg",
+      "color": "#d32f2f",
+      "hasData": false
+    }
+  ],
+  "history": [
+    {
+      "id": 13,
+      "date": "2026-08-02T00:00:00.000Z",
+      "type": "PRODUCTION",
+      "quantity": -659,
+      "bale": -65.9,
+      "balance": 3900.97,
+      "reference": "P-2026085QX",
+      "batchId": "2026085QX",
+      "productionId": 4,
+      "createdAt": "2026-08-01T19:31:08.075Z",
+      "updatedAt": "2026-08-01T19:31:08.075Z",
+      "entryTimestamp": "2026-08-01T19:31:08.075Z",
+      "createdBy": "author",
+      "updatedBy": null,
+      "material": "Cotton"
+    },
+    {
+      "id": 12,
+      "date": "2026-08-02T00:00:00.000Z",
+      "type": "INWARD",
+      "quantity": 4559.97,
+      "bale": 456,
+      "balance": 4559.97,
+      "reference": "2026085QX",
+      "batchId": "2026085QX",
+      "productionId": null,
+      "createdAt": "2026-08-01T19:29:53.651Z",
+      "updatedAt": "2026-08-01T19:29:53.651Z",
+      "entryTimestamp": "2026-08-01T19:29:53.651Z",
+      "createdBy": "author",
+      "updatedBy": null,
+      "material": "Cotton"
+    },
+    {
+      "id": 12,
+      "date": "2026-08-02T00:00:00.000Z",
+      "type": "PRODUCTION",
+      "quantity": 100,
+      "balance": 568,
+      "reference": "P-2026085QX",
+      "count": "2",
+      "productionId": 4,
+      "createdAt": "2026-08-01T19:31:08.092Z",
+      "updatedAt": "2026-08-01T19:31:08.092Z",
+      "entryTimestamp": "2026-08-01T19:31:08.092Z",
+      "createdBy": "author",
+      "updatedBy": null,
+      "material": "Yarn"
+    },
+    {
+      "id": 11,
+      "date": "2026-08-02T00:00:00.000Z",
+      "type": "PRODUCTION",
+      "quantity": 24,
+      "balance": 468,
+      "reference": "P-2026085QX",
+      "count": "2",
+      "productionId": 4,
+      "createdAt": "2026-08-01T19:31:08.088Z",
+      "updatedAt": "2026-08-01T19:31:08.088Z",
+      "entryTimestamp": "2026-08-01T19:31:08.088Z",
+      "createdBy": "author",
+      "updatedBy": null,
+      "material": "Yarn"
+    },
+    {
+      "id": 10,
+      "date": "2026-08-02T00:00:00.000Z",
+      "type": "PRODUCTION",
+      "quantity": 332,
+      "balance": 444,
+      "reference": "P-2026085QX",
+      "count": "2",
+      "productionId": 4,
+      "createdAt": "2026-08-01T19:31:08.084Z",
+      "updatedAt": "2026-08-01T19:31:08.084Z",
+      "entryTimestamp": "2026-08-01T19:31:08.084Z",
+      "createdBy": "author",
+      "updatedBy": null,
+      "material": "Yarn"
+    },
+    {
+      "id": 9,
+      "date": "2026-08-02T00:00:00.000Z",
+      "type": "PRODUCTION",
+      "quantity": 67,
+      "balance": 112,
+      "reference": "P-2026085QX",
+      "count": "2",
+      "productionId": 4,
+      "createdAt": "2026-08-01T19:31:08.082Z",
+      "updatedAt": "2026-08-01T19:31:08.082Z",
+      "entryTimestamp": "2026-08-01T19:31:08.082Z",
+      "createdBy": "author",
+      "updatedBy": null,
+      "material": "Yarn"
+    },
+    {
+      "id": 8,
+      "date": "2026-08-02T00:00:00.000Z",
+      "type": "PRODUCTION",
+      "quantity": 45,
+      "balance": 45,
+      "reference": "P-2026085QX",
+      "count": "2",
+      "productionId": 4,
+      "createdAt": "2026-08-01T19:31:08.079Z",
+      "updatedAt": "2026-08-01T19:31:08.079Z",
+      "entryTimestamp": "2026-08-01T19:31:08.079Z",
+      "createdBy": "author",
+      "updatedBy": null,
+      "material": "Yarn"
+    },
+    {
+      "id": 3,
+      "date": "2026-08-02T00:00:00.000Z",
+      "type": "PRODUCTION",
+      "quantity": 91,
+      "balance": 91,
+      "reference": "W-2026085QX",
+      "wasteBlowRoom": 5,
+      "wasteCarding": 8,
+      "wasteOE": 1,
+      "wasteOthers": 77,
+      "productionId": 4,
+      "createdAt": "2026-08-01T19:31:08.096Z",
+      "updatedAt": "2026-08-01T19:31:08.096Z",
+      "entryTimestamp": "2026-08-01T19:31:08.096Z",
+      "createdBy": "author",
+      "updatedBy": null,
+      "material": "Waste"
+    }
+  ],
+  "totalBales": 0,
+  "yarnStockByCount": [],
+  "inwardHistory": [
+    {
+      "date": "2026-08-02",
+      "kg": 4559.97,
+      "outward": 0
+    }
+  ],
+  "outwardHistory": [],
+  "productionHistory": [],
+  "wasteHistory": [
+    {
+      "id": 3,
+      "date": "2026-08-02T00:00:00.000Z",
+      "type": "PRODUCTION",
+      "quantity": 91,
+      "balance": 91,
+      "reference": "W-2026085QX",
+      "wasteBlowRoom": 5,
+      "wasteCarding": 8,
+      "wasteOE": 1,
+      "wasteOthers": 77,
+      "productionId": 4,
+      "createdAt": "2026-08-01T19:31:08.096Z",
+      "updatedAt": "2026-08-01T19:31:08.096Z",
+      "entryTimestamp": "2026-08-01T19:31:08.096Z",
+      "createdBy": "author",
+      "updatedBy": null
+    }
+  ]
+}

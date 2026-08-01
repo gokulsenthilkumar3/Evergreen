@@ -41,19 +41,19 @@ export function getDateRange(
             // This week starting Sunday
             const sunday = new Date(today);
             sunday.setDate(today.getDate() - today.getDay()); // getDay() returns 0 for Sunday
-            return { from: sunday.toISOString().split('T')[0], to: toStr };
+            return { from: sunday.toLocaleDateString('en-CA'), to: toStr };
         }
 
         case 'month': {
             // This month starting from the 1st
             const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-            return { from: firstOfMonth.toISOString().split('T')[0], to: toStr };
+            return { from: firstOfMonth.toLocaleDateString('en-CA'), to: toStr };
         }
 
         case 'year': {
             // This year starting from January 1st
             const firstOfYear = new Date(today.getFullYear(), 0, 1);
-            return { from: firstOfYear.toISOString().split('T')[0], to: toStr };
+            return { from: firstOfYear.toLocaleDateString('en-CA'), to: toStr };
         }
 
         case 'custom': {

@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, lazy, Suspense } from 'react';
 import { Toaster, toast } from 'sonner';
 import { SUCCESS_MESSAGES } from './utils/messages';
 import { ConfirmProvider } from './context/ConfirmContext';
@@ -48,26 +48,32 @@ import {
   MoveToInbox as InwardIcon,
   BarChart as SummaryIcon,
   ChevronLeft as CollapseIcon,
+  Security as SecurityIcon,
 } from '@mui/icons-material';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from './utils/api';
 import getTheme from './theme';
 import Login from './components/Login';
-import Dashboard from './pages/Dashboard';
-import Inventory from './pages/Inventory';
-import InwardEntry from './pages/InwardEntry';
-import ProductionEntry from './pages/ProductionEntry';
-import Costing from './pages/Costing';
-import Billing from './pages/Billing';
-import Settings from './pages/Settings';
-import TodayDashboard from './pages/TodayDashboard';
-import OutwardEntry from './pages/OutwardEntry';
-import UserManagement from './pages/UserManagement';
 import { KeyboardShortcutsProvider } from './context/KeyboardShortcutsContext';
 import { ScreenReaderAnnouncer } from './components/common/ScreenReaderAnnouncer';
 import Breadcrumbs from './components/common/Breadcrumbs';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import { NotificationsProvider, NotificationsBell } from './context/NotificationsContext';
+import { useDebounce } from './hooks/useDebounce';
+import { LinearProgress } from '@mui/material';
+
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Inventory = lazy(() => import('./pages/Inventory'));
+const InwardEntry = lazy(() => import('./pages/InwardEntry'));
+const ProductionEntry = lazy(() => import('./pages/ProductionEntry'));
+const Costing = lazy(() => import('./pages/Costing'));
+const Billing = lazy(() => import('./pages/Billing'));
+const Settings = lazy(() => import('./pages/Settings'));
+const TodayDashboard = lazy(() => import('./pages/TodayDashboard'));
+const OutwardEntry = lazy(() => import('./pages/OutwardEntry'));
+const UserManagement = lazy(() => import('./pages/UserManagement'));
+const SessionManagement = lazy(() => import('./pages/SessionManagement'));
+const SecuritySettings = lazy(() => import('./pages/SecuritySettings'));
 
 const drawerWidth = 260;
 const drawerCollapsedWidth = 72;
@@ -123,25 +129,34 @@ const GlobalSearch = ({ onNavigate }: { onNavigate: (page: string) => void }) =>
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const handleSearch = async (val: string) => {
-    setQuery(val);
-    setSelectedIndex(-1);
-    if (val.length < 2) {
-      setResults([]);
-      setAnchorEl(null);
-      return;
-    }
+  const debouncedQuery = useDebounce(query, 300);
 
-    setLoading(true);
-    try {
-      const res = await api.get(`/search?q=${val}`);
-      setResults(res.data);
-      if (res.data.length > 0) setAnchorEl(document.getElementById('global-search-input'));
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+  useEffect(() => {
+    const fetchResults = async () => {
+      setSelectedIndex(-1);
+      if (debouncedQuery.length < 2) {
+        setResults([]);
+        setAnchorEl(null);
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const res = await api.get(`/search?q=${debouncedQuery}`);
+        setResults(res.data);
+        if (res.data.length > 0) setAnchorEl(document.getElementById('global-search-input'));
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchResults();
+  }, [debouncedQuery]);
+
+  const handleSearch = (val: string) => {
+    setQuery(val);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -440,6 +455,8 @@ const App: React.FC = () => {
       label: 'Admin',
       items: [
         { text: 'User Management', icon: <UsersIcon />, page: 'users', requiredRole: 'AUTHOR' },
+        { text: 'Sessions', icon: <SecurityIcon />, page: 'sessions', requiredRole: 'AUTHOR' },
+        { text: 'Security Settings', icon: <SecurityIcon />, page: 'security' },
         { text: 'Settings', icon: <SettingsIcon />, page: 'settings' },
       ]
     },
@@ -762,25 +779,29 @@ const App: React.FC = () => {
                       m: 0
                     }}
                   >
-                    {currentPage === 'dashboard' && <Dashboard onNavigate={setCurrentPage} />}
-                    {currentPage === 'today' && <TodayDashboard onNavigate={setCurrentPage} />}
-                    {currentPage === 'inventory' && <Inventory userRole={user.role} username={user.username} />}
-                    {currentPage === 'costing' && <Costing userRole={user.role} username={user.username} />}
-                    {currentPage === 'inward' && <InwardEntry userRole={user.role} username={user.username} />}
-                    {currentPage === 'outward' && <OutwardEntry userRole={user.role} username={user.username} />}
-                    {currentPage === 'production' && <ProductionEntry userRole={user.role} username={user.username} />}
-                    {currentPage === 'billing' && <Billing userRole={user.role} username={user.username} />}
-                    {currentPage === 'users' && <UserManagement currentUserRole={user.role} username={user.username} />}
-                    {currentPage === 'settings' && <Settings username={user.username} />}
+                    <Suspense fallback={<LinearProgress />}>
+                      {currentPage === 'dashboard' && <Dashboard onNavigate={setCurrentPage} />}
+                      {currentPage === 'today' && <TodayDashboard onNavigate={setCurrentPage} />}
+                      {currentPage === 'inventory' && <Inventory userRole={user.role} username={user.username} />}
+                      {currentPage === 'costing' && <Costing userRole={user.role} username={user.username} />}
+                      {currentPage === 'inward' && <InwardEntry userRole={user.role} username={user.username} />}
+                      {currentPage === 'outward' && <OutwardEntry userRole={user.role} username={user.username} />}
+                      {currentPage === 'production' && <ProductionEntry userRole={user.role} username={user.username} />}
+                      {currentPage === 'billing' && <Billing userRole={user.role} username={user.username} />}
+                      {currentPage === 'users' && <UserManagement currentUserRole={user.role} username={user.username} />}
+                      {currentPage === 'sessions' && <SessionManagement />}
+                      {currentPage === 'security' && <SecuritySettings />}
+                      {currentPage === 'settings' && <Settings username={user.username} />}
 
-                    {!allPages.includes(currentPage) && (
-                      <Box sx={{ p: 4, textAlign: 'center' }}>
-                        <Typography variant="h4" sx={{ mb: 2, fontWeight: 'bold' }}>
-                          {currentPage.charAt(0).toUpperCase() + currentPage.slice(1)}
-                        </Typography>
-                        <Typography color="text.secondary">This page is currently under development.</Typography>
-                      </Box>
-                    )}
+                      {!allPages.includes(currentPage) && (
+                        <Box sx={{ p: 4, textAlign: 'center' }}>
+                          <Typography variant="h4" sx={{ mb: 2, fontWeight: 'bold' }}>
+                            {currentPage.charAt(0).toUpperCase() + currentPage.slice(1)}
+                          </Typography>
+                          <Typography color="text.secondary">This page is currently under development.</Typography>
+                        </Box>
+                      )}
+                    </Suspense>
                   </Container>
                 </Box>
               </Box>

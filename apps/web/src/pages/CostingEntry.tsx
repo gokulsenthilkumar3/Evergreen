@@ -81,7 +81,7 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
                 // Filter client side OR use dedicated endpoint if available
                 const entry = res.data.find((p: any) => {
                     // Handle ISO date string comparison
-                    const pDate = new Date(p.date).toISOString().split('T')[0];
+                    const pDate = new Date(p.date).toLocaleDateString('en-CA');
                     return pDate === packagingDate;
                 });
                 return entry || { totalProduced: 0 };
@@ -137,10 +137,10 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
         },
     });
 
-    const existingEB = entries?.find((e: any) => new Date(e.date).toISOString().split('T')[0] === date && e.category === 'EB (Electricity)');
-    const existingEmployee = entries?.find((e: any) => new Date(e.date).toISOString().split('T')[0] === date && e.category === 'Employee');
-    const existingPackaging = entries?.find((e: any) => new Date(e.date).toISOString().split('T')[0] === date && e.category === 'Packaging');
-    const existingMaintenance = entries?.find((e: any) => new Date(e.date).toISOString().split('T')[0] === date && e.category === 'Maintenance');
+    const existingEB = entries?.find((e: any) => new Date(e.date).toLocaleDateString('en-CA') === date && e.category === 'EB (Electricity)');
+    const existingEmployee = entries?.find((e: any) => new Date(e.date).toLocaleDateString('en-CA') === date && e.category === 'Employee');
+    const existingPackaging = entries?.find((e: any) => new Date(e.date).toLocaleDateString('en-CA') === date && e.category === 'Packaging');
+    const existingMaintenance = entries?.find((e: any) => new Date(e.date).toLocaleDateString('en-CA') === date && e.category === 'Maintenance');
 
     // Fetch System Settings for default rates
     const { data: settings } = useQuery({
