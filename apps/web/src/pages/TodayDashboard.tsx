@@ -44,6 +44,9 @@ const WASTE_COLORS: Record<string, string> = {
     'Others': '#757575',
 };
 
+/** Standard 60 kg bag weight used throughout yarn industry operations. */
+const BAG_WEIGHT_KG = 60;
+
 const CATEGORY_ICONS: Record<string, { icon: React.ReactNode; color: string }> = {
     'EB (Electricity)': { icon: <EbIcon fontSize="small" />, color: '#059669' },
     'Employee': { icon: <EmployeeIcon fontSize="small" />, color: '#6366f1' },
@@ -84,7 +87,8 @@ const TodayDashboard: React.FC<TodayDashboardProps> = ({ onNavigate }) => {
     };
 
     const todayProduction = productionHistory?.find((p: any) => p.date?.startsWith(today));
-    const todayCosts = costingEntries?.filter((c: any) => c.date === today) || [];
+    // B-06: Use startsWith instead of === so ISO-8601 timestamps (with time) still match today's date
+    const todayCosts = costingEntries?.filter((c: any) => c.date?.startsWith(today)) || [];
     const totalCost = todayCosts.reduce((sum: number, c: any) => sum + (c.totalCost || 0), 0);
     const totalProduced = todayProduction?.totalProduced || 0;
     const totalConsumed = (todayProduction?.consumedBatches?.reduce((sum: number, b: any) => sum + (b.weight || 0), 0)) || (todayProduction?.totalConsumed || 0);
@@ -166,7 +170,7 @@ const TodayDashboard: React.FC<TodayDashboardProps> = ({ onNavigate }) => {
                                     <Box component="span" sx={{ fontSize: '1rem', fontWeight: 500, opacity: 0.8, ml: 0.5 }}>kg</Box>
                                 </Typography>
                                 <Typography variant="caption" sx={{ opacity: 0.7 }}>
-                                    {Math.floor(totalProduced / 60)} bags + {(totalProduced % 60).toFixed(1)} kg
+                                    {Math.floor(totalProduced / BAG_WEIGHT_KG)} bags + {(totalProduced % BAG_WEIGHT_KG).toFixed(1)} kg
                                 </Typography>
                             </Box>
                         </Box>

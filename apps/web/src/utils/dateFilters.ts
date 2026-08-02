@@ -38,10 +38,12 @@ export function getDateRange(
             return { from: toStr, to: toStr };
 
         case 'week': {
-            // This week starting Sunday
-            const sunday = new Date(today);
-            sunday.setDate(today.getDate() - today.getDay()); // getDay() returns 0 for Sunday
-            return { from: sunday.toLocaleDateString('en-CA'), to: toStr };
+            // This week starting Monday (standard Indian manufacturing work week)
+            const monday = new Date(today);
+            const day = today.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+            const daysToMonday = (day + 6) % 7; // rolls back to the preceding Monday
+            monday.setDate(today.getDate() - daysToMonday);
+            return { from: monday.toLocaleDateString('en-CA'), to: toStr };
         }
 
         case 'month': {

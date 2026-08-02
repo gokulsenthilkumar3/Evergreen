@@ -50,6 +50,8 @@ import { SUCCESS_MESSAGES, ERROR_MESSAGES, CONFIRM_TITLES, CONFIRM_MESSAGES, for
 import { validateDate } from '../utils/validators';
 import EmptyState from '../components/common/EmptyState';
 import TableSkeleton from '../components/common/TableSkeleton';
+import GlassDatePicker from '../components/common/GlassDatePicker';
+
 
 interface ConsumptionItem {
     id: number;
@@ -530,9 +532,9 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                         {/* Step 1: Input (Cotton Consumption) */}
                         {activeStep === 0 && (
                             <Box>
-                                <TextField
+                                <GlassDatePicker
                                     label="Production Date"
-                                    type="date"
+                                    
                                     value={date}
                                     onChange={(e) => setDate(e.target.value)}
                                     fullWidth

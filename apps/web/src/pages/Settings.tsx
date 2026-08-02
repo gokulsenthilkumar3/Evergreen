@@ -387,7 +387,7 @@ const Settings: React.FC<SettingsProps> = ({ username }) => {
                                         size="small"
                                         sx={{ mt: 2, ml: 6, maxWidth: 300 }}
                                         helperText="Alert when stock falls below this value"
-                                        error={parseFloat(systemSettings.lowStockThreshold) <= 0}
+                                        error={systemSettings.lowStockThreshold === '' || isNaN(parseFloat(systemSettings.lowStockThreshold)) || parseFloat(systemSettings.lowStockThreshold) <= 0}
                                     />
                                 )}
                             </Paper>
@@ -399,7 +399,7 @@ const Settings: React.FC<SettingsProps> = ({ username }) => {
                                 </Typography>
                             </Paper>
 
-                            <Paper sx={{ p: 2, bgcolor: 'info.50', border: '1px solid', borderColor: 'info.main', borderRadius: 1 }}>
+                            <Paper sx={{ p: 2, bgcolor: 'rgba(14, 165, 233, 0.08)', border: '1px solid', borderColor: 'info.main', borderRadius: 1 }}>
                                 <Typography variant="body2" color="info.main">
                                     💡 EB Rate, Packaging Rate, and Maintenance Rate are now managed in the <strong>Costing module</strong>.
                                 </Typography>

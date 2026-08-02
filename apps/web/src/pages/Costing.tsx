@@ -43,6 +43,8 @@ import { useConfirm } from '../context/ConfirmContext';
 import { toast } from 'sonner';
 import { SUCCESS_MESSAGES, ERROR_MESSAGES, formatApiError } from '../utils/messages';
 import { getDateRange as getStandardDateRange, DATE_FILTER_OPTIONS, type DateFilterType } from '../utils/dateFilters';
+import GlassDatePicker from '../components/common/GlassDatePicker';
+
 
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -217,16 +219,16 @@ const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole 
 
                         {dateFilter === 'custom' && (
                             <>
-                                <TextField
-                                    type="date"
+                                <GlassDatePicker
+                                    
                                     label="From"
                                     size="small"
                                     value={customFrom}
                                     onChange={(e) => setCustomFrom(e.target.value)}
                                     InputLabelProps={{ shrink: true }}
                                 />
-                                <TextField
-                                    type="date"
+                                <GlassDatePicker
+                                    
                                     label="To"
                                     size="small"
                                     value={customTo}

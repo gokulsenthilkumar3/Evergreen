@@ -20,7 +20,7 @@ export class AuthService implements OnModuleInit {
         try {
             const count = await this.prisma.user.count();
             if (count === 0) {
-                console.log('🌱 No users found in the database. Seeding default AUTHOR user...');
+                console.log('🌱 No users found in the database. Seeding default ADMIN user...');
                 const hashedPassword = await bcrypt.hash('author123', SALT_ROUNDS);
                 await this.prisma.user.create({
                     data: {
@@ -31,7 +31,7 @@ export class AuthService implements OnModuleInit {
                         email: 'admin@evergreenyarn.com'
                     }
                 });
-                console.log('✅ Default user created. Username: author | Password: author123');
+                console.log('✅ Default ADMIN user created. Username: author | Password: author123 | ⚠️ Change immediately!');
             }
         } catch (e) {
             console.error('Failed to seed default user:', e);
@@ -40,7 +40,6 @@ export class AuthService implements OnModuleInit {
 
     private async logActivity(username: string, action: string, details: string) {
         try {
-            // @ts-ignore
             await this.prisma.activityLog.create({
                 data: {
                     username,
@@ -142,13 +141,18 @@ export class AuthService implements OnModuleInit {
             location = 'Local Development';
         } else {
             try {
-                const res = await fetch(`http://ip-api.com/json/${ip}`);
+                // Use HTTPS and a 3-second timeout for geolocation
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 3000);
+                const res = await fetch(`https://ip-api.com/json/${ip}`, { signal: controller.signal });
+                clearTimeout(timeoutId);
                 const data = await res.json();
                 if (data.status === 'success') {
                     location = `${data.city}, ${data.country}`;
                 }
             } catch (e) {
-                console.error('Failed to resolve IP location:', e);
+                // Geolocation is non-critical — silently fall back
+                console.warn('Geolocation lookup failed or timed out');
             }
         }
 

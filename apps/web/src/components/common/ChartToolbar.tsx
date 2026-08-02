@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
+import GlassDatePicker from './GlassDatePicker';
 import {
   Box,
   IconButton,
@@ -215,25 +216,24 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
         <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
           Custom Date Range
         </Typography>
-        <TextField
-          type="date"
+        <GlassDatePicker
           label="Start Date"
           value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-          fullWidth
+          onChange={(e: any) => setStartDate(e.target.value)}
+          InputLabelProps={{ shrink: true }}
           size="small"
           sx={{ mb: 2 }}
-          InputLabelProps={{ shrink: true }}
         />
-        <TextField
-          type="date"
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+          to
+        </Typography>
+        <GlassDatePicker
           label="End Date"
           value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
-          fullWidth
+          onChange={(e: any) => setEndDate(e.target.value)}
+          InputLabelProps={{ shrink: true }}
           size="small"
           sx={{ mb: 2 }}
-          InputLabelProps={{ shrink: true }}
         />
         <Button variant="contained" onClick={handleCustomDateApply} fullWidth>
           Apply

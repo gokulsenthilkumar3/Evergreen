@@ -59,6 +59,8 @@ import { toast } from 'sonner';
 import { SUCCESS_MESSAGES, ERROR_MESSAGES, INFO_MESSAGES, formatApiError } from '../utils/messages';
 import { useConfirm } from '../context/ConfirmContext';
 import { getDateRange as getStandardDateRange, DATE_FILTER_OPTIONS, type DateFilterType } from '../utils/dateFilters';
+import GlassDatePicker from '../components/common/GlassDatePicker';
+
 
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -474,8 +476,8 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
                     </FormControl>
                     {dateFilter === 'custom' && (
                         <>
-                            <TextField type="date" label="From" size="small" value={customFrom} onChange={(e) => setCustomFrom(e.target.value)} InputLabelProps={{ shrink: true }} />
-                            <TextField type="date" label="To" size="small" value={customTo} onChange={(e) => setCustomTo(e.target.value)} InputLabelProps={{ shrink: true }} />
+                            <GlassDatePicker  label="From" size="small" value={customFrom} onChange={(e) => setCustomFrom(e.target.value)} />
+                            <GlassDatePicker  label="To" size="small" value={customTo} onChange={(e) => setCustomTo(e.target.value)} />
                         </>
                     )}
                 </Box>
@@ -801,8 +803,8 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
                         </Select>
                     </FormControl>
 
-                    <TextField
-                        type="date"
+                    <GlassDatePicker
+                        
                         label="Date"
                         fullWidth
                         sx={{ mb: 2 }}
@@ -811,7 +813,6 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
                         inputProps={{
                             min: new Date().toLocaleDateString('en-CA')
                         }}
-                        InputLabelProps={{ shrink: true }}
                     />
 
                     <TextField

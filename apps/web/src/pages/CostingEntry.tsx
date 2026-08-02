@@ -16,6 +16,8 @@ import { useQuery } from '@tanstack/react-query';
 import { useConfirm } from '../context/ConfirmContext';
 import { toast } from 'sonner';
 import { SUCCESS_MESSAGES, ERROR_MESSAGES, CONFIRM_TITLES, CONFIRM_MESSAGES, formatApiError } from '../utils/messages';
+import GlassDatePicker from '../components/common/GlassDatePicker';
+
 
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -370,8 +372,8 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
     return (
         <Box>
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 3 }}>
-                <TextField
-                    type="date"
+                <GlassDatePicker
+                    
                     size="small"
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
@@ -458,9 +460,9 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
                         )}
                         <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 3 }}>
                             <Paper sx={{ p: 2 }}>
-                                <TextField
+                                <GlassDatePicker
                                     label="Production Date"
-                                    type="date"
+                                    
                                     size="small"
                                     value={packagingDate}
                                     onChange={(e) => setPackagingDate(e.target.value)}
@@ -502,9 +504,9 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
 
                         <Paper sx={{ p: 2, bgcolor: 'background.default' }}>
                             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 2 }}>
-                                <TextField
+                                <GlassDatePicker
                                     label="Production Date"
-                                    type="date"
+                                    
                                     size="small"
                                     value={packagingDate}
                                     onChange={(e) => setPackagingDate(e.target.value)}

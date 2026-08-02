@@ -59,6 +59,8 @@ import PaymentStatusChip from '../components/common/PaymentStatusChip';
 import StandardIcons from '../components/common/StandardIcons';
 import ColumnFilters from '../components/common/ColumnFilters';
 import { BulkActions } from '../components/common/BulkActions';
+import GlassDatePicker from '../components/common/GlassDatePicker';
+
 
 // --- Types ---
 interface InvoiceItem {
@@ -155,9 +157,9 @@ const PaymentDialog = ({
             </DialogTitle>
             <DialogContent sx={{ pt: 3 }}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-                    <TextField
+                    <GlassDatePicker
                         label="Payment Date"
-                        type="date"
+                        
                         fullWidth
                         value={paymentData.date}
                         onChange={(e) => setPaymentData({ ...paymentData, date: e.target.value })}
@@ -427,8 +429,8 @@ const InvoiceEditor = ({
                                     error={showErrors && !invoiceData.invoiceNo}
                                     sx={{ width: 150, '& input': { textAlign: 'right', fontWeight: 'bold', color: invoiceData.theme === 'MODERN' ? '#fff' : 'inherit' }, '& label': { color: invoiceData.theme === 'MODERN' ? 'rgba(255,255,255,0.7)' : 'inherit' } }}
                                 />
-                                <TextField
-                                    type="date" size="small" variant="standard"
+                                <GlassDatePicker
+                                     size="small" variant="standard"
                                     value={invoiceData.date}
                                     onChange={(e) => setInvoiceData({ ...invoiceData, date: e.target.value })}
                                     sx={{ width: 150, '& input': { textAlign: 'right', color: invoiceData.theme === 'MODERN' ? '#fff' : 'inherit' } }}

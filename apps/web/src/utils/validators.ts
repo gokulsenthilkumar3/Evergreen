@@ -38,7 +38,10 @@ export const isFutureDate = (dateStr: string): boolean => {
 /** True if an ISO date string is a valid date */
 export const isValidDate = (dateStr: string): boolean => {
     if (!dateStr) return false;
-    const d = new Date(dateStr);
+    // Append T00:00:00 so the date is parsed in local time, not UTC.
+    // Without this, 'YYYY-MM-DD' is treated as UTC midnight, which shifts
+    // the date by -5:30 in IST and causes off-by-one errors.
+    const d = new Date(dateStr.includes('T') ? dateStr : `${dateStr}T00:00:00`);
     return !isNaN(d.getTime());
 };
 

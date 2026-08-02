@@ -33,6 +33,8 @@ import { ResponsiveContainer, LineChart, Line, BarChart, Bar, XAxis, YAxis, Tool
 import api from '../utils/api';
 import { generateExcel } from '../utils/excelGenerator';
 import { generatePDF } from '../utils/pdfGenerator';
+import GlassDatePicker from '../components/common/GlassDatePicker';
+
 
 interface CostingKPI {
     label: string;
@@ -204,16 +206,16 @@ const CostingHistory: React.FC = () => {
 
                     {dateFilter === 'custom' && (
                         <>
-                            <TextField
-                                type="date"
+                            <GlassDatePicker
+                                
                                 label="From"
                                 size="small"
                                 value={customFrom}
                                 onChange={(e) => setCustomFrom(e.target.value)}
                                 InputLabelProps={{ shrink: true }}
                             />
-                            <TextField
-                                type="date"
+                            <GlassDatePicker
+                                
                                 label="To"
                                 size="small"
                                 value={customTo}

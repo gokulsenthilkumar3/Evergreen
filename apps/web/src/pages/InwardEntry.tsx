@@ -59,6 +59,8 @@ import { SUCCESS_MESSAGES, ERROR_MESSAGES, CONFIRM_TITLES, CONFIRM_MESSAGES, for
 import EmptyState from '../components/common/EmptyState';
 import TableSkeleton from '../components/common/TableSkeleton';
 import RequiredLabel from '../components/common/RequiredLabel';
+import GlassDatePicker from '../components/common/GlassDatePicker';
+
 
 interface BatchEntry {
     id: number;
@@ -284,8 +286,8 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                     </FormControl>
                     {dateFilter === 'custom' && (
                         <>
-                            <TextField
-                                type="date"
+                            <GlassDatePicker
+                                
                                 label="From"
                                 size="small"
                                 value={customFrom}
@@ -293,8 +295,8 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                                 InputLabelProps={{ shrink: true }}
                                 sx={{ width: { xs: '100%', sm: 145 } }}
                             />
-                            <TextField
-                                type="date"
+                            <GlassDatePicker
+                                
                                 label="To"
                                 size="small"
                                 value={customTo}

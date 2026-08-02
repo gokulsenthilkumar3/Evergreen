@@ -22,6 +22,7 @@ import {
   ArrowDownward as DescIcon,
   Clear as ClearIcon,
 } from '@mui/icons-material';
+import GlassDatePicker from './GlassDatePicker';
 
 export interface FilterConfig {
   key: string;
@@ -197,14 +198,12 @@ export const ColumnFilters: React.FC<ColumnFilterProps> = ({
                 </Select>
               </FormControl>
             ) : column.type === 'date' ? (
-              <TextField
+              <GlassDatePicker
                 fullWidth
                 size="small"
-                type="date"
                 label={column.label}
                 value={activeFilters[column.key] || ''}
                 onChange={(e) => handleFilterApply(column.key, e.target.value)}
-                InputLabelProps={{ shrink: true }}
               />
             ) : (
               <TextField

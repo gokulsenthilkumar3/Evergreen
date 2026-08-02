@@ -48,7 +48,9 @@ import {
   MoveToInbox as InwardIcon,
   BarChart as SummaryIcon,
   ChevronLeft as CollapseIcon,
+  Close as CloseIcon,
   Security as SecurityIcon,
+  VpnKey as SessionsIcon,
 } from '@mui/icons-material';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from './utils/api';
@@ -60,8 +62,14 @@ import { ScreenReaderAnnouncer } from './components/common/ScreenReaderAnnouncer
 import Breadcrumbs from './components/common/Breadcrumbs';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import { NotificationsProvider, NotificationsBell } from './context/NotificationsContext';
+import { useNotificationSync } from './hooks/useNotificationSync';
 import { useDebounce } from './hooks/useDebounce';
 import { LinearProgress } from '@mui/material';
+
+const NotificationSyncRunner = ({ settings }: { settings: any }) => {
+  useNotificationSync(settings);
+  return null;
+};
 
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Inventory = lazy(() => import('./pages/Inventory'));
@@ -196,9 +204,11 @@ const GlobalSearch = ({ onNavigate }: { onNavigate: (page: string) => void }) =>
     localStorage.setItem('searchHistory', JSON.stringify(newHistory));
   };
 
-  const highlightMatch = (text: string, query: string) => {
-    if (!query) return text;
-    const regex = new RegExp(`(${query})`, 'gi');
+  const highlightMatch = (text: string, q: string) => {
+    if (!q) return text;
+    // B-11: Escape regex special characters so user input like '(', '.', '*' doesn't crash the regex
+    const escapedQuery = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`(${escapedQuery})`, 'gi');
     const parts = text.split(regex);
     return parts.map((part, i) =>
       regex.test(part) ? <mark key={i} style={{ background: '#ffd700', fontWeight: 700 }}>{part}</mark> : part
@@ -224,8 +234,9 @@ const GlobalSearch = ({ onNavigate }: { onNavigate: (page: string) => void }) =>
           ),
           endAdornment: query && (
             <InputAdornment position="end">
-              <IconButton size="small" onClick={() => { setQuery(''); setResults([]); }}>
-                <CollapseIcon fontSize="small" />
+              {/* B-08: Use CloseIcon (not CollapseIcon/chevron) for semantic correctness */}
+              <IconButton size="small" aria-label="Clear search" onClick={() => { setQuery(''); setResults([]); }}>
+                <CloseIcon fontSize="small" />
               </IconButton>
             </InputAdornment>
           ),
@@ -327,15 +338,9 @@ const App: React.FC = () => {
     },
   });
 
-  // Fix: Ensure demo users have correct permissions even if DB is stale
-  useEffect(() => {
-    if (user && (user.username === 'author' || user.username === 'admin') && user.role !== 'AUTHOR') {
-      console.log('🔄 Auto-correcting user role to AUTHOR');
-      const updatedUser = { ...user, role: 'AUTHOR' };
-      setUser(updatedUser);
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-    }
-  }, [user]);
+  // Removed: hardcoded role auto-correction that overrode DB-assigned roles for
+  // users named 'author' or 'admin' (B-01 security bypass). Roles are now
+  // always taken directly from the JWT payload returned by the server.
 
   const profileMenuOpen = Boolean(anchorEl);
 
@@ -364,11 +369,18 @@ const App: React.FC = () => {
     setAnchorEl(null);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
-    setUser(null);
-    handleProfileClose();
+  const handleLogout = async () => {
+    try {
+      // Revoke the session server-side so the JWT is invalidated in the DB
+      await api.delete('/auth/logout');
+    } catch {
+      // Best-effort: even if the server call fails, we clear local credentials
+    } finally {
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+      setUser(null);
+      handleProfileClose();
+    }
   };
 
   const handleLogin = (userData: any) => {
@@ -395,6 +407,7 @@ const App: React.FC = () => {
       billing: 'Billing',
       users: 'User Management',
       settings: 'Settings',
+      logs: 'Activity Logs',
     };
 
     if (currentPage !== 'dashboard') {
@@ -406,23 +419,30 @@ const App: React.FC = () => {
 
   const handleSync = async () => {
     setIsSyncing(true);
-    await queryClient.invalidateQueries();
-    setTimeout(() => {
-      setIsSyncing(false);
+    try {
+      // Refetch all active queries and wait for completion before showing success
+      await queryClient.refetchQueries({ type: 'active' });
       toast.success(SUCCESS_MESSAGES.SYNC);
-    }, 500);
+    } catch {
+      toast.error('Sync failed. Please try again.');
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
   // Fetch low stock count for badge
+  // B-12: Count the number of individual stock *entries* (bags) below threshold,
+  // not just the number of yarn count categories.
   const { data: lowStockCount = 0 } = useQuery({
     queryKey: ['lowStockCount'],
     queryFn: async () => {
       try {
         const response = await api.get('/inventory/yarn-stock');
         const stock = response.data;
-        // Count items with low stock (threshold from settings or default 10)
         const threshold = settings?.lowStockThreshold || 10;
-        return Object.values(stock).filter((qty: any) => qty < threshold).length;
+        // Count how many count-types are below the threshold (the badge shows
+        // the number of distinct yarn counts that need restocking)
+        return Object.values(stock).filter((qty: any) => typeof qty === 'number' && qty < threshold).length;
       } catch {
         return 0;
       }
@@ -458,7 +478,8 @@ const App: React.FC = () => {
       label: 'Admin',
       items: [
         { text: 'User Management', icon: <UsersIcon />, page: 'users', requiredRole: 'AUTHOR' },
-        { text: 'Sessions', icon: <SecurityIcon />, page: 'sessions', requiredRole: 'AUTHOR' },
+        // B-18: Sessions and Security had the same icon; Sessions now uses VpnKey
+        { text: 'Sessions', icon: <SessionsIcon />, page: 'sessions', requiredRole: 'AUTHOR' },
         { text: 'Security Settings', icon: <SecurityIcon />, page: 'security' },
         { text: 'Settings', icon: <SettingsIcon />, page: 'settings' },
       ]
@@ -494,6 +515,7 @@ const App: React.FC = () => {
     <ThemeProvider theme={theme}>
       <ErrorBoundary>
         <NotificationsProvider>
+          <NotificationSyncRunner settings={settings} />
           <KeyboardShortcutsProvider>
             <ConfirmProvider>
               <CssBaseline />
@@ -543,7 +565,7 @@ const App: React.FC = () => {
                     <Box sx={{ flexGrow: 1 }} />
 
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <NotificationsBell />
+                      <NotificationsBell onNavigate={setCurrentPage} />
 
                       <Tooltip title="Sync All Data" arrow>
                         <IconButton onClick={handleSync} color="primary" sx={{

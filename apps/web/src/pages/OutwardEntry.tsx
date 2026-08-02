@@ -46,6 +46,8 @@ import { useConfirm } from '../context/ConfirmContext';
 import { toast } from 'sonner';
 import { SUCCESS_MESSAGES, ERROR_MESSAGES, WARNING_MESSAGES, INFO_MESSAGES, CONFIRM_TITLES, CONFIRM_MESSAGES, formatApiError } from '../utils/messages';
 import EmptyState from '../components/common/EmptyState';
+import GlassDatePicker from '../components/common/GlassDatePicker';
+
 
 interface OutwardItem {
     id: number;
@@ -310,18 +312,18 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
 
                     {filterType === 'custom' && (
                         <>
-                            <TextField
+                            <GlassDatePicker
                                 label="From"
-                                type="date"
+                                
                                 size="small"
                                 value={historyFrom}
                                 onChange={(e) => setHistoryFrom(e.target.value)}
                                 InputLabelProps={{ shrink: true }}
                                 sx={{ width: 140 }}
                             />
-                            <TextField
+                            <GlassDatePicker
                                 label="To"
-                                type="date"
+                                
                                 size="small"
                                 value={historyTo}
                                 onChange={(e) => setHistoryTo(e.target.value)}
@@ -433,9 +435,9 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
                     <Box sx={{ mt: 1 }}>
                         <Grid container spacing={2}>
                             <Grid size={{ xs: 12, sm: 6 }}>
-                                <TextField
+                                <GlassDatePicker
                                     label="Date"
-                                    type="date"
+                                    
                                     fullWidth
                                     value={date}
                                     onChange={(e) => setDate(e.target.value)}

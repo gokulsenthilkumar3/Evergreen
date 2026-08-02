@@ -27,6 +27,8 @@ import api from '../utils/api';
 import { getDateRange, DATE_FILTER_OPTIONS_WITH_ALL, type DateFilterType } from '../utils/dateFilters';
 import { generateExcel } from '../utils/excelGenerator';
 import { generatePDF } from '../utils/pdfGenerator';
+import GlassDatePicker from '../components/common/GlassDatePicker';
+
 
 interface LogEntry {
     id: number;
@@ -162,8 +164,8 @@ const Logs: React.FC<LogsProps> = ({ userRole, username }) => {
                     </TextField>
                     {dateFilter === 'custom' && (
                         <>
-                            <TextField type="date" size="small" label="From" value={customFrom} onChange={(e) => setCustomFrom(e.target.value)} InputLabelProps={{ shrink: true }} sx={{ width: 150 }} />
-                            <TextField type="date" size="small" label="To" value={customTo} onChange={(e) => setCustomTo(e.target.value)} InputLabelProps={{ shrink: true }} sx={{ width: 150 }} />
+                            <GlassDatePicker  size="small" label="From" value={customFrom} onChange={(e) => setCustomFrom(e.target.value)} InputLabelProps={{ shrink: true }} sx={{ width: 150 }} />
+                            <GlassDatePicker  size="small" label="To" value={customTo} onChange={(e) => setCustomTo(e.target.value)} InputLabelProps={{ shrink: true }} sx={{ width: 150 }} />
                         </>
                     )}
                     <TextField

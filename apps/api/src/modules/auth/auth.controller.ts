@@ -1,14 +1,16 @@
-import { Controller, Post, Body, Get, UseGuards, Req, UnauthorizedException } from '@nestjs/common';
+import { Controller, Post, Body, Get, Delete, UseGuards, Req, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { WebAuthnService } from './webauthn.service';
 import { JwtAuthGuard } from '../../guards/jwt-auth.guard';
+import { PrismaService } from '../../services/prisma.service';
 import type { Request } from 'express';
 
 @Controller('auth')
 export class AuthController {
     constructor(
         private authService: AuthService,
-        private webAuthnService: WebAuthnService
+        private webAuthnService: WebAuthnService,
+        private prisma: PrismaService,
     ) { }
 
     @Post('signup')
@@ -29,6 +31,23 @@ export class AuthController {
         const userAgent = req.headers['user-agent'] || 'Unknown';
         
         return this.authService.login(user, { ip, userAgent }, loginDto.totpCode);
+    }
+
+    /**
+     * Revokes the current session in the database (server-side logout).
+     * The client is responsible for removing the token from storage after this call.
+     */
+    @UseGuards(JwtAuthGuard)
+    @Delete('logout')
+    async logout(@Req() req: any) {
+        const sessionId = req.user?.sessionId;
+        if (sessionId) {
+            await this.prisma.session.update({
+                where: { id: sessionId },
+                data: { isValid: false },
+            }).catch(() => { /* session may already be invalid — ignore */ });
+        }
+        return { message: 'Logged out successfully' };
     }
 
     @UseGuards(JwtAuthGuard)
@@ -75,7 +94,6 @@ export class AuthController {
         if (result.verified) {
             const ip = req.ip || req.socket.remoteAddress || 'Unknown';
             const userAgent = req.headers['user-agent'] || 'Unknown';
-            // Assuming no TOTP for passkey login, or we can prompt for it
             return this.authService.login(result.user, { ip, userAgent });
         }
         throw new UnauthorizedException('Passkey verification failed');
