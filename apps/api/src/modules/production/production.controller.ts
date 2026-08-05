@@ -3,20 +3,20 @@ import { ProductionService } from './production.service';
 
 @Controller('production')
 export class ProductionController {
-    constructor(private readonly productionService: ProductionService) { }
+  constructor(private readonly productionService: ProductionService) {}
 
-    @Post()
-    createProductionEntry(@Body() entry: any) {
-        return this.productionService.create(entry);
-    }
+  @Post()
+  createProductionEntry(@Body() entry: any) {
+    return this.productionService.create(entry);
+  }
 
-    @Get()
-    getProductionHistory() {
-        return this.productionService.findAll();
-    }
+  @Get()
+  getProductionHistory() {
+    return this.productionService.findAll();
+  }
 
-    @Delete(':id')
-    deleteProduction(@Param('id') id: string) {
-        return this.productionService.delete(parseInt(id));
-    }
+  @Delete(':id')
+  deleteProduction(@Param('id') id: string) {
+    return this.productionService.delete(parseInt(id));
+  }
 }

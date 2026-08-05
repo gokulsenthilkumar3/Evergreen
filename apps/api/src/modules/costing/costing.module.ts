@@ -3,8 +3,8 @@ import { CostingController } from './costing.controller';
 import { CostingService } from './costing.service';
 
 @Module({
-    controllers: [CostingController],
-    providers: [CostingService],
-    exports: [CostingService],
+  controllers: [CostingController],
+  providers: [CostingService],
+  exports: [CostingService],
 })
-export class CostingModule { }
+export class CostingModule {}

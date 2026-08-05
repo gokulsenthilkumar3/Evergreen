@@ -1,5 +1,5 @@
 import React, { useRef, useMemo, Suspense } from 'react';
-import { Box } from '@mui/material';
+import { Box, useMediaQuery, useTheme } from '@mui/material';
 import { Canvas, useFrame } from '@react-three/fiber';
 import type { RootState, ThreeElements } from '@react-three/fiber';
 import { OrbitControls, Stars, Float, Environment } from '@react-three/drei';
@@ -17,6 +17,7 @@ interface LoginAvatarProps {
     isTyping: boolean;
     isLoading?: boolean;
     hasError?: boolean;
+    compact?: boolean;
 }
 
 // --- CUSTOM IRIDESCENT SHADER ---
@@ -66,20 +67,29 @@ const IridescentMaterial = () => {
 const Character = ({ isPasswordFocused, isLoading, hasError }: Partial<LoginAvatarProps>) => {
     const group = useRef<THREE.Group>(null);
     const eyesRef = useRef<THREE.Group>(null);
+    const theme = useTheme();
+
+    const colors = useMemo(() => ({
+        shell: theme.palette.mode === 'dark' ? '#d1fae5' : '#e6fff4',
+        shellDark: theme.palette.mode === 'dark' ? '#34d399' : '#059669',
+        glow: theme.palette.mode === 'dark' ? '#6ee7b7' : '#10b981',
+        accent: theme.palette.mode === 'dark' ? '#a7f3d0' : '#047857',
+        paper: theme.palette.mode === 'dark' ? '#0f172a' : '#f8fafc',
+    }), [theme.palette.mode]);
 
     useFrame((state: RootState, delta: number) => {
         if (!group.current) return;
         const time = state.clock.getElapsedTime();
 
         // Base idle animation
-        let targetY = Math.sin(time * 0.6) * 0.1 - 0.5;
-        let targetRotY = Math.sin(time * 0.4) * 0.05;
+        let targetY = Math.sin(time * 0.6) * 0.08 - 0.45;
+        let targetRotY = Math.sin(time * 0.4) * 0.035;
 
         // Logic Tweaks
         if (isPasswordFocused) targetY -= 0.2;
         if (hasError) {
-            targetRotY += Math.sin(time * 60) * 0.15;
-            targetY += Math.cos(time * 40) * 0.08;
+            targetRotY += Math.sin(time * 60) * 0.08;
+            targetY += Math.cos(time * 40) * 0.05;
         }
 
         group.current.position.y = THREE.MathUtils.lerp(group.current.position.y, targetY, 0.1);
@@ -110,78 +120,100 @@ const Character = ({ isPasswordFocused, isLoading, hasError }: Partial<LoginAvat
 
     return (
         <group ref={group}>
-            {/* FACE */}
-            <mesh position={[0, 1.7, 0]}>
-                <sphereGeometry args={[0.95, 64, 64]} />
-                <meshStandardMaterial color="#fff2e5" roughness={0.6} metalness={0.05} emissive="#220044" emissiveIntensity={0.1} />
+            {/* YARN SPOOL BODY */}
+            <mesh position={[0, 1.05, 0]} rotation={[Math.PI / 2, 0, 0]}>
+                <cylinderGeometry args={[0.95, 0.82, 2.2, 32, 1]} />
+                <meshStandardMaterial
+                    color={colors.shell}
+                    roughness={0.55}
+                    metalness={0.08}
+                    emissive={colors.shellDark}
+                    emissiveIntensity={0.06}
+                />
             </mesh>
 
-            {/* EYES */}
-            <group ref={eyesRef} position={[0, 1.75, 0.85]}>
-                {/* Left */}
-                <group position={[-0.34, 0, 0]}>
-                    <mesh><sphereGeometry args={[0.16, 32, 32]} /><meshBasicMaterial color="#aa22ff" /></mesh>
-                    <mesh scale={1.6}><sphereGeometry args={[0.16, 24, 24]} /><meshBasicMaterial color="#dd55ff" transparent opacity={0.6} blending={THREE.AdditiveBlending} /></mesh>
+            {/* YARN WRAP */}
+            <mesh position={[0, 1.05, 0]} rotation={[Math.PI / 2, 0, 0]}>
+                <torusGeometry args={[0.78, 0.18, 12, 32]} />
+                <meshStandardMaterial color={colors.glow} roughness={0.35} metalness={0.12} />
+            </mesh>
+
+            <mesh position={[0, 2.15, 0]}>
+                <sphereGeometry args={[0.48, 32, 32]} />
+                <meshStandardMaterial color={colors.accent} roughness={0.35} metalness={0.08} />
+            </mesh>
+
+            {/* EYES / STATUS LIGHTS */}
+            <group ref={eyesRef} position={[0, 1.95, 0.52]}>
+                <group position={[-0.22, 0, 0]}>
+                    <mesh><sphereGeometry args={[0.09, 24, 24]} /><meshBasicMaterial color={colors.paper} /></mesh>
+                    <mesh scale={1.8}><sphereGeometry args={[0.09, 20, 20]} /><meshBasicMaterial color={colors.glow} transparent opacity={0.28} blending={THREE.AdditiveBlending} /></mesh>
                 </group>
-                {/* Right */}
-                <group position={[0.34, 0, 0]}>
-                    <mesh><sphereGeometry args={[0.16, 32, 32]} /><meshBasicMaterial color="#aa22ff" /></mesh>
-                    <mesh scale={1.6}><sphereGeometry args={[0.16, 24, 24]} /><meshBasicMaterial color="#dd55ff" transparent opacity={0.6} blending={THREE.AdditiveBlending} /></mesh>
+                <group position={[0.22, 0, 0]}>
+                    <mesh><sphereGeometry args={[0.09, 24, 24]} /><meshBasicMaterial color={colors.paper} /></mesh>
+                    <mesh scale={1.8}><sphereGeometry args={[0.09, 20, 20]} /><meshBasicMaterial color={colors.glow} transparent opacity={0.28} blending={THREE.AdditiveBlending} /></mesh>
                 </group>
             </group>
 
-            {/* HAIR PARTICLES */}
+            {/* SPOOL BASE */}
+            <mesh position={[0, 0.1, 0]}>
+                <cylinderGeometry args={[1.05, 1.1, 0.32, 32]} />
+                <meshStandardMaterial color={colors.shellDark} roughness={0.45} metalness={0.15} />
+            </mesh>
+
+            {/* LIGHTWEIGHT PARTICLE RING */}
             <points>
                 <bufferGeometry>
-                    <bufferAttribute
-                        attach="attributes-position"
-                        args={[hairPositions, 3]}
-                    />
+                    <bufferAttribute attach="attributes-position" args={[hairPositions, 3]} />
                 </bufferGeometry>
-                <pointsMaterial color="#e8e8ff" size={0.035} transparent opacity={0.8} blending={THREE.AdditiveBlending} />
+                <pointsMaterial color={theme.palette.primary.main} size={0.02} transparent opacity={0.35} blending={THREE.AdditiveBlending} />
             </points>
-
-            {/* JACKET */}
-            <mesh position={[0, 0.9, 0]} rotation={[Math.PI, 0, 0]}>
-                <cylinderGeometry args={[1.4, 1.0, 2.5, 48, 1, true]} />
-                <IridescentMaterial />
-            </mesh>
-
-            {/* INNER SHIRT */}
-            <mesh position={[0, 1.3, 0]}>
-                <cylinderGeometry args={[1.0, 0.85, 1.2, 32]} />
-                <meshStandardMaterial color="#080808" roughness={0.8} />
-            </mesh>
         </group>
     );
 };
 
 const LoginAvatar: React.FC<LoginAvatarProps> = (props: LoginAvatarProps) => {
+    const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
+    const theme = useTheme();
+    const compact = props.compact ?? false;
+
     return (
         <Box
             sx={{
-                width: 280,
-                height: 320,
+                width: compact ? '100%' : 280,
+                height: compact ? 240 : 320,
+                maxWidth: 320,
                 position: 'relative',
                 overflow: 'hidden',
-                borderRadius: '16px',
-                background: 'linear-gradient(180deg, #05000f 0%, #0a001a 100%)',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
-                border: '1px solid rgba(255,255,255,0.1)'
+                borderRadius: '22px',
+                background: (theme) => theme.palette.mode === 'dark'
+                  ? 'radial-gradient(circle at 30% 20%, rgba(16,185,129,0.18), transparent 55%), linear-gradient(180deg, #08111f 0%, #0f172a 100%)'
+                  : 'radial-gradient(circle at 30% 20%, rgba(16,185,129,0.12), transparent 55%), linear-gradient(180deg, #f0fdf4 0%, #dcfce7 100%)',
+                boxShadow: (theme) => theme.palette.mode === 'dark'
+                  ? '0 20px 60px rgba(0,0,0,0.35)'
+                  : '0 18px 45px rgba(5,150,105,0.16)',
+                border: (theme) => `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(5,150,105,0.14)'}`
             }}
         >
-            <Canvas camera={{ position: [0, 1.6, 7], fov: 45 }}>
+            <Canvas
+                camera={{ position: [0, 1.6, 7], fov: 45 }}
+                dpr={[1, compact ? 1.4 : 1.75]}
+                gl={{ antialias: false, alpha: true, powerPreference: 'high-performance' }}
+                frameloop={prefersReducedMotion ? 'demand' : 'always'}
+            >
                 <Suspense fallback={null}>
-                    <color attach="background" args={['#05000f']} />
-                    <fog attach="fog" args={['#0a001a', 2, 20]} />
+                    <color attach="background" args={[theme.palette.mode === 'dark' ? '#0f172a' : '#f0fdf4']} />
+                    <fog attach="fog" args={[theme.palette.mode === 'dark' ? '#0f172a' : '#f0fdf4', 2, 18]} />
 
-                    <ambientLight intensity={0.5} color="#404080" />
-                    <pointLight position={[12, 7, -15]} color="#ff00bb" intensity={8} />
-                    <pointLight position={[-14, 6, -10]} color="#00ccff" intensity={6} />
+                    <ambientLight intensity={1.25} color={theme.palette.primary.light} />
+                    <pointLight position={[8, 7, 6]} color={theme.palette.primary.main} intensity={2.8} />
+                    <pointLight position={[-8, 4, 3]} color={theme.palette.secondary.main} intensity={1.2} />
 
-                    <Stars radius={50} depth={50} count={2000} factor={4} saturation={0} fade speed={1} />
+                    {!prefersReducedMotion && (
+                        <Stars radius={28} depth={28} count={600} factor={2.5} saturation={0} fade speed={0.45} />
+                    )}
 
-                    <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
+                    <Float speed={1.1} rotationIntensity={0.18} floatIntensity={0.18}>
                         <Character {...props} />
                     </Float>
 
@@ -190,10 +222,12 @@ const LoginAvatar: React.FC<LoginAvatarProps> = (props: LoginAvatarProps) => {
                         enableZoom={false}
                         minPolarAngle={Math.PI / 2.5}
                         maxPolarAngle={Math.PI / 1.5}
+                        enableDamping
+                        dampingFactor={0.08}
                         makeDefault
                     />
 
-                    <Environment preset="city" />
+                    <Environment preset={theme.palette.mode === 'dark' ? 'night' : 'studio'} />
                 </Suspense>
             </Canvas>
         </Box>

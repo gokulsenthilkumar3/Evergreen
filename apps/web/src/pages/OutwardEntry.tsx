@@ -47,6 +47,7 @@ import { toast } from 'sonner';
 import { SUCCESS_MESSAGES, ERROR_MESSAGES, WARNING_MESSAGES, INFO_MESSAGES, CONFIRM_TITLES, CONFIRM_MESSAGES, formatApiError } from '../utils/messages';
 import EmptyState from '../components/common/EmptyState';
 import GlassDatePicker from '../components/common/GlassDatePicker';
+import ExportButtons from '../components/common/ExportButtons';
 
 
 interface OutwardItem {
@@ -87,7 +88,7 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
         setHistoryTo(range.to);
     };
 
-    const handleExportAction = (type: 'email' | 'excel' | 'pdf') => {
+    const handleExportAction = (type: 'email' | 'excel' | 'pdf' | 'image') => {
         handleExport(type);
         handleMenuClose();
     };
@@ -251,7 +252,7 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
         }
     };
 
-    const handleExport = (type: 'email' | 'excel' | 'pdf') => {
+    const handleExport = (type: 'email' | 'excel' | 'pdf' | 'image') => {
         const data = outwardHistory || [];
         if (data.length === 0) {
             toast.error(ERROR_MESSAGES.NO_DATA);
@@ -344,33 +345,7 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
 
                     <Divider orientation="vertical" flexItem sx={{ mx: 1, display: { xs: 'none', md: 'block' } }} />
 
-                    <Button
-                        startIcon={<ExportIcon />}
-                        variant="outlined"
-                        color="info"
-                        onClick={handleMenuOpen}
-                        sx={{ borderRadius: '20px', textTransform: 'none' }}
-                    >
-                        Export
-                    </Button>
-                    <Menu
-                        anchorEl={anchorEl}
-                        open={Boolean(anchorEl)}
-                        onClose={handleMenuClose}
-                    >
-                        <MenuItem onClick={() => handleExportAction('email')}>
-                            <ListItemIcon><EmailIcon fontSize="small" /></ListItemIcon>
-                            <ListItemText>Email</ListItemText>
-                        </MenuItem>
-                        <MenuItem onClick={() => handleExportAction('excel')}>
-                            <ListItemIcon><ExcelIcon fontSize="small" /></ListItemIcon>
-                            <ListItemText>Excel</ListItemText>
-                        </MenuItem>
-                        <MenuItem onClick={() => handleExportAction('pdf')}>
-                            <ListItemIcon><PdfIcon fontSize="small" /></ListItemIcon>
-                            <ListItemText>PDF</ListItemText>
-                        </MenuItem>
-                    </Menu>
+                    <ExportButtons onExport={handleExportAction} />
                 </Box>
             </Box>
 

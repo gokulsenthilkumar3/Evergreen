@@ -39,7 +39,6 @@ import {
   TrendingDown as WasteIcon,
   AccountBalanceWallet as CostIcon,
   Receipt as BillingIcon,
-  TrendingUp,
   TrendingUp as OutwardIcon,
   Brightness4 as DarkModeIcon,
   Brightness7 as LightModeIcon,
@@ -47,7 +46,6 @@ import {
   Sync as SyncIcon,
   MoveToInbox as InwardIcon,
   BarChart as SummaryIcon,
-  ChevronLeft as CollapseIcon,
   Close as CloseIcon,
   Security as SecurityIcon,
   VpnKey as SessionsIcon,
@@ -55,6 +53,7 @@ import {
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from './utils/api';
 import getTheme from './theme';
+import type { ThemeName } from './theme';
 import Login from './components/Login';
 import Signup from './components/Signup';
 import { KeyboardShortcutsProvider } from './context/KeyboardShortcutsContext';
@@ -120,7 +119,6 @@ const GlobalSearch = ({ onNavigate }: { onNavigate: (page: string) => void }) =>
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [searchHistory, setSearchHistory] = useState<string[]>(() => {
     const saved = localStorage.getItem('searchHistory');
@@ -145,7 +143,6 @@ const GlobalSearch = ({ onNavigate }: { onNavigate: (page: string) => void }) =>
       setSelectedIndex(-1);
       if (debouncedQuery.length < 2) {
         setResults([]);
-        setAnchorEl(null);
         return;
       }
 
@@ -153,7 +150,6 @@ const GlobalSearch = ({ onNavigate }: { onNavigate: (page: string) => void }) =>
       try {
         const res = await api.get(`/search?q=${debouncedQuery}`);
         setResults(res.data);
-        if (res.data.length > 0) setAnchorEl(document.getElementById('global-search-input'));
       } catch (err) {
         console.error(err);
       } finally {
@@ -192,7 +188,6 @@ const GlobalSearch = ({ onNavigate }: { onNavigate: (page: string) => void }) =>
         break;
       case 'Escape':
         setResults([]);
-        setAnchorEl(null);
         break;
     }
   };
@@ -323,6 +318,8 @@ const App: React.FC = () => {
     }
   });
   const [mode, setMode] = useState<PaletteMode>((localStorage.getItem('themeMode') as PaletteMode) || 'light');
+  const [themeName, setThemeName] = useState<ThemeName>((localStorage.getItem('themeName') as ThemeName) || 'emerald');
+  const [floatingNav, setFloatingNav] = useState<boolean>(() => localStorage.getItem('floatingNav') === 'true');
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [drawerOpen, setDrawerOpen] = useState(true);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -344,11 +341,11 @@ const App: React.FC = () => {
 
   const profileMenuOpen = Boolean(anchorEl);
 
-  const theme = useMemo(() => getTheme(mode), [mode]);
+  const theme = useMemo(() => getTheme(mode, themeName), [mode, themeName]);
 
-  useEffect(() => {
-    localStorage.setItem('themeMode', mode);
-  }, [mode]);
+  useEffect(() => { localStorage.setItem('themeMode', mode); }, [mode]);
+  useEffect(() => { localStorage.setItem('themeName', themeName); }, [themeName]);
+  useEffect(() => { localStorage.setItem('floatingNav', String(floatingNav)); }, [floatingNav]);
 
   // Update document title
   useEffect(() => {
@@ -461,25 +458,25 @@ const App: React.FC = () => {
     {
       label: 'Operations',
       items: [
-        { text: 'Inward / Batch', icon: <InwardIcon />, page: 'inward' },
         { text: 'Inventory', icon: <InventoryIcon />, page: 'inventory', badge: lowStockCount > 0 ? lowStockCount : undefined },
+        { text: 'Inward / Batch', icon: <InwardIcon />, page: 'inward' },
         { text: 'Production', icon: <WasteIcon />, page: 'production' },
         { text: 'Outwards', icon: <OutwardIcon fontSize="small" />, page: 'outward' },
+        { text: 'Costing', icon: <CostIcon />, page: 'costing' },
       ]
     },
     {
       label: 'Finance',
       items: [
-        { text: 'Costing', icon: <CostIcon />, page: 'costing' },
         { text: 'Billing', icon: <BillingIcon />, page: 'billing' },
       ]
     },
     {
       label: 'Admin',
       items: [
-        { text: 'User Management', icon: <UsersIcon />, page: 'users', requiredRole: 'AUTHOR' },
+        { text: 'User Management', icon: <UsersIcon />, page: 'users', requiredRole: 'ADMIN_OR_AUTHOR' },
         // B-18: Sessions and Security had the same icon; Sessions now uses VpnKey
-        { text: 'Sessions', icon: <SessionsIcon />, page: 'sessions', requiredRole: 'AUTHOR' },
+        { text: 'Sessions', icon: <SessionsIcon />, page: 'sessions', requiredRole: 'ADMIN_OR_AUTHOR' },
         { text: 'Security Settings', icon: <SecurityIcon />, page: 'security' },
         { text: 'Settings', icon: <SettingsIcon />, page: 'settings' },
       ]
@@ -522,6 +519,42 @@ const App: React.FC = () => {
               <PrintStyles />
               <ScreenReaderAnnouncer />
               <Toaster position="top-center" richColors />
+              {/* Floating bottom nav pill */}
+              {floatingNav && (
+                <Box className="floating-bottom-nav" component="nav" aria-label="Bottom navigation">
+                  {[
+                    { text: 'Dashboard', icon: <DashboardIcon />, page: 'dashboard' },
+                    { text: 'Inward',    icon: <InwardIcon />,    page: 'inward' },
+                    { text: 'Inventory', icon: <InventoryIcon />, page: 'inventory' },
+                    { text: 'Production',icon: <WasteIcon />,     page: 'production' },
+                    { text: 'Billing',   icon: <BillingIcon />,   page: 'billing' },
+                    { text: 'Settings',  icon: <SettingsIcon />,  page: 'settings' },
+                  ].map(item => {
+                    const active = currentPage === item.page;
+                    return (
+                      <Tooltip key={item.page} title={item.text} arrow placement="top">
+                        <IconButton
+                          onClick={() => setCurrentPage(item.page)}
+                          size="small"
+                          sx={{
+                            width: 44,
+                            height: 44,
+                            borderRadius: '14px',
+                            color: active ? 'primary.main' : 'text.secondary',
+                            bgcolor: active ? (mode === 'dark' ? 'rgba(16,185,129,0.15)' : 'rgba(5,150,105,0.1)') : 'transparent',
+                            transform: active ? 'scale(1.12)' : 'scale(1)',
+                            transition: 'all 0.22s cubic-bezier(0.16,1,0.3,1)',
+                            boxShadow: active ? `0 0 0 3px ${theme.palette.primary.main}33` : 'none',
+                            '&:hover': { bgcolor: mode === 'dark' ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.05)', transform: 'scale(1.08)' },
+                          }}
+                        >
+                          {item.icon}
+                        </IconButton>
+                      </Tooltip>
+                    );
+                  })}
+                </Box>
+              )}
               <Box sx={{
                 display: 'flex',
                 minHeight: '100vh',
@@ -668,7 +701,11 @@ const App: React.FC = () => {
                   )}
                   <Box sx={{ overflow: 'auto', flexGrow: 1, py: 2 }}>
                     {navGroups.map((group, gIdx) => {
-                      const filteredItems = group.items.filter(item => !item.requiredRole || item.requiredRole === user.role);
+                      const filteredItems = group.items.filter(item => {
+                        if (!item.requiredRole) return true;
+                        if (item.requiredRole === 'ADMIN_OR_AUTHOR') return ['AUTHOR', 'ADMIN', 'MODIFIER'].includes(user.role);
+                        return item.requiredRole === user.role;
+                      });
                       if (filteredItems.length === 0) return null;
                       return (
                         <Box key={gIdx}>
@@ -830,7 +867,15 @@ const App: React.FC = () => {
                       {currentPage === 'users' && <UserManagement currentUserRole={user.role} username={user.username} />}
                       {currentPage === 'sessions' && <SessionManagement />}
                       {currentPage === 'security' && <SecuritySettings />}
-                      {currentPage === 'settings' && <Settings username={user.username} />}
+                      {currentPage === 'settings' && (
+                        <Settings
+                          username={user.username}
+                          themeName={themeName}
+                          onThemeChange={setThemeName}
+                          floatingNav={floatingNav}
+                          onFloatingNavChange={setFloatingNav}
+                        />
+                      )}
 
                       {!allPages.includes(currentPage) && (
                         <Box sx={{ p: 4, textAlign: 'center' }}>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import {
     Box,
     Paper,
@@ -24,11 +24,14 @@ import {
     VisibilityOff,
     ArrowForward as ArrowIcon,
     ErrorOutline as ErrorIcon,
-    CheckCircle as CheckCircleIcon
+    CheckCircle as CheckCircleIcon,
+    LockOutlined as LockIcon,
+    AutoAwesome as SparkleIcon
 } from '@mui/icons-material';
 import api from '../utils/api';
-import LoginAvatar from './LoginAvatar';
 import { startAuthentication } from '@simplewebauthn/browser';
+
+const LoginAvatar = lazy(() => import('./LoginAvatar'));
 
 // --- Animations ---
 const shake = keyframes`
@@ -166,6 +169,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings, onSwitchToSignu
                 justifyContent: 'center',
                 position: 'relative',
                 overflow: 'hidden',
+                px: 2,
                 background: theme.palette.mode === 'dark'
                     ? `radial-gradient(circle at 50% 50%, #1e293b 0%, #0f172a 100%)`
                     : `radial-gradient(circle at 50% 50%, #f1f5f9 0%, #e2e8f0 100%)`,
@@ -208,6 +212,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings, onSwitchToSignu
                         zIndex: 1,
                         position: 'relative',
                         backdropFilter: 'blur(20px)',
+                        overflow: 'hidden',
                         bgcolor: theme.palette.mode === 'dark'
                             ? alpha(theme.palette.background.paper, 0.6)
                             : alpha('#ffffff', 0.65),
@@ -229,15 +234,29 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings, onSwitchToSignu
                 >
                     <Box sx={{ animation: `${fadeInUp} 0.6s ease-out forwards`, opacity: 0, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
 
-                        {/* Interactive Avatar - Hidden for now */}
-                        {/* 
-                        <Box sx={{ mt: -4, mb: 2 }}>
-                            <LoginAvatar
-                                isPasswordFocused={showPassword}
-                                isTyping={isTyping}
-                            />
+                        <Box sx={{
+                            width: 64,
+                            height: 64,
+                            borderRadius: '20px',
+                            display: 'grid',
+                            placeItems: 'center',
+                            mb: 2,
+                            bgcolor: alpha(theme.palette.primary.main, 0.1),
+                            color: 'primary.main',
+                            border: `1px solid ${alpha(theme.palette.primary.main, 0.16)}`
+                        }}>
+                            <LockIcon />
                         </Box>
-                        */}
+
+                        <Box sx={{ width: '100%', maxWidth: 320, mb: 2, display: { xs: 'none', sm: 'block' } }}>
+                            <Suspense fallback={<Box sx={{ height: 240, borderRadius: 4, bgcolor: alpha(theme.palette.background.paper, 0.2) }} />}>
+                                <LoginAvatar
+                                    compact
+                                    isPasswordFocused={showPassword}
+                                    isTyping={isTyping}
+                                />
+                            </Suspense>
+                        </Box>
 
                         <Box sx={{ textAlign: 'center', mb: 3 }}>
                             {settings?.logo ? (
@@ -263,8 +282,11 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings, onSwitchToSignu
                     </Box>
 
                     <Box sx={{ width: '100%', mb: 2, animation: `${fadeInUp} 0.6s ease-out 0.2s forwards`, opacity: 0 }}>
-                        <Typography component="h1" variant="h5" sx={{ mb: 2, fontWeight: 700, ml: 1 }}>
+                        <Typography component="h1" variant="h5" sx={{ mb: 0.5, fontWeight: 800, ml: 1 }}>
                             Sign In
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2, ml: 1 }}>
+                            Welcome back. Let’s pick up where you left off.
                         </Typography>
                         <Collapse in={!!error}>
                             <Alert
@@ -300,67 +322,67 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings, onSwitchToSignu
                         {!requiresTotp ? (
                             <>
                                 <TextField
-                            required
-                            fullWidth
-                            id="username"
-                            label="Username"
-                            name="username"
-                            autoComplete="username"
-                            autoFocus
-                            value={username}
-                            onChange={(e) => {
-                                setUsername(e.target.value);
-                                if (error) setError(null);
-                                handleTyping();
-                            }}
-                            variant="outlined"
-                            InputProps={{
-                                sx: {
-                                    borderRadius: 2,
-                                    bgcolor: alpha(theme.palette.background.paper, 0.4),
-                                    transition: 'background-color 0.2s, box-shadow 0.2s',
-                                    '&.Mui-focused': {
-                                        bgcolor: alpha(theme.palette.background.paper, 0.8),
-                                        boxShadow: `0 0 0 4px ${alpha(theme.palette.primary.main, 0.1)}`
-                                    }
-                                }
-                            }}
-                        />
-                        <TextField
-                            required
-                            fullWidth
-                            name="password"
-                            label="Password"
-                            type={showPassword ? 'text' : 'password'}
-                            id="password"
-                            autoComplete="current-password"
-                            value={password}
-                            onChange={(e) => {
-                                setPassword(e.target.value);
-                                if (error) setError(null);
-                                handleTyping();
-                            }}
-                            variant="outlined"
-                            InputProps={{
-                                sx: {
-                                    borderRadius: 2,
-                                    bgcolor: alpha(theme.palette.background.paper, 0.4),
-                                    transition: 'background-color 0.2s, box-shadow 0.2s',
-                                    '&.Mui-focused': {
-                                        bgcolor: alpha(theme.palette.background.paper, 0.8),
-                                        boxShadow: `0 0 0 4px ${alpha(theme.palette.primary.main, 0.1)}`
-                                    }
-                                },
-                                endAdornment: (
-                                    <InputAdornment position="end">
-                                        <IconButton onClick={() => setShowPassword(!showPassword)} edge="end" size="small">
-                                            {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
-                                        </IconButton>
-                                    </InputAdornment>
-                                )
-                            }}
-                        />
-                        </>
+                                    required
+                                    fullWidth
+                                    id="username"
+                                    label="Username"
+                                    name="username"
+                                    autoComplete="username"
+                                    autoFocus
+                                    value={username}
+                                    onChange={(e) => {
+                                        setUsername(e.target.value);
+                                        if (error) setError(null);
+                                        handleTyping();
+                                    }}
+                                    variant="outlined"
+                                    InputProps={{
+                                        sx: {
+                                            borderRadius: 2,
+                                            bgcolor: alpha(theme.palette.background.paper, 0.4),
+                                            transition: 'background-color 0.2s, box-shadow 0.2s',
+                                            '&.Mui-focused': {
+                                                bgcolor: alpha(theme.palette.background.paper, 0.8),
+                                                boxShadow: `0 0 0 4px ${alpha(theme.palette.primary.main, 0.1)}`
+                                            }
+                                        }
+                                    }}
+                                />
+                                <TextField
+                                    required
+                                    fullWidth
+                                    name="password"
+                                    label="Password"
+                                    type={showPassword ? 'text' : 'password'}
+                                    id="password"
+                                    autoComplete="current-password"
+                                    value={password}
+                                    onChange={(e) => {
+                                        setPassword(e.target.value);
+                                        if (error) setError(null);
+                                        handleTyping();
+                                    }}
+                                    variant="outlined"
+                                    InputProps={{
+                                        sx: {
+                                            borderRadius: 2,
+                                            bgcolor: alpha(theme.palette.background.paper, 0.4),
+                                            transition: 'background-color 0.2s, box-shadow 0.2s',
+                                            '&.Mui-focused': {
+                                                bgcolor: alpha(theme.palette.background.paper, 0.8),
+                                                boxShadow: `0 0 0 4px ${alpha(theme.palette.primary.main, 0.1)}`
+                                            }
+                                        },
+                                        endAdornment: (
+                                            <InputAdornment position="end">
+                                                <IconButton onClick={() => setShowPassword(!showPassword)} edge="end" size="small">
+                                                    {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                                                </IconButton>
+                                            </InputAdornment>
+                                        )
+                                    }}
+                                />
+                            </>
                         ) : (
                             <TextField
                                 required
@@ -447,15 +469,23 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings, onSwitchToSignu
                             </Box>
                         </Button>
                         {!requiresTotp && (
-                            <Button
-                                fullWidth
-                                variant="outlined"
-                                onClick={handlePasskeyLogin}
-                                disabled={loading || success}
-                                sx={{ mt: 1, borderRadius: 2, py: 1 }}
-                            >
-                                Sign in with Passkey
-                            </Button>
+                            <>
+                                <Button
+                                    fullWidth
+                                    variant="outlined"
+                                    onClick={handlePasskeyLogin}
+                                    disabled={loading || success}
+                                    sx={{ mt: 1, borderRadius: 2, py: 1.1 }}
+                                >
+                                    Sign in with Passkey
+                                </Button>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, justifyContent: 'center' }}>
+                                    <SparkleIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                                    <Typography variant="caption" color="text.secondary">
+                                        Secure login with biometrics or device passkey
+                                    </Typography>
+                                </Box>
+                            </>
                         )}
                     </Box>
 
@@ -483,7 +513,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings, onSwitchToSignu
                             <Typography variant="body2" sx={{ mb: 0.5 }}>
                                 <strong>First time setup?</strong> A default admin has been created.
                             </Typography>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', bgcolor: 'rgba(0,0,0,0.05)', p: 1, borderRadius: 1, mb: 1 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, bgcolor: 'rgba(0,0,0,0.05)', p: 1, borderRadius: 1, mb: 1, flexWrap: 'wrap' }}>
                                 <Typography variant="caption" sx={{ fontFamily: 'monospace' }}>User: <b>author</b></Typography>
                                 <Typography variant="caption" sx={{ fontFamily: 'monospace' }}>Pass: <b>author123</b></Typography>
                             </Box>

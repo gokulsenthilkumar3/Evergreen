@@ -8,15 +8,15 @@ import { Roles } from '../../decorators/roles.decorator';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('AUTHOR')
 export class SessionsController {
-    constructor(private sessionsService: SessionsService) {}
+  constructor(private sessionsService: SessionsService) {}
 
-    @Get()
-    async getSessions() {
-        return this.sessionsService.findAllSessions();
-    }
+  @Get()
+  async getSessions() {
+    return this.sessionsService.findAllSessions();
+  }
 
-    @Delete(':id/revoke')
-    async revokeSession(@Param('id') id: string) {
-        return this.sessionsService.revokeSession(id);
-    }
+  @Delete(':id/revoke')
+  async revokeSession(@Param('id') id: string) {
+    return this.sessionsService.revokeSession(id);
+  }
 }

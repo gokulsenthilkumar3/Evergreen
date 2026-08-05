@@ -34,6 +34,7 @@ import api from '../utils/api';
 import { generateExcel } from '../utils/excelGenerator';
 import { generatePDF } from '../utils/pdfGenerator';
 import GlassDatePicker from '../components/common/GlassDatePicker';
+import ExportButtons from '../components/common/ExportButtons';
 
 
 interface CostingKPI {
@@ -134,7 +135,7 @@ const CostingHistory: React.FC = () => {
         setDateFilter(event.target.value);
     };
 
-    const handleExport = (type: 'email' | 'excel' | 'pdf') => {
+    const handleExport = (type: 'email' | 'excel' | 'pdf' | 'image') => {
         const data = historyList || [];
         if (data.length === 0) {
             alert('No data to export');
@@ -367,9 +368,7 @@ const CostingHistory: React.FC = () => {
             {viewTab === 1 && (
                 <Paper sx={{ p: 3 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mb: 3 }}>
-                        <Button startIcon={<EmailIcon />} variant="outlined" onClick={() => handleExport('email')}>Email</Button>
-                        <Button startIcon={<ExcelIcon />} variant="outlined" onClick={() => handleExport('excel')}>Excel</Button>
-                        <Button startIcon={<PdfIcon />} variant="outlined" onClick={() => handleExport('pdf')}>PDF</Button>
+                        <ExportButtons onExport={handleExport} />
                     </Box>
 
                     <TableContainer>

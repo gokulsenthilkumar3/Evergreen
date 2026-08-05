@@ -60,6 +60,7 @@ import { SUCCESS_MESSAGES, ERROR_MESSAGES, INFO_MESSAGES, formatApiError } from 
 import { useConfirm } from '../context/ConfirmContext';
 import { getDateRange as getStandardDateRange, DATE_FILTER_OPTIONS, type DateFilterType } from '../utils/dateFilters';
 import GlassDatePicker from '../components/common/GlassDatePicker';
+import ExportButtons from '../components/common/ExportButtons';
 
 
 interface TabPanelProps {
@@ -245,7 +246,7 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
         });
     }, [fullHistory, historyTypeFilter, searchQuery]);
 
-    const handleExport = (type: 'email' | 'excel' | 'pdf') => {
+    const handleExport = (type: 'email' | 'excel' | 'pdf' | 'image') => {
         const dataToExport = filteredFullHistory.map(row => ({
             Date: row.date,
             Type: row.type,
@@ -398,12 +399,16 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                data.map((row) => {
+                                data.map((row, index) => {
                                     const baleCount = isCotton ? (row.bale || 0) : 0;
                                     const bagCount = isYarn ? Math.floor(Math.abs(row.quantity) / 60) : 0;
 
                                     return (
-                                        <TableRow key={row.id}>
+                                        <TableRow 
+                                            key={row.id} 
+                                            className="anim-slide-fade" 
+                                            sx={{ animationDelay: `${Math.min(index * 20, 200)}ms` }}
+                                        >
                                             <TableCell>
                                                 <MuiTooltip title={row.originalDate ? row.originalDate.toLocaleString() : row.date} arrow placement="top">
                                                     <Box component="span" sx={{ cursor: 'help', borderBottom: '1px dotted', borderColor: 'divider' }}>
@@ -493,62 +498,106 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
                 </Tabs>
 
                 <TabPanel value={tabValue} index={0}>
-                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: '1fr 1fr 1fr 1fr' }, gap: 3, mb: 4 }}>
-                        {dashboardData?.kpis?.map((kpi: InventoryKPI, index: number) => (
-                            <Paper
-                                key={index}
-                                sx={{
-                                    p: 3,
-                                    position: 'relative',
-                                    overflow: 'hidden',
-                                    '&:hover': { transform: 'translateY(-4px)' }
-                                }}
-                            >
-                                <Box sx={{ position: 'absolute', top: 0, left: 0, width: '4px', height: '100%', bgcolor: kpi.color }} />
-                                <Typography variant="overline" sx={{ fontWeight: 700, color: 'text.secondary', display: 'block', mb: 1 }}>
-                                    {kpi.label}
-                                </Typography>
-                                <Typography variant="h4" sx={{ fontWeight: 800 }}>
-                                    {kpi.value || '0'}
-                                    {kpi.subValue && (
-                                        <Box component="span" sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.secondary', ml: 1 }}>
-                                            {kpi.subValue}
-                                        </Box>
-                                    )}
-                                </Typography>
-                            </Paper>
-                        )) || (
-                                <Box sx={{ p: 3 }}><Typography>No dashboard stats available.</Typography></Box>
-                            )}
-                    </Box>
+                    {/* ─── KPI Strip ─────────────────────────────────────────── */}
+                    {(() => {
+                        const hist = dashboardData?.history || [];
+                        const totalCottonIn = hist.filter((h: any) => h.type === 'INWARD').reduce((s: number, h: any) => s + (h.quantity || 0), 0);
+                        const totalProcessed = hist.filter((h: any) => h.type === 'PRODUCTION').reduce((s: number, h: any) => s + Math.abs(h.quantity || 0), 0);
+                        const cottonRows = hist.filter((h: any) => h.type === 'INWARD' || h.type === 'PRODUCTION' || h.type === 'OUTWARD' || h.type === 'WASTE');
+                        const latestBalance = cottonRows.length > 0 ? (cottonRows[0]?.balance ?? 0) : 0;
+                        const yarnStock = dashboardData?.yarnStockByCount || [];
+                        const totalYarnKg = yarnStock.reduce((s: number, y: any) => s + (y.kg || y.bags * 60 || 0), 0);
 
+                        const kpiCards = [
+                            { label: 'Cotton Received', value: `${totalCottonIn.toLocaleString('en-IN')} kg`, icon: '📦', gradient: 'linear-gradient(135deg, #059669 0%, #34d399 100%)', shadow: 'rgba(5,150,105,0.3)' },
+                            { label: 'Total Processed', value: `${totalProcessed.toLocaleString('en-IN')} kg`, icon: '⚙️', gradient: 'linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%)', shadow: 'rgba(124,58,237,0.3)' },
+                            { label: 'Cotton Remaining', value: `${Math.max(0, latestBalance).toLocaleString('en-IN')} kg`, icon: '🌿', gradient: 'linear-gradient(135deg, #0284c7 0%, #38bdf8 100%)', shadow: 'rgba(2,132,199,0.3)' },
+                            { label: 'Yarn Stock Total', value: `${totalYarnKg.toLocaleString('en-IN')} kg`, icon: '🧶', gradient: 'linear-gradient(135deg, #d97706 0%, #fbbf24 100%)', shadow: 'rgba(217,119,6,0.3)' },
+                        ];
+
+                        return (
+                            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', lg: '1fr 1fr 1fr 1fr' }, gap: 2.5, mb: 4 }}>
+                                {kpiCards.map((kpi, idx) => (
+                                    <Box
+                                        key={kpi.label}
+                                        className={`anim-slide-up stagger-${idx + 1} perspective-wrap`}
+                                        sx={{ borderRadius: '20px', overflow: 'hidden' }}
+                                    >
+                                        <Box
+                                            className="perspective-inner"
+                                            sx={{
+                                                background: kpi.gradient,
+                                                borderRadius: '20px',
+                                                p: 2.5,
+                                                position: 'relative',
+                                                overflow: 'hidden',
+                                                boxShadow: `0 8px 24px ${kpi.shadow}, inset 0 1px 0 rgba(255,255,255,0.2)`,
+                                                '&:hover': { boxShadow: `0 16px 40px ${kpi.shadow}` },
+                                                transition: 'box-shadow 0.3s ease',
+                                            }}
+                                        >
+                                            {/* Background pattern */}
+                                            <Box sx={{
+                                                position: 'absolute', top: -20, right: -20, width: 100, height: 100,
+                                                borderRadius: '50%', background: 'rgba(255,255,255,0.08)',
+                                            }} />
+                                            <Box sx={{
+                                                position: 'absolute', bottom: -30, right: 10, width: 60, height: 60,
+                                                borderRadius: '50%', background: 'rgba(255,255,255,0.06)',
+                                            }} />
+                                            <Typography sx={{ fontSize: '1.8rem', mb: 0.5, filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }}>
+                                                {kpi.icon}
+                                            </Typography>
+                                            <Typography variant="caption" sx={{
+                                                color: 'rgba(255,255,255,0.8)', fontWeight: 700,
+                                                textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block',
+                                            }}>
+                                                {kpi.label}
+                                            </Typography>
+                                            <Typography variant="h5" sx={{ color: '#fff', fontWeight: 800, mt: 0.5, letterSpacing: '-0.02em' }}>
+                                                {kpi.value}
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+                                ))}
+                            </Box>
+                        );
+                    })()}
+
+                    {/* ─── Charts ─────────────────────────────────────────────── */}
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
                         <Box sx={{ flex: '1 1 100%', minWidth: 500 }}>
-                            <Paper sx={{ p: 3, borderRadius: 2, height: 400 }}>
-                                <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>Yarn Inventory by Count</Typography>
+                            <Paper className="glass-card" sx={{ p: 3, borderRadius: 3, height: 380 }}>
+                                <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>🧶 Yarn Inventory by Count</Typography>
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={dashboardData?.yarnStockByCount || []}>
-                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
-                                        <XAxis dataKey="name" />
-                                        <YAxis />
-                                        <RechartsTooltip />
-                                        <Bar dataKey="bags" fill="#2e7d32" name="Bags in Stock" radius={[4, 4, 0, 0]} />
+                                    <BarChart data={dashboardData?.yarnStockByCount || []} margin={{ bottom: 30 }}>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(148,163,184,0.15)" />
+                                        <XAxis dataKey="name" tick={{ fontWeight: 600, fontSize: 12 }} label={{ value: 'Yarn Count', position: 'insideBottom', offset: -15 }} />
+                                        <YAxis tick={{ fontSize: 11 }} />
+                                        <RechartsTooltip formatter={(v: any) => [`${v} bags`, 'Stock']} />
+                                        <Bar dataKey="bags" fill="url(#yarnGrad)" name="Bags in Stock" radius={[8, 8, 0, 0]} />
+                                        <defs>
+                                            <linearGradient id="yarnGrad" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="0%" stopColor="#059669" />
+                                                <stop offset="100%" stopColor="#34d399" stopOpacity={0.6} />
+                                            </linearGradient>
+                                        </defs>
                                     </BarChart>
                                 </ResponsiveContainer>
                             </Paper>
                         </Box>
                         <Box sx={{ flex: '1 1 calc(50% - 12px)', minWidth: 400 }}>
-                            <Paper sx={{ p: 3, borderRadius: 2, height: 400 }}>
-                                <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>Inward vs Outward Trends</Typography>
+                            <Paper className="glass-card" sx={{ p: 3, borderRadius: 3, height: 380 }}>
+                                <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>📈 Inward vs Outward Trends</Typography>
                                 <ResponsiveContainer width="100%" height="100%">
                                     <LineChart data={dashboardData?.inwardHistory || []}>
-                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
-                                        <XAxis dataKey="date" />
-                                        <YAxis />
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(148,163,184,0.15)" />
+                                        <XAxis dataKey="date" tick={{ fontSize: 11 }} />
+                                        <YAxis tick={{ fontSize: 11 }} />
                                         <RechartsTooltip />
                                         <Legend />
-                                        <Line type="monotone" dataKey="kg" stroke="#ed6c02" name="Inward (kg)" />
-                                        <Line type="monotone" dataKey="outward" stroke="#2e7d32" name="Outward (kg)" />
+                                        <Line type="monotone" dataKey="kg" stroke="#f59e0b" strokeWidth={2.5} name="Inward (kg)" dot={false} />
+                                        <Line type="monotone" dataKey="outward" stroke="#059669" strokeWidth={2.5} name="Outward (kg)" dot={false} />
                                     </LineChart>
                                 </ResponsiveContainer>
                             </Paper>
@@ -712,9 +761,7 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
                             </FormControl>
                         </Box>
                         <Box sx={{ display: 'flex', gap: 2 }}>
-                            <Button startIcon={<EmailIcon />} variant="outlined" color="primary" onClick={() => handleExport('email')}>Email</Button>
-                            <Button startIcon={<ExcelIcon />} variant="outlined" color="primary" onClick={() => handleExport('excel')}>Excel</Button>
-                            <Button startIcon={<PdfIcon />} variant="outlined" color="primary" onClick={() => handleExport('pdf')}>PDF</Button>
+                            <ExportButtons onExport={handleExport} />
                         </Box>
                     </Box>
                     <TableContainer component={Paper} variant="outlined">

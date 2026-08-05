@@ -23,6 +23,7 @@ import {
     Chip,
     CircularProgress,
     Tooltip,
+    TextField as SearchField,
 } from '@mui/material';
 import {
     Add as AddIcon,
@@ -36,6 +37,7 @@ import api from '../utils/api';
 import { useConfirm } from '../context/ConfirmContext';
 import { toast } from 'sonner';
 import { SUCCESS_MESSAGES, ERROR_MESSAGES, formatApiError } from '../utils/messages';
+import { canManageUsers } from '../utils/rbac';
 
 interface User {
     id: number;
@@ -55,6 +57,7 @@ interface UserManagementProps {
 
 const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole, username }) => {
     const queryClient = useQueryClient();
+    const [searchTerm, setSearchTerm] = useState('');
     const [openDialog, setOpenDialog] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
     const { confirm } = useConfirm();
@@ -76,6 +79,20 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole, userna
             return res.data;
         }
     });
+
+    const filteredUsers = users.filter((user: User) => {
+        const term = searchTerm.toLowerCase();
+        return !term ||
+            user.username?.toLowerCase().includes(term) ||
+            user.name?.toLowerCase().includes(term) ||
+            user.email?.toLowerCase().includes(term) ||
+            user.role?.toLowerCase().includes(term);
+    });
+
+    const roleCounts = users.reduce((acc: Record<string, number>, user: User) => {
+        acc[user.role] = (acc[user.role] || 0) + 1;
+        return acc;
+    }, {});
 
     // Create User Mutation
     const createUserMutation = useMutation({
@@ -178,7 +195,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole, userna
         }
     };
 
-    if (currentUserRole !== 'AUTHOR') {
+    if (!canManageUsers(currentUserRole)) {
         return (
             <Box sx={{ p: 4, textAlign: 'center' }}>
                 <SecurityIcon sx={{ fontSize: 60, color: 'text.secondary', mb: 2 }} />
@@ -186,7 +203,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole, userna
                     Access Denied
                 </Typography>
                 <Typography color="text.secondary">
-                    Only Authors (Admins) can access User Management.
+                    Only Authors and Admins can access User Management.
                 </Typography>
             </Box>
         );
@@ -194,21 +211,41 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole, userna
 
     return (
         <Box sx={{ maxWidth: '100%', width: '100%' }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: { xs: 'flex-start', md: 'center' }, flexWrap: 'wrap', gap: 2, mb: 4 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <PersonIcon sx={{ fontSize: 32, color: 'primary.main' }} />
-                    <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-                        User Management
-                    </Typography>
+                    <Box>
+                        <Typography variant="h4" sx={{ fontWeight: 'bold' }}>User Management</Typography>
+                        <Typography variant="body2" color="text.secondary">
+                            Create users, assign roles, and keep permissions tidy.
+                        </Typography>
+                    </Box>
                 </Box>
-                <Button
-                    variant="contained"
-                    startIcon={<AddIcon />}
-                    onClick={() => handleOpenDialog()}
-                    sx={{ borderRadius: 2, px: 3 }}
-                >
-                    Add User
-                </Button>
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                    <SearchField
+                        size="small"
+                        placeholder="Search users..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        sx={{ minWidth: { xs: '100%', sm: 240 } }}
+                    />
+                    <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenDialog()} sx={{ borderRadius: 2, px: 3 }}>
+                        Add User
+                    </Button>
+                </Box>
+            </Box>
+
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2, mb: 3 }}>
+                {[
+                    { label: 'Total Users', value: users.length },
+                    { label: 'Admins', value: roleCounts.AUTHOR || 0 },
+                    { label: 'Viewers', value: roleCounts.VIEWER || 0 },
+                ].map(card => (
+                    <Paper key={card.label} sx={{ p: 2.5 }}>
+                        <Typography variant="caption" color="text.secondary">{card.label}</Typography>
+                        <Typography variant="h4" fontWeight={800}>{card.value}</Typography>
+                    </Paper>
+                ))}
             </Box>
 
             <Paper sx={{ width: '100%', borderRadius: 2, overflow: 'hidden' }}>
@@ -232,14 +269,14 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole, userna
                                         <CircularProgress />
                                     </TableCell>
                                 </TableRow>
-                            ) : users.length === 0 ? (
+                            ) : filteredUsers.length === 0 ? (
                                 <TableRow>
                                     <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
                                         <Typography color="text.secondary">No users found.</Typography>
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                users.map((user: User) => (
+                                filteredUsers.map((user: User) => (
                                     <TableRow key={user.id} hover>
                                         <TableCell>#{user.id}</TableCell>
                                         <TableCell sx={{ fontWeight: 'medium' }}>{user.username}</TableCell>
@@ -341,8 +378,14 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole, userna
                                 </MenuItem>
                                 <MenuItem value="AUTHOR">
                                     <Box>
-                                        <Typography variant="body2" fontWeight="bold">Author (Admin)</Typography>
-                                        <Typography variant="caption" color="text.secondary">Full CRUD Access</Typography>
+                                        <Typography variant="body2" fontWeight="bold">Author</Typography>
+                                        <Typography variant="caption" color="text.secondary">Full CRUD access</Typography>
+                                    </Box>
+                                </MenuItem>
+                                <MenuItem value="ADMIN">
+                                    <Box>
+                                        <Typography variant="body2" fontWeight="bold">Admin</Typography>
+                                        <Typography variant="caption" color="text.secondary">Highest level access</Typography>
                                     </Box>
                                 </MenuItem>
                             </Select>

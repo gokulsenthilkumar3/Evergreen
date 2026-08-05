@@ -3,7 +3,7 @@ import { LogsController } from './logs.controller';
 import { PrismaService } from '../../services/prisma.service';
 
 @Module({
-    controllers: [LogsController],
-    providers: [PrismaService],
+  controllers: [LogsController],
+  providers: [PrismaService],
 })
-export class LogsModule { }
+export class LogsModule {}

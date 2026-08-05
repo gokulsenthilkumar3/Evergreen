@@ -123,6 +123,8 @@ model InwardBatch {
   entryTimestamp DateTime @default(now())
   createdBy    String?
   updatedBy    String?
+  mergedFrom   String?
+  isMerged     Boolean  @default(false)
 }
 
 model Production {
@@ -277,6 +279,14 @@ model Invoice {
   cgst            Float
   sgst            Float
   total           Float
+
+  // Additional Billing Fields
+  issuerSignature String?
+  customerSignature String?
+  authorizedSignatory String?
+  senderName      String?
+  notes           String?
+  terms           String?
 
   // Payment tracking
   status          String        @default("UNPAID")  // UNPAID, PARTIAL, PAID

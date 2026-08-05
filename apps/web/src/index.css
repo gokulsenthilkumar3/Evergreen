@@ -8,6 +8,7 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  color-scheme: light;
 }
 
 body {
@@ -17,46 +18,274 @@ body {
   width: 100%;
   overflow-x: hidden;
   transition: background-color 0.3s ease, color 0.3s ease;
+  background:
+    radial-gradient(circle at top left, rgba(16, 185, 129, 0.08), transparent 36%),
+    radial-gradient(circle at bottom right, rgba(99, 102, 241, 0.08), transparent 28%),
+    #f8fafc;
 }
 
 #root {
   min-height: 100vh;
   width: 100%;
+  max-width: none;
+  padding: 0;
+  text-align: left;
 }
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
-a {
-  text-decoration: none;
-  color: inherit;
-}
+a { text-decoration: none; color: inherit; }
 
-/* Page transitions */
-.page-enter {
-  opacity: 0;
-  transform: translateY(10px);
-}
+/* ─── Page transitions ─────────────────────────────────── */
+.page-enter { opacity: 0; transform: translateY(10px); }
+.page-enter-active { opacity: 1; transform: translateY(0); transition: opacity 300ms, transform 300ms; }
+.page-exit { opacity: 1; }
+.page-exit-active { opacity: 0; transition: opacity 300ms; }
 
-.page-enter-active {
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity 300ms, transform 300ms;
-}
-
-.page-exit {
-  opacity: 1;
-}
-
-.page-exit-active {
-  opacity: 0;
-  transition: opacity 300ms;
-}
-
-/* Custom Scrollbar handled in theme.ts overrides for Material-UI consistency, 
-   but adding fallback here */
+/* ─── Scrollbar ─────────────────────────────────────────── */
 * {
   scrollbar-width: thin;
   scrollbar-color: rgba(148, 163, 184, 0.2) transparent;
+}
+
+/* Webkit browser support (Chrome, Safari, Edge, etc.) */
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: rgba(148, 163, 184, 0.2);
+  border-radius: 3px;
+}
+
+/* ─── Keyframe Animations ───────────────────────────────── */
+@keyframes floatY {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-8px); }
+}
+
+@keyframes slideInUp {
+  from { opacity: 0; transform: translateY(24px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes slideInFade {
+  from { opacity: 0; transform: translateX(-12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeScale {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+  50%       { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0.18); }
+}
+
+@keyframes rotateIn {
+  from { opacity: 0; transform: rotate(-8deg) scale(0.9); }
+  to   { opacity: 1; transform: rotate(0deg) scale(1); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+@keyframes bounceClick {
+  0%, 100% { transform: scale(1); }
+  40%       { transform: scale(0.93); }
+  70%       { transform: scale(1.04); }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes batchPulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.6; }
+}
+
+@keyframes popIn {
+  0%   { transform: scale(0.6) translateY(8px); opacity: 0; }
+  75%  { transform: scale(1.06) translateY(-2px); opacity: 1; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+/* ─── Animation utility classes ─────────────────────────── */
+.anim-float      { animation: floatY     3.5s ease-in-out infinite; }
+.anim-slide-up   { animation: slideInUp  0.45s cubic-bezier(0.16,1,0.3,1) both; }
+.anim-fade-scale { animation: fadeScale  0.35s ease both; }
+.anim-rotate-in  { animation: rotateIn   0.4s ease both; }
+.anim-slide-fade { animation: slideInFade 0.35s ease both; }
+.anim-pulse-glow { animation: pulseGlow  2s ease-in-out infinite; }
+.anim-pop-in     { animation: popIn      0.4s cubic-bezier(0.16,1,0.3,1) both; }
+.spin-icon       { animation: spin       1s linear infinite; }
+
+/* Lazy animation: off by default, JS IntersectionObserver adds .in-view */
+.lazy-anim {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.55s cubic-bezier(0.16,1,0.3,1), transform 0.55s cubic-bezier(0.16,1,0.3,1);
+}
+.lazy-anim.in-view { opacity: 1; transform: translateY(0); }
+
+/* Stagger delays */
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.10s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.20s; }
+.stagger-5 { animation-delay: 0.25s; }
+
+/* ─── Glassmorphism ─────────────────────────────────────── */
+.glass-card {
+  background: rgba(255, 255, 255, 0.55);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  backdrop-filter: blur(18px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.08),
+              inset 0 1px 0 rgba(255,255,255,0.6);
+  border-radius: 16px;
+}
+
+/* Dark mode glass */
+@media (prefers-color-scheme: dark) {
+  .glass-card {
+    background: rgba(30, 41, 59, 0.75);
+    border-color: rgba(255,255,255,0.08);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06);
+  }
+  .clay-card {
+    background: linear-gradient(145deg, #1e293b, #0f172a);
+    box-shadow: 8px 8px 20px rgba(0,0,0,0.45), -4px -4px 12px rgba(255,255,255,0.04), inset 0 1px 2px rgba(255,255,255,0.06);
+  }
+}
+
+/* ─── Claymorphism ──────────────────────────────────────── */
+.clay-card {
+  background: linear-gradient(145deg, #ffffff, #f0fdf4);
+  border-radius: 22px;
+  box-shadow:
+    8px  8px  20px rgba(0,0,0,0.09),
+    -4px -4px 12px rgba(255,255,255,0.95),
+    inset 0 1px 2px rgba(255,255,255,0.85);
+}
+
+/* ─── CSS 3D Perspective Card ───────────────────────────── */
+.perspective-wrap { perspective: 900px; }
+.perspective-inner {
+  transform-style: preserve-3d;
+  transition: transform 0.45s cubic-bezier(0.16,1,0.3,1);
+  will-change: transform;
+}
+.perspective-wrap:hover .perspective-inner {
+  transform: rotateX(3deg) rotateY(-4deg) scale(1.015);
+}
+
+/* ─── Shimmer ────────────────────────────────────────────── */
+.shimmer-bg {
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255,255,255,0.45) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease infinite;
+}
+
+/* ─── Export button brand colors ─────────────────────────── */
+.btn-export-email  { color: #1565c0 !important; border-color: #1565c0 !important; }
+.btn-export-email:hover  { background: rgba(21,101,192,0.07) !important; }
+
+.btn-export-excel  { color: #1b5e20 !important; border-color: #217346 !important; }
+.btn-export-excel:hover  { background: rgba(33,115,70,0.07) !important; }
+
+.btn-export-pdf    { color: #b71c1c !important; border-color: #c62828 !important; }
+.btn-export-pdf:hover    { background: rgba(198,40,40,0.07) !important; }
+
+.btn-export-image  { color: #4a148c !important; border-color: #6a1b9a !important; }
+.btn-export-image:hover  { background: rgba(106,27,154,0.07) !important; }
+
+.btn-export-email:active, .btn-export-excel:active,
+.btn-export-pdf:active,   .btn-export-image:active {
+  animation: bounceClick 0.3s ease;
+}
+
+/* ─── Merged batch badge ─────────────────────────────────── */
+.merged-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  animation: batchPulse 2.5s ease-in-out infinite;
+  box-shadow: 0 2px 8px rgba(99,102,241,0.35);
+  vertical-align: middle;
+  margin-left: 6px;
+}
+
+/* ─── Floating bottom nav ─────────────────────────────────── */
+.floating-bottom-nav {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 12px;
+  border-radius: 40px;
+  z-index: 1200;
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  background: rgba(255,255,255,0.88);
+  border: 1px solid rgba(255,255,255,0.5);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12),
+              0 2px 8px rgba(0,0,0,0.06),
+              inset 0 1px 0 rgba(255,255,255,0.9);
+  animation: slideInUp 0.4s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+@media (max-width: 900px) {
+  .floating-bottom-nav {
+    bottom: 12px;
+    gap: 0;
+    padding: 6px 8px;
+    max-width: calc(100vw - 20px);
+    overflow-x: auto;
+  }
+}
+
+/* Dark mode floating nav */
+@media (prefers-color-scheme: dark) {
+  .floating-bottom-nav {
+    background: rgba(15, 23, 42, 0.88);
+    border-color: rgba(255,255,255,0.1);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+}
+
+/* ─── Neumorphic calendar base (applied via sx overrides in GlassDatePicker) ── */
+.neu-calendar {
+  background: #eef2f7;
+  border-radius: 24px;
+  box-shadow:
+     8px  8px  20px rgba(163,177,198,0.6),
+    -6px -6px  16px rgba(255,255,255,0.95);
+  padding: 20px;
 }

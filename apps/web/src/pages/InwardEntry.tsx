@@ -26,6 +26,7 @@ import {
     InputAdornment,
     LinearProgress,
     Alert,
+    Checkbox,
     type SelectChangeEvent,
 } from '@mui/material';
 import {
@@ -38,6 +39,7 @@ import {
     Add as AddIcon,
     Refresh as RefreshIcon,
     WarningAmber as WarnIcon,
+    MergeType as MergeIcon,
 } from '@mui/icons-material';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -56,10 +58,12 @@ import {
     safeParseFloat,
 } from '../utils/validators';
 import { SUCCESS_MESSAGES, ERROR_MESSAGES, CONFIRM_TITLES, CONFIRM_MESSAGES, formatApiError } from '../utils/messages';
+import { getDateRange as getStandardDateRange, type DateFilterType } from '../utils/dateFilters';
+import GlassDatePicker from '../components/common/GlassDatePicker';
 import EmptyState from '../components/common/EmptyState';
 import TableSkeleton from '../components/common/TableSkeleton';
 import RequiredLabel from '../components/common/RequiredLabel';
-import GlassDatePicker from '../components/common/GlassDatePicker';
+import ExportButtons from '../components/common/ExportButtons';
 
 
 interface BatchEntry {
@@ -70,6 +74,10 @@ interface BatchEntry {
     bale: number;
     kg: number;
     entryTimestamp?: string;
+    remainingKg?: number;
+    remainingBale?: number;
+    mergedFrom?: string;
+    isMerged?: boolean;
 }
 
 interface InwardEntryProps {
@@ -78,12 +86,13 @@ interface InwardEntryProps {
 }
 
 const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
-    const [dateFilter, setDateFilter] = useState<string>('today');
+    const [dateFilter, setDateFilter] = useState<DateFilterType>('today');
     const [customFrom, setCustomFrom] = useState<string>('');
     const [customTo, setCustomTo] = useState<string>('');
     const [openWizard, setOpenWizard] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [touched, setTouched] = useState<Record<string, boolean>>({});
+    const [selectedBatches, setSelectedBatches] = useState<string[]>([]);
 
     const [formData, setFormData] = useState({
         date: new Date().toLocaleDateString('en-CA'),
@@ -95,13 +104,15 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
     const { confirm: confirmDialog } = useConfirm();
     const queryClient = useQueryClient();
 
+    const dateRange = React.useMemo(() => getStandardDateRange(dateFilter, customFrom, customTo), [dateFilter, customFrom, customTo]);
+
     const { data: batchHistory = [], isLoading } = useQuery({
-        queryKey: ['inwardHistory', dateFilter, customFrom, customTo],
+        queryKey: ['inwardHistory', dateRange.from, dateRange.to],
         queryFn: async () => {
             const response = await api.get('/inventory/inward', {
                 params: {
-                    from: dateFilter === 'custom' ? customFrom : undefined,
-                    to: dateFilter === 'custom' ? customTo : undefined
+                    from: dateRange.from,
+                    to: dateRange.to
                 }
             });
             return response.data;
@@ -131,7 +142,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
         return `${y}${m}`;
     };
 
-    const handleDateFilterChange = (event: SelectChangeEvent) => setDateFilter(event.target.value);
+    const handleDateFilterChange = (event: SelectChangeEvent) => setDateFilter(event.target.value as DateFilterType);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -222,7 +233,41 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
         }
     };
 
-    const handleExport = (type: 'email' | 'excel' | 'pdf') => {
+    const handleMergeBatches = async () => {
+        if (selectedBatches.length < 2) {
+            toast.error('Select at least 2 batches to merge');
+            return;
+        }
+
+        const confirmed = await confirmDialog({
+            title: 'Merge Selected Batches',
+            message: `Are you sure you want to merge these ${selectedBatches.length} batches? This will create a new inward batch and zero out their remaining stock.`,
+            confirmText: 'Merge',
+            cancelText: 'Cancel'
+        });
+
+        if (!confirmed) return;
+
+        setIsSubmitting(true);
+        try {
+            await api.post('/inventory/inward/merge', {
+                batchIds: selectedBatches,
+                date: new Date().toLocaleDateString('en-CA'),
+                createdBy: username
+            });
+            toast.success('Batches merged successfully');
+            setSelectedBatches([]);
+            queryClient.invalidateQueries({ queryKey: ['inwardHistory'] });
+            queryClient.invalidateQueries({ queryKey: ['dashboardSummary'] });
+            queryClient.invalidateQueries({ queryKey: ['inventoryHistory'] });
+        } catch (error: any) {
+            toast.error(formatApiError(error, 'Failed to merge batches'));
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleExport = (type: 'email' | 'excel' | 'pdf' | 'image') => {
         const data = batchHistory;
         if (data.length === 0) { toast.error(ERROR_MESSAGES.NO_DATA); return; }
         const filename = `Inward_Batch_Report_${new Date().toLocaleDateString('en-CA')}`;
@@ -287,7 +332,6 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                     {dateFilter === 'custom' && (
                         <>
                             <GlassDatePicker
-                                
                                 label="From"
                                 size="small"
                                 value={customFrom}
@@ -296,7 +340,6 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                                 sx={{ width: { xs: '100%', sm: 145 } }}
                             />
                             <GlassDatePicker
-                                
                                 label="To"
                                 size="small"
                                 value={customTo}
@@ -306,15 +349,29 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                             />
                         </>
                     )}
-                    {(userRole === 'AUTHOR' || userRole === 'MODIFIER') && (
-                        <Button
-                            variant="contained"
-                            startIcon={<AddIcon />}
-                            onClick={() => setOpenWizard(true)}
-                            sx={{ height: 40, width: { xs: '100%', sm: 'auto' } }}
-                        >
-                            Add Batch
-                        </Button>
+                    {(userRole === 'AUTHOR' || userRole === 'MODIFIER' || userRole === 'ADMIN') && (
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                            {selectedBatches.length > 1 && (
+                                <Button
+                                    variant="contained"
+                                    color="secondary"
+                                    startIcon={<MergeIcon />}
+                                    onClick={handleMergeBatches}
+                                    sx={{ height: 40 }}
+                                    disabled={isSubmitting}
+                                >
+                                    Merge ({selectedBatches.length})
+                                </Button>
+                            )}
+                            <Button
+                                variant="contained"
+                                startIcon={<AddIcon />}
+                                onClick={() => setOpenWizard(true)}
+                                sx={{ height: 40, width: { xs: '100%', sm: 'auto' } }}
+                            >
+                                Add Batch
+                            </Button>
+                        </Box>
                     )}
                 </Box>
             </Box>
@@ -361,12 +418,11 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
 
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
                         <Box sx={{ display: 'flex', gap: 2 }}>
-                            <TextField
+                            <GlassDatePicker
                                 label={<RequiredLabel label="Date" required />}
                                 name="date"
-                                type="date"
                                 value={formData.date}
-                                onChange={handleInputChange}
+                                onChange={(e: any) => handleInputChange(e)}
                                 onBlur={() => setTouched(p => ({ ...p, date: true }))}
                                 required
                                 fullWidth
@@ -479,9 +535,12 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                         {isLoading && <LinearProgress sx={{ mt: 1, borderRadius: 1 }} />}
                     </Typography>
                     <Box sx={{ display: 'flex', gap: 1.5 }}>
-                        <Button size="small" startIcon={<EmailIcon />} variant="outlined" onClick={() => handleExport('email')}>Email</Button>
-                        <Button size="small" startIcon={<ExcelIcon />} variant="outlined" onClick={() => handleExport('excel')}>Excel</Button>
-                        <Button size="small" startIcon={<PdfIcon />} variant="outlined" onClick={() => handleExport('pdf')}>PDF</Button>
+                        <ExportButtons
+                            onEmail={() => handleExport('email')}
+                            onExcel={() => handleExport('excel')}
+                            onPdf={() => handleExport('pdf')}
+                            size="small"
+                        />
                     </Box>
                 </Box>
 
@@ -492,12 +551,20 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                         <Table stickyHeader>
                             <TableHead>
                                 <TableRow>
+                                    <TableCell padding="checkbox">
+                                        <Checkbox 
+                                            indeterminate={selectedBatches.length > 0 && selectedBatches.length < batchHistory.length}
+                                            checked={batchHistory.length > 0 && selectedBatches.length === batchHistory.length}
+                                            onChange={(e) => setSelectedBatches(e.target.checked ? batchHistory.map((b: any) => b.batchId) : [])}
+                                        />
+                                    </TableCell>
                                     <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5, bgcolor: 'background.paper' }}>Batch ID</TableCell>
                                     <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5, bgcolor: 'background.paper' }}>Date</TableCell>
                                     <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5, bgcolor: 'background.paper' }}>Supplier</TableCell>
-                                    <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5, bgcolor: 'background.paper' }}>Bales</TableCell>
-                                    <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5, bgcolor: 'background.paper' }}>Weight (kg)</TableCell>
-                                    <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5, bgcolor: 'background.paper' }}>Avg kg/Bale</TableCell>
+                                    <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5, bgcolor: 'background.paper' }}>Orig Bales</TableCell>
+                                    <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5, bgcolor: 'background.paper' }}>Orig Kg</TableCell>
+                                    <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5, bgcolor: 'background.paper' }}>Rem Bales</TableCell>
+                                    <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5, bgcolor: 'background.paper' }}>Rem Kg</TableCell>
                                     <TableCell align="center" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5, bgcolor: 'background.paper' }}>Actions</TableCell>
                                 </TableRow>
                             </TableHead>
@@ -516,11 +583,66 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                                     </TableRow>
                                 ) : (
                                     batchHistory.map((row: BatchEntry) => (
-                                        <TableRow key={row.id} hover sx={{ '&:hover': { bgcolor: 'action.hover' } }}>
+                                        <TableRow
+                                            key={row.id}
+                                            hover
+                                            className="anim-slide-fade"
+                                            sx={{
+                                                '&:hover': { bgcolor: 'action.hover' },
+                                                animationDelay: `${Math.min(0, 0)}ms`,
+                                            }}
+                                            selected={selectedBatches.includes(row.batchId)}
+                                        >
+                                            <TableCell padding="checkbox">
+                                                <Checkbox
+                                                    checked={selectedBatches.includes(row.batchId)}
+                                                    onChange={(e) => {
+                                                        if (e.target.checked) setSelectedBatches([...selectedBatches, row.batchId]);
+                                                        else setSelectedBatches(selectedBatches.filter(id => id !== row.batchId));
+                                                    }}
+                                                />
+                                            </TableCell>
                                             <TableCell>
-                                                <Typography sx={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '0.875rem' }}>
-                                                    {row.batchId}
-                                                </Typography>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
+                                                    <Tooltip 
+                                                        title={row.mergedFrom ? `Merged from: ${row.mergedFrom}` : ''}
+                                                        arrow 
+                                                        placement="top"
+                                                    >
+                                                        <Chip
+                                                            label={row.batchId}
+                                                            size="small"
+                                                            variant="outlined"
+                                                            sx={{
+                                                                fontFamily: 'monospace',
+                                                                fontWeight: 700,
+                                                                fontSize: '0.78rem',
+                                                                letterSpacing: '0.02em',
+                                                                borderRadius: '8px',
+                                                                cursor: 'pointer',
+                                                                borderColor: row.isMerged || row.batchId.startsWith('MB-')
+                                                                    ? 'rgba(99,102,241,0.5)'
+                                                                    : 'divider',
+                                                                color: row.isMerged || row.batchId.startsWith('MB-') ? '#6366f1' : 'text.primary',
+                                                                transition: 'all 0.18s ease',
+                                                                animation: (row.isMerged || row.batchId.startsWith('MB-')) ? 'pulse 2s infinite' : 'none',
+                                                                '@keyframes pulse': {
+                                                                    '0%': { boxShadow: '0 0 0 0 rgba(99,102,241, 0.4)' },
+                                                                    '70%': { boxShadow: '0 0 0 6px rgba(99,102,241, 0)' },
+                                                                    '100%': { boxShadow: '0 0 0 0 rgba(99,102,241, 0)' }
+                                                                },
+                                                                '&:hover': { transform: 'scale(1.04)', boxShadow: '0 2px 8px rgba(0,0,0,0.12)' },
+                                                            }}
+                                                            onClick={() => {
+                                                                navigator.clipboard?.writeText(row.batchId);
+                                                                toast.success(`Batch ID ${row.batchId} copied!`, { duration: 1500 });
+                                                            }}
+                                                        />
+                                                    </Tooltip>
+                                                    {(row.isMerged || row.batchId.startsWith('MB-')) && (
+                                                        <span className="merged-badge">⊕ merged</span>
+                                                    )}
+                                                </Box>
                                             </TableCell>
                                             <TableCell>
                                                 <Tooltip title={`Entry recorded: ${row.entryTimestamp ? new Date(row.entryTimestamp).toLocaleString() : 'N/A'}`} arrow>
@@ -530,15 +652,18 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                                                 </Tooltip>
                                             </TableCell>
                                             <TableCell sx={{ fontWeight: 500 }}>{row.supplier}</TableCell>
-                                            <TableCell align="right">{row.bale}</TableCell>
-                                            <TableCell align="right" sx={{ fontWeight: 600, color: 'success.main' }}>
+                                            <TableCell align="right" sx={{ color: 'text.secondary' }}>{row.bale}</TableCell>
+                                            <TableCell align="right" sx={{ color: 'text.secondary' }}>
                                                 {row.kg?.toLocaleString()} kg
                                             </TableCell>
-                                            <TableCell align="right" sx={{ color: 'text.secondary' }}>
-                                                {row.bale > 0 ? `${(row.kg / row.bale).toFixed(1)} kg` : '—'}
+                                            <TableCell align="right" sx={{ fontWeight: 600 }}>
+                                                {row.remainingBale ?? row.bale}
+                                            </TableCell>
+                                            <TableCell align="right" sx={{ fontWeight: 600, color: 'primary.main' }}>
+                                                {(row.remainingKg ?? row.kg).toLocaleString()} kg
                                             </TableCell>
                                             <TableCell align="center">
-                                                {userRole === 'AUTHOR' && (
+                                                {(userRole === 'AUTHOR' || userRole === 'ADMIN') && (
                                                     <Tooltip title="Delete Batch (Admin only)">
                                                         <IconButton size="small" color="error" onClick={() => handleDeleteBatch(row.id)}>
                                                             <DeleteIcon fontSize="small" />

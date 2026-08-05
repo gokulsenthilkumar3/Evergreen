@@ -16,6 +16,7 @@ import {
     Tooltip,
     Pagination,
     Button,
+    Stack,
 } from '@mui/material';
 import {
     Search as SearchIcon,
@@ -28,6 +29,8 @@ import { getDateRange, DATE_FILTER_OPTIONS_WITH_ALL, type DateFilterType } from 
 import { generateExcel } from '../utils/excelGenerator';
 import { generatePDF } from '../utils/pdfGenerator';
 import GlassDatePicker from '../components/common/GlassDatePicker';
+import ExportButtons from '../components/common/ExportButtons';
+import EmptyState from '../components/common/EmptyState';
 
 
 interface LogEntry {
@@ -110,8 +113,10 @@ const Logs: React.FC<LogsProps> = ({ userRole, username }) => {
 
     const totalPages = Math.ceil(filteredLogs.length / PAGE_SIZE);
     const paginatedLogs = filteredLogs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+    const moduleCount = new Set(filteredLogs.map((log: LogEntry) => log.module)).size;
+    const actionCount = new Set(filteredLogs.map((log: LogEntry) => log.action)).size;
 
-    const handleExport = (type: 'excel' | 'pdf') => {
+    const handleExport = (type: 'email' | 'excel' | 'pdf' | 'image') => {
         if (filteredLogs.length === 0) return;
         const filename = `Audit_Logs_${new Date().toISOString().split('T')[0]}`;
 
@@ -125,7 +130,7 @@ const Logs: React.FC<LogsProps> = ({ userRole, username }) => {
                 log.details || '-',
             ]);
             generatePDF('Audit Logs', headers, rows, filename);
-        } else {
+        } else if (type === 'excel') {
             const excelData = filteredLogs.map((log: LogEntry) => ({
                 Timestamp: new Date(log.timestamp).toLocaleString(),
                 User: log.username || '-',
@@ -134,11 +139,38 @@ const Logs: React.FC<LogsProps> = ({ userRole, username }) => {
                 Details: log.details || '-',
             }));
             generateExcel(excelData, filename);
+        } else {
+             const subject = encodeURIComponent(`Audit Logs Report: ${new Date().toISOString().split('T')[0]}`);
+             const body = encodeURIComponent(`Please find the attached Audit Logs Report.\n\n(Note: Please export and attach the PDF/Excel file manually)`);
+             window.location.href = `mailto:?subject=${subject}&body=${body}`;
         }
     };
 
     return (
         <Box>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 2, flexWrap: 'wrap', mb: 3 }}>
+                <Box>
+                    <Typography variant="h4" fontWeight={800}>Audit Logs</Typography>
+                    <Typography variant="body2" color="text.secondary">
+                        Trace system activity with live, filterable evidence.
+                    </Typography>
+                </Box>
+                <Stack direction="row" spacing={1} flexWrap="wrap">
+                    <Paper sx={{ px: 2, py: 1 }}>
+                        <Typography variant="caption" color="text.secondary">Entries</Typography>
+                        <Typography fontWeight={800}>{filteredLogs.length}</Typography>
+                    </Paper>
+                    <Paper sx={{ px: 2, py: 1 }}>
+                        <Typography variant="caption" color="text.secondary">Modules</Typography>
+                        <Typography fontWeight={800}>{moduleCount}</Typography>
+                    </Paper>
+                    <Paper sx={{ px: 2, py: 1 }}>
+                        <Typography variant="caption" color="text.secondary">Actions</Typography>
+                        <Typography fontWeight={800}>{actionCount}</Typography>
+                    </Paper>
+                </Stack>
+            </Box>
+
             {/* Filters */}
             <Paper sx={{ p: 2, mb: 3 }}>
                 <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -184,8 +216,7 @@ const Logs: React.FC<LogsProps> = ({ userRole, username }) => {
                     >
                         {ACTION_OPTIONS.map(a => <MenuItem key={a} value={a}>{a}</MenuItem>)}
                     </TextField>
-                    <Button variant="outlined" size="small" startIcon={<DownloadIcon />} onClick={() => handleExport('excel')}>Excel</Button>
-                    <Button variant="outlined" size="small" startIcon={<DownloadIcon />} onClick={() => handleExport('pdf')}>PDF</Button>
+                    <ExportButtons onExport={handleExport} />
                 </Box>
             </Paper>
 
@@ -262,7 +293,11 @@ const Logs: React.FC<LogsProps> = ({ userRole, username }) => {
                         ) : (
                             <TableRow>
                                 <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
-                                    <Typography color="text.secondary">No logs found for the selected filters.</Typography>
+                                    <EmptyState
+                                        type="search"
+                                        title="No logs found"
+                                        message="Try a wider date range or clear one of the filters."
+                                    />
                                 </TableCell>
                             </TableRow>
                         )}

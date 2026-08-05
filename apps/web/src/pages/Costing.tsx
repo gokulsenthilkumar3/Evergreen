@@ -96,6 +96,22 @@ const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole 
         },
     });
 
+    const { data: totalProductionKg = 0 } = useQuery({
+        queryKey: ['productionKgForCosting', dateRange.from, dateRange.to],
+        queryFn: async () => {
+            try {
+                const res = await api.get('/production/history', {
+                    params: { from: dateRange.from, to: dateRange.to }
+                });
+                const records = res.data || [];
+                return records.reduce((sum: number, r: any) => {
+                    const items = r.productionItems || r.items || [];
+                    return sum + items.reduce((s: number, it: any) => s + (parseFloat(it.weight) || 0), 0);
+                }, 0);
+            } catch { return 0; }
+        },
+    });
+
     const categories = ['EB (Electricity)', 'Employee', 'Packaging', 'Maintenance', 'Expenses'];
 
     const getFilteredEntries = (category: string) => {
@@ -105,23 +121,29 @@ const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole 
     const kpis: CostingKPI[] = React.useMemo(() => {
         if (!costingData.length) return [
             { label: 'Total Cost', value: '₹0', color: 'primary.main', hasData: false },
-            { label: 'Avg Cost/Kg', value: '₹0', color: 'secondary.main', hasData: false },
+            { label: 'Avg Cost/Kg', value: '—', color: 'secondary.main', hasData: false },
             { label: 'Electricity Cost', value: '₹0', color: 'warning.main', hasData: false },
             { label: 'Labor Cost', value: '₹0', color: 'success.main', hasData: false },
         ];
 
         const totalCost = costingData.reduce((sum: number, item: any) => sum + (parseFloat(item.totalCost || item.amount) || 0), 0);
-        // Assuming we can derive production from somewhere, or just show total costs for now
         const ebCost = costingData.filter((i: any) => i.category === 'EB (Electricity)').reduce((sum: number, item: any) => sum + (parseFloat(item.totalCost || item.amount) || 0), 0);
         const laborCost = costingData.filter((i: any) => i.category === 'Employee').reduce((sum: number, item: any) => sum + (parseFloat(item.totalCost || item.amount) || 0), 0);
+        const avgPerKg = totalProductionKg > 0 ? (totalCost / totalProductionKg) : 0;
 
         return [
-            { label: 'Total Cost', value: `₹${totalCost.toLocaleString()}`, color: 'primary.main', hasData: true },
-            { label: 'Avg Cost/Kg', value: '-', color: 'secondary.main', hasData: true }, // Placeholder
-            { label: 'Electricity Cost', value: `₹${ebCost.toLocaleString()}`, color: 'warning.main', hasData: true },
-            { label: 'Labor Cost', value: `₹${laborCost.toLocaleString()}`, color: 'success.main', hasData: true },
+            { label: 'Total Cost', value: `₹${totalCost.toLocaleString('en-IN')}`, color: 'primary.main', hasData: true },
+            { 
+                label: 'Avg Cost/Kg', 
+                value: avgPerKg > 0 ? `₹${avgPerKg.toFixed(2)}/kg` : '—', 
+                subValue: totalProductionKg > 0 ? `${Number(totalProductionKg).toLocaleString('en-IN')} kg` : 'No production',
+                color: 'secondary.main', 
+                hasData: avgPerKg > 0 
+            },
+            { label: 'Electricity Cost', value: `₹${ebCost.toLocaleString('en-IN')}`, color: 'warning.main', hasData: true },
+            { label: 'Labor Cost', value: `₹${laborCost.toLocaleString('en-IN')}`, color: 'success.main', hasData: true },
         ];
-    }, [costingData]);
+    }, [costingData, totalProductionKg]);
 
     const chartData = React.useMemo(() => {
         if (!costingData.length) return [];

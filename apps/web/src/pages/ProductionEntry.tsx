@@ -28,6 +28,9 @@ import {
     Chip,
     Stack,
     Divider,
+    FormControl,
+    InputLabel,
+    Select,
 } from '@mui/material';
 import {
     Add as AddIcon,
@@ -51,7 +54,8 @@ import { validateDate } from '../utils/validators';
 import EmptyState from '../components/common/EmptyState';
 import TableSkeleton from '../components/common/TableSkeleton';
 import GlassDatePicker from '../components/common/GlassDatePicker';
-
+import ExportButtons from '../components/common/ExportButtons';
+import { getDateRange as getStandardDateRange, DATE_FILTER_OPTIONS_WITH_ALL, type DateFilterType } from '../utils/dateFilters';
 
 interface ConsumptionItem {
     id: number;
@@ -103,10 +107,19 @@ interface ProductionEntryProps {
 
 const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username }) => {
     const queryClient = useQueryClient();
+
+    // Date Filtering State
+    const [dateFilter, setDateFilter] = useState<DateFilterType>('all');
+    const [customFrom, setCustomFrom] = useState<string>('');
+    const [customTo, setCustomTo] = useState<string>('');
+    const dateRange = React.useMemo(() => getStandardDateRange(dateFilter, customFrom, customTo), [dateFilter, customFrom, customTo]);
+
     const { data: recentProduction, refetch: refetchProduction, isLoading } = useQuery({
-        queryKey: ['productionHistory'],
+        queryKey: ['productionHistory', dateRange.from, dateRange.to],
         queryFn: async () => {
-            const response = await api.get('/production');
+            const response = await api.get('/production', {
+                params: { from: dateRange.from, to: dateRange.to }
+            });
             return response.data;
         },
     });
@@ -363,7 +376,7 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
         setDate(new Date().toLocaleDateString('en-CA'));
     };
 
-    const handleExport = (type: 'email' | 'excel' | 'pdf') => {
+    const handleExport = (type: 'email' | 'excel' | 'pdf' | 'image') => {
         const data = recentProduction || [];
         if (data.length === 0) {
             toast.error(ERROR_MESSAGES.NO_DATA);
@@ -405,10 +418,44 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                     Production / Mixing
                     {isLoading && <LinearProgress sx={{ mt: 1, borderRadius: 1 }} />}
                 </Typography>
-                <Box sx={{ display: 'flex', gap: 2 }}>
-                    <Button startIcon={<EmailIcon />} variant="outlined" color="info" onClick={() => handleExport('email')}>Email</Button>
-                    <Button startIcon={<ExcelIcon />} variant="outlined" color="info" onClick={() => handleExport('excel')}>Excel</Button>
-                    <Button startIcon={<PdfIcon />} variant="outlined" color="info" onClick={() => handleExport('pdf')}>PDF</Button>
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <FormControl size="small" sx={{ minWidth: 120 }}>
+                        <InputLabel>Date Filter</InputLabel>
+                        <Select
+                            value={dateFilter}
+                            label="Date Filter"
+                            onChange={(e) => setDateFilter(e.target.value as DateFilterType)}
+                        >
+                            {DATE_FILTER_OPTIONS_WITH_ALL.map(opt => (
+                                <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+
+                    {dateFilter === 'custom' && (
+                        <>
+                            <GlassDatePicker
+                                label="From"
+                                size="small"
+                                value={customFrom}
+                                onChange={(e) => setCustomFrom(e.target.value)}
+                                InputLabelProps={{ shrink: true }}
+                                sx={{ width: 140 }}
+                            />
+                            <GlassDatePicker
+                                label="To"
+                                size="small"
+                                value={customTo}
+                                onChange={(e) => setCustomTo(e.target.value)}
+                                InputLabelProps={{ shrink: true }}
+                                sx={{ width: 140 }}
+                            />
+                        </>
+                    )}
+
+                    <Divider orientation="vertical" flexItem sx={{ mx: 1, display: { xs: 'none', md: 'block' } }} />
+
+                    <ExportButtons onExport={handleExport} />
                     {userRole !== 'VIEWER' && (
                         <Button
                             variant="contained"

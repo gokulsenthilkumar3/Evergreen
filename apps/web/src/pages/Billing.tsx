@@ -16,11 +16,8 @@ import {
     Divider,
     Tooltip,
     Grid,
-    Card,
-    CardContent,
     InputAdornment,
     Chip,
-    Avatar,
     Dialog,
     DialogTitle,
     DialogContent,
@@ -35,30 +32,20 @@ import {
     Print as PrintIcon,
     Search as SearchIcon,
     ArrowBack as ArrowBackIcon,
-    Receipt as ReceiptIcon,
-    AttachMoney as MoneyIcon,
-    TrendingUp as TrendingIcon,
-    Edit as EditIcon,
     Payment as PaymentIcon,
     ExpandMore as ExpandMoreIcon,
     ExpandLess as ExpandLessIcon,
     Share as ShareIcon,
-    Download as DownloadIcon,
 } from '@mui/icons-material';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-// @ts-ignore
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useReactToPrint } from 'react-to-print';
 import api from '../utils/api';
 import { useConfirm } from '../context/ConfirmContext';
 import { toast } from 'sonner';
 import { SUCCESS_MESSAGES, ERROR_MESSAGES, CONFIRM_TITLES, CONFIRM_MESSAGES, formatApiError } from '../utils/messages';
-import EmptyState from '../components/common/EmptyState';
 import TableSkeleton from '../components/common/TableSkeleton';
 import TablePagination from '../components/common/TablePagination';
 import PaymentStatusChip from '../components/common/PaymentStatusChip';
-import StandardIcons from '../components/common/StandardIcons';
-import ColumnFilters from '../components/common/ColumnFilters';
-import { BulkActions } from '../components/common/BulkActions';
 import GlassDatePicker from '../components/common/GlassDatePicker';
 
 
@@ -244,7 +231,7 @@ const InvoiceEditor = ({
     const [showErrors, setShowErrors] = useState(false);
 
     // Form State
-    const [invoiceData, setInvoiceData] = useState({
+    const [invoiceData, setInvoiceData] = useState(() => ({
         invoiceNo: initialData?.invoiceNo || `INV-${Date.now().toString().slice(-6)}`,
         date: initialData?.date || new Date().toLocaleDateString('en-CA'),
         customerName: initialData?.customerName || '',
@@ -253,7 +240,13 @@ const InvoiceEditor = ({
         transportMode: initialData?.transportMode || 'Road',
         vehicleNo: initialData?.vehicleNo || '',
         theme: initialData?.theme || settings?.defaultInvoiceTheme || 'CLASSIC',
-    });
+        notes: initialData?.notes || '',
+        terms: initialData?.terms || '1. All disputes are subject to Coimbatore Jurisdiction.\n2. Goods once sold will not be taken back.',
+        senderName: initialData?.senderName || settings?.companyName || 'EVER GREEN YARN MILLS',
+        authorizedSignatory: initialData?.authorizedSignatory || settings?.companyName || 'EVER GREEN YARN MILLS',
+        issuerSignature: initialData?.issuerSignature || '',
+        customerSignature: initialData?.customerSignature || '',
+    }));
 
     const [items, setItems] = useState<InvoiceItem[]>(initialData?.items || [
         { id: 1, yarnCount: '4', bags: '', weight: '', rate: '' },
@@ -606,14 +599,71 @@ const InvoiceEditor = ({
                         </Box>
                     </Box>
 
-                    {/* Bottom Signatures */}
-                    <Box sx={{ mt: 8, pt: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                        <Box sx={{ borderTop: '1px solid #ccc', px: 2, pt: 1 }}>
-                            <Typography variant="caption" color="text.secondary">Receiver's Signature</Typography>
+                    {/* Notes, Terms & Signatures */}
+                    <Box sx={{ mt: 4, display: 'flex', justifyContent: 'space-between', gap: 4 }}>
+                        <Box sx={{ flex: 1 }}>
+                            <Typography variant="overline" fontWeight="bold">Notes</Typography>
+                            <TextField
+                                fullWidth multiline variant="standard"
+                                value={invoiceData.notes}
+                                onChange={(e) => setInvoiceData({ ...invoiceData, notes: e.target.value })}
+                                placeholder="Enter any notes here..."
+                                sx={{ mb: 2, '& input, & textarea': { fontSize: '0.875rem' }, '@media print': { '& .MuiInput-underline:before': { display: 'none' } } }}
+                            />
+                            <Typography variant="overline" fontWeight="bold">Terms & Conditions</Typography>
+                            <TextField
+                                fullWidth multiline variant="standard"
+                                value={invoiceData.terms}
+                                onChange={(e) => setInvoiceData({ ...invoiceData, terms: e.target.value })}
+                                sx={{ '& input, & textarea': { fontSize: '0.875rem' }, '@media print': { '& .MuiInput-underline:before': { display: 'none' } } }}
+                            />
                         </Box>
-                        <Box sx={{ borderTop: '1px solid #ccc', px: 2, pt: 1, textAlign: 'right' }}>
-                            <Typography variant="caption" color="text.secondary">Authorized Signatory</Typography>
-                            <Typography variant="subtitle2" fontWeight="bold" sx={{ mt: 0.5 }}>{settings?.companyName}</Typography>
+                        
+                        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6, pt: 2 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                                <Box sx={{ borderTop: '1px solid #ccc', px: 2, pt: 1, minWidth: 150 }}>
+                                    <TextField 
+                                        variant="standard" 
+                                        placeholder="Receiver Name" 
+                                        value={invoiceData.customerSignature} 
+                                        onChange={(e) => setInvoiceData({ ...invoiceData, customerSignature: e.target.value })}
+                                        sx={{ width: '100%', '& input': { textAlign: 'center', fontSize: '0.875rem' }, '@media print': { '& .MuiInput-underline:before': { display: 'none' } } }} 
+                                    />
+                                    <Typography variant="caption" color="text.secondary" display="block" textAlign="center">Customer Signature</Typography>
+                                </Box>
+                                <Box sx={{ borderTop: '1px solid #ccc', px: 2, pt: 1, minWidth: 150, textAlign: 'right' }}>
+                                    <TextField 
+                                        variant="standard" 
+                                        placeholder="Issuer Name" 
+                                        value={invoiceData.issuerSignature} 
+                                        onChange={(e) => setInvoiceData({ ...invoiceData, issuerSignature: e.target.value })}
+                                        sx={{ width: '100%', '& input': { textAlign: 'center', fontSize: '0.875rem' }, '@media print': { '& .MuiInput-underline:before': { display: 'none' } } }} 
+                                    />
+                                    <Typography variant="caption" color="text.secondary" display="block" textAlign="center">Issuer Signature</Typography>
+                                </Box>
+                            </Box>
+                            
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                                <Box sx={{ borderTop: '1px solid #ccc', px: 2, pt: 1, minWidth: 150 }}>
+                                    <TextField 
+                                        variant="standard" 
+                                        placeholder="Sender Name" 
+                                        value={invoiceData.senderName} 
+                                        onChange={(e) => setInvoiceData({ ...invoiceData, senderName: e.target.value })}
+                                        sx={{ width: '100%', '& input': { textAlign: 'center', fontSize: '0.875rem' }, '@media print': { '& .MuiInput-underline:before': { display: 'none' } } }} 
+                                    />
+                                    <Typography variant="caption" color="text.secondary" display="block" textAlign="center">Sender</Typography>
+                                </Box>
+                                <Box sx={{ borderTop: '1px solid #ccc', px: 2, pt: 1, minWidth: 150, textAlign: 'right' }}>
+                                    <TextField 
+                                        variant="standard" 
+                                        value={invoiceData.authorizedSignatory} 
+                                        onChange={(e) => setInvoiceData({ ...invoiceData, authorizedSignatory: e.target.value })}
+                                        sx={{ width: '100%', '& input': { textAlign: 'center', fontWeight: 'bold', fontSize: '0.875rem' }, '@media print': { '& .MuiInput-underline:before': { display: 'none' } } }} 
+                                    />
+                                    <Typography variant="caption" color="text.secondary" display="block" textAlign="center">Authorized Signatory</Typography>
+                                </Box>
+                            </Box>
                         </Box>
                     </Box>
                 </Paper>
@@ -628,7 +678,6 @@ const BillingDashboard = ({
     onCreateNew,
     onDelete,
     onAddPayment,
-    username,
     userRole,
     isLoading,
 }: {
@@ -645,11 +694,10 @@ const BillingDashboard = ({
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
     const { confirm: confirmDialog } = useConfirm();
+    const nowMs = useMemo(() => Date.now(), []);
 
-    // Column filters state
-    const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
-    const [activeSort, setActiveSort] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
-    const [selectedIds, setSelectedIds] = useState<string[]>([]);
+    const activeFilters: Record<string, unknown> = {};
+    let activeSort: { key: string; direction: 'asc' | 'desc' } | null = null;
 
     const stats = useMemo(() => {
         const total = invoices.reduce((acc, curr) => acc + (curr.total || 0), 0);
@@ -662,8 +710,14 @@ const BillingDashboard = ({
         return { total, paid, unpaid, count, paidCount, partialCount, unpaidCount };
     }, [invoices]);
 
+    const overdueCount = useMemo(() => invoices.filter(inv => {
+        if (inv.status === 'PAID') return false;
+        const days = Math.floor((nowMs - new Date(inv.date).getTime()) / 86400000);
+        return days > 30;
+    }).length, [invoices, nowMs]);
+
     // Apply filters and sorting
-    let filteredInvoices = invoices.filter(inv => {
+    const filteredInvoices = invoices.filter(inv => {
         // Text search
         const matchesSearch = !searchTerm ||
             inv.invoiceNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -682,61 +736,9 @@ const BillingDashboard = ({
         return matchesSearch && matchesFilters;
     });
 
-    // Apply sorting
-    if (activeSort) {
-        filteredInvoices = [...filteredInvoices].sort((a, b) => {
-            const aVal = a[activeSort.key];
-            const bVal = b[activeSort.key];
-            const comparison = String(aVal).localeCompare(String(bVal));
-            return activeSort.direction === 'asc' ? comparison : -comparison;
-        });
-    }
-
     // Pagination logic
     const totalInvoices = filteredInvoices.length;
     const paginatedInvoices = filteredInvoices.slice().reverse().slice((page - 1) * pageSize, page * pageSize);
-
-    const getStatusColor = (status: string): 'success' | 'warning' | 'error' => {
-        switch (status) {
-            case 'PAID': return 'success';
-            case 'PARTIAL': return 'warning';
-            default: return 'error';
-        }
-    };
-
-    // Filter configuration
-    const filterColumns = [
-        { key: 'invoiceNo', label: 'Invoice No', type: 'text' as const },
-        { key: 'customerName', label: 'Customer', type: 'text' as const },
-        {
-            key: 'status', label: 'Status', type: 'select' as const, options: [
-                { value: 'PAID', label: 'Paid' },
-                { value: 'PARTIAL', label: 'Partial' },
-                { value: 'UNPAID', label: 'Unpaid' },
-            ]
-        },
-        { key: 'date', label: 'Date', type: 'date' as const },
-    ];
-
-    // Bulk action handlers
-    const handleBulkDelete = async (ids: string[]) => {
-        if (!await confirmDialog({
-            title: 'Delete Multiple Invoices',
-            message: `Are you sure you want to delete ${ids.length} invoices?`,
-            severity: 'error',
-            confirmText: 'Delete',
-            cancelText: 'Cancel'
-        })) return;
-
-        for (const id of ids) {
-            await onDelete(id);
-        }
-        setSelectedIds([]);
-    };
-
-    const handleBulkExport = (ids: string[], format: 'excel' | 'pdf' | 'csv') => {
-        toast.success(`Exporting ${ids.length} invoices as ${format.toUpperCase()}`);
-    };
 
     const handleDeletePayment = async (paymentId: number) => {
         if (!await confirmDialog({
@@ -758,60 +760,71 @@ const BillingDashboard = ({
     return (
         <Box>
             {/* Stats Cards */}
-            <Grid container spacing={3} sx={{ mb: 4 }}>
+            <Grid container spacing={2.5} sx={{ mb: 4 }}>
                 <Grid size={{ xs: 12, md: 3 }}>
-                    <Card sx={{ bgcolor: 'primary.main', color: 'primary.contrastText' }}>
-                        <CardContent>
-                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                                <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.2)', mr: 2 }}><MoneyIcon /></Avatar>
-                                <Typography variant="subtitle1">Total Billed</Typography>
-                            </Box>
-                            <Typography variant="h4" fontWeight="bold">₹{stats.total.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</Typography>
-                            <Typography variant="caption" sx={{ opacity: 0.8 }}>{stats.count} invoices</Typography>
-                        </CardContent>
-                    </Card>
+                    <Box className="anim-slide-up stagger-1" sx={{ borderRadius: '20px', overflow: 'hidden' }}>
+                        <Box sx={{
+                            background: 'linear-gradient(135deg, #059669 0%, #34d399 100%)',
+                            borderRadius: '20px', p: 2.5,
+                            boxShadow: '0 8px 24px rgba(5,150,105,0.3), inset 0 1px 0 rgba(255,255,255,0.2)',
+                            position: 'relative', overflow: 'hidden',
+                        }}>
+                            <Box sx={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, borderRadius: '50%', background: 'rgba(255,255,255,0.08)' }} />
+                            <Typography sx={{ fontSize: '1.6rem', mb: 0.5 }}>💰</Typography>
+                            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.8)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block' }}>Total Billed</Typography>
+                            <Typography variant="h4" sx={{ color: '#fff', fontWeight: 800, letterSpacing: '-0.02em' }}>₹{stats.total.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</Typography>
+                            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>{stats.count} invoices</Typography>
+                        </Box>
+                    </Box>
                 </Grid>
                 <Grid size={{ xs: 12, md: 3 }}>
-                    <Card>
-                        <CardContent>
-                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                                <Avatar sx={{ bgcolor: 'success.light', color: 'success.contrastText', mr: 2 }}><TrendingIcon /></Avatar>
-                                <Typography variant="subtitle1">Paid</Typography>
-                            </Box>
-                            <Typography variant="h4" fontWeight="bold" color="success.main">₹{stats.paid.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</Typography>
-                            <Typography variant="caption" color="text.secondary">{stats.paidCount} fully paid</Typography>
-                        </CardContent>
-                    </Card>
+                    <Box className="anim-slide-up stagger-2" sx={{ borderRadius: '20px', overflow: 'hidden' }}>
+                        <Box sx={{
+                            background: 'linear-gradient(135deg, #0284c7 0%, #38bdf8 100%)',
+                            borderRadius: '20px', p: 2.5,
+                            boxShadow: '0 8px 24px rgba(2,132,199,0.3), inset 0 1px 0 rgba(255,255,255,0.2)',
+                            position: 'relative', overflow: 'hidden',
+                        }}>
+                            <Box sx={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, borderRadius: '50%', background: 'rgba(255,255,255,0.08)' }} />
+                            <Typography sx={{ fontSize: '1.6rem', mb: 0.5 }}>✅</Typography>
+                            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.8)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block' }}>Collected</Typography>
+                            <Typography variant="h4" sx={{ color: '#fff', fontWeight: 800, letterSpacing: '-0.02em' }}>₹{stats.paid.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</Typography>
+                            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>{stats.paidCount} fully paid</Typography>
+                        </Box>
+                    </Box>
                 </Grid>
                 <Grid size={{ xs: 12, md: 3 }}>
-                    <Card>
-                        <CardContent>
-                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                                <Avatar sx={{ bgcolor: 'warning.light', color: 'warning.contrastText', mr: 2 }}><PaymentIcon /></Avatar>
-                                <Typography variant="subtitle1">Outstanding</Typography>
-                            </Box>
-                            <Typography variant="h4" fontWeight="bold" color="warning.main">₹{stats.unpaid.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</Typography>
-                            <Typography variant="caption" color="text.secondary">{stats.partialCount} partial, {stats.unpaidCount} unpaid</Typography>
-                        </CardContent>
-                    </Card>
+                    <Box className="anim-slide-up stagger-3" sx={{ borderRadius: '20px', overflow: 'hidden' }}>
+                        <Box sx={{
+                            background: 'linear-gradient(135deg, #d97706 0%, #fbbf24 100%)',
+                            borderRadius: '20px', p: 2.5,
+                            boxShadow: '0 8px 24px rgba(217,119,6,0.3), inset 0 1px 0 rgba(255,255,255,0.2)',
+                            position: 'relative', overflow: 'hidden',
+                        }}>
+                            <Box sx={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, borderRadius: '50%', background: 'rgba(255,255,255,0.08)' }} />
+                            <Typography sx={{ fontSize: '1.6rem', mb: 0.5 }}>⏳</Typography>
+                            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.8)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block' }}>Outstanding</Typography>
+                            <Typography variant="h4" sx={{ color: '#fff', fontWeight: 800, letterSpacing: '-0.02em' }}>₹{stats.unpaid.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</Typography>
+                            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>{stats.partialCount} partial · {stats.unpaidCount} unpaid</Typography>
+                        </Box>
+                    </Box>
                 </Grid>
                 <Grid size={{ xs: 12, md: 3 }}>
-                    <Card>
-                        <CardContent>
-                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                                <Avatar sx={{ bgcolor: 'info.light', color: 'info.contrastText', mr: 2 }}><ReceiptIcon /></Avatar>
-                                <Typography variant="subtitle1">This Month</Typography>
-                            </Box>
-                            <Typography variant="h4" fontWeight="bold">
-                                {invoices.filter(i => {
-                                    const d = new Date(i.date);
-                                    const now = new Date();
-                                    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-                                }).length}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">Invoices this month</Typography>
-                        </CardContent>
-                    </Card>
+                    <Box className="anim-slide-up stagger-4" sx={{ borderRadius: '20px', overflow: 'hidden' }}>
+                        <Box sx={{
+                            background: overdueCount > 0 ? 'linear-gradient(135deg, #dc2626 0%, #f87171 100%)' : 'linear-gradient(135deg, #64748b 0%, #94a3b8 100%)',
+                            borderRadius: '20px', p: 2.5,
+                            boxShadow: `0 8px 24px ${overdueCount > 0 ? 'rgba(220,38,38,0.3)' : 'rgba(100,116,139,0.2)'}, inset 0 1px 0 rgba(255,255,255,0.2)`,
+                            position: 'relative', overflow: 'hidden',
+                            animation: overdueCount > 0 ? 'pulseGlow 2.5s ease-in-out infinite' : 'none',
+                        }}>
+                            <Box sx={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, borderRadius: '50%', background: 'rgba(255,255,255,0.08)' }} />
+                            <Typography sx={{ fontSize: '1.6rem', mb: 0.5 }}>🚨</Typography>
+                            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.8)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block' }}>Overdue (30+ days)</Typography>
+                            <Typography variant="h4" sx={{ color: '#fff', fontWeight: 800, letterSpacing: '-0.02em' }}>{overdueCount}</Typography>
+                            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>{overdueCount === 0 ? 'All cleared ✓' : 'Needs attention'}</Typography>
+                        </Box>
+                    </Box>
                 </Grid>
             </Grid>
 
@@ -858,9 +871,15 @@ const BillingDashboard = ({
                                     paginatedInvoices.map((invoice) => {
                                         const paidPercent = invoice.total > 0 ? Math.min(100, (invoice.amountPaid / invoice.total) * 100) : 0;
                                         const isExpanded = expandedInvoice === invoice.id;
+                                        const daysOld = Math.floor((nowMs - new Date(invoice.date).getTime()) / 86400000);
+                                        const isOverdue = invoice.status !== 'PAID' && daysOld > 30;
+                                        const isVeryOverdue = invoice.status !== 'PAID' && daysOld > 60;
                                         return (
                                             <React.Fragment key={invoice.id}>
-                                                <TableRow hover>
+                                                <TableRow hover sx={{
+                                                    bgcolor: isVeryOverdue ? 'rgba(220,38,38,0.06)' : isOverdue ? 'rgba(234,179,8,0.05)' : 'transparent',
+                                                    borderLeft: isOverdue ? `3px solid ${isVeryOverdue ? '#dc2626' : '#d97706'}` : 'none',
+                                                }}>
                                                     <TableCell>
                                                         <IconButton
                                                             size="small"
@@ -870,7 +889,22 @@ const BillingDashboard = ({
                                                         </IconButton>
                                                     </TableCell>
                                                     <TableCell sx={{ fontWeight: 500 }}>{invoice.invoiceNo}</TableCell>
-                                                    <TableCell>{new Date(invoice.date).toLocaleDateString()}</TableCell>
+                                                    <TableCell>
+                                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                                                            {new Date(invoice.date).toLocaleDateString()}
+                                                            {isOverdue && (
+                                                                <Chip
+                                                                    label={`${daysOld}d overdue`}
+                                                                    size="small"
+                                                                    sx={{
+                                                                        fontSize: '0.65rem', height: 18, fontWeight: 700,
+                                                                        bgcolor: isVeryOverdue ? '#dc2626' : '#d97706',
+                                                                        color: '#fff',
+                                                                    }}
+                                                                />
+                                                            )}
+                                                        </Box>
+                                                    </TableCell>
                                                     <TableCell>{invoice.customerName}</TableCell>
                                                     <TableCell align="right" sx={{ fontWeight: 600 }}>₹{invoice.total?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</TableCell>
                                                     <TableCell align="right" sx={{ color: 'success.main', fontWeight: 500 }}>
@@ -1012,7 +1046,7 @@ const Billing: React.FC<BillingProps> = ({ userRole, username }) => {
     const { confirm } = useConfirm();
 
     // Queries
-    const { data: invoices = [], refetch: refetchInvoices } = useQuery({
+    const { data: invoices = [] } = useQuery({
         queryKey: ['invoices'],
         queryFn: async () => (await api.get('/billing/invoices')).data,
     });

@@ -12,6 +12,9 @@ import {
     Alert,
     Snackbar,
     MenuItem,
+    Avatar,
+    Chip,
+    Divider,
 } from '@mui/material';
 import {
     Save as SaveIcon,
@@ -23,6 +26,7 @@ import api from '../utils/api';
 import { toast } from 'sonner';
 import { ERROR_MESSAGES } from '../utils/messages';
 import { validateRate, validateGST } from '../utils/validators';
+import type { ThemeName } from '../theme';
 
 import Logs from './Logs';
 
@@ -43,9 +47,27 @@ function TabPanel(props: TabPanelProps) {
 
 interface SettingsProps {
     username?: string;
+    themeName?: ThemeName;
+    onThemeChange?: (name: ThemeName) => void;
+    floatingNav?: boolean;
+    onFloatingNavChange?: (val: boolean) => void;
 }
 
-const Settings: React.FC<SettingsProps> = ({ username }) => {
+const THEME_OPTIONS: { name: ThemeName; label: string; color: string; dark?: string }[] = [
+    { name: 'emerald', label: 'Emerald',  color: '#059669', dark: '#34d399' },
+    { name: 'forest',  label: 'Forest',   color: '#2d6a4f', dark: '#52b788' },
+    { name: 'mint',    label: 'Mint',     color: '#00897b', dark: '#4db6ac' },
+    { name: 'sage',    label: 'Sage',     color: '#558b6e', dark: '#87bba2' },
+    { name: 'olive',   label: 'Olive',    color: '#6a7c59', dark: '#9aad84' },
+];
+
+const Settings: React.FC<SettingsProps> = ({
+    username,
+    themeName = 'emerald',
+    onThemeChange,
+    floatingNav = false,
+    onFloatingNavChange,
+}) => {
     const [tabValue, setTabValue] = useState(0);
 
 
@@ -58,6 +80,11 @@ const Settings: React.FC<SettingsProps> = ({ username }) => {
             const res = await api.get('/settings');
             return res.data;
         }
+    });
+
+    const { data: currentUser } = useQuery({
+        queryKey: ['currentUser'],
+        queryFn: async () => (await api.get('/auth/me')).data,
     });
 
     // Company Settings State
@@ -200,21 +227,39 @@ const Settings: React.FC<SettingsProps> = ({ username }) => {
 
     return (
         <Box sx={{ maxWidth: '100%', width: '100%' }}>
-            <Typography variant="h4" fontWeight="bold" sx={{ mb: 3 }}>
-                Settings
-            </Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 2, mb: 3 }}>
+                <Box>
+                    <Typography variant="h4" fontWeight="bold">Settings</Typography>
+                    <Typography color="text.secondary">
+                        Manage profile, security, appearance, and operational defaults.
+                    </Typography>
+                </Box>
+                {currentUser && (
+                    <Paper sx={{ px: 2, py: 1.5, display: 'flex', gap: 1.5, alignItems: 'center' }}>
+                        <Avatar sx={{ bgcolor: 'primary.main' }}>{currentUser.name?.[0] || currentUser.username?.[0] || 'U'}</Avatar>
+                        <Box>
+                            <Typography variant="subtitle2" fontWeight={700}>{currentUser.name || currentUser.username}</Typography>
+                            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                                <Chip label={currentUser.role} size="small" />
+                                <Chip label={currentUser.isTotpEnabled ? '2FA on' : '2FA off'} size="small" color={currentUser.isTotpEnabled ? 'success' : 'default'} />
+                            </Box>
+                        </Box>
+                    </Paper>
+                )}
+            </Box>
 
             <Paper>
                 <Tabs value={tabValue} onChange={(_, newValue) => setTabValue(newValue)} sx={{ px: 2, pt: 1 }}>
                     <Tab label="Company Info" />
                     <Tab label="System Settings" />
                     <Tab label="Rates & Defaults" />
+                    <Tab label="Appearance" />
                     <Tab label="Audit Logs" />
                 </Tabs>
 
                 {/* Company Info Tab */}
                 <TabPanel value={tabValue} index={0}>
-                    <Box sx={{ maxWidth: 600, mx: 'auto' }}>
+                    <Box sx={{ maxWidth: 760, mx: 'auto' }}>
                         <Typography variant="h6" sx={{ mb: 3 }}>
                             Company Information
                         </Typography>
@@ -495,8 +540,134 @@ const Settings: React.FC<SettingsProps> = ({ username }) => {
                     </Box>
                 </TabPanel>
 
-                {/* Audit Logs Tab */}
+                {/* Appearance Tab */}
                 <TabPanel value={tabValue} index={3}>
+                    <Box sx={{ maxWidth: 620 }}>
+                        <Typography variant="h6" fontWeight={800} sx={{ mb: 0.5 }}>Appearance</Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
+                            Customize the look and feel of your EverGreen workspace. Changes apply instantly.
+                        </Typography>
+
+                        {/* Theme Section */}
+                        <Box sx={{ mb: 4 }}>
+                            <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 0.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+                                🎨 Green Theme
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2.5 }}>
+                                5 handcrafted green palettes — pick your vibe
+                            </Typography>
+                            <Box sx={{ display: 'flex', gap: 2.5, flexWrap: 'wrap' }}>
+                                {THEME_OPTIONS.map((opt, idx) => {
+                                    const active = themeName === opt.name;
+                                    return (
+                                        <Box
+                                            key={opt.name}
+                                            className={`anim-slide-up stagger-${idx + 1}`}
+                                            onClick={() => onThemeChange?.(opt.name)}
+                                            sx={{
+                                                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1,
+                                                cursor: 'pointer',
+                                                perspective: '600px',
+                                            }}
+                                        >
+                                            <Box
+                                                sx={{
+                                                    width: 64, height: 64, borderRadius: '20px',
+                                                    background: `linear-gradient(145deg, ${opt.color}, ${opt.dark || opt.color})`,
+                                                    boxShadow: active
+                                                        ? `0 0 0 3px #fff, 0 0 0 5px ${opt.color}, 0 8px 24px ${opt.color}66`
+                                                        : `6px 6px 16px ${opt.color}44, -3px -3px 10px rgba(255,255,255,0.8)`,
+                                                    transform: active ? 'scale(1.15) rotateX(0deg)' : 'scale(1)',
+                                                    transition: 'all 0.3s cubic-bezier(0.16,1,0.3,1)',
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                    '&:hover': {
+                                                        transform: active ? 'scale(1.15)' : 'scale(1.1) rotateX(-5deg) rotateY(5deg)',
+                                                        boxShadow: `0 0 0 2px ${opt.color}55, 0 12px 28px ${opt.color}55`,
+                                                    },
+                                                }}
+                                            >
+                                                {active && (
+                                                    <Box sx={{
+                                                        width: 20, height: 20, borderRadius: '50%',
+                                                        bgcolor: 'rgba(255,255,255,0.9)',
+                                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                        fontSize: '0.75rem',
+                                                    }}>
+                                                        ✓
+                                                    </Box>
+                                                )}
+                                            </Box>
+                                            <Typography
+                                                variant="caption"
+                                                fontWeight={active ? 800 : 500}
+                                                sx={{
+                                                    color: active ? opt.color : 'text.secondary',
+                                                    transition: 'color 0.2s',
+                                                    fontSize: '0.72rem',
+                                                    letterSpacing: active ? '0.05em' : 0,
+                                                }}
+                                            >
+                                                {opt.label}
+                                            </Typography>
+                                        </Box>
+                                    );
+                                })}
+                            </Box>
+                        </Box>
+
+                        {/* Divider */}
+                        <Box sx={{ borderTop: 1, borderColor: 'divider', my: 3 }} />
+
+                        {/* Floating Nav Toggle */}
+                        <Box sx={{ mb: 3 }}>
+                            <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 0.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+                                📱 Navigation Style
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
+                                Choose between sidebar navigation or a floating pill at the bottom
+                            </Typography>
+                            <Box
+                                className="clay-card"
+                                sx={{
+                                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                    p: 2.5,
+                                    transition: 'box-shadow 0.2s',
+                                    '&:hover': { boxShadow: '10px 10px 24px rgba(0,0,0,0.11), -5px -5px 14px rgba(255,255,255,0.97)' },
+                                }}
+                            >
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                    <Box sx={{
+                                        width: 48, height: 48, borderRadius: '14px',
+                                        background: floatingNav
+                                            ? 'linear-gradient(135deg, #059669, #34d399)'
+                                            : 'linear-gradient(135deg, #94a3b8, #cbd5e1)',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        fontSize: '1.4rem',
+                                        transition: 'all 0.3s ease',
+                                        boxShadow: floatingNav ? '0 4px 16px rgba(5,150,105,0.4)' : '0 2px 8px rgba(0,0,0,0.1)',
+                                    }}>
+                                        📱
+                                    </Box>
+                                    <Box>
+                                        <Typography variant="body2" fontWeight={700}>Floating Bottom Navigation</Typography>
+                                        <Typography variant="caption" color="text.secondary">
+                                            {floatingNav ? '✅ Enabled — glassmorphic pill visible at bottom' : 'Show a glassmorphic floating pill at the bottom of the screen'}
+                                        </Typography>
+                                    </Box>
+                                </Box>
+                                <Switch
+                                    checked={floatingNav}
+                                    onChange={(e) => onFloatingNavChange?.(e.target.checked)}
+                                    color="primary"
+                                    sx={{ '& .MuiSwitch-thumb': { boxShadow: '0 2px 6px rgba(0,0,0,0.2)' } }}
+                                />
+                            </Box>
+                        </Box>
+                    </Box>
+                </TabPanel>
+
+                {/* Audit Logs Tab */}
+                <TabPanel value={tabValue} index={4}>
                     <Logs />
                 </TabPanel>
             </Paper>
