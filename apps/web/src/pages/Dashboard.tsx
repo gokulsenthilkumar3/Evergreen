@@ -435,12 +435,20 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
     return (
         <Box sx={{ maxWidth: '100%', width: '100%' }}>
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1.15fr 0.85fr' }, gap: 3, mb: 3 }}>
-                <Paper className="clay-card anim-slide-up" sx={{ p: { xs: 3, md: 4 }, overflow: 'hidden' }}>
+                <Paper className="clay-card anim-slide-up" sx={{ p: { xs: 3, md: 4 }, overflow: 'hidden', position: 'relative' }}>
+                    <Box sx={{
+                        position: 'absolute',
+                        inset: 0,
+                        background: (theme) => theme.palette.mode === 'dark'
+                            ? 'linear-gradient(135deg, rgba(5,150,105,0.08), transparent 45%)'
+                            : 'linear-gradient(135deg, rgba(5,150,105,0.06), transparent 45%)',
+                        pointerEvents: 'none',
+                    }} />
                     <Typography variant="overline" color="primary.main">Overview</Typography>
-                    <Typography variant="h4" fontWeight={900} sx={{ mb: 1 }}>
+                    <Typography variant="h4" fontWeight={900} sx={{ mb: 1, maxWidth: 720 }}>
                         Live operations with a calmer, more premium flow.
                     </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 3, maxWidth: 640 }}>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 3, maxWidth: 640, lineHeight: 1.7 }}>
                         Track inventory, production, costing, and sales from one smooth dashboard with motion that stays light on the CPU.
                     </Typography>
                     <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
@@ -449,7 +457,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                         <Button variant="outlined" onClick={() => navigate('inventory')} startIcon={<InventoryIcon />}>View Stock</Button>
                     </Box>
                 </Paper>
-                <Suspense fallback={<Paper sx={{ minHeight: 260 }} />}>
+                <Suspense fallback={<Paper sx={{ minHeight: 260, borderRadius: 4 }} />}>
                     <DashboardScene />
                 </Suspense>
             </Box>
@@ -460,12 +468,15 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                     position: 'sticky',
                     top: 0,
                     zIndex: 10,
-                    bgcolor: 'background.default',
+                    bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(15,23,42,0.78)' : 'rgba(241,245,249,0.78)',
+                    backdropFilter: 'blur(14px) saturate(180%)',
+                    WebkitBackdropFilter: 'blur(14px) saturate(180%)',
                     pb: 2,
-                    pt: 0.5,
+                    pt: 1,
                     borderBottom: '1px solid',
                     borderColor: 'divider',
                     mb: 4,
+                    borderRadius: 3,
                 }}
             >
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
@@ -516,12 +527,14 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                                     p: 3,
                                     position: 'relative',
                                     overflow: 'hidden',
-                                    transition: 'transform 0.2s, box-shadow 0.2s',
+                                    borderRadius: 4,
+                                    minHeight: 176,
+                                    transition: 'transform 0.24s cubic-bezier(0.16,1,0.3,1), box-shadow 0.24s cubic-bezier(0.16,1,0.3,1)',
                                     '&:hover': {
-                                        transform: 'translateY(-4px)',
+                                        transform: 'translateY(-6px)',
                                         boxShadow: (t) => t.palette.mode === 'dark'
-                                            ? `0 12px 24px -1px rgba(0,0,0,0.4), 0 0 0 1px ${kpi.color}22`
-                                            : `0 12px 24px -1px rgba(0,0,0,0.08), 0 0 0 1px ${kpi.color}22`,
+                                            ? `0 16px 32px -8px rgba(0,0,0,0.45), 0 0 0 1px ${kpi.color}22`
+                                            : `0 16px 32px -10px rgba(0,0,0,0.08), 0 0 0 1px ${kpi.color}22`,
                                     },
                                 }}
                             >
@@ -542,7 +555,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
 
                                 {kpi.hasData ? (
                                     <>
-                                        <Typography variant="h4" sx={{ fontWeight: 800, fontSize: { xs: '1.6rem', md: '2rem' } }}>
+                                        <Typography variant="h4" sx={{ fontWeight: 800, fontSize: { xs: '1.6rem', md: '2rem' }, letterSpacing: '-0.03em' }}>
                                             {kpi.value.split(' ')[0]}
                                             {kpi.value.split(' ').length > 1 && (
                                                 <Box component="span" sx={{ fontSize: '1rem', fontWeight: 500, color: 'text.secondary', ml: 0.5 }}>
@@ -630,7 +643,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             {/* ── Charts Row 1: Production + Cost Breakdown ── */}
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '3fr 2fr' }, gap: 3, mb: 3 }}>
                 {/* Production Trend Area Chart */}
-                <Paper className="clay-card anim-slide-up stagger-2" sx={{ p: 3, position: 'relative' }}>
+                <Paper className="clay-card anim-slide-up stagger-2" sx={{ p: 3, position: 'relative', borderRadius: 4 }}>
                     <Typography variant="h6" fontWeight="bold" mb={0.5}>Production Trend</Typography>
                     <Typography variant="caption" color="text.secondary" display="block" mb={2}>
                         Daily output vs. waste (kg)
@@ -682,7 +695,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                 </Paper>
 
                 {/* Cost by Category Donut Chart */}
-                <Paper className="clay-card anim-slide-up stagger-3" sx={{ p: 3, position: 'relative' }}>
+                <Paper className="clay-card anim-slide-up stagger-3" sx={{ p: 3, position: 'relative', borderRadius: 4 }}>
                     <Typography variant="h6" fontWeight="bold" mb={0.5}>Cost Breakdown</Typography>
                     <Typography variant="caption" color="text.secondary" display="block" mb={2}>
                         By category for selected period
@@ -742,7 +755,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             {/* ── Charts Row 2: Cost Trend + Yarn Stock ── */}
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '5fr 4fr' }, gap: 3, mb: 3 }}>
                 {/* Stacked Cost Trend Bar Chart */}
-                <Paper className="clay-card anim-slide-up stagger-4" sx={{ p: 3, position: 'relative' }}>
+                <Paper className="clay-card anim-slide-up stagger-4" sx={{ p: 3, position: 'relative', borderRadius: 4 }}>
                     <Typography variant="h6" fontWeight="bold" mb={0.5}>Cost Trend</Typography>
                     <Typography variant="caption" color="text.secondary" display="block" mb={2}>
                         Daily cost breakdown by category
@@ -776,7 +789,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                 </Paper>
 
                 {/* Yarn Stock by Count — bars turn red when below threshold */}
-                <Paper className="clay-card anim-slide-up stagger-5" sx={{ p: 3, position: 'relative' }}>
+                <Paper className="clay-card anim-slide-up stagger-5" sx={{ p: 3, position: 'relative', borderRadius: 4 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 0.5 }}>
                         <Typography variant="h6" fontWeight="bold">Yarn Stock</Typography>
                         {yarnStockData.some(d => d.low) && (
@@ -816,7 +829,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             </Box>
 
             {/* ── Recent Activity ── */}
-            <Paper className="clay-card anim-slide-up stagger-1" sx={{ p: 3, position: 'relative', mt: 2 }}>
+            <Paper className="clay-card anim-slide-up stagger-1" sx={{ p: 3, position: 'relative', mt: 2, borderRadius: 4 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <TimeIcon color="action" fontSize="small" />

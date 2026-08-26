@@ -24,6 +24,8 @@ import {
     DialogActions,
     LinearProgress,
     Collapse,
+    Tabs,
+    Tab,
 } from '@mui/material';
 import {
     Add as AddIcon,
@@ -47,6 +49,58 @@ import TableSkeleton from '../components/common/TableSkeleton';
 import TablePagination from '../components/common/TablePagination';
 import PaymentStatusChip from '../components/common/PaymentStatusChip';
 import GlassDatePicker from '../components/common/GlassDatePicker';
+import CreditNotes from '../components/billing/CreditNotes';
+import EInvoices from '../components/billing/EInvoices';
+import Subscriptions from '../components/billing/Subscriptions';
+import PurchaseOrders from '../components/billing/PurchaseOrders';
+import DebitNotes from '../components/billing/DebitNotes';
+import Quotations from '../components/billing/Quotations';
+import PackingLists from '../components/billing/PackingLists';
+import DeliveryChallans from '../components/billing/DeliveryChallans';
+import ProformaInvoices from '../components/billing/ProformaInvoices';
+import SalesOrders from '../components/billing/SalesOrders';
+import Expenses from '../components/billing/Expenses';
+import IndirectIncomes from '../components/billing/IndirectIncomes';
+import ProductsServices from '../components/billing/ProductsServices';
+import BarcodeOptions from '../components/billing/BarcodeOptions';
+import DeletedView from '../components/billing/DeletedView';
+import Category from '../components/billing/Category';
+import Group from '../components/billing/Group';
+import Pricelists from '../components/billing/Pricelists';
+import ExpiryDatesBatches from '../components/billing/ExpiryDatesBatches';
+
+// --- Sub-Tab Config ---
+const BILLING_TABS = [
+    // Sales Documents
+    { label: 'Invoices', group: 'Sales' },
+    { label: 'Credit Notes', group: 'Sales' },
+    { label: 'E-Invoices', group: 'Sales' },
+    { label: 'Subscriptions', group: 'Sales' },
+    { label: 'Purchase Orders', group: 'Sales' },
+    { label: 'Debit Notes', group: 'Sales' },
+    { label: 'Quotations', group: 'Sales' },
+    { label: 'Packing Lists', group: 'Sales' },
+    { label: 'Delivery Challans', group: 'Sales' },
+    { label: 'Proforma Invoices', group: 'Sales' },
+    { label: 'Sales Orders', group: 'Sales' },
+    // Expenses/Income
+    { label: 'Expenses', group: 'Expenses' },
+    { label: 'Indirect Incomes', group: 'Expenses' },
+    // Catalogue
+    { label: 'Products & Services', group: 'Catalogue' },
+    { label: 'Barcode Options', group: 'Catalogue' },
+    { label: 'Deleted View', group: 'Catalogue' },
+    { label: 'Category', group: 'Catalogue' },
+    { label: 'Group', group: 'Catalogue' },
+    { label: 'Pricelists', group: 'Catalogue' },
+    { label: 'Expiry Dates & Batches', group: 'Catalogue' },
+];
+
+const GROUP_COLORS: Record<string, string> = {
+    Sales: '#059669',
+    Expenses: '#dc2626',
+    Catalogue: '#7c3aed',
+};
 
 
 // --- Types ---
@@ -1046,7 +1100,7 @@ const Billing: React.FC<BillingProps> = ({ userRole, username }) => {
     const { confirm } = useConfirm();
 
     // Queries
-    const { data: invoices = [] } = useQuery({
+    const { data: invoices = [], isLoading: invoicesLoading } = useQuery({
         queryKey: ['invoices'],
         queryFn: async () => (await api.get('/billing/invoices')).data,
     });
@@ -1060,6 +1114,20 @@ const Billing: React.FC<BillingProps> = ({ userRole, username }) => {
         queryKey: ['yarnStock'],
         queryFn: async () => (await api.get('/inventory/yarn-stock')).data,
     });
+
+    const billingStats = useMemo(() => {
+        const total = invoices.reduce((acc: number, curr: any) => acc + (curr.total || 0), 0);
+        const collected = invoices.reduce((acc: number, curr: any) => acc + (curr.amountPaid || 0), 0);
+        const outstanding = total - collected;
+        const overdue = invoices.filter((inv: any) => inv.status !== 'PAID' && Math.floor((Date.now() - new Date(inv.date).getTime()) / 86400000) > 30).length;
+        return {
+            total,
+            collected,
+            outstanding,
+            overdue,
+            count: invoices.length,
+        };
+    }, [invoices]);
 
     const handleSaveInvoice = async (data: any) => {
         try {
@@ -1087,31 +1155,149 @@ const Billing: React.FC<BillingProps> = ({ userRole, username }) => {
         queryClient.invalidateQueries({ queryKey: ['invoices'] });
     };
 
+    const [activeTab, setActiveTab] = useState(0);
+
+    const renderTabContent = () => {
+        switch (activeTab) {
+            case 0: // Invoices — real content
+                return view === 'list' ? (
+                    <BillingDashboard
+                        invoices={invoices}
+                        onCreateNew={() => setView('create')}
+                        onDelete={handleDeleteInvoice}
+                        onAddPayment={(inv) => setPaymentDialogInvoice(inv)}
+                        username={username}
+                        userRole={userRole}
+                        isLoading={!invoices}
+                    />
+                ) : (
+                    <InvoiceEditor
+                        onCancel={() => setView('list')}
+                        onSave={handleSaveInvoice}
+                        settings={settings}
+                        yarnStock={yarnStock}
+                    />
+                );
+            case 1: return <CreditNotes />;
+            case 2: return <EInvoices />;
+            case 3: return <Subscriptions />;
+            case 4: return <PurchaseOrders />;
+            case 5: return <DebitNotes />;
+            case 6: return <Quotations />;
+            case 7: return <PackingLists />;
+            case 8: return <DeliveryChallans />;
+            case 9: return <ProformaInvoices />;
+            case 10: return <SalesOrders />;
+            case 11: return <Expenses />;
+            case 12: return <IndirectIncomes />;
+            case 13: return <ProductsServices />;
+            case 14: return <BarcodeOptions />;
+            case 15: return <DeletedView />;
+            case 16: return <Category />;
+            case 17: return <Group />;
+            case 18: return <Pricelists />;
+            case 19: return <ExpiryDatesBatches />;
+            default:
+                return null;
+        }
+    };
+
     return (
-        <Box sx={{ width: '100%', maxWidth: '100%', height: 'calc(100vh - 100px)' }}>
+        <Box sx={{ width: '100%', maxWidth: '100%' }}>
+            {/* Page Header */}
             <Box sx={{ mb: 2 }}>
                 <Typography variant="h4" fontWeight="bold">Billing & Invoicing</Typography>
-                <Typography variant="body2" color="text.secondary">Manage sales, invoices, payments, and revenue.</Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 760, lineHeight: 1.7 }}>
+                    Manage sales, invoices, payments, and revenue with live totals pulled from the API and payment history from the database.
+                </Typography>
             </Box>
 
-            {view === 'list' ? (
-                <BillingDashboard
-                    invoices={invoices}
-                    onCreateNew={() => setView('create')}
-                    onDelete={handleDeleteInvoice}
-                    onAddPayment={(inv) => setPaymentDialogInvoice(inv)}
-                    username={username}
-                    userRole={userRole}
-                    isLoading={!invoices}
-                />
-            ) : (
-                <InvoiceEditor
-                    onCancel={() => setView('list')}
-                    onSave={handleSaveInvoice}
-                    settings={settings}
-                    yarnStock={yarnStock}
-                />
-            )}
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 2, mb: 3 }}>
+                {[
+                    { label: 'Invoice Count', value: billingStats.count, color: '#059669' },
+                    { label: 'Total Billed', value: `₹${billingStats.total.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`, color: '#0284c7' },
+                    { label: 'Collected', value: `₹${billingStats.collected.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`, color: '#7c3aed' },
+                    { label: 'Outstanding', value: `₹${billingStats.outstanding.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`, color: billingStats.overdue > 0 ? '#dc2626' : '#d97706' },
+                ].map((card) => (
+                    <Paper key={card.label} className="clay-card" sx={{ p: 2.5, borderRadius: 4, borderTop: `3px solid ${card.color}` }}>
+                        <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>
+                            {card.label}
+                        </Typography>
+                        <Typography variant="h5" fontWeight={900} sx={{ mt: 0.5 }}>
+                            {card.value}
+                        </Typography>
+                    </Paper>
+                ))}
+            </Box>
+
+            {/* Sub-Tab Bar */}
+            <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', mb: 3, overflow: 'hidden' }}>
+                {/* Group Labels */}
+                <Box sx={{ px: 2, pt: 1.5, display: 'flex', gap: 2, borderBottom: '1px solid', borderColor: 'divider', bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'grey.50' }}>
+                    {Object.entries(GROUP_COLORS).map(([group, color]) => {
+                        const groupTabs = BILLING_TABS.filter((t) => t.group === group);
+                        const firstIndex = BILLING_TABS.findIndex((t) => t.group === group);
+                        const isActive = activeTab >= firstIndex && activeTab < firstIndex + groupTabs.length;
+                        return (
+                            <Box
+                                key={group}
+                                sx={{
+                                    px: 1.5, py: 0.5, borderRadius: '8px 8px 0 0',
+                                    bgcolor: isActive ? `${color}15` : 'transparent',
+                                    borderBottom: isActive ? `2px solid ${color}` : '2px solid transparent',
+                                    transition: 'all 0.2s',
+                                }}
+                            >
+                                <Typography variant="caption" fontWeight={700} sx={{ color: isActive ? color : 'text.disabled', textTransform: 'uppercase', letterSpacing: '0.08em', fontSize: '0.65rem' }}>
+                                    {group}
+                                </Typography>
+                            </Box>
+                        );
+                    })}
+                </Box>
+                <Tabs
+                    value={activeTab}
+                    onChange={(_, v) => { setActiveTab(v); setView('list'); }}
+                    variant="scrollable"
+                    scrollButtons="auto"
+                    sx={{
+                        bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'grey.50',
+                        borderBottom: '1px solid',
+                        borderColor: 'divider',
+                        '& .MuiTab-root': {
+                            minHeight: 44,
+                            fontWeight: 600,
+                            fontSize: '0.78rem',
+                            textTransform: 'none',
+                            py: 1,
+                        },
+                    }}
+                >
+                    {BILLING_TABS.map((t, i) => (
+                        <Tab
+                            key={i}
+                            label={t.label}
+                            sx={{
+                                '&.Mui-selected': {
+                                    color: GROUP_COLORS[t.group],
+                                },
+                            }}
+                        />
+                    ))}
+                </Tabs>
+            </Paper>
+
+            {/* Tab Content */}
+            <Box sx={{ minHeight: 'calc(100vh - 260px)' }}>
+                {invoicesLoading && activeTab === 0 ? (
+                    <Paper sx={{ p: 4 }}>
+                        <LinearProgress sx={{ mb: 2 }} />
+                        <Typography color="text.secondary">Loading live invoices from the API…</Typography>
+                    </Paper>
+                ) : (
+                    renderTabContent()
+                )}
+            </Box>
 
             {/* Payment Dialog */}
             <PaymentDialog

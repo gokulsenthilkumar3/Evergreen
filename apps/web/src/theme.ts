@@ -123,6 +123,10 @@ const getTheme = (mode: PaletteMode, themeName: ThemeName = 'emerald') => {
         styleOverrides: {
           body: {
             scrollbarColor: isDark ? '#334155 #0f172a' : '#cbd5e1 #f1f5f9',
+            backgroundColor: isDark ? p.bgDefaultDark : p.bgDefault,
+            backgroundImage: isDark
+              ? 'radial-gradient(circle at top left, rgba(16,185,129,0.08), transparent 30%), radial-gradient(circle at bottom right, rgba(99,102,241,0.06), transparent 28%)'
+              : 'radial-gradient(circle at top left, rgba(16,185,129,0.06), transparent 28%), radial-gradient(circle at bottom right, rgba(99,102,241,0.05), transparent 26%)',
             '&::-webkit-scrollbar': { width: '8px', height: '8px' },
             '&::-webkit-scrollbar-track': { backgroundColor: isDark ? '#0f172a' : '#f1f5f9' },
             '&::-webkit-scrollbar-thumb': {
@@ -179,15 +183,15 @@ const getTheme = (mode: PaletteMode, themeName: ThemeName = 'emerald') => {
         styleOverrides: {
           root: {
             backgroundImage: 'none',
-            borderRadius: 16,
+            borderRadius: 20,
             boxShadow: isDark
-              ? '0 4px 24px -1px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255,255,255,0.05)'
-              : '0 2px 12px -1px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0,0,0,0.03)',
-            border: isDark ? '1px solid rgba(255, 255, 255, 0.05)' : '1px solid rgba(0, 0, 0, 0.04)',
-            transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+              ? '0 10px 32px -12px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255,255,255,0.04)'
+              : '0 10px 28px -16px rgba(15, 23, 42, 0.18), 0 0 0 1px rgba(0,0,0,0.03)',
+            border: isDark ? '1px solid rgba(255, 255, 255, 0.06)' : '1px solid rgba(0, 0, 0, 0.04)',
+            transition: 'transform 0.24s cubic-bezier(0.16,1,0.3,1), box-shadow 0.24s cubic-bezier(0.16,1,0.3,1)',
           },
           elevation3: {
-            boxShadow: isDark ? '0 10px 40px -4px rgba(0, 0, 0, 0.5)' : '0 10px 30px -4px rgba(0, 0, 0, 0.08)',
+            boxShadow: isDark ? '0 12px 38px -10px rgba(0, 0, 0, 0.55)' : '0 12px 28px -10px rgba(0, 0, 0, 0.08)',
           },
         },
       },
@@ -195,10 +199,10 @@ const getTheme = (mode: PaletteMode, themeName: ThemeName = 'emerald') => {
         defaultProps: { elevation: 0 },
         styleOverrides: {
           root: {
-            backgroundColor: isDark ? 'rgba(15, 23, 42, 0.85)' : 'rgba(255, 255, 255, 0.85)',
-            backdropFilter: 'blur(16px) saturate(180%)',
-            WebkitBackdropFilter: 'blur(16px) saturate(180%)',
-            borderBottom: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.07)' : 'rgba(0, 0, 0, 0.07)'}`,
+            backgroundColor: isDark ? 'rgba(15, 23, 42, 0.78)' : 'rgba(255, 255, 255, 0.82)',
+            backdropFilter: 'blur(18px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(18px) saturate(180%)',
+            borderBottom: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)'}`,
             color: isDark ? '#f1f5f9' : '#0f172a',
           },
         },
@@ -207,7 +211,10 @@ const getTheme = (mode: PaletteMode, themeName: ThemeName = 'emerald') => {
         styleOverrides: {
           paper: {
             backgroundColor: isDark ? '#0d1526' : '#ffffff',
-            borderRight: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'}`,
+            borderRight: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.05)'}`,
+            backgroundImage: isDark
+              ? 'linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0))'
+              : 'linear-gradient(180deg, rgba(5,150,105,0.03), rgba(255,255,255,0))',
           },
         },
       },
@@ -242,11 +249,11 @@ const getTheme = (mode: PaletteMode, themeName: ThemeName = 'emerald') => {
             margin: '0 4px',
             transition: 'all 0.2s ease',
             '&.Mui-selected': {
-              backgroundColor: isDark ? `${primary.main}20` : `${primary.main}14`,
+              backgroundColor: isDark ? `${primary.main}18` : `${primary.main}12`,
               color: isDark ? primary.main : primary.dark,
             },
             '&:hover': {
-              backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
+              backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.025)',
             },
           },
         },
@@ -314,7 +321,7 @@ const getTheme = (mode: PaletteMode, themeName: ThemeName = 'emerald') => {
         },
       },
       MuiAlert: {
-        styleOverrides: { root: { borderRadius: 12 } },
+        styleOverrides: { root: { borderRadius: 16 } },
       },
     },
   });

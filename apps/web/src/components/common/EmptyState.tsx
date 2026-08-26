@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, Button, Paper, Fade } from '@mui/material';
+import { Box, Typography, Button, Paper, Fade, Stack } from '@mui/material';
 import {
   Inbox as InboxIcon,
   SearchOff as SearchOffIcon,
@@ -59,19 +59,22 @@ const EmptyState: React.FC<EmptyStateProps> = ({
       <Paper
         elevation={0}
         sx={{
-          p: 6,
+          p: { xs: 4, md: 6 },
           textAlign: 'center',
-          bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)',
-          border: '2px dashed',
+          bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(16,185,129,0.03)',
+          border: '1px solid',
           borderColor: 'divider',
-          borderRadius: 3,
-          transition: 'all 0.3s ease',
+          borderRadius: 4,
+          transition: 'all 0.24s cubic-bezier(0.16,1,0.3,1)',
+          boxShadow: (theme) => theme.palette.mode === 'dark'
+            ? '0 16px 36px -20px rgba(0,0,0,0.7)'
+            : '0 16px 36px -24px rgba(15,23,42,0.18)',
         }}
       >
         <Box sx={{ mb: 3 }}>
           <Box
             sx={{
-              animation: type === 'empty' ? 'float 3s ease-in-out infinite' : 'none',
+              animation: type === 'empty' ? 'float 3.5s ease-in-out infinite' : 'none',
               '@keyframes float': {
                 '0%, 100%': { transform: 'translateY(0)' },
                 '50%': { transform: 'translateY(-10px)' },
@@ -88,15 +91,17 @@ const EmptyState: React.FC<EmptyStateProps> = ({
           {message || defaultMessage}
         </Typography>
         {actionLabel && onAction && (
-          <Button
-            variant="contained"
-            color={type === 'error' ? 'error' : 'primary'}
-            startIcon={<AddIcon />}
-            onClick={onAction}
-            sx={{ mt: 1, px: 3, py: 1 }}
-          >
-            {actionLabel}
-          </Button>
+          <Stack direction="row" justifyContent="center">
+            <Button
+              variant="contained"
+              color={type === 'error' ? 'error' : 'primary'}
+              startIcon={<AddIcon />}
+              onClick={onAction}
+              sx={{ mt: 1, px: 3, py: 1.1, borderRadius: 999 }}
+            >
+              {actionLabel}
+            </Button>
+          </Stack>
         )}
       </Paper>
     </Fade>

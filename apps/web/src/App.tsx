@@ -49,6 +49,11 @@ import {
   Close as CloseIcon,
   Security as SecurityIcon,
   VpnKey as SessionsIcon,
+  Storefront as StoreIcon,
+  Insights as InsightsIcon,
+  Payments as PaymentsIcon,
+  SupportAgent as HelpdeskIcon,
+  School as TutorialIcon,
 } from '@mui/icons-material';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from './utils/api';
@@ -82,6 +87,11 @@ const OutwardEntry = lazy(() => import('./pages/OutwardEntry'));
 const UserManagement = lazy(() => import('./pages/UserManagement'));
 const SessionManagement = lazy(() => import('./pages/SessionManagement'));
 const SecuritySettings = lazy(() => import('./pages/SecuritySettings'));
+const Store = lazy(() => import('./pages/Store'));
+const Insights = lazy(() => import('./pages/Insights'));
+const Payments = lazy(() => import('./pages/Payments'));
+const Helpdesk = lazy(() => import('./pages/Helpdesk'));
+const Tutorial = lazy(() => import('./pages/Tutorial'));
 
 const drawerWidth = 260;
 const drawerCollapsedWidth = 72;
@@ -405,6 +415,11 @@ const App: React.FC = () => {
       users: 'User Management',
       settings: 'Settings',
       logs: 'Activity Logs',
+      store: 'Online Store',
+      insights: 'Insights & Reports',
+      payments: 'Payments',
+      helpdesk: 'Helpdesk',
+      tutorial: 'Tutorial',
     };
 
     if (currentPage !== 'dashboard') {
@@ -458,6 +473,7 @@ const App: React.FC = () => {
     {
       label: 'Operations',
       items: [
+        { text: 'Store', icon: <StoreIcon />, page: 'store' },
         { text: 'Inventory', icon: <InventoryIcon />, page: 'inventory', badge: lowStockCount > 0 ? lowStockCount : undefined },
         { text: 'Inward / Batch', icon: <InwardIcon />, page: 'inward' },
         { text: 'Production', icon: <WasteIcon />, page: 'production' },
@@ -469,6 +485,15 @@ const App: React.FC = () => {
       label: 'Finance',
       items: [
         { text: 'Billing', icon: <BillingIcon />, page: 'billing' },
+        { text: 'Payments', icon: <PaymentsIcon />, page: 'payments' },
+        { text: 'Insights', icon: <InsightsIcon />, page: 'insights' },
+      ]
+    },
+    {
+      label: 'Support',
+      items: [
+        { text: 'Helpdesk', icon: <HelpdeskIcon />, page: 'helpdesk' },
+        { text: 'Tutorial', icon: <TutorialIcon />, page: 'tutorial' },
       ]
     },
     {
@@ -864,6 +889,11 @@ const App: React.FC = () => {
                       {currentPage === 'outward' && <OutwardEntry userRole={user.role} username={user.username} />}
                       {currentPage === 'production' && <ProductionEntry userRole={user.role} username={user.username} />}
                       {currentPage === 'billing' && <Billing userRole={user.role} username={user.username} />}
+                      {currentPage === 'store' && <Store />}
+                      {currentPage === 'insights' && <Insights />}
+                      {currentPage === 'payments' && <Payments />}
+                      {currentPage === 'helpdesk' && <Helpdesk />}
+                      {currentPage === 'tutorial' && <Tutorial />}
                       {currentPage === 'users' && <UserManagement currentUserRole={user.role} username={user.username} />}
                       {currentPage === 'sessions' && <SessionManagement />}
                       {currentPage === 'security' && <SecuritySettings />}

@@ -649,7 +649,7 @@ export class InventoryService {
 
       // 2. Delete yarn inventory movements
       await tx.yarnInventory.deleteMany({
-        where: { reference: `OUT-${id}` },
+        where: { reference: `O-${id}` },
       });
 
       // 3. Delete outward record

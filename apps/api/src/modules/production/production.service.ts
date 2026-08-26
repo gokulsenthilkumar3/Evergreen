@@ -292,20 +292,8 @@ export class ProductionService {
         );
       }
 
-      // b. Check for Outwards recorded on or after this date for these counts
+      // b. Negative stock check is performed during recalculation instead of blindly blocking.
       const countsAffected = prod.producedYarn.map((p) => p.count);
-      const existsOutward = await tx.yarnInventory.findFirst({
-        where: {
-          count: { in: countsAffected },
-          type: 'OUTWARD',
-          date: { gte: prod.date },
-        },
-      });
-      if (existsOutward) {
-        throw new BadRequestException(
-          'Please delete any Outward (Sales) entries for these yarn counts on or after this date first.',
-        );
-      }
 
       // 2. Delete inventory movements
       await tx.cottonInventory.deleteMany({
@@ -350,6 +338,11 @@ export class ProductionService {
       let runningWaste = 0;
       for (const m of wasteMovements) {
         runningWaste += m.quantity;
+        if (runningWaste < -0.001) {
+          throw new BadRequestException(
+            `Cannot delete: Deleting this production entry would cause Waste stock to go negative on ${m.date.toLocaleDateString()}.`,
+          );
+        }
         if (Math.abs(m.balance - runningWaste) > 0.001) {
           await tx.wasteInventory.update({
             where: { id: m.id },
@@ -367,6 +360,11 @@ export class ProductionService {
         let runningYarn = 0;
         for (const m of yarnMovements) {
           runningYarn += m.quantity;
+          if (runningYarn < -0.001) {
+            throw new BadRequestException(
+              `Cannot delete: Deleting this would cause negative stock for Yarn ${count} on ${m.date.toLocaleDateString()}. Please delete or adjust Sales entries first.`,
+            );
+          }
           if (Math.abs(m.balance - runningYarn) > 0.001) {
             await tx.yarnInventory.update({
               where: { id: m.id },
