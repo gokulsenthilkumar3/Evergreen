@@ -54,6 +54,7 @@ import {
   Payments as PaymentsIcon,
   SupportAgent as HelpdeskIcon,
   School as TutorialIcon,
+  Translate as TranslateIcon,
 } from '@mui/icons-material';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from './utils/api';
@@ -92,6 +93,11 @@ const Insights = lazy(() => import('./pages/Insights'));
 const Payments = lazy(() => import('./pages/Payments'));
 const Helpdesk = lazy(() => import('./pages/Helpdesk'));
 const Tutorial = lazy(() => import('./pages/Tutorial'));
+const UnifiedWorkspace = lazy(() => import('./pages/UnifiedWorkspace'));
+const JobWork = lazy(() => import('./pages/JobWork'));
+const CommerceDesk = lazy(() => import('./pages/CommerceDesk'));
+const CommerceReports = lazy(() => import('./pages/CommerceReports'));
+const OperationsDesk = lazy(() => import('./pages/OperationsDesk'));
 
 const drawerWidth = 260;
 const drawerCollapsedWidth = 72;
@@ -224,7 +230,7 @@ const GlobalSearch = ({ onNavigate }: { onNavigate: (page: string) => void }) =>
     <Box sx={{ position: 'relative', mx: 2, flex: 1, maxWidth: 400 }}>
       <TextField
         id="global-search-input"
-        placeholder="Search invoices, batches (Ctrl+K)..."
+        placeholder="Search invoices, stock, customers (Ctrl+K)..."
         fullWidth
         size="small"
         autoComplete="off"
@@ -330,6 +336,7 @@ const App: React.FC = () => {
   const [mode, setMode] = useState<PaletteMode>((localStorage.getItem('themeMode') as PaletteMode) || 'light');
   const [themeName, setThemeName] = useState<ThemeName>((localStorage.getItem('themeName') as ThemeName) || 'emerald');
   const [floatingNav, setFloatingNav] = useState<boolean>(() => localStorage.getItem('floatingNav') === 'true');
+  const [language, setLanguage] = useState<'en' | 'ta'>((localStorage.getItem('language') as 'en' | 'ta') || 'en');
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [drawerOpen, setDrawerOpen] = useState(true);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -356,6 +363,7 @@ const App: React.FC = () => {
   useEffect(() => { localStorage.setItem('themeMode', mode); }, [mode]);
   useEffect(() => { localStorage.setItem('themeName', themeName); }, [themeName]);
   useEffect(() => { localStorage.setItem('floatingNav', String(floatingNav)); }, [floatingNav]);
+  useEffect(() => { localStorage.setItem('language', language); }, [language]);
 
   // Update document title
   useEffect(() => {
@@ -366,6 +374,12 @@ const App: React.FC = () => {
 
   const toggleTheme = () => {
     setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
+  };
+
+  const toggleLanguage = async () => {
+    const next = language === 'en' ? 'ta' : 'en';
+    setLanguage(next);
+    try { await api.put('/settings', { language: next }); } catch { toast.error('Language preference will be saved when the connection is restored.'); }
   };
 
   const handleProfileClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -405,6 +419,14 @@ const App: React.FC = () => {
 
     const pageNames: Record<string, string> = {
       dashboard: 'Dashboard',
+      workspace: 'EverGreen One',
+      jobwork: 'Job Work',
+      operations: 'Operations Desk',
+      catalogue: 'Catalogue',
+      customers: 'Customers & Ledger',
+      orders: 'Sales Orders',
+      invoicestudio: 'Invoice Studio',
+      reports: 'Business Reports',
       today: "Today's Summary",
       inventory: 'Inventory',
       inward: 'Inward Entry',
@@ -464,29 +486,36 @@ const App: React.FC = () => {
 
   const navGroups: NavGroup[] = [
     {
-      label: 'Overview',
+      label: 'EverGreen One',
       items: [
+        { text: 'Business Workspace', icon: <StoreIcon />, page: 'workspace' },
         { text: 'Dashboard', icon: <DashboardIcon />, page: 'dashboard' },
         { text: "Today's Summary", icon: <SummaryIcon />, page: 'today' },
       ]
     },
     {
-      label: 'Operations',
+      label: 'Operations & Job Work',
       items: [
         { text: 'Store', icon: <StoreIcon />, page: 'store' },
         { text: 'Inventory', icon: <InventoryIcon />, page: 'inventory', badge: lowStockCount > 0 ? lowStockCount : undefined },
         { text: 'Inward / Batch', icon: <InwardIcon />, page: 'inward' },
-        { text: 'Production', icon: <WasteIcon />, page: 'production' },
+        { text: 'Production & Job Work', icon: <WasteIcon />, page: 'production' },
+        { text: 'Job Work Register', icon: <SyncIcon />, page: 'jobwork' },
+        { text: 'Operations Desk', icon: <InventoryIcon />, page: 'operations' },
         { text: 'Outwards', icon: <OutwardIcon fontSize="small" />, page: 'outward' },
         { text: 'Costing', icon: <CostIcon />, page: 'costing' },
+        { text: 'Catalogue', icon: <InventoryIcon />, page: 'catalogue' },
       ]
     },
     {
-      label: 'Finance',
+      label: 'Sales & Accounts',
       items: [
-        { text: 'Billing', icon: <BillingIcon />, page: 'billing' },
-        { text: 'Payments', icon: <PaymentsIcon />, page: 'payments' },
-        { text: 'Insights', icon: <InsightsIcon />, page: 'insights' },
+        { text: 'Sales Orders', icon: <OutwardIcon />, page: 'orders' },
+        { text: 'Invoice Studio', icon: <BillingIcon />, page: 'invoicestudio' },
+        { text: 'Customers & Ledger', icon: <PaymentsIcon />, page: 'customers' },
+        { text: 'Legacy Billing', icon: <BillingIcon />, page: 'billing' },
+        { text: 'Business Reports', icon: <InsightsIcon />, page: 'reports' },
+        { text: 'Legacy Insights', icon: <InsightsIcon />, page: 'insights' },
       ]
     },
     {
@@ -507,6 +536,11 @@ const App: React.FC = () => {
       ]
     },
   ];
+
+  const tamilLabels: Record<string, string> = {
+    'Business Workspace': 'வணிக மையம்', Dashboard: 'முகப்பு', "Today's Summary": 'இன்றைய சுருக்கம்', Store: 'கடை', Inventory: 'சரக்கு', 'Inward / Batch': 'உள்வரவு / தொகுதி', 'Production & Job Work': 'உற்பத்தி மற்றும் வேலை ஒப்பந்தம்', 'Job Work Register': 'வேலை ஒப்பந்தப் பதிவு', Outwards: 'வெளியீடு', Costing: 'செலவீனம்', Catalogue: 'பொருள் பட்டியல்', 'Sales Orders': 'விற்பனை ஆணைகள்', 'Invoice Studio': 'விலைப்பட்டியல்', 'Customers & Ledger': 'வாடிக்கையாளர்கள் மற்றும் கணக்கு', 'Legacy Billing': 'முந்தைய பில்லிங்', Insights: 'அறிக்கைகள்', Settings: 'அமைப்புகள்', Helpdesk: 'உதவி', Tutorial: 'பயிற்சி',
+  };
+  const labelFor = (label: string) => language === 'ta' ? (tamilLabels[label] || label) : label;
 
   if (!user) {
     return (
@@ -548,12 +582,11 @@ const App: React.FC = () => {
               {floatingNav && (
                 <Box className="floating-bottom-nav" component="nav" aria-label="Bottom navigation">
                   {[
+                    { text: 'Workspace', icon: <StoreIcon />, page: 'workspace' },
                     { text: 'Dashboard', icon: <DashboardIcon />, page: 'dashboard' },
-                    { text: 'Inward',    icon: <InwardIcon />,    page: 'inward' },
                     { text: 'Inventory', icon: <InventoryIcon />, page: 'inventory' },
                     { text: 'Production',icon: <WasteIcon />,     page: 'production' },
                     { text: 'Billing',   icon: <BillingIcon />,   page: 'billing' },
-                    { text: 'Settings',  icon: <SettingsIcon />,  page: 'settings' },
                   ].map(item => {
                     const active = currentPage === item.page;
                     return (
@@ -624,6 +657,12 @@ const App: React.FC = () => {
 
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <NotificationsBell onNavigate={setCurrentPage} />
+
+                      <Tooltip title={language === 'en' ? 'தமிழில் காண்க' : 'View in English'} arrow>
+                        <IconButton onClick={toggleLanguage} color="inherit" aria-label="Toggle language">
+                          <TranslateIcon />
+                        </IconButton>
+                      </Tooltip>
 
                       <Tooltip title="Sync All Data" arrow>
                         <IconButton onClick={handleSync} color="primary" sx={{
@@ -752,7 +791,7 @@ const App: React.FC = () => {
                           <List disablePadding>
                             {filteredItems.map((item) => (
                               <ListItem key={item.text} disablePadding sx={{ display: 'block', mb: 0.5 }}>
-                                <Tooltip title={!drawerOpen ? item.text : ''} placement="right" arrow>
+                                <Tooltip title={!drawerOpen ? labelFor(item.text) : ''} placement="right" arrow>
                                   <ListItemButton
                                     selected={currentPage === item.page}
                                     onClick={() => setCurrentPage(item.page)}
@@ -802,7 +841,7 @@ const App: React.FC = () => {
                                     </ListItemIcon>
                                     {drawerOpen && (
                                       <ListItemText
-                                        primary={item.text}
+                                        primary={labelFor(item.text)}
                                         primaryTypographyProps={{
                                           variant: 'body2',
                                           fontWeight: currentPage === item.page ? 700 : 500,
@@ -881,6 +920,14 @@ const App: React.FC = () => {
                     }}
                   >
                     <Suspense fallback={<LinearProgress />}>
+                      {currentPage === 'workspace' && <UnifiedWorkspace onNavigate={setCurrentPage} />}
+                      {currentPage === 'jobwork' && <JobWork />}
+                      {currentPage === 'operations' && <OperationsDesk />}
+                      {currentPage === 'catalogue' && <CommerceDesk initialTab={0} />}
+                      {currentPage === 'customers' && <CommerceDesk initialTab={1} />}
+                      {currentPage === 'orders' && <CommerceDesk initialTab={2} />}
+                      {currentPage === 'invoicestudio' && <CommerceDesk initialTab={3} />}
+                      {currentPage === 'reports' && <CommerceReports />}
                       {currentPage === 'dashboard' && <Dashboard onNavigate={setCurrentPage} />}
                       {currentPage === 'today' && <TodayDashboard onNavigate={setCurrentPage} />}
                       {currentPage === 'inventory' && <Inventory userRole={user.role} username={user.username} />}

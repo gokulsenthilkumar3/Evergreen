@@ -1,6 +1,17 @@
-# 🧶 Evergreen Yarn Flow SMS
+# 🧶 EverGreen One — Yarn, Billing & MSME ERP
 
-**Evergreen Yarn Flow SMS** (Spinner Management System) is a powerful, modern ERP solution designed specifically for yarn spinning mills. It streamlines operations from raw material inward to production processing and final sales (outward), providing real-time costing and inventory insights.
+**EverGreen One** brings the EverGreen Yarn Flow SMS, noolstitch job-work workflows, an invoice generator, and MSME ERP features into one business application. It is designed for yarn manufacturers and growing MSMEs that need operations, GST billing, customer ledgers and business insights in one place.
+
+## One App, Connected Workspaces
+
+The **Business Workspace** is the single entry point for every part of the business:
+
+- **Yarn operations** — inward lots, inventory, production, waste and outward dispatch.
+- **Job work & production** — material movement, production receipts and count-wise output.
+- **Invoices & GST** — invoices, quotations, challans, purchase orders and printable documents.
+- **Customers & payments** — customer/vendor ledgers, dues, payment links and bank reconciliation.
+
+The shared navigation and catalogue mean teams do not need to switch between separate apps to run the workflow from stock to sale to payment.
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)

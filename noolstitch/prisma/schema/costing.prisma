@@ -1,0 +1,37 @@
+// @polsia:user-owned — Costing Module schema
+
+enum ComponentType {
+  MATERIAL
+  PROCESS
+  OVERHEAD
+}
+
+model CostingSheet {
+  id                String  @id @default(uuid())
+  styleCode         String  @unique
+  description       String?
+  totalMaterialCost Decimal @default(0)
+  totalProcessCost  Decimal @default(0)
+  totalOverheads    Decimal @default(0)
+  grandTotal        Decimal @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  components CostingComponent[]
+}
+
+model CostingComponent {
+  id             String        @id @default(uuid())
+  costingSheetId String
+  type           ComponentType
+  description    String
+  qty            Decimal
+  rate           Decimal
+  amount         Decimal
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  costingSheet CostingSheet @relation(fields: [costingSheetId], references: [id], onDelete: Cascade)
+}

@@ -233,6 +233,8 @@ model SystemSettings {
   ebRate              String   @default("10")
   packageRate         String   @default("1.6")
   gstPercent          String   @default("18")
+  language            String   @default("en")
+  sellerState         String   @default("Tamil Nadu")
   supportedCounts     String?  @default("2,4,6,8,10,12,14,16,20")
   updatedAt           DateTime @updatedAt
   entryTimestamp      DateTime @default(now())
@@ -271,6 +273,17 @@ model Invoice {
   customerName    String
   customerAddress String?
   customerGSTIN   String?
+  customerId      Int?
+  customer        Customer?     @relation(fields: [customerId], references: [id])
+  sellerState     String        @default("Tamil Nadu")
+  buyerState      String?
+  dueDate         DateTime?
+  discount        Float         @default(0)
+  currency        String        @default("INR")
+  documentHash    String?
+  verificationKey String?
+  salesOrderId    Int?
+  salesOrder      SalesOrder?   @relation(fields: [salesOrderId], references: [id])
   transportMode   String?
   vehicleNo       String?
   theme           String        @default("CLASSIC")
@@ -278,6 +291,7 @@ model Invoice {
   subtotal        Float
   cgst            Float
   sgst            Float
+  igst            Float         @default(0)
   total           Float
 
   // Additional Billing Fields
@@ -305,10 +319,18 @@ model Invoice {
 model InvoiceItem {
   id        Int      @id @default(autoincrement())
   invoiceId Int
-  yarnCount String
-  bags      Int
-  weight    Float
+  yarnCount String       @default("")
+  bags      Int          @default(0)
+  weight    Float        @default(0)
   rate      Float
+  itemId    Int?
+  item      CatalogueItem? @relation(fields: [itemId], references: [id])
+  description String?
+  hsnSac      String?
+  uom         String?
+  quantity    Float?
+  gstRate     Float       @default(0)
+  discount    Float       @default(0)
 
   invoice   Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 }
@@ -325,4 +347,226 @@ model Payment {
   createdBy   String?
 
   invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+}
+
+// ── EverGreen One unified commerce layer ───────────────────────────────────
+
+model Brand {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  items     CatalogueItem[]
+}
+
+model CatalogueCategory {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  items     CatalogueItem[]
+}
+
+model CatalogueItem {
+  id                Int       @id @default(autoincrement())
+  sku               String    @unique
+  name              String
+  type              String    // RAW_MATERIAL, YARN, FINISHED_GOOD, JOB_WORK_MATERIAL, SERVICE
+  description       String?
+  uom               String    @default("KG")
+  hsnSac            String?
+  gstRate           Float     @default(0)
+  salePrice         Float     @default(0)
+  reorderLevel      Float     @default(0)
+  costPrice         Float     @default(0)
+  imageUrl          String?
+  active            Boolean   @default(true)
+  legacySource      String?
+  legacyId          String?
+  brandId           Int?
+  brand             Brand?    @relation(fields: [brandId], references: [id])
+  categoryId        Int?
+  category          CatalogueCategory? @relation(fields: [categoryId], references: [id])
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  stockMovements    StockMovement[]
+  invoiceItems      InvoiceItem[]
+  orderLines        SalesOrderLine[]
+  jobDispatchLines  JobWorkDispatchLine[]
+  jobReceiptLines   JobWorkReceiptLine[]
+  inwardLines       InwardReceiptLine[]
+
+  @@index([type])
+  @@index([name])
+}
+
+model InwardReceipt {
+  id              Int      @id @default(autoincrement())
+  receiptNo       String   @unique
+  date            DateTime @default(now())
+  supplierName    String
+  referenceNumber String?
+  notes           String?
+  total           Float    @default(0)
+  createdBy       String?
+  createdAt       DateTime @default(now())
+  lines           InwardReceiptLine[]
+}
+
+model InwardReceiptLine {
+  id        Int            @id @default(autoincrement())
+  receiptId Int
+  receipt   InwardReceipt  @relation(fields: [receiptId], references: [id], onDelete: Cascade)
+  itemId    Int
+  item      CatalogueItem  @relation(fields: [itemId], references: [id])
+  quantity  Float
+  unitCost  Float
+}
+
+model CostingSheet {
+  id          Int      @id @default(autoincrement())
+  styleCode   String   @unique
+  description String?
+  status      String   @default("ACTIVE")
+  total       Float    @default(0)
+  components  String   // JSON: material, process and overhead rows
+  createdBy   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model StockMovement {
+  id            Int       @id @default(autoincrement())
+  itemId        Int
+  item          CatalogueItem @relation(fields: [itemId], references: [id])
+  date          DateTime  @default(now())
+  quantity      Float     // positive increases available stock; negative reduces it
+  reservedQty   Float     @default(0)
+  movementType  String    // INWARD, PRODUCTION_IN, JOB_DISPATCH, JOB_RECEIPT, SALES_RESERVE, SALES_RELEASE, INVOICE_OUT, ADJUSTMENT
+  referenceType String?
+  referenceId   String?
+  notes         String?
+  legacySource  String?
+  createdBy     String?
+  createdAt     DateTime  @default(now())
+
+  @@index([itemId, date])
+  @@index([referenceType, referenceId])
+}
+
+model Customer {
+  id        Int       @id @default(autoincrement())
+  name      String
+  phone     String?
+  email     String?
+  gstin     String?
+  state     String?    @default("Tamil Nadu")
+  address   String?
+  active    Boolean    @default(true)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  invoices  Invoice[]
+  orders    SalesOrder[]
+  ledger    CustomerLedgerEntry[]
+
+  @@index([name])
+}
+
+model CustomerLedgerEntry {
+  id          Int      @id @default(autoincrement())
+  customerId  Int
+  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  date        DateTime @default(now())
+  type        String   // INVOICE, PAYMENT, CREDIT_NOTE, ADJUSTMENT
+  debit       Float    @default(0)
+  credit      Float    @default(0)
+  reference   String?
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  @@index([customerId, date])
+}
+
+model JobWorker {
+  id        Int      @id @default(autoincrement())
+  name      String
+  phone     String?
+  address   String?
+  gstin     String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  challans  JobWorkChallan[]
+
+  @@unique([name])
+}
+
+model JobWorkChallan {
+  id          Int      @id @default(autoincrement())
+  challanNo   String   @unique
+  date        DateTime
+  jobWorkerId Int
+  jobWorker   JobWorker @relation(fields: [jobWorkerId], references: [id])
+  processType String
+  status      String   @default("DISPATCHED") // DISPATCHED, PART_RECEIVED, COMPLETED
+  notes       String?
+  createdBy   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  dispatchLines JobWorkDispatchLine[]
+  receiptLines  JobWorkReceiptLine[]
+}
+
+model JobWorkDispatchLine {
+  id         Int      @id @default(autoincrement())
+  challanId  Int
+  challan    JobWorkChallan @relation(fields: [challanId], references: [id], onDelete: Cascade)
+  itemId     Int
+  item       CatalogueItem @relation(fields: [itemId], references: [id])
+  quantity   Float
+  createdAt  DateTime @default(now())
+}
+
+model JobWorkReceiptLine {
+  id         Int      @id @default(autoincrement())
+  challanId  Int
+  challan    JobWorkChallan @relation(fields: [challanId], references: [id], onDelete: Cascade)
+  itemId     Int
+  item       CatalogueItem @relation(fields: [itemId], references: [id])
+  quantity   Float
+  scrapQty   Float    @default(0)
+  createdAt  DateTime @default(now())
+}
+
+model SalesOrder {
+  id          Int       @id @default(autoincrement())
+  orderNo     String    @unique
+  date        DateTime  @default(now())
+  customerId  Int
+  customer    Customer  @relation(fields: [customerId], references: [id])
+  status      String    @default("DRAFT") // DRAFT, CONFIRMED, PARTIALLY_INVOICED, INVOICED, CANCELLED
+  subtotal    Float     @default(0)
+  discount    Float     @default(0)
+  total       Float     @default(0)
+  notes       String?
+  createdBy   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  lines       SalesOrderLine[]
+  invoices    Invoice[]
+}
+
+model SalesOrderLine {
+  id          Int       @id @default(autoincrement())
+  orderId     Int
+  order       SalesOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  itemId      Int
+  item        CatalogueItem @relation(fields: [itemId], references: [id])
+  quantity    Float
+  invoicedQty Float     @default(0)
+  rate        Float
+  gstRate     Float     @default(0)
+  discount    Float     @default(0)
 }

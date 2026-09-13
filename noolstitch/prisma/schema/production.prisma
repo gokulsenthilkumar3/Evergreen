@@ -1,0 +1,48 @@
+// @polsia:user-owned — Production Entry (Job-Work) schema
+
+enum JobWorkStatus {
+  PENDING
+  COMPLETED
+}
+
+model JobWorkChallan {
+  id            String        @id @default(uuid())
+  challanDate   DateTime
+  jobWorkerName String
+  processType   String
+  status        JobWorkStatus @default(PENDING)
+  notes         String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  dispatchLines JobWorkDispatchLine[]
+  receiptLines  JobWorkReceiptLine[]
+}
+
+model JobWorkDispatchLine {
+  id            String  @id @default(uuid())
+  challanId     String
+  itemId        String
+  qtyDispatched Decimal
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  challan JobWorkChallan @relation(fields: [challanId], references: [id], onDelete: Cascade)
+  item    InventoryItem  @relation(fields: [itemId], references: [id], onDelete: Restrict)
+}
+
+model JobWorkReceiptLine {
+  id          String  @id @default(uuid())
+  challanId   String
+  itemId      String
+  qtyReceived Decimal
+  scrapQty    Decimal @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  challan JobWorkChallan @relation(fields: [challanId], references: [id], onDelete: Cascade)
+  item    InventoryItem  @relation(fields: [itemId], references: [id], onDelete: Restrict)
+}

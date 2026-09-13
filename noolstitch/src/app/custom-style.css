@@ -1,0 +1,53 @@
+/* @polsia:user-owned — your custom global CSS: keyframes, animation classes, one-off global
+ * styles, and @import your own .css files. Prefer tw-animate-css for motion (animate-in,
+ * fade-in, slide-in-from-bottom-N, duration-*). globals.css is framework-owned — edit HERE. */
+
+/* ── Print rules for the Vyapari GST invoice ─────────────────────────────────
+ * Hides SiteNav/SiteFooter/print buttons on paper, sets A4 portrait narrow
+ * margins, and preserves the tabular layout so the line-item table stays
+ * readable when the trader shrinks the print to a phone-width receipt.
+ */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  /* Hide chrome that has no business on the paper copy. */
+  header:not(.print-area),
+  footer,
+  .no-print {
+    display: none;
+  }
+  /* The printable top-level wrapper stays visible. */
+  .print-area {
+    box-shadow: none;
+    border: none;
+  }
+
+  /* Tabular CSS so the line items render as a real accounting table. */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11pt;
+  }
+  th,
+  td {
+    padding: 4px 6px;
+    border-bottom: 1px solid #333;
+  }
+
+  .print-only {
+    display: block;
+  }
+}
+
+@media screen {
+  .print-only {
+    display: none;
+  }
+}

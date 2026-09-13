@@ -1,0 +1,44 @@
+// @polsia:user-owned — Inventory and Inward Entry schema
+model InventoryItem {
+  id           String  @id @default(uuid())
+  sku          String  @unique
+  name         String
+  description  String?
+  currentStock Decimal @default(0)
+  uom          String // Unit of measure (e.g., KGS, METERS, PIECES)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  inwardLines          InwardEntryLine[]
+  jobWorkDispatchLines JobWorkDispatchLine[]
+  jobWorkReceiptLines  JobWorkReceiptLine[]
+}
+
+model InwardEntry {
+  id              String   @id @default(uuid())
+  receiptDate     DateTime
+  supplierName    String
+  referenceNumber String?
+  totalValue      Decimal  @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  lines InwardEntryLine[]
+}
+
+model InwardEntryLine {
+  id            String  @id @default(uuid())
+  inwardEntryId String
+  itemId        String
+  qtyReceived   Decimal
+  unitCost      Decimal
+  lineTotal     Decimal
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  inwardEntry InwardEntry   @relation(fields: [inwardEntryId], references: [id], onDelete: Cascade)
+  item        InventoryItem @relation(fields: [itemId], references: [id], onDelete: Restrict)
+}

@@ -16,6 +16,8 @@ import { UsersModule } from './modules/users/users.module';
 import { SessionsModule } from './modules/sessions/sessions.module';
 
 import { DatabaseModule } from './modules/database/database.module';
+import { CommerceModule } from './modules/commerce/commerce.module';
+import { JobWorkModule } from './modules/jobwork/jobwork.module';
 
 @Module({
   imports: [
@@ -23,6 +25,8 @@ import { DatabaseModule } from './modules/database/database.module';
       isGlobal: true,
     }),
     DatabaseModule,
+    CommerceModule,
+    JobWorkModule,
     DashboardModule,
     AuthModule,
     InventoryModule,

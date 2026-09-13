@@ -1,0 +1,48 @@
+// @polsia:user-owned — Vyapari invoice generator. No relation to User (locked
+// in auth.prisma); line-item cascade belongs inside this file we own.
+
+model Invoice {
+  id            String   @id @default(cuid())
+  // Snapshot of the meta at submission time; intentionally denormalised so the
+  // printed/PDF invoice is immutable even if the seller re-keys their GSTIN later.
+  sellerName    String
+  sellerGstin   String
+  sellerState   String
+  sellerAddress String
+  buyerName     String
+  buyerGstin    String
+  buyerState    String
+  buyerAddress  String
+  invoiceNumber String
+  invoiceDate   DateTime
+  // Snapshot totals for fast render; line items remain the source of truth.
+  totalTaxable  Decimal  @db.Decimal(12, 2)
+  totalCgst     Decimal  @db.Decimal(12, 2)
+  totalSgst     Decimal  @db.Decimal(12, 2)
+  totalIgst     Decimal  @db.Decimal(12, 2)
+  grandTotal    Decimal  @db.Decimal(12, 2)
+  createdAt     DateTime @default(now())
+
+  items InvoiceLineItem[]
+
+  @@index([createdAt])
+}
+
+model InvoiceLineItem {
+  id          String  @id @default(cuid())
+  invoiceId   String
+  description String
+  hsnSac      String
+  qty         Decimal @db.Decimal(12, 3)
+  unitRate    Decimal @db.Decimal(12, 2)
+  gstRate     Decimal @db.Decimal(5, 2)
+  taxable     Decimal @db.Decimal(12, 2)
+  cgst        Decimal @db.Decimal(12, 2)
+  sgst        Decimal @db.Decimal(12, 2)
+  igst        Decimal @db.Decimal(12, 2)
+  lineTotal   Decimal @db.Decimal(12, 2)
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+}

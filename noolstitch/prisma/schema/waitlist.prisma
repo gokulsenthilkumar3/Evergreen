@@ -1,0 +1,13 @@
+// @polsia:user-owned
+
+model WaitlistSignup {
+  id        String   @id @default(cuid())
+  name      String
+  role      String
+  whatsapp  String
+  email     String   @unique
+  locale    String   @default("en")
+  createdAt DateTime @default(now())
+
+  @@index([whatsapp])
+}
