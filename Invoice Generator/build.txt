@@ -1,0 +1,6 @@
+
+> invoice-generator@0.0.0 build
+> tsc -b && vite build
+
+src/store.ts(118,17): error TS2349: This expression is not callable.
+  Type 'typeof import("D:/Invoice Generator/node_modules/js-md5/index")' has no call signatures.
