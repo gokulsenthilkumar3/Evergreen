@@ -98,6 +98,20 @@ const JobWork = lazy(() => import('./pages/JobWork'));
 const CommerceDesk = lazy(() => import('./pages/CommerceDesk'));
 const CommerceReports = lazy(() => import('./pages/CommerceReports'));
 const OperationsDesk = lazy(() => import('./pages/OperationsDesk'));
+// ── Merged sub-project pages ──
+const InvoiceGenerator = lazy(() => import('./pages/InvoiceGenerator'));
+const MsmeErp = lazy(() => import('./pages/MsmeErp'));
+const Vyapari = lazy(() => import('./pages/Vyapari'));
+const YarnERP = lazy(() => import('./pages/YarnERP'));
+const YarnLiveDashboard = lazy(() => import('./pages/yarn/LiveDashboard'));
+const YarnMachineManagement = lazy(() => import('./pages/yarn/MachineManagement'));
+const YarnQualityControl = lazy(() => import('./pages/yarn/QualityControl'));
+const YarnShiftManagement = lazy(() => import('./pages/yarn/ShiftManagement'));
+const YarnWarehouseManagement = lazy(() => import('./pages/yarn/WarehouseManagement'));
+const YarnHRManagement = lazy(() => import('./pages/yarn/HRManagement'));
+const YarnDemandForecasting = lazy(() => import('./pages/yarn/DemandForecasting'));
+const YarnSupplierPortal = lazy(() => import('./pages/yarn/SupplierPortal'));
+const YarnComplianceReports = lazy(() => import('./pages/yarn/ComplianceReports'));
 
 const drawerWidth = 260;
 const drawerCollapsedWidth = 72;
@@ -382,6 +396,7 @@ const App: React.FC = () => {
     try { await api.put('/settings', { language: next }); } catch { toast.error('Language preference will be saved when the connection is restored.'); }
   };
 
+
   const handleProfileClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -442,6 +457,19 @@ const App: React.FC = () => {
       payments: 'Payments',
       helpdesk: 'Helpdesk',
       tutorial: 'Tutorial',
+      invoicegen: 'AI Invoice Generator',
+      msme: 'MSME ERP',
+      vyapari: 'Vyapari (B2B)',
+      yarnhub: 'Yarn ERP',
+      yarnlive: 'Live Production Dashboard',
+      yarnmachine: 'Machine Management',
+      yarnquality: 'Quality Control',
+      yarnshift: 'Shift Management',
+      yarnwarehouse: 'Warehouse Management',
+      yarnhr: 'HR & Payroll',
+      yarnforecast: 'Demand Forecasting',
+      yarnsupplier: 'Supplier Portal',
+      yarncompliance: 'Compliance Reports',
     };
 
     if (currentPage !== 'dashboard') {
@@ -513,9 +541,27 @@ const App: React.FC = () => {
         { text: 'Sales Orders', icon: <OutwardIcon />, page: 'orders' },
         { text: 'Invoice Studio', icon: <BillingIcon />, page: 'invoicestudio' },
         { text: 'Customers & Ledger', icon: <PaymentsIcon />, page: 'customers' },
+        { text: 'AI Invoice Generator', icon: <BillingIcon />, page: 'invoicegen' },
+        { text: 'MSME ERP', icon: <StoreIcon />, page: 'msme' },
+        { text: 'Vyapari (B2B)', icon: <PaymentsIcon />, page: 'vyapari' },
         { text: 'Legacy Billing', icon: <BillingIcon />, page: 'billing' },
         { text: 'Business Reports', icon: <InsightsIcon />, page: 'reports' },
         { text: 'Legacy Insights', icon: <InsightsIcon />, page: 'insights' },
+      ]
+    },
+    {
+      label: 'Yarn ERP',
+      items: [
+        { text: 'Yarn ERP Hub', icon: <InventoryIcon />, page: 'yarnhub' },
+        { text: 'Live Dashboard', icon: <SummaryIcon />, page: 'yarnlive' },
+        { text: 'Machine Management', icon: <SyncIcon />, page: 'yarnmachine' },
+        { text: 'Quality Control', icon: <SecurityIcon />, page: 'yarnquality' },
+        { text: 'Shift Management', icon: <UsersIcon />, page: 'yarnshift' },
+        { text: 'Warehouse', icon: <StoreIcon />, page: 'yarnwarehouse' },
+        { text: 'HR & Payroll', icon: <UsersIcon />, page: 'yarnhr' },
+        { text: 'Demand Forecasting', icon: <InsightsIcon />, page: 'yarnforecast' },
+        { text: 'Supplier Portal', icon: <OutwardIcon />, page: 'yarnsupplier' },
+        { text: 'Compliance', icon: <SessionsIcon />, page: 'yarncompliance' },
       ]
     },
     {
@@ -538,7 +584,7 @@ const App: React.FC = () => {
   ];
 
   const tamilLabels: Record<string, string> = {
-    'Business Workspace': 'வணிக மையம்', Dashboard: 'முகப்பு', "Today's Summary": 'இன்றைய சுருக்கம்', Store: 'கடை', Inventory: 'சரக்கு', 'Inward / Batch': 'உள்வரவு / தொகுதி', 'Production & Job Work': 'உற்பத்தி மற்றும் வேலை ஒப்பந்தம்', 'Job Work Register': 'வேலை ஒப்பந்தப் பதிவு', Outwards: 'வெளியீடு', Costing: 'செலவீனம்', Catalogue: 'பொருள் பட்டியல்', 'Sales Orders': 'விற்பனை ஆணைகள்', 'Invoice Studio': 'விலைப்பட்டியல்', 'Customers & Ledger': 'வாடிக்கையாளர்கள் மற்றும் கணக்கு', 'Legacy Billing': 'முந்தைய பில்லிங்', Insights: 'அறிக்கைகள்', Settings: 'அமைப்புகள்', Helpdesk: 'உதவி', Tutorial: 'பயிற்சி',
+    'Business Workspace': 'வணிக மையம்', Dashboard: 'முகப்பு', "Today's Summary": 'இன்றைய சுருக்கம்', Store: 'கடை', Inventory: 'சரக்கு', 'Inward / Batch': 'உள்வரவு / தொகுதி', 'Production & Job Work': 'உற்பத்தி மற்றும் வேலை ஒப்பந்தம்', 'Job Work Register': 'வேலை ஒப்பந்தப் பதிவு', Outwards: 'வெளியீடு', Costing: 'செலவீனம்', Catalogue: 'பொருள் பட்டியல்', 'Sales Orders': 'விற்பனை ஆணைகள்', 'Invoice Studio': 'விலைப்பட்டியல்', 'Customers & Ledger': 'வாடிக்கையாளர்கள் மற்றும் கணக்கு', 'AI Invoice Generator': 'AI விலைப்பட்டியல்', 'MSME ERP': 'MSME ERP', 'Vyapari (B2B)': 'வியாபாரி (B2B)', 'Yarn ERP Hub': 'நூல் ERP', 'Legacy Billing': 'முந்தைய பில்லிங்', Insights: 'அறிக்கைகள்', Settings: 'அமைப்புகள்', Helpdesk: 'உதவி', Tutorial: 'பயிற்சி',
   };
   const labelFor = (label: string) => language === 'ta' ? (tamilLabels[label] || label) : label;
 
@@ -953,6 +999,20 @@ const App: React.FC = () => {
                           onFloatingNavChange={setFloatingNav}
                         />
                       )}
+                      {/* ── Merged sub-project pages ── */}
+                      {currentPage === 'invoicegen' && <InvoiceGenerator />}
+                      {currentPage === 'msme' && <MsmeErp />}
+                      {currentPage === 'vyapari' && <Vyapari />}
+                      {currentPage === 'yarnhub' && <YarnERP onNavigate={setCurrentPage} />}
+                      {currentPage === 'yarnlive' && <YarnLiveDashboard />}
+                      {currentPage === 'yarnmachine' && <YarnMachineManagement />}
+                      {currentPage === 'yarnquality' && <YarnQualityControl />}
+                      {currentPage === 'yarnshift' && <YarnShiftManagement />}
+                      {currentPage === 'yarnwarehouse' && <YarnWarehouseManagement />}
+                      {currentPage === 'yarnhr' && <YarnHRManagement />}
+                      {currentPage === 'yarnforecast' && <YarnDemandForecasting />}
+                      {currentPage === 'yarnsupplier' && <YarnSupplierPortal />}
+                      {currentPage === 'yarncompliance' && <YarnComplianceReports />}
 
                       {!allPages.includes(currentPage) && (
                         <Box sx={{ p: 4, textAlign: 'center' }}>
