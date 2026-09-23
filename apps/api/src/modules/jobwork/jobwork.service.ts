@@ -24,6 +24,7 @@ export class JobWorkService {
   async dispatch(body: any) {
     const lines = body.lines || [];
     if (!body.jobWorkerId || !body.processType?.trim() || lines.length === 0) throw new BadRequestException('Job worker, process and at least one material line are required');
+    if (new Set(lines.map((line: any) => Number(line.itemId))).size !== lines.length) throw new BadRequestException('Combine duplicate materials into one dispatch line');
     return this.prisma.$transaction(async (tx) => {
       for (const line of lines) {
         const quantity = Number(line.quantity);
@@ -43,10 +44,12 @@ export class JobWorkService {
   async receive(challanId: number, body: any) {
     const lines = body.lines || [];
     if (!lines.length) throw new BadRequestException('At least one receipt line is required');
+    if (new Set(lines.map((line: any) => Number(line.itemId))).size !== lines.length) throw new BadRequestException('Combine duplicate materials into one receipt line');
     return this.prisma.$transaction(async (tx) => {
       const challan = await tx.jobWorkChallan.findUnique({ where: { id: challanId }, include: { dispatchLines: true, receiptLines: true } });
       if (!challan) throw new BadRequestException('Job-work challan not found');
       if (challan.status === 'COMPLETED') throw new BadRequestException('This challan is already completed');
+      if (challan.status === 'CANCELLED') throw new BadRequestException('Cancelled challans cannot receive stock');
       for (const line of lines) {
         const qty = Number(line.quantity); const scrap = Number(line.scrapQty || 0);
         if (!line.itemId || qty <= 0 || scrap < 0) throw new BadRequestException('Receipt quantities must be valid');

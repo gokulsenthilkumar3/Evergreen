@@ -8,6 +8,24 @@ export default defineConfig({
   server: {
     port: 4000,
     strictPort: true,
+    proxy: {
+      '/api/backend': {
+        target: 'http://127.0.0.1:3001',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/backend/, ''),
+      },
+    },
+  },
+  preview: {
+    port: 4000,
+    strictPort: true,
+    proxy: {
+      '/api/backend': {
+        target: 'http://127.0.0.1:3001',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/backend/, ''),
+      },
+    },
   },
   build: {
     outDir: 'dist',

@@ -383,6 +383,7 @@ model CatalogueItem {
   costPrice         Float     @default(0)
   imageUrl          String?
   active            Boolean   @default(true)
+  shopVisible       Boolean   @default(false)
   legacySource      String?
   legacyId          String?
   brandId           Int?

@@ -122,8 +122,8 @@ function createWindow() {
     Menu.setApplicationMenu(menu);
 
     if (isDev) {
-        console.log('Running in DEV mode, loading localhost:3000');
-        mainWindow.loadURL('http://localhost:3000');
+        console.log('Running in DEV mode, loading localhost:4000');
+        mainWindow.loadURL('http://localhost:4000');
         mainWindow.webContents.openDevTools();
     } else {
         console.log(`Attempting to load local file: ${localFile}`);

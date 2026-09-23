@@ -3,24 +3,18 @@ import * as nodemailer from 'nodemailer';
 
 @Injectable()
 export class EmailService {
-  private transporter: nodemailer.Transporter;
+  private transporter?: nodemailer.Transporter;
 
   constructor() {
-    this.init();
-  }
-
-  private async init() {
-    // Create an Ethereal test account automatically
-    const testAccount = await nodemailer.createTestAccount();
-
+    const host = process.env.SMTP_HOST;
+    if (!host) return;
+    const user = process.env.SMTP_USER;
+    const pass = process.env.SMTP_PASSWORD;
     this.transporter = nodemailer.createTransport({
-      host: testAccount.smtp.host,
-      port: testAccount.smtp.port,
-      secure: testAccount.smtp.secure,
-      auth: {
-        user: testAccount.user,
-        pass: testAccount.pass,
-      },
+      host,
+      port: Number(process.env.SMTP_PORT || 587),
+      secure: process.env.SMTP_SECURE === 'true',
+      ...(user && pass ? { auth: { user, pass } } : {}),
     });
   }
 
@@ -31,7 +25,6 @@ export class EmailService {
     location: string,
   ) {
     if (!this.transporter) {
-      console.warn('Email service not initialized yet');
       return;
     }
 
@@ -54,6 +47,6 @@ export class EmailService {
     });
 
     console.log('📧 Login notification sent!');
-    console.log('📧 Preview URL: %s', nodemailer.getTestMessageUrl(info));
+    return info.messageId;
   }
 }

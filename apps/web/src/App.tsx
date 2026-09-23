@@ -452,12 +452,12 @@ const App: React.FC = () => {
       users: 'User Management',
       settings: 'Settings',
       logs: 'Activity Logs',
-      store: 'Online Store',
+      store: 'Store',
       insights: 'Insights & Reports',
       payments: 'Payments',
       helpdesk: 'Helpdesk',
       tutorial: 'Tutorial',
-      invoicegen: 'AI Invoice Generator',
+      invoicegen: 'Invoice Designer',
       msme: 'MSME ERP',
       vyapari: 'Vyapari (B2B)',
       yarnhub: 'Yarn ERP',
@@ -541,7 +541,7 @@ const App: React.FC = () => {
         { text: 'Sales Orders', icon: <OutwardIcon />, page: 'orders' },
         { text: 'Invoice Studio', icon: <BillingIcon />, page: 'invoicestudio' },
         { text: 'Customers & Ledger', icon: <PaymentsIcon />, page: 'customers' },
-        { text: 'AI Invoice Generator', icon: <BillingIcon />, page: 'invoicegen' },
+        { text: 'Invoice Designer', icon: <BillingIcon />, page: 'invoicegen' },
         { text: 'MSME ERP', icon: <StoreIcon />, page: 'msme' },
         { text: 'Vyapari (B2B)', icon: <PaymentsIcon />, page: 'vyapari' },
         { text: 'Legacy Billing', icon: <BillingIcon />, page: 'billing' },
@@ -584,7 +584,7 @@ const App: React.FC = () => {
   ];
 
   const tamilLabels: Record<string, string> = {
-    'Business Workspace': 'வணிக மையம்', Dashboard: 'முகப்பு', "Today's Summary": 'இன்றைய சுருக்கம்', Store: 'கடை', Inventory: 'சரக்கு', 'Inward / Batch': 'உள்வரவு / தொகுதி', 'Production & Job Work': 'உற்பத்தி மற்றும் வேலை ஒப்பந்தம்', 'Job Work Register': 'வேலை ஒப்பந்தப் பதிவு', Outwards: 'வெளியீடு', Costing: 'செலவீனம்', Catalogue: 'பொருள் பட்டியல்', 'Sales Orders': 'விற்பனை ஆணைகள்', 'Invoice Studio': 'விலைப்பட்டியல்', 'Customers & Ledger': 'வாடிக்கையாளர்கள் மற்றும் கணக்கு', 'AI Invoice Generator': 'AI விலைப்பட்டியல்', 'MSME ERP': 'MSME ERP', 'Vyapari (B2B)': 'வியாபாரி (B2B)', 'Yarn ERP Hub': 'நூல் ERP', 'Legacy Billing': 'முந்தைய பில்லிங்', Insights: 'அறிக்கைகள்', Settings: 'அமைப்புகள்', Helpdesk: 'உதவி', Tutorial: 'பயிற்சி',
+    'Business Workspace': 'வணிக மையம்', Dashboard: 'முகப்பு', "Today's Summary": 'இன்றைய சுருக்கம்', Store: 'கடை', Inventory: 'சரக்கு', 'Inward / Batch': 'உள்வரவு / தொகுதி', 'Production & Job Work': 'உற்பத்தி மற்றும் வேலை ஒப்பந்தம்', 'Job Work Register': 'வேலை ஒப்பந்தப் பதிவு', Outwards: 'வெளியீடு', Costing: 'செலவீனம்', Catalogue: 'பொருள் பட்டியல்', 'Sales Orders': 'விற்பனை ஆணைகள்', 'Invoice Studio': 'விலைப்பட்டியல்', 'Customers & Ledger': 'வாடிக்கையாளர்கள் மற்றும் கணக்கு', 'Invoice Designer': 'விலைப்பட்டியல் வடிவமைப்பு', 'MSME ERP': 'MSME ERP', 'Vyapari (B2B)': 'வியாபாரி (B2B)', 'Yarn ERP Hub': 'நூல் ERP', 'Legacy Billing': 'முந்தைய பில்லிங்', Insights: 'அறிக்கைகள்', Settings: 'அமைப்புகள்', Helpdesk: 'உதவி', Tutorial: 'பயிற்சி',
   };
   const labelFor = (label: string) => language === 'ta' ? (tamilLabels[label] || label) : label;
 
@@ -982,7 +982,7 @@ const App: React.FC = () => {
                       {currentPage === 'outward' && <OutwardEntry userRole={user.role} username={user.username} />}
                       {currentPage === 'production' && <ProductionEntry userRole={user.role} username={user.username} />}
                       {currentPage === 'billing' && <Billing userRole={user.role} username={user.username} />}
-                      {currentPage === 'store' && <Store />}
+                      {currentPage === 'store' && <Store onNavigate={setCurrentPage} />}
                       {currentPage === 'insights' && <Insights />}
                       {currentPage === 'payments' && <Payments />}
                       {currentPage === 'helpdesk' && <Helpdesk />}
@@ -1000,8 +1000,8 @@ const App: React.FC = () => {
                         />
                       )}
                       {/* ── Merged sub-project pages ── */}
-                      {currentPage === 'invoicegen' && <InvoiceGenerator />}
-                      {currentPage === 'msme' && <MsmeErp />}
+                      {currentPage === 'invoicegen' && <InvoiceGenerator onNavigate={setCurrentPage} />}
+                      {currentPage === 'msme' && <MsmeErp onNavigate={setCurrentPage} />}
                       {currentPage === 'vyapari' && <Vyapari />}
                       {currentPage === 'yarnhub' && <YarnERP onNavigate={setCurrentPage} />}
                       {currentPage === 'yarnlive' && <YarnLiveDashboard />}

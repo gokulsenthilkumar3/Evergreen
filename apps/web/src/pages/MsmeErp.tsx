@@ -13,7 +13,7 @@ const MSME_TABS = [
   { label: 'Invoices', icon: <InvoicesIcon fontSize="small" /> },
 ];
 
-const MsmeErp: React.FC = () => {
+const MsmeErp: React.FC<{ onNavigate: (page: string) => void }> = ({ onNavigate }) => {
   const [tab, setTab] = useState(0);
   const [search, setSearch] = useState('');
 
@@ -77,7 +77,7 @@ const MsmeErp: React.FC = () => {
           <TabPanel value={tab} index={1}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
               <TextField size="small" placeholder="Search products…" value={search} onChange={e => setSearch(e.target.value)} InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment> }} sx={{ width: 300 }} />
-              <Button variant="contained" startIcon={<AddIcon />} size="small">Add Product</Button>
+              <Button variant="contained" startIcon={<AddIcon />} size="small" onClick={() => onNavigate('catalogue')}>Add Product</Button>
             </Box>
             {itemsLoading ? <CircularProgress /> : (
               <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 3 }}>
@@ -91,7 +91,7 @@ const MsmeErp: React.FC = () => {
                         <TableCell><Typography variant="body2" color="text.secondary">{item.category?.name || '\u2014'}</Typography></TableCell>
                         <TableCell align="right"><Typography variant="body2">{item.stock?.available ?? 0} {item.uom}</Typography></TableCell>
                         <TableCell align="right"><Typography variant="body2" fontWeight={600}>\u20b9{(item.salePrice || 0).toLocaleString('en-IN')}</Typography></TableCell>
-                        <TableCell><Chip label={item.archived ? 'Archived' : 'Active'} size="small" color={item.archived ? 'default' : 'success'} variant="outlined" /></TableCell>
+                        <TableCell><Chip label={item.active ? 'Active' : 'Archived'} size="small" color={item.active ? 'success' : 'default'} variant="outlined" /></TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -103,7 +103,7 @@ const MsmeErp: React.FC = () => {
           <TabPanel value={tab} index={2}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
               <TextField size="small" placeholder="Search customers…" value={search} onChange={e => setSearch(e.target.value)} InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment> }} sx={{ width: 300 }} />
-              <Button variant="contained" startIcon={<AddIcon />} size="small">Add Customer</Button>
+              <Button variant="contained" startIcon={<AddIcon />} size="small" onClick={() => onNavigate('customers')}>Add Customer</Button>
             </Box>
             {cusLoading ? <CircularProgress /> : (
               <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 3 }}>
@@ -115,7 +115,7 @@ const MsmeErp: React.FC = () => {
                       <TableRow key={c.id} hover>
                         <TableCell><Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}><Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main', fontSize: '0.8rem' }}>{c.name?.charAt(0)}</Avatar><Typography variant="body2" fontWeight={600}>{c.name}</Typography></Box></TableCell>
                         <TableCell><Typography variant="body2" color="text.secondary">{c.phone || '\u2014'}</Typography></TableCell>
-                        <TableCell><Typography variant="body2" color="text.secondary">{c.city || '\u2014'}</Typography></TableCell>
+                        <TableCell><Typography variant="body2" color="text.secondary">{c.state || '\u2014'}</Typography></TableCell>
                         <TableCell align="right"><Typography variant="body2" fontWeight={700} color={c.balance > 0 ? 'error.main' : 'success.main'}>\u20b9{(c.balance || 0).toLocaleString('en-IN')}</Typography></TableCell>
                       </TableRow>
                     ))}
@@ -128,7 +128,7 @@ const MsmeErp: React.FC = () => {
           <TabPanel value={tab} index={3}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
               <TextField size="small" placeholder="Search invoices…" value={search} onChange={e => setSearch(e.target.value)} InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment> }} sx={{ width: 300 }} />
-              <Button variant="contained" startIcon={<AddIcon />} size="small">New Invoice</Button>
+              <Button variant="contained" startIcon={<AddIcon />} size="small" onClick={() => onNavigate('invoicestudio')}>New Invoice</Button>
             </Box>
             {invLoading ? <CircularProgress /> : (
               <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 3 }}>
@@ -138,7 +138,7 @@ const MsmeErp: React.FC = () => {
                     {filtered(invoices).length === 0 && <TableRow><TableCell colSpan={5} align="center" sx={{ py: 6, color: 'text.disabled' }}>No invoices found.</TableCell></TableRow>}
                     {filtered(invoices).map((inv: any) => (
                       <TableRow key={inv.id} hover>
-                        <TableCell><Typography variant="body2" fontWeight={700} color="primary.main">{inv.invoiceNumber || `#${inv.id}`}</Typography></TableCell>
+                        <TableCell><Typography variant="body2" fontWeight={700} color="primary.main">{inv.invoiceNo || `#${inv.id}`}</Typography></TableCell>
                         <TableCell><Typography variant="body2">{inv.customer?.name || '\u2014'}</Typography></TableCell>
                         <TableCell><Typography variant="body2" color="text.secondary">{inv.date ? new Date(inv.date).toLocaleDateString('en-IN') : '\u2014'}</Typography></TableCell>
                         <TableCell align="right"><Typography variant="body2" fontWeight={700}>\u20b9{(inv.total || 0).toLocaleString('en-IN')}</Typography></TableCell>

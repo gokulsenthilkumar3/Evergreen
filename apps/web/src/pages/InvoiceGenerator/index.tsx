@@ -7,7 +7,7 @@ import {
 import {
   Add as AddIcon, Delete as DeleteIcon, Download as DownloadIcon,
   Settings as SettingsIcon, Palette as PaletteIcon, AutoAwesome as AIIcon,
-  Security as ShieldIcon, Receipt as ReceiptIcon, Image as ImageIcon, Close as CloseIcon,
+  Receipt as ReceiptIcon, Image as ImageIcon, Close as CloseIcon,
 } from '@mui/icons-material';
 import { useInvoiceStore } from './store';
 
@@ -52,7 +52,7 @@ function UploadZone({ label, value, onUpload, onRemove }: { label: string; value
   );
 }
 
-const InvoiceGenerator: React.FC = () => {
+const InvoiceGenerator: React.FC<{ onNavigate?: (page: string) => void }> = ({ onNavigate }) => {
   const store = useInvoiceStore();
   const invoiceRef = useRef<HTMLDivElement>(null);
   const [tab, setTab] = useState(0);
@@ -88,12 +88,12 @@ const InvoiceGenerator: React.FC = () => {
       <Paper variant="outlined" sx={{ width: { lg: 320 }, minWidth: { lg: 300 }, borderRadius: 3, p: 0, display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
         <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <ReceiptIcon color="primary" />
-          <Box><Typography fontWeight={800}>AI Invoice Generator</Typography><Typography variant="caption" color="text.secondary">Build, Theme & Export PDF</Typography></Box>
+          <Box><Typography fontWeight={800}>Invoice Designer</Typography><Typography variant="caption" color="text.secondary">Draft, theme and export a PDF</Typography></Box>
         </Box>
         <Tabs value={tab} onChange={(_, v) => setTab(v)} variant="fullWidth" sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tab icon={<SettingsIcon fontSize="small" />} iconPosition="start" label="Details" sx={{ minHeight: 44, fontSize: '0.75rem' }} />
           <Tab icon={<PaletteIcon fontSize="small" />} iconPosition="start" label="Theme" sx={{ minHeight: 44, fontSize: '0.75rem' }} />
-          <Tab icon={<AIIcon fontSize="small" />} iconPosition="start" label="AI / Hash" sx={{ minHeight: 44, fontSize: '0.75rem' }} />
+          <Tab icon={<AIIcon fontSize="small" />} iconPosition="start" label="Suggestions" sx={{ minHeight: 44, fontSize: '0.75rem' }} />
         </Tabs>
         <Box sx={{ flex: 1, overflowY: 'auto', p: 2.5, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
           {tab === 0 && <>
@@ -151,18 +151,23 @@ const InvoiceGenerator: React.FC = () => {
           </>}
           {tab === 2 && <>
             <Paper variant="outlined" sx={{ p: 2, borderRadius: 3, bgcolor: 'action.hover' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}><AIIcon color="primary" fontSize="small" /><Typography fontWeight={700}>AI Smart Fill</Typography><Chip label="Beta" size="small" color="primary" variant="outlined" /></Box>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>Auto-generates optimized line items.</Typography>
-              <Button variant="contained" fullWidth size="small" onClick={() => { store.addItem(); const items = useInvoiceStore.getState().items; const last = items[items.length - 1]; if (last) { store.updateItem(last.id, 'description', 'AI Consulting & Optimization'); store.updateItem(last.id, 'rate', 2500); } }}>Generate Smart Additions</Button>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}><AIIcon color="primary" fontSize="small" /><Typography fontWeight={700}>Draft checks</Typography></Box>
+              <Typography variant="body2" color="text.secondary">{store.clientName ? '✓ Client name added' : 'Add a client name before exporting.'}</Typography>
+              <Typography variant="body2" color="text.secondary">{store.clientTaxId ? '✓ Client tax ID added' : 'Check whether the client has a GSTIN.'}</Typography>
+              <Typography variant="body2" color="text.secondary">{store.dueDate ? '✓ Due date added' : 'Add a due date and payment terms.'}</Typography>
+              <Typography variant="body2" color="text.secondary">{store.items.every(item => item.description && item.quantity > 0 && item.rate >= 0) ? '✓ Lines have descriptions and valid quantities' : 'Complete each line description, quantity and rate.'}</Typography>
             </Paper>
             <Paper variant="outlined" sx={{ p: 2, borderRadius: 3 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}><ShieldIcon color="success" /><Typography fontWeight={700}>Tamper-Proof Hash</Typography></Box>
-              <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.selected', fontFamily: 'monospace', fontSize: '0.9rem', fontWeight: 700, letterSpacing: '2px', textAlign: 'center', userSelect: 'all' }}>{store.hash || '\u2014'}</Box>
+              <Typography fontWeight={700}>Document status</Typography>
+              <Typography variant="body2" color="text.secondary">This is a draft PDF. Finalise the invoice in Invoice Studio to receive a recorded SHA-256 fingerprint and verification key.</Typography>
             </Paper>
             <Button variant="outlined" color="error" fullWidth onClick={store.resetInvoice}>Reset Invoice</Button>
           </>}
         </Box>
         <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
+          <Button variant="text" fullWidth onClick={() => onNavigate?.('invoicestudio')} sx={{ mb: 1 }}>
+            Open Invoice Studio to finalise
+          </Button>
           <Button variant="contained" fullWidth size="large" startIcon={exporting ? <CircularProgress size={16} color="inherit" /> : <DownloadIcon />} onClick={handleExport} disabled={exporting} sx={{ borderRadius: 2, fontWeight: 700 }}>
             {exporting ? 'Generating PDF\u2026' : 'Export PDF'}
           </Button>
@@ -237,10 +242,8 @@ const InvoiceGenerator: React.FC = () => {
           {/* Footer */}
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', pt: 2, borderTop: `1px solid ${store.accentColor}22` }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <ShieldIcon sx={{ color: '#10b981', fontSize: 18 }} />
               <Box>
-                <Typography variant="caption" sx={{ color: '#10b981', fontWeight: 700 }}>Verified \u00b7 Tamper-Proof</Typography>
-                <Typography variant="caption" sx={{ display: 'block', fontFamily: 'monospace', letterSpacing: 1.5, opacity: 0.6 }}>{store.hash}</Typography>
+                <Typography variant="caption" sx={{ fontWeight: 700 }}>Draft preview</Typography>
               </Box>
             </Box>
             {((store.signatureType === 'upload' && store.signature) || (store.signatureType === 'type' && store.typedSignature)) && (
