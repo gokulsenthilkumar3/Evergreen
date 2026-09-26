@@ -7,14 +7,18 @@ import {
   UseGuards,
   Req,
   UnauthorizedException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { WebAuthnService } from './webauthn.service';
 import { JwtAuthGuard } from '../../guards/jwt-auth.guard';
 import { PrismaService } from '../../services/prisma.service';
 import type { Request } from 'express';
+import { Public } from '../../decorators/public.decorator';
+import { Roles } from '../../decorators/roles.decorator';
 
 @Controller('auth')
+@Roles('VIEWER')
 export class AuthController {
   constructor(
     private authService: AuthService,
@@ -23,15 +27,17 @@ export class AuthController {
   ) {}
 
   @Post('signup')
-  async signup(@Body() signupDto: any) {
-    if (!signupDto.username || !signupDto.password || !signupDto.email) {
-      throw new UnauthorizedException('Missing required fields');
-    }
-    return this.authService.signup(signupDto);
+  async signup() {
+    // Staff accounts are created by authorized staff via /users only.
+    throw new ForbiddenException('Public staff signup is disabled');
   }
 
+  @Public()
   @Post('login')
   async login(@Body() loginDto: any, @Req() req: Request) {
+    if (typeof loginDto?.username !== 'string' || typeof loginDto?.password !== 'string') {
+      throw new UnauthorizedException('Invalid credentials');
+    }
     const user = await this.authService.validateUser(
       loginDto.username,
       loginDto.password,
@@ -140,6 +146,7 @@ export class AuthController {
     return this.webAuthnService.verifyRegistration(req.user.userId, body);
   }
 
+  @Public()
   @Post('passkey/auth-options')
   async generatePasskeyAuthenticationOptions(
     @Body('username') username: string,
@@ -147,6 +154,7 @@ export class AuthController {
     return this.webAuthnService.getAuthenticationOptions(username);
   }
 
+  @Public()
   @Post('passkey/auth-verify')
   async verifyPasskeyAuthentication(@Body() body: any, @Req() req: Request) {
     const { username, response } = body;

@@ -141,6 +141,7 @@ const ActivityIcon = ({ type }: { type: string }) => {
 };
 
 function groupByDay(items: any[]): { label: string; items: any[] }[] {
+    if (!Array.isArray(items)) return [];
     const today = new Date().toLocaleDateString('en-CA');
     const yesterday = new Date(Date.now() - 86_400_000).toLocaleDateString('en-CA');
     const groups: Record<string, any[]> = {};

@@ -1,7 +1,9 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { PrismaService } from '../../services/prisma.service';
+import { Roles } from '../../decorators/roles.decorator';
 
 @Controller('logs')
+@Roles('ADMIN')
 export class LogsController {
   constructor(private prisma: PrismaService) {}
 

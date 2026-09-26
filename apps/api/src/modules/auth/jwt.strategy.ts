@@ -3,6 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../../services/prisma.service';
 import { ConfigService } from '@nestjs/config';
+import { requireJwtSecret } from './jwt-secret';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -13,8 +14,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey:
-        configService.get<string>('JWT_SECRET') || 'super-secret-key',
+      secretOrKey: requireJwtSecret(configService),
     });
   }
 
@@ -28,9 +28,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       where: { id: payload.sessionId },
     });
 
-    if (!session || !session.isValid) {
+    if (!session || !session.isValid || session.userId !== payload.sub) {
       throw new UnauthorizedException('Session has been revoked');
     }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: session.userId },
+      select: { id: true, username: true, role: true },
+    });
+    if (!user) throw new UnauthorizedException('User no longer exists');
 
     // Also update lastActive
     await this.prisma.session
@@ -41,9 +47,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       .catch(() => {}); // fire and forget
 
     return {
-      userId: payload.sub,
-      username: payload.username,
-      role: payload.role,
+      userId: user.id,
+      username: user.username,
+      role: user.role,
       sessionId: payload.sessionId,
     };
   }

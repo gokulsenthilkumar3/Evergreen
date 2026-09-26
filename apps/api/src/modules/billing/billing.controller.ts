@@ -7,10 +7,13 @@ import {
   Param,
   Put,
   BadRequestException,
+  UseGuards,
 } from '@nestjs/common';
 import { PrismaService } from '../../services/prisma.service';
+import { LegacyBillingReadOnlyGuard } from '../../guards/legacy-billing-read-only.guard';
 
 @Controller('billing')
+@UseGuards(LegacyBillingReadOnlyGuard)
 export class BillingController {
   constructor(private prisma: PrismaService) {}
 

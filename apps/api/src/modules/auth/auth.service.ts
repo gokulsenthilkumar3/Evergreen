@@ -3,11 +3,13 @@ import {
   UnauthorizedException,
   OnModuleInit,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../services/prisma.service';
 import { EmailService } from './email.service';
 import * as bcrypt from 'bcrypt';
+import { ConfigService } from '@nestjs/config';
 import { TOTP, generateURI } from 'otplib';
 const authenticator = new TOTP();
 
@@ -15,32 +17,36 @@ const SALT_ROUNDS = 10;
 
 @Injectable()
 export class AuthService implements OnModuleInit {
+  private readonly logger = new Logger(AuthService.name);
   constructor(
     private jwtService: JwtService,
     private prisma: PrismaService,
     private emailService: EmailService,
+    private configService: ConfigService,
   ) {}
 
   async onModuleInit() {
     try {
       const count = await this.prisma.user.count();
       if (count === 0) {
-        console.log(
-          '🌱 No users found in the database. Seeding default ADMIN user...',
-        );
-        const hashedPassword = await bcrypt.hash('author123', SALT_ROUNDS);
+        const username = this.configService.get<string>('BOOTSTRAP_ADMIN_USERNAME');
+        const password = this.configService.get<string>('BOOTSTRAP_ADMIN_PASSWORD');
+        const email = this.configService.get<string>('BOOTSTRAP_ADMIN_EMAIL');
+        if (!username || !email || !password || password.length < 12) {
+          this.logger.warn('No users exist. Set BOOTSTRAP_ADMIN_USERNAME, BOOTSTRAP_ADMIN_EMAIL and a 12+ character BOOTSTRAP_ADMIN_PASSWORD for one-time setup.');
+          return;
+        }
+        const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
         await this.prisma.user.create({
           data: {
-            username: 'author',
+            username,
             password: hashedPassword,
             role: 'ADMIN',
             name: 'System Admin',
-            email: 'admin@evergreenyarn.com',
+            email,
           },
         });
-        console.log(
-          '✅ Default ADMIN user created. Username: author | Password: author123 | ⚠️ Change immediately!',
-        );
+        this.logger.warn('One-time administrator created. Remove bootstrap variables now.');
       }
     } catch (e) {
       console.error('Failed to seed default user:', e);

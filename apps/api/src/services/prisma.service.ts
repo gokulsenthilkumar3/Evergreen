@@ -12,13 +12,9 @@ export class PrismaService
   }
   async onModuleInit() {
     console.log('🔌 Connecting to Prisma database...');
-    console.log(`📂 Database URL: ${process.env.DATABASE_URL}`);
-    try {
-      await this.$connect();
-      console.log('✅ Prisma connected.');
-    } catch (error) {
-      console.error('❌ Error during Prisma initialization:', error);
-    }
+    // DATABASE_URL may contain production credentials; never print it.
+    await this.$connect();
+    console.log('✅ Prisma connected.');
   }
 
   async onModuleDestroy() {

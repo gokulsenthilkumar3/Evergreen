@@ -27,6 +27,7 @@ import {
   InputAdornment,
   Paper,
   Chip,
+  Alert,
   type PaletteMode,
 } from '@mui/material';
 import {
@@ -61,7 +62,6 @@ import api from './utils/api';
 import getTheme from './theme';
 import type { ThemeName } from './theme';
 import Login from './components/Login';
-import Signup from './components/Signup';
 import { KeyboardShortcutsProvider } from './context/KeyboardShortcutsContext';
 import { ScreenReaderAnnouncer } from './components/common/ScreenReaderAnnouncer';
 import Breadcrumbs from './components/common/Breadcrumbs';
@@ -355,11 +355,11 @@ const App: React.FC = () => {
   const [drawerOpen, setDrawerOpen] = useState(true);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [isSyncing, setIsSyncing] = useState(false);
-  const [authView, setAuthView] = useState<'login' | 'signup'>('login');
   const queryClient = useQueryClient();
 
   const { data: settings } = useQuery({
     queryKey: ['settings'],
+    enabled: Boolean(user),
     queryFn: async () => {
       const response = await api.get('/settings');
       return response.data;
@@ -544,7 +544,6 @@ const App: React.FC = () => {
         { text: 'Invoice Designer', icon: <BillingIcon />, page: 'invoicegen' },
         { text: 'MSME ERP', icon: <StoreIcon />, page: 'msme' },
         { text: 'Vyapari (B2B)', icon: <PaymentsIcon />, page: 'vyapari' },
-        { text: 'Legacy Billing', icon: <BillingIcon />, page: 'billing' },
         { text: 'Business Reports', icon: <InsightsIcon />, page: 'reports' },
         { text: 'Legacy Insights', icon: <InsightsIcon />, page: 'insights' },
       ]
@@ -592,21 +591,7 @@ const App: React.FC = () => {
     return (
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        {authView === 'login' ? (
-          <Login 
-            onLoginSuccess={handleLogin} 
-            settings={settings} 
-            onSwitchToSignup={() => setAuthView('signup')} 
-          />
-        ) : (
-          <Signup 
-            onSignupSuccess={() => {
-              setAuthView('login');
-              toast.success('Account created successfully! Please log in.');
-            }} 
-            onSwitchToLogin={() => setAuthView('login')} 
-          />
-        )}
+        <Login onLoginSuccess={handleLogin} settings={settings} />
       </ThemeProvider>
     );
   }
@@ -632,7 +617,7 @@ const App: React.FC = () => {
                     { text: 'Dashboard', icon: <DashboardIcon />, page: 'dashboard' },
                     { text: 'Inventory', icon: <InventoryIcon />, page: 'inventory' },
                     { text: 'Production',icon: <WasteIcon />,     page: 'production' },
-                    { text: 'Billing',   icon: <BillingIcon />,   page: 'billing' },
+                    { text: 'Invoice Studio', icon: <BillingIcon />, page: 'invoicestudio' },
                   ].map(item => {
                     const active = currentPage === item.page;
                     return (
@@ -1000,6 +985,11 @@ const App: React.FC = () => {
                         />
                       )}
                       {/* ── Merged sub-project pages ── */}
+                      {(currentPage === 'vyapari' || currentPage.startsWith('yarn')) && (
+                        <Alert severity="warning" sx={{ m: 2 }}>
+                          Prototype view: figures and records on this screen are sample data, not live EverGreen business data. Do not use them for operational decisions.
+                        </Alert>
+                      )}
                       {currentPage === 'invoicegen' && <InvoiceGenerator onNavigate={setCurrentPage} />}
                       {currentPage === 'msme' && <MsmeErp onNavigate={setCurrentPage} />}
                       {currentPage === 'vyapari' && <Vyapari />}

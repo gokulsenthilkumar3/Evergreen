@@ -7,6 +7,7 @@ import { JwtStrategy } from './jwt.strategy';
 import { EmailService } from './email.service';
 import { WebAuthnService } from './webauthn.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { requireJwtSecret } from './jwt-secret';
 
 @Module({
   imports: [
@@ -14,7 +15,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET') || 'super-secret-key',
+        secret: requireJwtSecret(configService),
         signOptions: { expiresIn: '1d' },
       }),
       inject: [ConfigService],

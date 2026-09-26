@@ -1,5 +1,5 @@
 ﻿import React from 'react';
-import { Box, Typography, Grid, Card, CardContent, CardActionArea, Chip, Paper } from '@mui/material';
+import { Box, Typography, Grid, Card, CardContent, CardActionArea, Chip } from '@mui/material';
 import {
   Speed as SpeedIcon, PrecisionManufacturing as MachineIcon, VerifiedUser as QualityIcon,
   Schedule as ShiftIcon, Warehouse as WarehouseIcon, People as HRIcon,
@@ -17,13 +17,13 @@ interface YarnModule {
 }
 
 const MODULES: YarnModule[] = [
-  { title: 'Live Production Dashboard', description: 'Real-time machine OEE, spindle status, batch tracking', icon: <SpeedIcon sx={{ fontSize: 36 }} />, page: 'yarnlive', color: '#059669', badge: 'Live' },
+  { title: 'Production Dashboard Preview', description: 'Sample machine OEE, spindle status and batch tracking layout', icon: <SpeedIcon sx={{ fontSize: 36 }} />, page: 'yarnlive', color: '#059669', badge: 'Preview' },
   { title: 'Machine Management', description: 'Machine registry, maintenance log, capacity planning', icon: <MachineIcon sx={{ fontSize: 36 }} />, page: 'yarnmachine', color: '#3b82f6' },
   { title: 'Quality Control', description: 'Inspection workflows, rejection tracking, analytics', icon: <QualityIcon sx={{ fontSize: 36 }} />, page: 'yarnquality', color: '#8b5cf6' },
   { title: 'Shift Management', description: 'Shift scheduling, attendance, efficiency tracking', icon: <ShiftIcon sx={{ fontSize: 36 }} />, page: 'yarnshift', color: '#f59e0b' },
   { title: 'Warehouse Management', description: 'Multi-location stock, bin tracking, stock transfer', icon: <WarehouseIcon sx={{ fontSize: 36 }} />, page: 'yarnwarehouse', color: '#0ea5e9' },
   { title: 'HR & Payroll', description: 'Employee records, attendance, salary processing', icon: <HRIcon sx={{ fontSize: 36 }} />, page: 'yarnhr', color: '#ec4899' },
-  { title: 'Demand Forecasting', description: 'AI-powered demand analysis, procurement recommendations', icon: <ForecastIcon sx={{ fontSize: 36 }} />, page: 'yarnforecast', color: '#14b8a6', badge: 'AI' },
+  { title: 'Demand Forecasting Preview', description: 'Sample demand analysis and procurement recommendations layout', icon: <ForecastIcon sx={{ fontSize: 36 }} />, page: 'yarnforecast', color: '#14b8a6', badge: 'Preview' },
   { title: 'Supplier Portal', description: 'Supplier onboarding, performance rating, PO management', icon: <SupplierIcon sx={{ fontSize: 36 }} />, page: 'yarnsupplier', color: '#f97316' },
   { title: 'Compliance Reports', description: 'Labour law, environmental, statutory filings', icon: <ComplianceIcon sx={{ fontSize: 36 }} />, page: 'yarncompliance', color: '#6b7280' },
 ];
@@ -35,20 +35,10 @@ const YarnERP: React.FC<{ onNavigate?: (page: string) => void }> = ({ onNavigate
         <FactoryIcon color="primary" sx={{ fontSize: 36 }} />
         <Box>
           <Typography variant="h4" fontWeight={800}>Yarn ERP</Typography>
-          <Typography color="text.secondary">Complete yarn manufacturing management suite</Typography>
+          <Typography color="text.secondary">Yarn capability previews; operational integration is still in progress.</Typography>
         </Box>
       </Box>
     </Box>
-
-    {/* Quick stats */}
-    <Paper variant="outlined" sx={{ p: 2, borderRadius: 3, mb: 3, display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-      {[['9', 'Modules'], ['50+', 'Features'], ['Real-time', 'Monitoring'], ['AI-Powered', 'Forecasting']].map(([val, lab]) => (
-        <Box key={lab} sx={{ textAlign: 'center' }}>
-          <Typography variant="h5" fontWeight={900} color="primary.main">{val}</Typography>
-          <Typography variant="caption" color="text.secondary">{lab}</Typography>
-        </Box>
-      ))}
-    </Paper>
 
     <Grid container spacing={2.5}>
       {MODULES.map(m => (

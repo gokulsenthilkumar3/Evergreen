@@ -71,7 +71,7 @@ const UnifiedWorkspace: React.FC<UnifiedWorkspaceProps> = ({ onNavigate }) => (
         <Button variant="contained" color="inherit" onClick={() => onNavigate('dashboard')} endIcon={<ArrowIcon />} sx={{ color: '#065f46', fontWeight: 800 }}>
           View business dashboard
         </Button>
-        <Button variant="outlined" onClick={() => onNavigate('billing')} sx={{ color: 'common.white', borderColor: 'rgba(255,255,255,.55)', fontWeight: 700 }}>
+        <Button variant="outlined" onClick={() => onNavigate('invoicestudio')} sx={{ color: 'common.white', borderColor: 'rgba(255,255,255,.55)', fontWeight: 700 }}>
           New invoice
         </Button>
       </Stack>

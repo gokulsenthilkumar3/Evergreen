@@ -1,5 +1,6 @@
 import { Controller, Get, Put, Body } from '@nestjs/common';
 import { SettingsService } from './settings.service';
+import { Roles } from '../../decorators/roles.decorator';
 
 @Controller('settings')
 export class SettingsController {
@@ -11,6 +12,7 @@ export class SettingsController {
   }
 
   @Put()
+  @Roles('ADMIN')
   async updateSettings(@Body() data: any) {
     return this.settingsService.updateSettings(data);
   }

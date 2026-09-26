@@ -20,6 +20,7 @@ export class UsersController {
   constructor(private usersService: UsersService) {}
 
   @Post()
+  @Roles('ADMIN')
   async register(@Body() createUserDto: any) {
     return this.usersService.createUser(createUserDto);
   }
@@ -30,11 +31,13 @@ export class UsersController {
   }
 
   @Put(':id')
+  @Roles('ADMIN')
   async updateUser(@Param('id') id: string, @Body() updateDto: any) {
     return this.usersService.updateUser(id, updateDto);
   }
 
   @Delete(':id')
+  @Roles('ADMIN')
   async deleteUser(@Param('id') id: string) {
     return this.usersService.deleteUser(id);
   }

@@ -40,7 +40,7 @@ export function useNotificationSync(settings: any) {
     });
 
     useEffect(() => {
-        if (!yarnStock || !settings) return;
+        if (!yarnStock || typeof yarnStock !== 'object' || !settings) return;
         const threshold: number = Number(settings.lowStockThreshold) || 100;
 
         Object.entries(yarnStock).forEach(([count, qty]) => {
@@ -64,13 +64,13 @@ export function useNotificationSync(settings: any) {
         queryKey: ['notif-invoices'],
         queryFn: async () => {
             const res = await api.get('/billing/invoices');
-            return res.data as any[];
+            return Array.isArray(res.data) ? res.data : (res.data?.data || []);
         },
         staleTime: SYNC_INTERVAL_MS,
     });
 
     useEffect(() => {
-        if (!invoices) return;
+        if (!invoices || !Array.isArray(invoices)) return;
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
@@ -100,13 +100,13 @@ export function useNotificationSync(settings: any) {
         queryKey: ['notif-production'],
         queryFn: async () => {
             const res = await api.get('/production');
-            return res.data as any[];
+            return Array.isArray(res.data) ? res.data : (res.data?.data || []);
         },
         staleTime: SYNC_INTERVAL_MS,
     });
 
     useEffect(() => {
-        if (!productionHistory) return;
+        if (!productionHistory || !Array.isArray(productionHistory)) return;
         const now = new Date();
         // Don't nag before PRODUCTION_ALERT_HOUR
         if (now.getHours() < PRODUCTION_ALERT_HOUR) return;

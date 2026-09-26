@@ -18,6 +18,9 @@ import { SessionsModule } from './modules/sessions/sessions.module';
 import { DatabaseModule } from './modules/database/database.module';
 import { CommerceModule } from './modules/commerce/commerce.module';
 import { JobWorkModule } from './modules/jobwork/jobwork.module';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { RolesGuard } from './guards/roles.guard';
 
 @Module({
   imports: [
@@ -40,6 +43,10 @@ import { JobWorkModule } from './modules/jobwork/jobwork.module';
     SessionsModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
+    { provide: APP_GUARD, useClass: RolesGuard },
+  ],
 })
 export class AppModule {}
