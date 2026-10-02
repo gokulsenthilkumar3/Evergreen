@@ -1,0 +1,10 @@
+{
+  "name": "@evergreen/config",
+  "version": "1.0.0",
+  "private": true,
+  "files": ["tsconfig.base.json", "eslint.base.mjs"],
+  "exports": {
+    "./tsconfig": "./tsconfig.base.json",
+    "./eslint": "./eslint.base.mjs"
+  }
+}

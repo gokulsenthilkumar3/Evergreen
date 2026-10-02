@@ -44,7 +44,7 @@ interface User {
     username: string;
     name: string;
     email: string;
-    role: 'VIEWER' | 'MODIFIER' | 'AUTHOR';
+    role: 'VIEWER' | 'MODIFIER' | 'ADMIN';
     createdAt: string;
     createdBy?: string;
     updatedBy?: string;
@@ -188,7 +188,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole, userna
 
     const getRoleColor = (role: string) => {
         switch (role) {
-            case 'AUTHOR': return 'error';
+            case 'ADMIN': return 'error';
             case 'MODIFIER': return 'warning';
             case 'VIEWER': return 'info';
             default: return 'default';
@@ -203,7 +203,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole, userna
                     Access Denied
                 </Typography>
                 <Typography color="text.secondary">
-                    Only Authors and Admins can access User Management.
+                    Only Admins can access User Management.
                 </Typography>
             </Box>
         );
@@ -238,7 +238,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole, userna
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2, mb: 3 }}>
                 {[
                     { label: 'Total Users', value: users.length },
-                    { label: 'Admins', value: roleCounts.AUTHOR || 0 },
+                    { label: 'Admins', value: roleCounts.ADMIN || 0 },
                     { label: 'Viewers', value: roleCounts.VIEWER || 0 },
                 ].map(card => (
                     <Paper key={card.label} sx={{ p: 2.5 }}>
@@ -374,12 +374,6 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole, userna
                                     <Box>
                                         <Typography variant="body2" fontWeight="bold">Modifier</Typography>
                                         <Typography variant="caption" color="text.secondary">Can Create/Update, No Delete</Typography>
-                                    </Box>
-                                </MenuItem>
-                                <MenuItem value="AUTHOR">
-                                    <Box>
-                                        <Typography variant="body2" fontWeight="bold">Author</Typography>
-                                        <Typography variant="caption" color="text.secondary">Full CRUD access</Typography>
                                     </Box>
                                 </MenuItem>
                                 <MenuItem value="ADMIN">

@@ -458,7 +458,7 @@ const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole 
                                                         <TableCell align="center">{entry.noOfShifts || '-'}</TableCell>
                                                         <TableCell align="right">₹{entry.totalCost?.toLocaleString()}</TableCell>
                                                         <TableCell align="center">
-                                                            {(userRole === 'ADMIN' || userRole === 'AUTHOR') && (
+                                                            {(userRole === 'ADMIN') && (
                                                                 <IconButton
                                                                     size="small"
                                                                     color="error"
@@ -487,7 +487,7 @@ const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole 
                                                             </TableCell>
                                                         )}
                                                         <TableCell align="center">
-                                                            {(userRole === 'ADMIN' || userRole === 'AUTHOR') && (
+                                                            {(userRole === 'ADMIN') && (
                                                                 <IconButton
                                                                     size="small"
                                                                     color="error"

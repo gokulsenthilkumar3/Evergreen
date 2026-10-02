@@ -12,8 +12,8 @@ const EMPTY: Omit<Group,'id'> = { name: '', description: '', discount: 0 };
 
 const Group: React.FC = () => {
     const { items, add, update, remove } = usePersist<Group>('product_groups', [
-        { id: 'grp-1', name: 'Carded Yarn', description: 'Carded counts: 4s, 6s, 8s, 10s, 20s', discount: 0 },
-        { id: 'grp-2', name: 'Combed Yarn', description: 'Combed counts: 30s, 40s, 60s, 80s', discount: 2 },
+        { id: 'grp-1', name: 'Carded Yarn', description: 'Carded counts: 2, 4, 6, 8, 10', discount: 0 },
+        { id: 'grp-2', name: 'Combed Yarn', description: 'Combed counts: 2, 4, 6, 8, 10', discount: 2 },
         { id: 'grp-3', name: 'Bulk Buyers', description: 'Customers buying 10+ tons per month', discount: 3 },
     ]);
     const [open, setOpen] = useState(false);

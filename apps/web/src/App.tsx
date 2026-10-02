@@ -573,9 +573,9 @@ const App: React.FC = () => {
     {
       label: 'Admin',
       items: [
-        { text: 'User Management', icon: <UsersIcon />, page: 'users', requiredRole: 'ADMIN_OR_AUTHOR' },
+        { text: 'User Management', icon: <UsersIcon />, page: 'users', requiredRole: 'ADMIN' },
         // B-18: Sessions and Security had the same icon; Sessions now uses VpnKey
-        { text: 'Sessions', icon: <SessionsIcon />, page: 'sessions', requiredRole: 'ADMIN_OR_AUTHOR' },
+        { text: 'Sessions', icon: <SessionsIcon />, page: 'sessions' },
         { text: 'Security Settings', icon: <SecurityIcon />, page: 'security' },
         { text: 'Settings', icon: <SettingsIcon />, page: 'settings' },
       ]
@@ -798,7 +798,6 @@ const App: React.FC = () => {
                     {navGroups.map((group, gIdx) => {
                       const filteredItems = group.items.filter(item => {
                         if (!item.requiredRole) return true;
-                        if (item.requiredRole === 'ADMIN_OR_AUTHOR') return ['AUTHOR', 'ADMIN', 'MODIFIER'].includes(user.role);
                         return item.requiredRole === user.role;
                       });
                       if (filteredItems.length === 0) return null;
