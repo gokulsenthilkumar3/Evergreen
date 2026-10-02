@@ -8,7 +8,7 @@ Generated from the current checkout by `npm run audit:roadmap`.
 
 | Phase | Status | Evidence passed |
 | --- | --- | --- |
-| Phase 0 — Foundation & Safety | **PARTIAL** | 2/5 |
+| Phase 0 — Foundation & Safety | **PARTIAL** | 1/4 |
 | Phase 1 — Core Business Logic | **PARTIAL** | 4/5 |
 | Phase 2 — Users, RBAC & Sessions | **PARTIAL** | 5/5 |
 | Phase 3 — Reference Absorption | **PARTIAL** | 4/6 |
@@ -23,7 +23,6 @@ Generated from the current checkout by `npm run audit:roadmap`.
 **Status: PARTIAL**
 
 - ✅ API Jest infrastructure and smoke/security tests
-- ✅ Auth, catalogue, invoice and session smoke tests
 - ❌ Web Vitest component-test infrastructure
 - ❌ Tracked SQLite backup/snapshot manifest
 - ❌ Reference projects retained
