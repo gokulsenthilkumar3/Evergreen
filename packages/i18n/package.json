@@ -1,0 +1,9 @@
+{
+  "name": "@evergreen/i18n",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": { "build": "tsc" },
+  "devDependencies": { "typescript": "latest" }
+}

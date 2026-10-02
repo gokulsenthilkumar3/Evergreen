@@ -24,12 +24,13 @@ export class RolesGuard implements CanActivate {
     );
 
     // A route without @Roles is still protected. Reads require VIEWER,
-    // ordinary changes require MODIFIER, and deletions require AUTHOR.
+    // Ordinary changes require MODIFIER, while destructive changes are
+    // reserved for ADMIN. This is the canonical three-role permission matrix.
     const request = context.switchToHttp().getRequest();
     const method = request.method;
     const effectiveRoles = requiredRoles ||
       (method === 'GET' || method === 'HEAD' ? ['VIEWER'] :
-        method === 'DELETE' ? ['AUTHOR'] : ['MODIFIER']);
+        method === 'DELETE' ? ['ADMIN'] : ['MODIFIER']);
 
     const { user } = request;
 

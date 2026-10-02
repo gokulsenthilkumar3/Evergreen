@@ -694,7 +694,7 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
                                                     />
                                                 </TableCell>
                                                 <TableCell align="center">
-                                                    {row.type !== 'PRODUCTION' && (userRole === 'ADMIN' || userRole === 'AUTHOR') && (
+                                                    {row.type !== 'PRODUCTION' && (userRole === 'ADMIN') && (
                                                         <>
                                                             <IconButton
                                                                 size="small"

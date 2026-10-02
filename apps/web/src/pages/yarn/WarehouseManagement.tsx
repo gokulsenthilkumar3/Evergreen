@@ -9,8 +9,8 @@ const WAREHOUSES = [
 ];
 const STOCK = [
   { id: 1, item: 'Raw Cotton — 28mm', wh: 'WH-A', qty: 1200, uom: 'kg', minStock: 500, status: 'OK' },
-  { id: 2, item: 'Yarn 40s — Cone', wh: 'WH-B', qty: 450, uom: 'cones', minStock: 200, status: 'OK' },
-  { id: 3, item: 'Yarn 30s — Cone', wh: 'WH-B', qty: 120, uom: 'cones', minStock: 200, status: 'Low' },
+  { id: 2, item: 'Yarn 8 — Cone', wh: 'WH-B', qty: 450, uom: 'cones', minStock: 200, status: 'OK' },
+  { id: 3, item: 'Yarn 6 — Cone', wh: 'WH-B', qty: 120, uom: 'cones', minStock: 200, status: 'Low' },
   { id: 4, item: 'Polyester Fibre', wh: 'WH-A', qty: 800, uom: 'kg', minStock: 300, status: 'OK' },
   { id: 5, item: 'Packing Material', wh: 'WH-C', qty: 40, uom: 'rolls', minStock: 100, status: 'Critical' },
 ];
