@@ -1,6 +1,6 @@
 # 🧶 EverGreen One — Yarn, Billing & MSME ERP
 
-**EverGreen One** brings the EverGreen Yarn Flow SMS, noolstitch job-work workflows, an invoice generator, and MSME ERP features into one business application. It is designed for yarn manufacturers and growing MSMEs that need operations, GST billing, customer ledgers and business insights in one place.
+**EverGreen One** is the active React/Nest/SQLite application for yarn operations, job work, catalogue sales, a public shop, GST invoices and customer ledgers. Feature consolidation is still in progress; [PARITY_REGISTER.md](PARITY_REGISTER.md) records what is working and what remains unverified.
 
 ## One App, Connected Workspaces
 
@@ -9,7 +9,7 @@ The **Business Workspace** is the single entry point for every part of the busin
 - **Yarn operations** — inward lots, inventory, production, waste and outward dispatch.
 - **Job work & production** — material movement, production receipts and count-wise output.
 - **Invoices & GST** — invoices, quotations, challans, purchase orders and printable documents.
-- **Customers & payments** — customer/vendor ledgers, dues, payment links and bank reconciliation.
+- **Customers & payments** — customer ledgers, dues and invoice-linked payments. Bank reconciliation is not part of this release.
 
 The shared navigation and catalogue mean teams do not need to switch between separate apps to run the workflow from stock to sale to payment.
 
@@ -49,7 +49,7 @@ The shared navigation and catalogue mean teams do not need to switch between sep
 ## 🛠️ Tech Stack
 
 ### Frontend
-- **Framework**: React 18
+- **Framework**: React 19
 - **UI Library**: Material UI (MUI)
 - **State Management**: TanStack Query (React Query)
 - **Styling**: Vanilla CSS / MUI System
@@ -59,14 +59,14 @@ The shared navigation and catalogue mean teams do not need to switch between sep
 - **Framework**: NestJS (Node.js)
 - **Database**: SQLite (via Prisma ORM)
 - **Auth**: JWT (JSON Web Tokens) with Role-Based Access Control (RBAC)
-- **Logging**: Custom Winston-based system logging
+- **Logging**: Database activity records for selected actions; complete audit coverage remains a release gate
 
 ---
 
 ## ⚙️ Installation & Setup
 
 ### Prerequisites
-- Node.js (v18+)
+- Node.js 20.19+ or 22.12+ (the installed Vite version does not support Node 18)
 - npm or yarn
 
 ### 1. Clone the Repository
@@ -81,23 +81,30 @@ npm install
 ```
 
 ### 3. Environment Configuration
-Create a `.env` file in the root directory:
+Configure the API in `apps/api/.env`. Prisma CLI commands may also read the root `.env`; keep `DATABASE_URL` consistent in both when using the CLI:
 ```env
-DATABASE_URL="file:./packages/database/prisma/dev.db"
-JWT_SECRET="your-secret-key"
-PORT=3001
+DATABASE_URL="file:./dev.db"
+JWT_SECRET="replace-with-a-random-secret-of-at-least-32-characters"
+BOOTSTRAP_ADMIN_USERNAME="your-admin-name"
+BOOTSTRAP_ADMIN_EMAIL="admin@example.com"
+BOOTSTRAP_ADMIN_PASSWORD="replace-with-a-unique-password-of-at-least-12-characters"
 ```
+Bootstrap variables create an administrator only when the user table is empty. Remove them after the first successful startup. Do not use a known or shared password.
 
-### 4. Database Setup
+### 4. Database Setup (new, empty database only)
 ```bash
 npx prisma db push --schema packages/database/prisma/schema.prisma
 ```
+Do not run `db push` or the legacy bridge script against an existing operational database without a verified SQLite backup and reconciliation. The current legacy bridge still needs a consistent online backup and transaction-safe cutover before use on live data.
 
 ### 5. Start Development Servers
 ```bash
-# Start both API and Web apps
+# Start API and web together
 npm run dev
 ```
+Open `http://localhost:4000/` for staff UI or `http://localhost:4000/shop` for the public shop. Browser API calls use `/api/backend` on the same public port. The launcher compiles and starts an internal API on `127.0.0.1:4301` by default and verifies the public health route before reporting ready. Set `EVERGREEN_PUBLIC_PORT` and `EVERGREEN_API_PORT` if these ports are occupied; it will not stop another service.
+
+Production build: `npm run build -w apps/api` and `npm run build -w apps/web`. These passing builds do not establish feature parity or release readiness; see the parity register and release gates.
 
 ---
 
@@ -119,7 +126,7 @@ Evergreen/
 ## 🔒 Security
 - **JWT Auth**: Secure login with persistent sessions.
 - **RBAC**: Access levels for Admin, Author, and Viewer roles.
-- **Transaction Safety**: Guaranteed data integrity during complex inventory movements.
+- **Transaction Safety**: Canonical commerce operations use database transactions. Legacy inward, production and costing write paths still require consolidation before release.
 
 ---
 

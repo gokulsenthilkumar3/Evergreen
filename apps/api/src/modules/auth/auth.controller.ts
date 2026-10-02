@@ -16,6 +16,7 @@ import { PrismaService } from '../../services/prisma.service';
 import type { Request } from 'express';
 import { Public } from '../../decorators/public.decorator';
 import { Roles } from '../../decorators/roles.decorator';
+import { PublicAuthRateLimitGuard } from '../../guards/public-order-rate-limit.guard';
 
 @Controller('auth')
 @Roles('VIEWER')
@@ -33,9 +34,13 @@ export class AuthController {
   }
 
   @Public()
+  @UseGuards(PublicAuthRateLimitGuard)
   @Post('login')
   async login(@Body() loginDto: any, @Req() req: Request) {
-    if (typeof loginDto?.username !== 'string' || typeof loginDto?.password !== 'string') {
+    if (
+      typeof loginDto?.username !== 'string' ||
+      typeof loginDto?.password !== 'string'
+    ) {
       throw new UnauthorizedException('Invalid credentials');
     }
     const user = await this.authService.validateUser(
@@ -147,6 +152,7 @@ export class AuthController {
   }
 
   @Public()
+  @UseGuards(PublicAuthRateLimitGuard)
   @Post('passkey/auth-options')
   async generatePasskeyAuthenticationOptions(
     @Body('username') username: string,
@@ -155,6 +161,7 @@ export class AuthController {
   }
 
   @Public()
+  @UseGuards(PublicAuthRateLimitGuard)
   @Post('passkey/auth-verify')
   async verifyPasskeyAuthentication(@Body() body: any, @Req() req: Request) {
     const { username, response } = body;
