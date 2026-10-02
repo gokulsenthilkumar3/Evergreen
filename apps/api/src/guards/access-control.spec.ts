@@ -2,17 +2,25 @@ import { ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { RolesGuard } from './roles.guard';
 import { LegacyBillingReadOnlyGuard } from './legacy-billing-read-only.guard';
-import { PublicOrderRateLimitGuard } from './public-order-rate-limit.guard';
+import {
+  PublicAuthRateLimitGuard,
+  PublicOrderRateLimitGuard,
+} from './public-order-rate-limit.guard';
 import { requireJwtSecret } from '../modules/auth/jwt-secret';
 
-const context = (method: string, role?: string, ip = '127.0.0.1') => ({
-  getHandler: () => () => undefined,
-  getClass: () => class TestController {},
-  switchToHttp: () => ({ getRequest: () => ({ method, user: role ? { role } : undefined, ip }) }),
-}) as unknown as ExecutionContext;
+const context = (method: string, role?: string, ip = '127.0.0.1') =>
+  ({
+    getHandler: () => () => undefined,
+    getClass: () => class TestController {},
+    switchToHttp: () => ({
+      getRequest: () => ({ method, user: role ? { role } : undefined, ip }),
+    }),
+  }) as unknown as ExecutionContext;
 
 describe('API access boundaries', () => {
-  const reflector = { getAllAndOverride: jest.fn().mockReturnValue(undefined) } as unknown as Reflector;
+  const reflector = {
+    getAllAndOverride: jest.fn().mockReturnValue(undefined),
+  } as unknown as Reflector;
 
   beforeEach(() => jest.clearAllMocks());
 
@@ -37,14 +45,38 @@ describe('API access boundaries', () => {
 
   it('throttles public order submissions per IP', () => {
     const guard = new PublicOrderRateLimitGuard();
-    for (let i = 0; i < 10; i++) expect(guard.canActivate(context('POST', undefined, '1.2.3.4'))).toBe(true);
-    expect(() => guard.canActivate(context('POST', undefined, '1.2.3.4'))).toThrow();
+    for (let i = 0; i < 10; i++)
+      expect(guard.canActivate(context('POST', undefined, '1.2.3.4'))).toBe(
+        true,
+      );
+    expect(() =>
+      guard.canActivate(context('POST', undefined, '1.2.3.4')),
+    ).toThrow();
+    expect(guard.canActivate(context('POST', undefined, '5.6.7.8'))).toBe(true);
+  });
+
+  it('throttles password and passkey attempts independently per client IP', () => {
+    const guard = new PublicAuthRateLimitGuard();
+    for (let i = 0; i < 20; i++)
+      expect(guard.canActivate(context('POST', undefined, '1.2.3.4'))).toBe(
+        true,
+      );
+    expect(() =>
+      guard.canActivate(context('POST', undefined, '1.2.3.4')),
+    ).toThrow();
+    expect(() =>
+      new PublicAuthRateLimitGuard().canActivate(
+        context('POST', undefined, '1.2.3.4'),
+      ),
+    ).toThrow();
     expect(guard.canActivate(context('POST', undefined, '5.6.7.8'))).toBe(true);
   });
 
   it('refuses an absent or short token-signing secret', () => {
     expect(() => requireJwtSecret({ get: () => undefined } as any)).toThrow();
     expect(() => requireJwtSecret({ get: () => 'short' } as any)).toThrow();
-    expect(requireJwtSecret({ get: () => 'x'.repeat(32) } as any)).toHaveLength(32);
+    expect(requireJwtSecret({ get: () => 'x'.repeat(32) } as any)).toHaveLength(
+      32,
+    );
   });
 });

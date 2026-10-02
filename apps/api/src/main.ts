@@ -2,9 +2,13 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import type { NextFunction, Request, Response } from 'express';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  // Only the loopback web proxy may supply the original client address.
+  app.set('trust proxy', 'loopback');
 
   // Enable CORS with specific configuration
   app.enableCors({
@@ -17,7 +21,7 @@ async function bootstrap() {
   // Security headers (Helmet-like configuration)
   // Note: Install @nestjs/helmet for production use
   // For now, we'll add basic security headers manually
-  app.use((req: any, res: any, next: any) => {
+  app.use((_req: Request, res: Response, next: NextFunction) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('X-Frame-Options', 'DENY');
     res.setHeader('X-XSS-Protection', '1; mode=block');
@@ -37,20 +41,25 @@ async function bootstrap() {
     }),
   );
 
-  const config = new DocumentBuilder()
-    .setTitle('Ever Green Yarn Mills API')
-    .setDescription('Full REST API for the Ever Green Yarn Flow Software')
-    .setVersion('1.0')
-    .addBearerAuth()
-    .build();
+  if (process.env.NODE_ENV !== 'production') {
+    const config = new DocumentBuilder()
+      .setTitle('EverGreen One API')
+      .setDescription('EverGreen One development API')
+      .setVersion('1.0')
+      .addBearerAuth()
+      .build();
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api/docs', app, document);
+  }
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
-
-  const port = process.env.PORT ?? 3001;
-  await app.listen(port);
+  const port = process.env.EVERGREEN_API_PORT ?? process.env.PORT ?? 4301;
+  await app.listen(port, '127.0.0.1');
   console.log(`🚀 Application is running on: http://localhost:${port}`);
-  console.log(`🔒 Security features enabled`);
-  console.log(`📊 API Documentation: http://localhost:${port}/api/docs`);
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`📊 API Documentation: http://localhost:${port}/api/docs`);
+  }
 }
-bootstrap();
+void bootstrap().catch((error: unknown) => {
+  console.error('EverGreen API failed to start:', error);
+  process.exitCode = 1;
+});
