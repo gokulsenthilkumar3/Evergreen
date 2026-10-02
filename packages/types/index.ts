@@ -66,6 +66,7 @@ export interface InvoiceTotals {
   cgst: number;
   sgst: number;
   igst: number;
+
   grandTotal: number;
 }
 

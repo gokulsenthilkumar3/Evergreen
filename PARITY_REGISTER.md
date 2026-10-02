@@ -17,7 +17,7 @@ Status key: **Connected** = uses EverGreen API/persistent records for its princi
 | Sales Orders | Commerce orders | Connected | Reservation, partial invoice and cancellation tests |
 | Invoice Studio | Commerce invoices | Connected | GST, PDF, verification, payments, void and ledger tests |
 | Customers & Ledger | Commerce customer ledger | Connected | Balances and aging reconcile to invoices/payments |
-| Invoice Designer | Browser-local invoice draft | Prototype | Appearance features folded into Invoice Studio; remove duplicate write path |
+| Invoice Designer | Invoice Studio + shared `@evergreen/pdf` totals | Connected; prototype retired from navigation | Themes, logo, signatures, GST, print/PDF and verification are canonical; full live QA remains required |
 | MSME ERP | Commerce summaries and related screens | Unverified | Each action mapped to canonical customer/finance workflow |
 | Vyapari (B2B) | Hard-coded sample arrays | Prototype | Persistent customer portal and transaction history, or retire preview |
 | Business Reports | Commerce reports | Connected | Date/product/receivable exports reconciled |
