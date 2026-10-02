@@ -16,7 +16,7 @@ const SAMPLE_VYAPARIS: Vyapari[] = [
 ];
 
 const SAMPLE_TXN: Transaction[] = [
-  { id: 1, vyapariId: 1, date: '2026-09-15', type: 'debit', amount: 85000, description: 'Yarn Supply 40s Count', ref: 'PO-2026-101' },
+  { id: 1, vyapariId: 1, date: '2026-09-15', type: 'debit', amount: 85000, description: 'Yarn Supply 8 Count', ref: 'PO-2026-101' },
   { id: 2, vyapariId: 1, date: '2026-09-18', type: 'credit', amount: 40000, description: 'Payment received', ref: 'NEFT-20260918' },
   { id: 3, vyapariId: 2, date: '2026-09-10', type: 'debit', amount: 32000, description: 'Fabric Order', ref: 'PO-2026-98' },
   { id: 4, vyapariId: 2, date: '2026-09-20', type: 'credit', amount: 44000, description: 'Advance payment', ref: 'RTGS-20260920' },

@@ -31,7 +31,8 @@ describe('API access boundaries', () => {
     expect(() => guard.canActivate(context('POST', 'VIEWER'))).toThrow();
     expect(guard.canActivate(context('POST', 'MODIFIER'))).toBe(true);
     expect(() => guard.canActivate(context('DELETE', 'MODIFIER'))).toThrow();
-    expect(guard.canActivate(context('DELETE', 'AUTHOR'))).toBe(true);
+    expect(() => guard.canActivate(context('DELETE', 'AUTHOR'))).toThrow();
+    expect(guard.canActivate(context('DELETE', 'ADMIN'))).toBe(true);
   });
 
   it('keeps legacy billing records readable while refusing every old write path', () => {

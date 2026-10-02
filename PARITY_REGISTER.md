@@ -52,3 +52,15 @@ Status key: **Connected** = uses EverGreen API/persistent records for its princi
 6. Obtain acceptance, archive all five source folders and separately located data snapshots with a manifest outside the active workspace, verify archive, then remove only the exact approved folders.
 
 As of this update, these gates **have not passed**. No reference folder has been deleted.
+
+## Shared-package consolidation status
+
+The following canonical packages now exist and are buildable workspaces. This is structural consolidation evidence only; it does not by itself satisfy any reference-project retirement gate.
+
+| Package | Canonical responsibility | Current status |
+| --- | --- | --- |
+| `@evergreen/types` | Roles, yarn counts, sessions, stock movements, invoices, customers and dashboard contracts | Connected foundation |
+| `@evergreen/config` | Shared strict TypeScript and baseline ESLint policy | Connected foundation |
+| `@evergreen/i18n` | Typed English/Tamil core navigation and action dictionary | Foundation; full screen translation QA pending |
+| `@evergreen/pdf` | Shared GST invoice total calculation used before rendering | Foundation; renderer integration pending |
+| `@evergreen/email` | Escaped daily-summary email template | Foundation; scheduler/delivery integration pending |

@@ -533,7 +533,7 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                                         {((row.totalProduced / row.totalConsumed) * 100).toFixed(2)}%
                                     </TableCell>
                                     <TableCell align="center">
-                                        {(userRole === 'ADMIN' || userRole === 'AUTHOR') && (
+                                        {(userRole === 'ADMIN') && (
                                             <IconButton
                                                 size="small"
                                                 color="error"
