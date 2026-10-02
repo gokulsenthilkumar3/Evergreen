@@ -1032,7 +1032,7 @@ const BillingDashboard = ({
                                                                                         <Typography variant="caption">{payment.createdBy || '-'}</Typography>
                                                                                     </TableCell>
                                                                                     <TableCell align="center">
-                                                                                        {(userRole === 'ADMIN' || userRole === 'AUTHOR') && (
+                                                                                        {(userRole === 'ADMIN') && (
                                                                                             <IconButton size="small" color="error" onClick={() => handleDeletePayment(payment.id)}>
                                                                                                 <DeleteIcon fontSize="small" />
                                                                                             </IconButton>

@@ -54,7 +54,7 @@ const FAQ_ITEMS = [
     },
     {
         q: 'How do I manage user roles?',
-        a: 'Go to User Management (Admin only). You can create users with roles: VIEWER, MODIFIER, AUTHOR, or ADMIN.',
+        a: 'Go to User Management (Admin only). You can create users with roles: VIEWER, MODIFIER, or ADMIN.',
         category: 'Admin',
     },
     {

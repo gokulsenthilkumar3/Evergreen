@@ -7,6 +7,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "dev": "npm run start:dev",
+    "prebuild": "npm run generate -w @evergreen/database",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
@@ -41,7 +42,9 @@
     "qrcode": "^1.5.4",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
-    "swagger-ui-express": "^5.0.1"
+    "swagger-ui-express": "^5.0.1",
+    "@evergreen/types": "*",
+    "@evergreen/pdf": "*"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

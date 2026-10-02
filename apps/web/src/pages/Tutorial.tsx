@@ -114,7 +114,7 @@ const TUTORIAL_CHAPTERS = [
         color: '#0891b2',
         icon: <UsersIcon />,
         steps: [
-            { label: 'User Roles', description: 'There are 4 roles: VIEWER, MODIFIER, AUTHOR, and ADMIN.' },
+            { label: 'User Roles', description: 'There are 4 roles: VIEWER, MODIFIER, and ADMIN.' },
             { label: 'Add Users', description: 'Go to User Management. Click "Add User". Set username, name, email, and role.' },
             { label: 'Session Management', description: 'In Sessions, you can see all active login sessions and revoke suspicious ones remotely.' },
             { label: 'Security Settings', description: 'Enable Two-Factor Authentication or register a Passkey for passwordless login from Security Settings.' },
