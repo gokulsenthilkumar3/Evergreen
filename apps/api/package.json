@@ -87,6 +87,9 @@
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },
+    "moduleNameMapper": {
+      "^@evergreen/pdf$": "<rootDir>/../../../packages/pdf/src"
+    },
     "collectCoverageFrom": [
       "**/*.(t|j)s"
     ],
