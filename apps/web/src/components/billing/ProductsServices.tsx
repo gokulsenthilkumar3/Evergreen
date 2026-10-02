@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 const UNITS = ['Kg', 'Bags', 'Bales', 'Meters', 'Nos', 'Litre', 'Box', 'Set'];
 const GST_RATES = [0, 5, 12, 18, 28];
 const PRODUCT_TYPES = ['Product', 'Service'];
-const YARN_COUNTS = ['2s','4s','6s','8s','10s','12s','16s','20s','24s','30s','40s','60s','80s','100s'];
+const YARN_COUNTS = ['2', '4', '6', '8', '10'];
 
 interface Product {
     id: string;
@@ -31,9 +31,9 @@ const typeColor = (t: string) => t === 'Product' ? 'primary' : 'secondary';
 
 const ProductsServices: React.FC = () => {
     const { items, add, update, remove } = usePersist<Product>('products_services', [
-        { id: 'ps-default-1', name: 'Cotton Yarn 20s', type: 'Product', hsnCode: '5205', unit: 'Kg', salePrice: 145, purchasePrice: 120, gstRate: 18, category: 'Yarn', description: 'Carded cotton yarn, 20 count' },
-        { id: 'ps-default-2', name: 'Cotton Yarn 40s', type: 'Product', hsnCode: '5205', unit: 'Kg', salePrice: 210, purchasePrice: 175, gstRate: 18, category: 'Yarn', description: 'Combed cotton yarn, 40 count' },
-        { id: 'ps-default-3', name: 'Cotton Yarn 30s', type: 'Product', hsnCode: '5205', unit: 'Kg', salePrice: 180, purchasePrice: 150, gstRate: 18, category: 'Yarn', description: 'Cotton yarn, 30 count' },
+        { id: 'ps-default-1', name: 'Cotton Yarn 2', type: 'Product', hsnCode: '5205', unit: 'Kg', salePrice: 145, purchasePrice: 120, gstRate: 18, category: 'Yarn', description: 'Carded cotton yarn, 2 count' },
+        { id: 'ps-default-2', name: 'Cotton Yarn 8', type: 'Product', hsnCode: '5205', unit: 'Kg', salePrice: 210, purchasePrice: 175, gstRate: 18, category: 'Yarn', description: 'Combed cotton yarn, 8 count' },
+        { id: 'ps-default-3', name: 'Cotton Yarn 6', type: 'Product', hsnCode: '5205', unit: 'Kg', salePrice: 180, purchasePrice: 150, gstRate: 18, category: 'Yarn', description: 'Cotton yarn, 6 count' },
     ]);
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState<Product | null>(null);

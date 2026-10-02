@@ -349,7 +349,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                             />
                         </>
                     )}
-                    {(userRole === 'AUTHOR' || userRole === 'MODIFIER' || userRole === 'ADMIN') && (
+                    {(userRole === 'MODIFIER' || userRole === 'ADMIN') && (
                         <Box sx={{ display: 'flex', gap: 1 }}>
                             {selectedBatches.length > 1 && (
                                 <Button
@@ -546,7 +546,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
 
                 <TableContainer sx={{ maxHeight: 'calc(100vh - 400px)' }}>
                     {isLoading ? (
-                        <TableSkeleton columns={7} hasActions={userRole === 'AUTHOR'} />
+                        <TableSkeleton columns={7} hasActions={userRole === 'ADMIN'} />
                     ) : (
                         <Table stickyHeader>
                             <TableHead>
@@ -663,7 +663,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                                                 {(row.remainingKg ?? row.kg).toLocaleString()} kg
                                             </TableCell>
                                             <TableCell align="center">
-                                                {(userRole === 'AUTHOR' || userRole === 'ADMIN') && (
+                                                {(userRole === 'ADMIN') && (
                                                     <Tooltip title="Delete Batch (Admin only)">
                                                         <IconButton size="small" color="error" onClick={() => handleDeleteBatch(row.id)}>
                                                             <DeleteIcon fontSize="small" />

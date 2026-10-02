@@ -1,8 +1,9 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../../services/prisma.service';
 import * as bcrypt from 'bcrypt';
 
 const SALT_ROUNDS = 10;
+const ASSIGNABLE_ROLES = new Set(['VIEWER', 'MODIFIER', 'ADMIN']);
 
 @Injectable()
 export class UsersService {
@@ -30,10 +31,13 @@ export class UsersService {
     if (!userDto.username) {
       throw new UnauthorizedException('Username is required');
     }
-    if (!userDto.password || userDto.password.length <= 5) {
-      throw new UnauthorizedException(
-        'Password must be greater than 5 characters',
-      );
+    if (!userDto.password || userDto.password.length < 12) {
+      throw new BadRequestException('Password must be at least 12 characters');
+    }
+
+    const role = String(userDto.role || 'VIEWER').toUpperCase();
+    if (!ASSIGNABLE_ROLES.has(role)) {
+      throw new BadRequestException('Role must be VIEWER, MODIFIER, or ADMIN');
     }
 
     // Check if user exists
@@ -54,7 +58,7 @@ export class UsersService {
         username: userDto.username,
         name: userDto.name,
         password: hashedPassword,
-        role: userDto.role || 'VIEWER',
+        role,
         email: userDto.email || `${userDto.username}-${Date.now()}@temp.local`,
         createdBy: userDto.createdBy,
       },
@@ -152,10 +156,8 @@ export class UsersService {
     }
 
     // Validate password if provided
-    if (userDto.password && userDto.password.length <= 5) {
-      throw new UnauthorizedException(
-        'Password must be greater than 5 characters',
-      );
+    if (userDto.password && userDto.password.length < 12) {
+      throw new BadRequestException('Password must be at least 12 characters');
     }
 
     // Build update data
@@ -170,7 +172,13 @@ export class UsersService {
       updateData.email = userDto.email;
     }
 
-    if (userDto.role) updateData.role = userDto.role;
+    if (userDto.role) {
+      const role = String(userDto.role).toUpperCase();
+      if (!ASSIGNABLE_ROLES.has(role)) {
+        throw new BadRequestException('Role must be VIEWER, MODIFIER, or ADMIN');
+      }
+      updateData.role = role;
+    }
     if (userDto.updatedBy) updateData.updatedBy = userDto.updatedBy;
 
     const updatedUser = await this.prisma.user.update({
