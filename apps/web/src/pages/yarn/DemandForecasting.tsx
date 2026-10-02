@@ -12,9 +12,9 @@ const HISTORICAL = [
   { month: 'Jul', actual: 39000 },{ month: 'Aug', actual: 43000 },{ month: 'Sep', actual: 44000 },
 ];
 const RECO = [
-  { count: '40s', currentStock: 1200, forecastDemand: 2800, recommendation: 'Order 1600 kg', urgency: 'High' },
-  { count: '30s', currentStock: 800, forecastDemand: 1500, recommendation: 'Order 700 kg', urgency: 'Medium' },
-  { count: '60s', currentStock: 2100, forecastDemand: 1800, recommendation: 'Sufficient stock', urgency: 'Low' },
+  { count: '8', currentStock: 1200, forecastDemand: 2800, recommendation: 'Order 1600 kg', urgency: 'High' },
+  { count: '6', currentStock: 800, forecastDemand: 1500, recommendation: 'Order 700 kg', urgency: 'Medium' },
+  { count: '10', currentStock: 2100, forecastDemand: 1800, recommendation: 'Sufficient stock', urgency: 'Low' },
 ];
 const DemandForecasting: React.FC = () => (
   <Box sx={{ width: '100%' }}>

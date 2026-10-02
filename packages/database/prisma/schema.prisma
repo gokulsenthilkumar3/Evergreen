@@ -235,7 +235,7 @@ model SystemSettings {
   gstPercent          String   @default("18")
   language            String   @default("en")
   sellerState         String   @default("Tamil Nadu")
-  supportedCounts     String?  @default("2,4,6,8,10,12,14,16,20")
+  supportedCounts     String?  @default("2,4,6,8,10")
   updatedAt           DateTime @updatedAt
   entryTimestamp      DateTime @default(now())
   createdBy           String?

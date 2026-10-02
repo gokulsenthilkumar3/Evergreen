@@ -27,7 +27,7 @@ export const useInvoiceStore = create<InvoiceState>((set, get) => ({
   issueDate: new Date().toISOString().split('T')[0],
   dueDate: new Date(Date.now() + 14*24*60*60*1000).toISOString().split('T')[0],
   items: [
-    { id: genId(), description: 'Yarn Supply - 40s Count', quantity: 100, rate: 280 },
+    { id: genId(), description: 'Yarn Supply - 8 Count', quantity: 100, rate: 280 },
     { id: genId(), description: 'Processing Charges', quantity: 1, rate: 1500 },
   ],
   subtotal: 29500, taxRate: 5, discountRate: 0,

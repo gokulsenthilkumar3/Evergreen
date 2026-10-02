@@ -99,7 +99,6 @@ const CommerceDesk = lazy(() => import('./pages/CommerceDesk'));
 const CommerceReports = lazy(() => import('./pages/CommerceReports'));
 const OperationsDesk = lazy(() => import('./pages/OperationsDesk'));
 // ── Merged sub-project pages ──
-const InvoiceGenerator = lazy(() => import('./pages/InvoiceGenerator'));
 const MsmeErp = lazy(() => import('./pages/MsmeErp'));
 const Vyapari = lazy(() => import('./pages/Vyapari'));
 const YarnERP = lazy(() => import('./pages/YarnERP'));
@@ -457,7 +456,6 @@ const App: React.FC = () => {
       payments: 'Payments',
       helpdesk: 'Helpdesk',
       tutorial: 'Tutorial',
-      invoicegen: 'Invoice Designer',
       msme: 'MSME ERP',
       vyapari: 'Vyapari (B2B)',
       yarnhub: 'Yarn ERP',
@@ -541,7 +539,6 @@ const App: React.FC = () => {
         { text: 'Sales Orders', icon: <OutwardIcon />, page: 'orders' },
         { text: 'Invoice Studio', icon: <BillingIcon />, page: 'invoicestudio' },
         { text: 'Customers & Ledger', icon: <PaymentsIcon />, page: 'customers' },
-        { text: 'Invoice Designer', icon: <BillingIcon />, page: 'invoicegen' },
         { text: 'MSME ERP', icon: <StoreIcon />, page: 'msme' },
         { text: 'Vyapari (B2B)', icon: <PaymentsIcon />, page: 'vyapari' },
         { text: 'Business Reports', icon: <InsightsIcon />, page: 'reports' },
@@ -573,9 +570,9 @@ const App: React.FC = () => {
     {
       label: 'Admin',
       items: [
-        { text: 'User Management', icon: <UsersIcon />, page: 'users', requiredRole: 'ADMIN_OR_AUTHOR' },
+        { text: 'User Management', icon: <UsersIcon />, page: 'users', requiredRole: 'ADMIN' },
         // B-18: Sessions and Security had the same icon; Sessions now uses VpnKey
-        { text: 'Sessions', icon: <SessionsIcon />, page: 'sessions', requiredRole: 'ADMIN_OR_AUTHOR' },
+        { text: 'Sessions', icon: <SessionsIcon />, page: 'sessions' },
         { text: 'Security Settings', icon: <SecurityIcon />, page: 'security' },
         { text: 'Settings', icon: <SettingsIcon />, page: 'settings' },
       ]
@@ -798,7 +795,6 @@ const App: React.FC = () => {
                     {navGroups.map((group, gIdx) => {
                       const filteredItems = group.items.filter(item => {
                         if (!item.requiredRole) return true;
-                        if (item.requiredRole === 'ADMIN_OR_AUTHOR') return ['AUTHOR', 'ADMIN', 'MODIFIER'].includes(user.role);
                         return item.requiredRole === user.role;
                       });
                       if (filteredItems.length === 0) return null;
@@ -990,7 +986,6 @@ const App: React.FC = () => {
                           Prototype view: figures and records on this screen are sample data, not live EverGreen business data. Do not use them for operational decisions.
                         </Alert>
                       )}
-                      {currentPage === 'invoicegen' && <InvoiceGenerator onNavigate={setCurrentPage} />}
                       {currentPage === 'msme' && <MsmeErp onNavigate={setCurrentPage} />}
                       {currentPage === 'vyapari' && <Vyapari />}
                       {currentPage === 'yarnhub' && <YarnERP onNavigate={setCurrentPage} />}

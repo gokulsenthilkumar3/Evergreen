@@ -19,7 +19,7 @@ interface Pricelist {
     notes: string;
 }
 
-const COUNTS = ['4s','8s','10s','20s','30s','40s','60s','80s'];
+const COUNTS = ['2', '4', '6', '8', '10'];
 const EMPTY: Omit<Pricelist,'id'> = { name: '', customer: '', validFrom: today(), validTo: '', discount: 0, entries: COUNTS.map(c => ({ yarnCount: c, rate: 0 })), notes: '' };
 
 const Pricelists: React.FC = () => {

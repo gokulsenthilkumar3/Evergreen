@@ -12,7 +12,8 @@
     "build": "npm run build --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "desktop": "npm run start -w apps/desktop",
-    "dist:desktop": "npm run dist -w apps/desktop"
+    "dist:desktop": "npm run dist -w apps/desktop",
+    "audit:roadmap": "node scripts/roadmap-audit.mjs"
   },
   "keywords": [],
   "author": "",
