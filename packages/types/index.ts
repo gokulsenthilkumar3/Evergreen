@@ -1,8 +1,8 @@
 /** Canonical roles shared by every EverGreen client and service. */
-export const USER_ROLES = ['VIEWER', 'MODIFIER', 'ADMIN'] as const;
+export const USER_ROLES = ["VIEWER", "MODIFIER", "ADMIN"] as const;
 export type UserRole = (typeof USER_ROLES)[number];
 
-export const YARN_COUNTS = ['2', '4', '6', '8', '10'] as const;
+export const YARN_COUNTS = ["2", "4", "6", "8", "10"] as const;
 export type YarnCount = (typeof YARN_COUNTS)[number];
 
 export interface ApiError {
@@ -66,7 +66,7 @@ export interface InvoiceTotals {
   cgst: number;
   sgst: number;
   igst: number;
-
+  total: number;
   grandTotal: number;
 }
 
@@ -81,7 +81,11 @@ export interface CustomerSummary {
 
 export interface TodayDashboardSummary {
   date: string;
-  productionByCount: Array<{ count: YarnCount | string; weight: number; bags: number }>;
+  productionByCount: Array<{
+    count: YarnCount | string;
+    weight: number;
+    bags: number;
+  }>;
   totalProduced: number;
   totalCost: number;
   costPerKg: number;

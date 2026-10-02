@@ -34,6 +34,7 @@ const phases = [
     status: 'PARTIAL',
     evidence: [
       ['API Jest infrastructure and smoke/security tests', has('apps/api/src/app.controller.spec.ts') && has('apps/api/src/guards/access-control.spec.ts')],
+      ['Auth, catalogue, invoice and session smoke tests', has('apps/api/src/connected-modules.smoke.spec.ts')],
       ['Web Vitest component-test infrastructure', packageHas('apps/web/package.json', 'vitest')],
       ['Tracked SQLite backup/snapshot manifest', has('BACKUP_MANIFEST.md')],
       ['Reference projects retained', referenceRows.every((row) => row.retained)],
