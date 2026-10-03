@@ -10,6 +10,7 @@ import { PrismaService } from '../../services/prisma.service';
 import { EmailService } from './email.service';
 import * as bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
+import type { User } from '@prisma/client';
 import { TOTP, generateURI } from 'otplib';
 const authenticator = new TOTP();
 
@@ -68,7 +69,7 @@ export class AuthService implements OnModuleInit {
     }
   }
 
-  async signup(data: any): Promise<any> {
+  async signup(data: Pick<User, 'username' | 'email' | 'name' | 'password'>) {
     const { username, email, name, password } = data;
 
     // Check if username or email already exists
@@ -103,7 +104,7 @@ export class AuthService implements OnModuleInit {
     return { message: 'Signup successful', user: result };
   }
 
-  async validateUser(username: string, pass: string): Promise<any> {
+  async validateUser(username: string, pass: string): Promise<Omit<User, 'password'> | null> {
     const user = await this.prisma.user.findUnique({
       where: { username },
     });
@@ -136,13 +137,13 @@ export class AuthService implements OnModuleInit {
   }
 
   async login(
-    user: any,
+    user: Omit<User, 'password'>,
     requestInfo?: { ip?: string; userAgent?: string; device?: string },
     totpCode?: string,
   ) {
     // If TOTP is enabled, verify it
     if (user.isTotpEnabled) {
-      if (!totpCode) {
+      if (!totpCode || !user.totpSecret) {
         // Return a special error indicating TOTP is required
         throw new UnauthorizedException({
           message: 'TOTP_REQUIRED',
@@ -153,7 +154,7 @@ export class AuthService implements OnModuleInit {
       const isValid = await authenticator.verify(totpCode, {
         secret: user.totpSecret,
       });
-      if (!isValid) {
+      if (!isValid.valid) {
         throw new UnauthorizedException('Invalid 2FA code');
       }
     }
@@ -166,12 +167,11 @@ export class AuthService implements OnModuleInit {
     } else {
       try {
         // Use HTTPS and a 3-second timeout for geolocation
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3000);
-        const res = await fetch(`https://ip-api.com/json/${ip}`, {
-          signal: controller.signal,
-        });
-        clearTimeout(timeoutId);
+        const endpoint = this.configService.get<string>('GEOLOCATION_URL')!;
+        const url = new URL(endpoint.replace('{ip}', encodeURIComponent(ip)));
+        if (url.protocol !== 'https:') throw new Error('Geolocation requires HTTPS');
+        const res = await fetch(url, { signal: AbortSignal.timeout(3000) });
+        if (!res.ok) throw new Error('Geolocation provider rejected request');
         const data = await res.json();
         if (data.status === 'success') {
           location = `${data.city}, ${data.country}`;
@@ -249,7 +249,7 @@ export class AuthService implements OnModuleInit {
     const isValid = await authenticator.verify(code, {
       secret: user.totpSecret,
     });
-    if (!isValid) {
+    if (!isValid.valid) {
       throw new BadRequestException('Invalid authentication code');
     }
 

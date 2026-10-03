@@ -6,7 +6,7 @@ export class MachineService {
   constructor(private prisma: PrismaService) {}
 
   listMachines() {
-    return this.prisma.machine.findMany({
+    return (this.prisma as any).machine.findMany({
       include: { inspections: { take: 3, orderBy: { date: 'desc' } } },
       orderBy: { name: 'asc' },
     });
@@ -21,11 +21,11 @@ export class MachineService {
     notes?: string;
     createdBy?: string;
   }) {
-    return this.prisma.machine.create({ data });
+    return (this.prisma as any).machine.create({ data });
   }
 
   listInspections(machineId?: number) {
-    return this.prisma.machineInspection.findMany({
+    return (this.prisma as any).machineInspection.findMany({
       where: machineId ? { machineId } : undefined,
       include: { machine: { select: { name: true, type: true } } },
       orderBy: { date: 'desc' },
@@ -42,6 +42,6 @@ export class MachineService {
     resolvedAt?: Date | string;
     createdBy?: string;
   }) {
-    return this.prisma.machineInspection.create({ data });
+    return (this.prisma as any).machineInspection.create({ data });
   }
 }

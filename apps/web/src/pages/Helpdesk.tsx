@@ -90,9 +90,9 @@ const statusIconMap: Record<string, React.ReactNode> = {
 };
 
 const supportCards = [
-    { label: 'Typical reply', value: 'Under 24h', icon: <SLAIcon fontSize="small" />, tone: '#0891b2' },
+    { label: 'Typical reply', value: 'Not connected', icon: <SLAIcon fontSize="small" />, tone: '#0891b2' },
     { label: 'Live support', value: 'Mon–Sat', icon: <SupportAgentIcon fontSize="small" />, tone: '#7c3aed' },
-    { label: 'Open channels', value: 'FAQ + Ticket', icon: <TicketIcon fontSize="small" />, tone: '#059669' },
+    { label: 'Open channels', value: 'FAQ + Drafts', icon: <TicketIcon fontSize="small" />, tone: '#059669' },
 ];
 
 const Helpdesk: React.FC = () => {
@@ -121,7 +121,7 @@ const Helpdesk: React.FC = () => {
     const handleSubmitTicket = () => {
         if (!ticketForm.subject.trim() || !ticketForm.description.trim()) return;
         addTicket({
-            id: `TKT-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`,
+            id: `LOCAL-${crypto.randomUUID()}`,
             subject: ticketForm.subject,
             type: ticketForm.type,
             description: ticketForm.description,
@@ -141,7 +141,7 @@ const Helpdesk: React.FC = () => {
                     </Avatar>
                     <Box>
                         <Typography variant="h4" fontWeight={800}>Helpdesk</Typography>
-                        <Typography variant="body2" color="text.secondary">Find answers fast, raise a clean ticket, and keep track of progress in one place.</Typography>
+                        <Typography variant="body2" color="text.secondary">Find answers and save local ticket drafts. Drafts stay in this browser and are not sent to support.</Typography>
                     </Box>
                 </Box>
                 <Grid container spacing={2}>
@@ -218,7 +218,7 @@ const Helpdesk: React.FC = () => {
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2.5 }}>
                             <Avatar sx={{ bgcolor: 'primary.main', width: 40, height: 40 }}><HelpdeskIcon fontSize="small" /></Avatar>
                             <Box>
-                                <Typography variant="h6" fontWeight={800}>Raise a Ticket</Typography>
+                                <Typography variant="h6" fontWeight={800}>Save a Ticket Draft</Typography>
                                 <Typography variant="body2" color="text.secondary">Keep it short, specific, and easy to route.</Typography>
                             </Box>
                         </Box>
@@ -226,7 +226,7 @@ const Helpdesk: React.FC = () => {
                             <Fade in>
                                 <Box sx={{ textAlign: 'center', py: 4 }}>
                                     <ResolvedIcon color="success" sx={{ fontSize: 48, mb: 1.5 }} />
-                                    <Typography variant="h6" fontWeight={800} gutterBottom>Ticket submitted</Typography>
+                                    <Typography variant="h6" fontWeight={800} gutterBottom>Draft saved locally</Typography>
                                     <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>We’ll get back to you within 24 hours.</Typography>
                                     <Button variant="outlined" size="small" onClick={() => { setSubmitted(false); setTicketForm({ subject: '', type: 'Bug', description: '' }); }}>Raise another</Button>
                                 </Box>
@@ -241,7 +241,7 @@ const Helpdesk: React.FC = () => {
                                     <option value="Other">📋 Other</option>
                                 </TextField>
                                 <TextField label="Description" fullWidth size="small" multiline rows={4} value={ticketForm.description} onChange={(e) => setTicketForm({ ...ticketForm, description: e.target.value })} placeholder="Tell us what happened, what you expected, and any steps to reproduce." />
-                                <Button variant="contained" startIcon={<SendIcon />} onClick={handleSubmitTicket} disabled={!ticketForm.subject.trim() || !ticketForm.description.trim()} sx={{ py: 1.1, borderRadius: 2 }}>Submit ticket</Button>
+                                <Button variant="contained" startIcon={<SendIcon />} onClick={handleSubmitTicket} disabled={!ticketForm.subject.trim() || !ticketForm.description.trim()} sx={{ py: 1.1, borderRadius: 2 }}>Save draft</Button>
                             </Box>
                         )}
                     </Paper>
@@ -261,8 +261,8 @@ const Helpdesk: React.FC = () => {
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                             {tickets.length === 0 && (
                                 <Box sx={{ textAlign: 'center', py: 3 }}>
-                                    <Typography fontWeight={700}>No tickets raised yet.</Typography>
-                                    <Typography variant="body2" color="text.secondary">Your submitted tickets will appear here.</Typography>
+                                    <Typography fontWeight={700}>No local drafts yet.</Typography>
+                                    <Typography variant="body2" color="text.secondary">Your local drafts will appear here.</Typography>
                                 </Box>
                             )}
                             {tickets.map((ticket: any) => (

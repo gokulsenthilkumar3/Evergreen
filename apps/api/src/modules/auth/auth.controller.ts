@@ -10,6 +10,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { LoginDto } from './auth.dto';
 import { WebAuthnService } from './webauthn.service';
 import { JwtAuthGuard } from '../../guards/jwt-auth.guard';
 import { PrismaService } from '../../services/prisma.service';
@@ -36,7 +37,7 @@ export class AuthController {
   @Public()
   @UseGuards(PublicAuthRateLimitGuard)
   @Post('login')
-  async login(@Body() loginDto: any, @Req() req: Request) {
+  async login(@Body() loginDto: LoginDto, @Req() req: Request) {
     if (
       typeof loginDto?.username !== 'string' ||
       typeof loginDto?.password !== 'string'

@@ -1,3 +1,8 @@
+import {
+  CreateStaffDto,
+  CreateShiftDto,
+  CreatePayrollEntryDto,
+} from './hr.dto';
 import { Controller, Get, Post, Body, Query } from '@nestjs/common';
 import { HrService } from './hr.service';
 import { Roles } from '../../decorators/roles.decorator';
@@ -13,17 +18,7 @@ export class HrController {
 
   @Post('staff')
   @Roles('MODIFIER')
-  createStaff(@Body() body: {
-    employeeId: string;
-    name: string;
-    role: string;
-    department?: string;
-    phone?: string;
-    joinDate?: string;
-    salaryType?: string;
-    dailyRate?: number;
-    monthlySalary?: number;
-  }) {
+  createStaff(@Body() body: CreateStaffDto) {
     return this.hrService.createStaff(body);
   }
 
@@ -34,7 +29,7 @@ export class HrController {
 
   @Post('shifts')
   @Roles('MODIFIER')
-  createShift(@Body() body: { name: string; startTime: string; endTime: string }) {
+  createShift(@Body() body: CreateShiftDto) {
     return this.hrService.createShift(body);
   }
 
@@ -45,16 +40,7 @@ export class HrController {
 
   @Post('payroll')
   @Roles('MODIFIER')
-  createPayrollEntry(@Body() body: {
-    staffId: number;
-    month: string;
-    daysWorked: number;
-    overtimeHrs?: number;
-    basicPay: number;
-    overtime?: number;
-    deductions?: number;
-    netPay: number;
-  }) {
+  createPayrollEntry(@Body() body: CreatePayrollEntryDto) {
     return this.hrService.createPayrollEntry(body);
   }
 }

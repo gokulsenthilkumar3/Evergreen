@@ -1,28 +1,32 @@
 import React, { useState } from 'react';
 import { Box, Typography, Paper, Grid, Card, CardContent, Chip, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tabs, Tab, Avatar, CircularProgress, Alert } from '@mui/material';
-import { Add as AddIcon, Refresh as RefreshIcon } from '@mui/icons-material';
+import { Refresh as RefreshIcon } from '@mui/icons-material';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../../utils/api';
 
 interface Staff {
   id: number;
-  empNo: string;
+  employeeId: string;
   name: string;
   department: string;
-  designation: string;
-  doj?: string;
-  status?: string;
-  salary: number;
+  role: string;
+  joinDate?: string;
+  monthlySalary: number;
+  dailyRate: number;
+  salaryType: string;
+  active: boolean;
 }
 
 interface PayrollEntry {
   id: number;
   staffId: number;
-  staff: { empNo: string; name: string; department: string };
+  staff: { employeeId: string; name: string; department: string };
   month: string;
   daysWorked: number;
-  otHours?: number;
-  grossPay: number;
+  overtimeHrs: number;
+  basicPay: number;
+  overtime: number;
+  paid: boolean;
   deductions?: number;
   netPay: number;
   status?: string;
@@ -39,16 +43,16 @@ const HRManagement: React.FC = () => {
     queryFn: () => api.get('/hr/staff').then(r => r.data),
   });
 
-  const { data: payroll = [], isLoading: loadingPayroll } = useQuery<PayrollEntry[]>({
+  const { data: payroll = [], isLoading: loadingPayroll, error: payrollError } = useQuery<PayrollEntry[]>({
     queryKey: ['hr-payroll', currentMonth],
     queryFn: () => api.get(`/hr/payroll?month=${currentMonth}`).then(r => r.data),
   });
 
-  const active = employees.filter(e => (e.status ?? 'Active') === 'Active').length;
-  const onLeave = employees.filter(e => e.status === 'On Leave').length;
-  const totalSalary = employees.reduce((s, e) => s + e.salary, 0);
+  const active = employees.filter(e => e.active).length;
+  const onLeave = employees.filter(e => !e.active).length;
+  const totalSalary = employees.reduce((s, e) => s + e.monthlySalary, 0);
 
-  if (error) return <Alert severity="error">Failed to load HR data</Alert>;
+  if (error || payrollError) return <Alert severity="error">Failed to load HR data</Alert>;
 
   return (
     <Box sx={{ width: '100%' }}>
@@ -64,8 +68,8 @@ const HRManagement: React.FC = () => {
           [
             ['Total Employees', employees.length, '#3b82f6'],
             ['Active', active, '#059669'],
-            ['On Leave', onLeave, '#f59e0b'],
-            ['Payroll (Monthly)', `₹${totalSalary.toLocaleString('en-IN')}`, '#8b5cf6']
+            ['Inactive', onLeave, '#f59e0b'],
+            ['Monthly Salary Commitments', `₹${totalSalary.toLocaleString('en-IN')}`, '#8b5cf6']
           ].map(([l, v, c]) => (
             <Grid key={String(l)} size={{ xs: 6, md: 3 }}>
               <Card variant="outlined" sx={{ borderRadius: 3 }}>
@@ -100,11 +104,11 @@ const HRManagement: React.FC = () => {
                 ) : employees.map(e => (
                   <TableRow key={e.id} hover>
                     <TableCell><Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}><Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main', fontSize: '0.8rem' }}>{e.name.charAt(0)}</Avatar><Typography variant="body2" fontWeight={600}>{e.name}</Typography></Box></TableCell>
-                    <TableCell><Chip label={e.empNo} size="small" variant="outlined" /></TableCell>
+                    <TableCell><Chip label={e.employeeId} size="small" variant="outlined" /></TableCell>
                     <TableCell>{e.department}</TableCell>
-                    <TableCell><Typography variant="body2" color="text.secondary">{e.designation}</Typography></TableCell>
-                    <TableCell><Typography variant="body2" color="text.secondary">{e.doj ? new Date(e.doj).toLocaleDateString('en-IN') : '—'}</Typography></TableCell>
-                    <TableCell><Chip label={e.status ?? 'Active'} size="small" color={(e.status ?? 'Active') === 'Active' ? 'success' : 'warning'} variant="outlined" /></TableCell>
+                    <TableCell><Typography variant="body2" color="text.secondary">{e.role}</Typography></TableCell>
+                    <TableCell><Typography variant="body2" color="text.secondary">{e.joinDate ? new Date(e.joinDate).toLocaleDateString('en-IN') : '—'}</Typography></TableCell>
+                    <TableCell><Chip label={e.active ? 'Active' : 'Inactive'} size="small" color={e.active ? 'success' : 'warning'} variant="outlined" /></TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -127,11 +131,11 @@ const HRManagement: React.FC = () => {
                   <TableRow><TableCell colSpan={5} align="center" sx={{ color: 'text.secondary', py: 3 }}>No payroll entries for {currentMonth}</TableCell></TableRow>
                 ) : payroll.map(p => (
                   <TableRow key={p.id} hover>
-                    <TableCell><Typography variant="body2" fontWeight={600}>{p.staff?.name}</Typography><Typography variant="caption" color="text.secondary">{p.staff?.empNo}</Typography></TableCell>
-                    <TableCell align="right">₹{p.grossPay.toLocaleString('en-IN')}</TableCell>
+                    <TableCell><Typography variant="body2" fontWeight={600}>{p.staff?.name}</Typography><Typography variant="caption" color="text.secondary">{p.staff?.employeeId}</Typography></TableCell>
+                    <TableCell align="right">₹{(p.basicPay + p.overtime).toLocaleString('en-IN')}</TableCell>
                     <TableCell align="right" sx={{ color: 'error.main' }}>-₹{(p.deductions ?? 0).toLocaleString('en-IN')}</TableCell>
                     <TableCell align="right"><Typography variant="body2" fontWeight={800} color="success.main">₹{p.netPay.toLocaleString('en-IN')}</Typography></TableCell>
-                    <TableCell><Chip label={p.status ?? 'Pending'} size="small" color={p.status === 'Paid' ? 'success' : 'warning'} variant="outlined" /></TableCell>
+                    <TableCell><Chip label={p.paid ? 'Paid' : 'Pending'} size="small" color={p.paid ? 'success' : 'warning'} variant="outlined" /></TableCell>
                   </TableRow>
                 ))}
               </TableBody>

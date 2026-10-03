@@ -1,3 +1,4 @@
+import { CreateQualityInspectionDto } from './quality.dto';
 import { Controller, Get, Post, Body, Query } from '@nestjs/common';
 import { QualityService } from './quality.service';
 import { Roles } from '../../decorators/roles.decorator';
@@ -17,19 +18,7 @@ export class QualityController {
 
   @Post('inspections')
   @Roles('MODIFIER')
-  createInspection(@Body() body: {
-    sampleRef?: string;
-    yarnCount?: string;
-    lot?: string;
-    parameter: string;
-    measuredValue: number;
-    unit?: string;
-    standardMin?: number;
-    standardMax?: number;
-    result: string;
-    remarks?: string;
-    inspectedBy?: string;
-  }) {
+  createInspection(@Body() body: CreateQualityInspectionDto) {
     return this.qualityService.createInspection(body);
   }
 }

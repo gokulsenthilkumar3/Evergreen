@@ -1,5 +1,6 @@
 # EverGreen — SQLite Backup & Migration Manifest
-# Phase 0 & Phase 5 — Safety Gate
+
+## Phase 0 & Phase 5 — Safety Gate
 
 ## Backup Strategy
 
@@ -8,7 +9,8 @@ Before any schema change or data migration, a full backup of `dev.db` MUST be ta
 ### Backup Location
 
 Backups are stored in `EverGreen/backups/` with the naming convention:
-```
+
+```text
 dev_<YYYY-MM-DD_HH-MM-SS>.db
 ```
 
@@ -30,9 +32,9 @@ cp packages/database/prisma/dev.db backups/dev_$(date +%Y-%m-%d_%H-%M-%S).db
 
 ## Backup Log
 
-| Date | Filename | Trigger | Verified By |
-|------|----------|---------|-------------|
-| 2026-10-03 | dev_2026-10-03_pre-merge.db | Phase 0 initial snapshot before super-project merge | pending |
+| Date       | Filename                    | Trigger                                             | Verified By |
+| ---------- | --------------------------- | --------------------------------------------------- | ----------- |
+| 2026-10-03 | dev_2026-10-03_pre-merge.db | Phase 0 initial snapshot before super-project merge | pending     |
 
 ---
 
@@ -81,6 +83,7 @@ npx prisma migrate deploy -w @evergreen/database
 ### Step 5: Reconcile data
 
 Run a data reconciliation script (TBD) to import SQLite historical records into PostgreSQL, verifying:
+
 - All `CottonInventory` quantities match
 - All `YarnInventory` quantities match
 - All `Production` records match

@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-import type { InvoiceLine, InvoiceTotals } from '@evergreen/types';
-=======
 import type { InvoiceLine, InvoiceTotals } from "@evergreen/types";
->>>>>>> 00150265d55fc52cd88db9512cd099f04a14af02
 
 export type TaxLine = {
   quantity: number;
@@ -13,11 +9,6 @@ export type TaxLine = {
   hsnSac?: string;
   uom?: string;
 };
-<<<<<<< HEAD
-
-export { type InvoiceTotals };
-=======
->>>>>>> 00150265d55fc52cd88db9512cd099f04a14af02
 
 export class InvoiceCalculationError extends Error {
   constructor(message: string) {
@@ -29,17 +20,7 @@ export class InvoiceCalculationError extends Error {
 const money = (value: number) =>
   Math.round((value + Number.EPSILON) * 100) / 100;
 
-<<<<<<< HEAD
-/**
- * Canonical GST calculation shared by invoices, orders, PDFs and storefront estimates.
- *
- * Supports two call signatures:
- *  1. calculateInvoiceTotals(lines, interstate?) — simple API (boolean flag)
- *  2. calculateInvoiceTotals(lines, documentDiscount, sellerState, buyerState) — full API
- */
-=======
 /** Canonical GST calculation shared by invoices, orders, PDFs and storefront estimates. */
->>>>>>> 00150265d55fc52cd88db9512cd099f04a14af02
 export function calculateInvoiceTotals(
   lines: TaxLine[],
   documentDiscountOrInterstate?: number | boolean,
@@ -47,17 +28,6 @@ export function calculateInvoiceTotals(
   buyerState?: string,
 ): InvoiceTotals {
   const isSimpleMode =
-<<<<<<< HEAD
-    typeof documentDiscountOrInterstate === 'boolean' ||
-    documentDiscountOrInterstate === undefined;
-  const interstate = isSimpleMode
-    ? ((documentDiscountOrInterstate as boolean) ?? false)
-    : false;
-  const documentDiscount = isSimpleMode
-    ? 0
-    : ((documentDiscountOrInterstate as number) ?? 0);
-  const seller = sellerState ?? 'Tamil Nadu';
-=======
     typeof documentDiscountOrInterstate === "boolean" ||
     documentDiscountOrInterstate === undefined;
   const interstate = isSimpleMode
@@ -67,7 +37,6 @@ export function calculateInvoiceTotals(
     ? 0
     : ((documentDiscountOrInterstate as number | undefined) ?? 0);
   const seller = sellerState ?? "Tamil Nadu";
->>>>>>> 00150265d55fc52cd88db9512cd099f04a14af02
   const buyer = buyerState ?? seller;
   const sameState = seller.trim().toLowerCase() === buyer.trim().toLowerCase();
 
@@ -92,21 +61,6 @@ export function calculateInvoiceTotals(
       );
     }
 
-<<<<<<< HEAD
-    let lineDiscount: number;
-    if (isSimpleMode) {
-      // Simple mode: discount is percentage of line value
-      lineDiscount = money((qty * rate * disc) / 100);
-    } else {
-      // Full mode: discount is absolute amount per line
-      lineDiscount = money(disc);
-    }
-
-    const taxable = money(qty * rate - lineDiscount);
-    if (taxable < 0)
-      throw new InvoiceCalculationError('Line discount exceeds its value');
-    return { lineTotal: money(qty * rate), lineDiscount, taxable, gstRate: gst };
-=======
     const lineTotal = money(quantity * rate);
     // The legacy boolean overload uses percentage discounts; the full API uses amounts.
     const lineDiscount = money(
@@ -121,7 +75,6 @@ export function calculateInvoiceTotals(
       taxable: money(lineTotal - lineDiscount),
       gstRate,
     };
->>>>>>> 00150265d55fc52cd88db9512cd099f04a14af02
   });
 
   const grossSubtotal = money(

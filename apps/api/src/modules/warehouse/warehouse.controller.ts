@@ -1,3 +1,4 @@
+import { CreateLocationDto, CreateMovementDto } from './warehouse.dto';
 import {
   Controller,
   Get,
@@ -20,33 +21,21 @@ export class WarehouseController {
 
   @Post('locations')
   @Roles('MODIFIER')
-  createLocation(@Body() body: {
-    name: string;
-    zone?: string;
-    description?: string;
-    createdBy?: string;
-  }) {
+  createLocation(@Body() body: CreateLocationDto) {
     return this.warehouseService.createLocation(body);
   }
 
   @Get('movements')
-  listMovements(@Query('locationId') locationId?: string) {
-    return this.warehouseService.listMovements(
-      locationId ? parseInt(locationId, 10) : undefined,
-    );
+  listMovements(
+    @Query('locationId', new ParseIntPipe({ optional: true }))
+    locationId?: number,
+  ) {
+    return this.warehouseService.listMovements(locationId);
   }
 
   @Post('movements')
   @Roles('MODIFIER')
-  createMovement(@Body() body: {
-    locationId: number;
-    itemId: number;
-    quantity: number;
-    movementType: string;
-    referenceId?: string;
-    notes?: string;
-    createdBy?: string;
-  }) {
+  createMovement(@Body() body: CreateMovementDto) {
     return this.warehouseService.createMovement(body);
   }
 }
