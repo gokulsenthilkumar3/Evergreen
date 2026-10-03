@@ -381,7 +381,7 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
                                     <TableCell align="center">{row.totalBags}</TableCell>
                                     <TableCell align="center" sx={{ fontWeight: 'bold', color: 'primary.main' }}>{row.totalWeight} kg</TableCell>
                                     <TableCell align="center">
-                                        {(userRole === 'ADMIN' || userRole === 'AUTHOR') && (
+                                        {(userRole === 'ADMIN') && (
                                             <IconButton color="error" onClick={() => handleDeleteOutward(row.id)}>
                                                 <DeleteIcon />
                                             </IconButton>

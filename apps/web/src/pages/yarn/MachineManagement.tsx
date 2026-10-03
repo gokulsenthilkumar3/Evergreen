@@ -3,9 +3,9 @@ import { Box, Typography, Paper, Grid, Card, CardContent, Chip, Button, Table, T
 import { Add as AddIcon, Build as BuildIcon, Refresh as RefreshIcon } from '@mui/icons-material';
 
 const MACHINES = [
-  { id: 'MC-01', name: 'Ring Frame A-01', type: 'Ring Frame', brand: 'LMW', spindles: 400, count: '40s / 30s', status: 'Active', installDate: '2020-03-15', lastMaint: '2026-08-01', nextMaint: '2026-11-01' },
-  { id: 'MC-02', name: 'Ring Frame A-02', type: 'Ring Frame', brand: 'Rieter', spindles: 400, count: '30s / 40s', status: 'Active', installDate: '2021-06-10', lastMaint: '2026-07-15', nextMaint: '2026-10-15' },
-  { id: 'MC-03', name: 'Ring Frame B-01', type: 'Ring Frame', brand: 'LMW', spindles: 360, count: '60s', status: 'Under Maintenance', installDate: '2019-01-20', lastMaint: '2026-09-20', nextMaint: '2026-12-20' },
+  { id: 'MC-01', name: 'Ring Frame A-01', type: 'Ring Frame', brand: 'LMW', spindles: 400, count: '8 / 6', status: 'Active', installDate: '2020-03-15', lastMaint: '2026-08-01', nextMaint: '2026-11-01' },
+  { id: 'MC-02', name: 'Ring Frame A-02', type: 'Ring Frame', brand: 'Rieter', spindles: 400, count: '6 / 8', status: 'Active', installDate: '2021-06-10', lastMaint: '2026-07-15', nextMaint: '2026-10-15' },
+  { id: 'MC-03', name: 'Ring Frame B-01', type: 'Ring Frame', brand: 'LMW', spindles: 360, count: '10', status: 'Under Maintenance', installDate: '2019-01-20', lastMaint: '2026-09-20', nextMaint: '2026-12-20' },
   { id: 'MC-04', name: 'Winding M-01', type: 'Winder', brand: 'Savio', spindles: 120, count: 'All counts', status: 'Active', installDate: '2022-02-28', lastMaint: '2026-09-01', nextMaint: '2026-12-01' },
   { id: 'MC-05', name: 'TFO Machine-01', type: 'TFO', brand: 'Volkmann', spindles: 64, count: '2/60', status: 'Active', installDate: '2023-07-05', lastMaint: '2026-09-10', nextMaint: '2026-12-10' },
 ];

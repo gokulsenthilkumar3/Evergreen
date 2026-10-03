@@ -5,9 +5,9 @@
     "types": "./dist/index.d.ts",
     "scripts": {
         "build": "tsc",
-        "generate": "prisma generate",
-        "db:push": "prisma db push",
-        "db:studio": "prisma studio"
+        "generate": "prisma generate --schema prisma/schema.prisma",
+        "db:push": "prisma db push --schema prisma/schema.prisma",
+        "db:studio": "prisma studio --schema prisma/schema.prisma"
     },
     "dependencies": {
         "@prisma/client": "5.22.0"

@@ -3,10 +3,10 @@ import { Box, Typography, Paper, Grid, Card, CardContent, Chip, Button, Table, T
 import { Add as AddIcon, Refresh as RefreshIcon, CheckCircle, Cancel, Warning } from '@mui/icons-material';
 
 const QC_RECORDS = [
-  { id: 1, batchNo: 'BT-2026-0921', count: '40s', date: '2026-09-21', samples: 10, passed: 9, failed: 1, csp: 2180, tpi: 15.2, u: 12.1, status: 'Passed' },
-  { id: 2, batchNo: 'BT-2026-0920', count: '30s', date: '2026-09-20', samples: 10, passed: 10, failed: 0, csp: 2350, tpi: 13.8, u: 11.5, status: 'Passed' },
-  { id: 3, batchNo: 'BT-2026-0919', count: '60s', date: '2026-09-19', samples: 8, passed: 5, failed: 3, csp: 2050, tpi: 20.1, u: 14.8, status: 'Failed' },
-  { id: 4, batchNo: 'BT-2026-0918', count: '40s', date: '2026-09-18', samples: 10, passed: 8, failed: 2, csp: 2100, tpi: 15.5, u: 12.9, status: 'Warning' },
+  { id: 1, batchNo: 'BT-2026-0921', count: '8', date: '2026-09-21', samples: 10, passed: 9, failed: 1, csp: 2180, tpi: 15.2, u: 12.1, status: 'Passed' },
+  { id: 2, batchNo: 'BT-2026-0920', count: '6', date: '2026-09-20', samples: 10, passed: 10, failed: 0, csp: 2350, tpi: 13.8, u: 11.5, status: 'Passed' },
+  { id: 3, batchNo: 'BT-2026-0919', count: '10', date: '2026-09-19', samples: 8, passed: 5, failed: 3, csp: 2050, tpi: 20.1, u: 14.8, status: 'Failed' },
+  { id: 4, batchNo: 'BT-2026-0918', count: '8', date: '2026-09-18', samples: 10, passed: 8, failed: 2, csp: 2100, tpi: 15.5, u: 12.9, status: 'Warning' },
 ];
 
 const QualityControl: React.FC = () => {

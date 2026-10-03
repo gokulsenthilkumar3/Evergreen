@@ -17,7 +17,7 @@ Status key: **Connected** = uses EverGreen API/persistent records for its princi
 | Sales Orders | Commerce orders | Connected | Reservation, partial invoice and cancellation tests |
 | Invoice Studio | Commerce invoices | Connected | GST, PDF, verification, payments, void and ledger tests |
 | Customers & Ledger | Commerce customer ledger | Connected | Balances and aging reconcile to invoices/payments |
-| Invoice Designer | Browser-local invoice draft | Prototype | Appearance features folded into Invoice Studio; remove duplicate write path |
+| Invoice Designer | Invoice Studio + shared `@evergreen/pdf` totals | Connected; prototype retired from navigation | Themes, logo, signatures, GST, print/PDF and verification are canonical; full live QA remains required |
 | MSME ERP | Commerce summaries and related screens | Unverified | Each action mapped to canonical customer/finance workflow |
 | Vyapari (B2B) | Hard-coded sample arrays | Prototype | Persistent customer portal and transaction history, or retire preview |
 | Business Reports | Commerce reports | Connected | Date/product/receivable exports reconciled |
@@ -52,3 +52,15 @@ Status key: **Connected** = uses EverGreen API/persistent records for its princi
 6. Obtain acceptance, archive all five source folders and separately located data snapshots with a manifest outside the active workspace, verify archive, then remove only the exact approved folders.
 
 As of this update, these gates **have not passed**. No reference folder has been deleted.
+
+## Shared-package consolidation status
+
+The following canonical packages now exist and are buildable workspaces. This is structural consolidation evidence only; it does not by itself satisfy any reference-project retirement gate.
+
+| Package | Canonical responsibility | Current status |
+| --- | --- | --- |
+| `@evergreen/types` | Roles, yarn counts, sessions, stock movements, invoices, customers and dashboard contracts | Connected foundation |
+| `@evergreen/config` | Shared strict TypeScript and baseline ESLint policy | Connected foundation |
+| `@evergreen/i18n` | Typed English/Tamil core navigation and action dictionary | Foundation; full screen translation QA pending |
+| `@evergreen/pdf` | Shared GST invoice total calculation used before rendering | Foundation; renderer integration pending |
+| `@evergreen/email` | Escaped daily-summary email template | Foundation; scheduler/delivery integration pending |

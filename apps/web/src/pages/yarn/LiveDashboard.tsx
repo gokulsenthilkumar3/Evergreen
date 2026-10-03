@@ -4,10 +4,10 @@ import { Refresh as RefreshIcon } from '@mui/icons-material';
 
 const PageBody = () => {
   const machines = [
-    { id: 'MC-01', name: 'Ring Frame A-01', status: 'Running', oee: 87, spindles: 400, active: 392, count: '40s' },
-    { id: 'MC-02', name: 'Ring Frame A-02', status: 'Running', oee: 91, spindles: 400, active: 400, count: '30s' },
-    { id: 'MC-03', name: 'Ring Frame B-01', status: 'Idle', oee: 0, spindles: 360, active: 0, count: '60s' },
-    { id: 'MC-04', name: 'Ring Frame B-02', status: 'Alert', oee: 45, spindles: 400, active: 180, count: '40s' },
+    { id: 'MC-01', name: 'Ring Frame A-01', status: 'Running', oee: 87, spindles: 400, active: 392, count: '8' },
+    { id: 'MC-02', name: 'Ring Frame A-02', status: 'Running', oee: 91, spindles: 400, active: 400, count: '6' },
+    { id: 'MC-03', name: 'Ring Frame B-01', status: 'Idle', oee: 0, spindles: 360, active: 0, count: '10' },
+    { id: 'MC-04', name: 'Ring Frame B-02', status: 'Alert', oee: 45, spindles: 400, active: 180, count: '8' },
     { id: 'MC-05', name: 'Winding M-01', status: 'Running', oee: 79, spindles: 120, active: 95, count: '' },
     { id: 'MC-06', name: 'TFO Machine-01', status: 'Running', oee: 94, spindles: 64, active: 64, count: '2/60' },
   ];

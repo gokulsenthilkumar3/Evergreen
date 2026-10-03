@@ -235,7 +235,7 @@ model SystemSettings {
   gstPercent          String   @default("18")
   language            String   @default("en")
   sellerState         String   @default("Tamil Nadu")
-  supportedCounts     String?  @default("2,4,6,8,10,12,14,16,20")
+  supportedCounts     String?  @default("2,4,6,8,10")
   updatedAt           DateTime @updatedAt
   entryTimestamp      DateTime @default(now())
   createdBy           String?
@@ -570,4 +570,152 @@ model SalesOrderLine {
   rate        Float
   gstRate     Float     @default(0)
   discount    Float     @default(0)
+}
+
+// ── Phase 3.5 — Warehouse, Machine, QC and HR models ──────────────────────
+
+model WarehouseLocation {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  zone        String?
+  description String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+  stockMovements WarehouseMovement[]
+}
+
+model WarehouseMovement {
+  id           Int               @id @default(autoincrement())
+  locationId   Int
+  location     WarehouseLocation @relation(fields: [locationId], references: [id])
+  itemId       Int
+  quantity     Float
+  movementType String            // IN, OUT, TRANSFER
+  referenceId  String?
+  notes        String?
+  createdBy    String?
+  createdAt    DateTime          @default(now())
+
+  @@index([locationId])
+}
+
+model Machine {
+  id             Int                @id @default(autoincrement())
+  name           String
+  type           String             // RING_FRAME, OPEN_END, BLOW_ROOM, CARDING, etc.
+  serialNo       String?            @unique
+  manufacturer   String?
+  purchasedAt    DateTime?
+  active         Boolean            @default(true)
+  notes          String?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  createdBy      String?
+  inspections    MachineInspection[]
+}
+
+model MachineInspection {
+  id          Int      @id @default(autoincrement())
+  machineId   Int
+  machine     Machine  @relation(fields: [machineId], references: [id], onDelete: Cascade)
+  date        DateTime @default(now())
+  type        String   // PREVENTIVE, BREAKDOWN, PERIODIC
+  status      String   @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED
+  description String?
+  cost        Float    @default(0)
+  resolvedAt  DateTime?
+  createdBy   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([machineId])
+}
+
+model QualityInspection {
+  id             Int      @id @default(autoincrement())
+  date           DateTime @default(now())
+  productionId   Int?
+  batchId        String?
+  yarnCount      String?
+  sampleWeight   Float?
+  tenacity       Float?
+  elongation     Float?
+  imperfections  Float?
+  classimateFaults Float?
+  unevenness     Float?
+  status         String   @default("PENDING") // PENDING, PASS, FAIL, HOLD
+  disposition    String?  // RELEASE, REPROCESS, SCRAP
+  remarks        String?
+  inspectedBy    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([date])
+}
+
+model Staff {
+  id          Int      @id @default(autoincrement())
+  employeeId  String   @unique
+  name        String
+  role        String   // OPERATOR, SUPERVISOR, MANAGER, TECHNICIAN
+  department  String?
+  phone       String?
+  joinDate    DateTime?
+  salaryType  String   @default("DAILY") // DAILY, MONTHLY
+  dailyRate   Float    @default(0)
+  monthlySalary Float  @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+  payrollEntries PayrollEntry[]
+  shiftAssignments ShiftAssignment[]
+}
+
+model Shift {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique // Morning, Afternoon, Night
+  startTime   String   // "06:00"
+  endTime     String   // "14:00"
+  active      Boolean  @default(true)
+  assignments ShiftAssignment[]
+}
+
+model ShiftAssignment {
+  id        Int      @id @default(autoincrement())
+  staffId   Int
+  staff     Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  shiftId   Int
+  shift     Shift    @relation(fields: [shiftId], references: [id])
+  date      DateTime
+  present   Boolean  @default(true)
+  overtime  Float    @default(0) // hours
+  createdAt DateTime @default(now())
+  createdBy String?
+
+  @@index([staffId, date])
+}
+
+model PayrollEntry {
+  id           Int      @id @default(autoincrement())
+  staffId      Int
+  staff        Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  month        String   // "2026-10"
+  daysWorked   Float    @default(0)
+  overtimeHrs  Float    @default(0)
+  basicPay     Float    @default(0)
+  overtime     Float    @default(0)
+  deductions   Float    @default(0)
+  netPay       Float    @default(0)
+  paid         Boolean  @default(false)
+  paidAt       DateTime?
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  createdBy    String?
+
+  @@unique([staffId, month])
+  @@index([month])
 }

@@ -112,7 +112,7 @@ const Settings: React.FC<SettingsProps> = ({
         packageRate: '1.60',
         maintenanceRate: '4.00',
         gstPercent: '18',
-        supportedCounts: '2,4,6,8,10,12,14,16,20',
+        supportedCounts: '2,4,6,8,10',
     });
 
     // Populate state when data is fetched
@@ -138,7 +138,7 @@ const Settings: React.FC<SettingsProps> = ({
                 packageRate: String(settings.packageRate || '1.60'),
                 maintenanceRate: String(settings.maintenanceRate || '4.00'),
                 gstPercent: String(settings.gstPercent || '18'),
-                supportedCounts: settings.supportedCounts || '2,4,6,8,10,12,14,16,20',
+                supportedCounts: settings.supportedCounts || '2,4,6,8,10',
             });
         }
     }, [settings]);
