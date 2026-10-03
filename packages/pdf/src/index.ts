@@ -1,11 +1,5 @@
-export interface TaxLine {
-  quantity: number;
-  rate: number;
-  discount: number;
-  gstRate: number;
-}
+import type { InvoiceLine, InvoiceTotals } from "@evergreen/types";
 
-<<<<<<< HEAD
 export type TaxLine = {
   quantity: number;
   rate: number;
@@ -15,96 +9,96 @@ export type TaxLine = {
   hsnSac?: string;
   uom?: string;
 };
-=======
-export interface InvoiceTotals {
-  subtotal: number;
-  discount: number;
-  taxable: number;
-  cgst: number;
-  sgst: number;
-  igst: number;
-  total: number;
-  grandTotal: number;
-}
->>>>>>> 05aea36f3282e084109386f393c7cf3195b16b1b
 
 export class InvoiceCalculationError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'InvoiceCalculationError';
+    this.name = "InvoiceCalculationError";
   }
 }
 
-<<<<<<< HEAD
 const money = (value: number) =>
   Math.round((value + Number.EPSILON) * 100) / 100;
 
-/**
- * Canonical GST calculation shared by invoices, orders, PDFs and storefront estimates.
- *
- * Supports two call signatures:
- *  1. calculateInvoiceTotals(lines: TaxLine[], interstate?: boolean) — simple API
- *  2. calculateInvoiceTotals(lines: TaxLine[], documentDiscount, sellerState, buyerState) — full API
- */
+/** Canonical GST calculation shared by invoices, orders, PDFs and storefront estimates. */
 export function calculateInvoiceTotals(
   lines: TaxLine[],
   documentDiscountOrInterstate?: number | boolean,
   sellerState?: string,
   buyerState?: string,
 ): InvoiceTotals {
-  // Determine call mode
-  const isSimpleMode = typeof documentDiscountOrInterstate === 'boolean' || documentDiscountOrInterstate === undefined;
-  const interstate = isSimpleMode ? (documentDiscountOrInterstate as boolean ?? false) : false;
-  const documentDiscount = isSimpleMode ? 0 : (documentDiscountOrInterstate as number ?? 0);
-  const seller = sellerState ?? 'Tamil Nadu';
+  const isSimpleMode =
+    typeof documentDiscountOrInterstate === "boolean" ||
+    documentDiscountOrInterstate === undefined;
+  const interstate = isSimpleMode
+    ? ((documentDiscountOrInterstate as boolean | undefined) ?? false)
+    : false;
+  const documentDiscount = isSimpleMode
+    ? 0
+    : ((documentDiscountOrInterstate as number | undefined) ?? 0);
+  const seller = sellerState ?? "Tamil Nadu";
   const buyer = buyerState ?? seller;
   const sameState = seller.trim().toLowerCase() === buyer.trim().toLowerCase();
 
   if (!Number.isFinite(documentDiscount) || documentDiscount < 0) {
-    throw new InvoiceCalculationError('Invoice discount is invalid');
+    throw new InvoiceCalculationError("Invoice discount is invalid");
   }
 
   const taxableLines = lines.map((line) => {
-    const qty = line.quantity ?? 0;
-    const rate = line.rate ?? 0;
-    const disc = line.discount ?? 0;
-    const gst = line.gstRate ?? 0;
-
-    if (![qty, rate, disc, gst].every(Number.isFinite)) {
-      throw new InvoiceCalculationError('Invoice line values are invalid');
+    const { quantity, rate, discount, gstRate } = line;
+    if (![quantity, rate, discount, gstRate].every(Number.isFinite)) {
+      throw new InvoiceCalculationError("Invoice line values are invalid");
+    }
+    if (
+      quantity <= 0 ||
+      rate < 0 ||
+      discount < 0 ||
+      gstRate < 0 ||
+      gstRate > 100
+    ) {
+      throw new InvoiceCalculationError(
+        "Invoice line values are outside their allowed range",
+      );
     }
 
-    let lineDiscount: number;
-    if (isSimpleMode) {
-      // Simple mode: discount is percentage of line value
-      lineDiscount = money(qty * rate * disc / 100);
-    } else {
-      // Full mode: discount is absolute amount per line
-      lineDiscount = money(disc);
+    const lineTotal = money(quantity * rate);
+    // The legacy boolean overload uses percentage discounts; the full API uses amounts.
+    const lineDiscount = money(
+      isSimpleMode ? (lineTotal * discount) / 100 : discount,
+    );
+    if (lineDiscount > lineTotal) {
+      throw new InvoiceCalculationError("Line discount exceeds its value");
     }
-
-    const taxable = money(qty * rate - lineDiscount);
-    if (taxable < 0) throw new InvoiceCalculationError('Line discount exceeds its value');
-    return { lineTotal: money(qty * rate), lineDiscount, taxable, gstRate: gst };
+    return {
+      lineTotal,
+      lineDiscount,
+      taxable: money(lineTotal - lineDiscount),
+      gstRate,
+    };
   });
 
-  const subtotal = money(taxableLines.reduce((s, l) => s + l.lineTotal, 0));
-  const lineDiscounts = money(taxableLines.reduce((s, l) => s + l.lineDiscount, 0));
-  const docDiscount = money(documentDiscount);
-
-  if (docDiscount > subtotal - lineDiscounts)
-    throw new InvoiceCalculationError('Invoice discount exceeds subtotal');
-
-  const discount = money(lineDiscounts + docDiscount);
-  const taxable = money(subtotal - discount);
-  const discountFactor = subtotal ? taxable / subtotal : 1;
+  const grossSubtotal = money(
+    taxableLines.reduce((sum, line) => sum + line.lineTotal, 0),
+  );
+  const lineDiscounts = money(
+    taxableLines.reduce((sum, line) => sum + line.lineDiscount, 0),
+  );
+  const discountedSubtotal = money(grossSubtotal - lineDiscounts);
+  const documentDiscountRounded = money(documentDiscount);
+  if (documentDiscountRounded > discountedSubtotal) {
+    throw new InvoiceCalculationError("Invoice discount exceeds subtotal");
+  }
+  const taxable = money(discountedSubtotal - documentDiscountRounded);
 
   let cgst = 0;
   let sgst = 0;
   let igst = 0;
-
   for (const line of taxableLines) {
-    const taxBase = money(line.lineTotal * discountFactor);
+    // Preserve each line's discount, then allocate only the document discount.
+    const allocatedDocumentDiscount = discountedSubtotal
+      ? (documentDiscountRounded * line.taxable) / discountedSubtotal
+      : 0;
+    const taxBase = money(line.taxable - allocatedDocumentDiscount);
     const tax = money((taxBase * line.gstRate) / 100);
     if (isSimpleMode ? !interstate : sameState) {
       const half = money(tax / 2);
@@ -119,58 +113,10 @@ export function calculateInvoiceTotals(
   sgst = money(sgst);
   igst = money(igst);
   const total = money(taxable + cgst + sgst + igst);
-
   return {
-    subtotal,
-    discount,
+    subtotal: isSimpleMode ? grossSubtotal : discountedSubtotal,
+    discount: isSimpleMode ? lineDiscounts : documentDiscountRounded,
     taxable,
-=======
-const roundCurrency = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100;
-
-export function calculateInvoiceTotals(
-  lines: TaxLine[],
-  documentDiscount = 0,
-  sellerState = '',
-  buyerState = '',
-): InvoiceTotals {
-  if (!Number.isFinite(documentDiscount) || documentDiscount < 0) {
-    throw new InvoiceCalculationError('Document discount must be non-negative');
-  }
-
-  let subtotal = 0;
-  let tax = 0;
-  for (const line of lines) {
-    if (![line.quantity, line.rate, line.discount, line.gstRate].every(Number.isFinite)) {
-      throw new InvoiceCalculationError('Invoice values must be finite numbers');
-    }
-    const grossLine = line.quantity * line.rate;
-    if (line.quantity <= 0 || line.rate < 0 || line.discount < 0 || line.discount > grossLine || line.gstRate < 0) {
-      throw new InvoiceCalculationError('Invoice line values are outside their allowed range');
-    }
-    const taxableLine = grossLine - line.discount;
-    subtotal += taxableLine;
-  }
-
-  if (documentDiscount > subtotal) {
-    throw new InvoiceCalculationError('Document discount cannot exceed the subtotal');
-  }
-  const taxable = subtotal - documentDiscount;
-  for (const line of lines) {
-    const taxableLine = line.quantity * line.rate - line.discount;
-    const allocatedDiscount = subtotal === 0 ? 0 : documentDiscount * taxableLine / subtotal;
-    tax += (taxableLine - allocatedDiscount) * line.gstRate / 100;
-  }
-
-  const interstate = sellerState.trim().toLowerCase() !== buyerState.trim().toLowerCase();
-  const cgst = interstate ? 0 : roundCurrency(tax / 2);
-  const sgst = interstate ? 0 : roundCurrency(tax / 2);
-  const igst = interstate ? roundCurrency(tax) : 0;
-  const total = roundCurrency(taxable + tax);
-  return {
-    subtotal: roundCurrency(subtotal),
-    discount: roundCurrency(documentDiscount),
-    taxable: roundCurrency(taxable),
->>>>>>> 05aea36f3282e084109386f393c7cf3195b16b1b
     cgst,
     sgst,
     igst,
@@ -179,5 +125,4 @@ export function calculateInvoiceTotals(
   };
 }
 
-// Re-export InvoiceLine for consumers that import from @evergreen/pdf
 export type { InvoiceLine };
