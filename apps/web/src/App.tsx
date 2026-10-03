@@ -457,6 +457,8 @@ const App: React.FC = () => {
       production: 'Production',
       costing: 'Costing',
       users: 'User Management',
+      sessions: 'Sessions & Active Devices',
+      security: 'Security & 2FA Settings',
       settings: 'Settings',
       logs: 'Activity Logs',
       store: 'Store',

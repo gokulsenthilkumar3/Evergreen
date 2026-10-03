@@ -15,6 +15,14 @@ import {
     TableRow,
     Avatar,
     LinearProgress,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    TextField,
+    Grid,
+    Stack,
+    Divider,
 } from '@mui/material';
 import {
     Business as VendorsIcon,
@@ -23,17 +31,10 @@ import {
     MenuBook as JournalsIcon,
     AccountBalance as BankIcon,
     Add as AddIcon,
+    Receipt as ReceiptIcon,
 } from '@mui/icons-material';
 import { usePersist } from '../hooks/usePersist';
 import { toast } from 'sonner';
-import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    TextField,
-    Grid,
-} from '@mui/material';
 import Timelines from '../components/payments/Timelines';
 import PaymentLinks from '../components/payments/PaymentLinks';
 import Journals from '../components/payments/Journals';
@@ -51,8 +52,6 @@ const TabPanel = ({ children, value, index }: TabPanelProps) => (
     </Box>
 );
 
-
-
 const statusColor = (status: string): 'success' | 'error' | 'default' | 'warning' => {
     if (status === 'Active') return 'success';
     if (status === 'Overdue') return 'error';
@@ -60,7 +59,13 @@ const statusColor = (status: string): 'success' | 'error' | 'default' | 'warning
     return 'warning';
 };
 
-const PartyTable = ({ rows }: { rows: any[] }) => (
+const PartyTable = ({
+    rows,
+    onViewLedger,
+}: {
+    rows: any[];
+    onViewLedger: (row: any) => void;
+}) => (
     <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
         <Table>
             <TableHead>
@@ -69,7 +74,7 @@ const PartyTable = ({ rows }: { rows: any[] }) => (
                     <TableCell sx={{ fontWeight: 700 }}>Contact</TableCell>
                     <TableCell sx={{ fontWeight: 700 }} align="right">Balance (₹)</TableCell>
                     <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
-                    <TableCell sx={{ fontWeight: 700 }}>Actions</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }} align="right">Actions</TableCell>
                 </TableRow>
             </TableHead>
             <TableBody>
@@ -91,7 +96,7 @@ const PartyTable = ({ rows }: { rows: any[] }) => (
                             </Box>
                         </TableCell>
                         <TableCell>
-                            <Typography variant="body2" color="text.secondary">{row.contact}</Typography>
+                            <Typography variant="body2" color="text.secondary">{row.contact || '—'}</Typography>
                         </TableCell>
                         <TableCell align="right">
                             <Typography variant="body2" fontWeight={700} color={row.balance > 0 ? 'error.main' : 'success.main'}>
@@ -101,8 +106,14 @@ const PartyTable = ({ rows }: { rows: any[] }) => (
                         <TableCell>
                             <Chip label={row.status || 'Active'} size="small" color={statusColor(row.status || 'Active')} variant="outlined" />
                         </TableCell>
-                        <TableCell>
-                            <Button size="small" variant="outlined" disabled>View Ledger</Button>
+                        <TableCell align="right">
+                            <Button
+                                size="small"
+                                variant="outlined"
+                                onClick={() => onViewLedger(row)}
+                            >
+                                View Ledger
+                            </Button>
                         </TableCell>
                     </TableRow>
                 ))}
@@ -124,8 +135,9 @@ const PAYMENT_TABS = [
 const Payments: React.FC = () => {
     const [tab, setTab] = useState(0);
     const { items: vendors, add: addVendor } = usePersist<any>('vendors', []);
-    
+
     const [openAdd, setOpenAdd] = useState(false);
+    const [selectedLedger, setSelectedLedger] = useState<any | null>(null);
     const [partyType] = useState<'Vendor'>('Vendor');
     const [form, setForm] = useState({ name: '', contact: '', balance: 0 });
 
@@ -136,7 +148,7 @@ const Payments: React.FC = () => {
 
     const handleSaveParty = () => {
         if (!form.name.trim()) { toast.error('Name is required'); return; }
-        const data = { ...form, status: 'Active' };
+        const data = { ...form, id: Date.now().toString(), status: 'Active' };
         addVendor(data);
         toast.success(`${partyType} added successfully`);
         setOpenAdd(false);
@@ -146,9 +158,9 @@ const Payments: React.FC = () => {
         <Box sx={{ width: '100%' }}>
             {/* Header */}
             <Box sx={{ mb: 3 }}>
-                <Typography variant="h4" fontWeight="bold">Payments</Typography>
+                <Typography variant="h4" fontWeight="bold">Payments & Banking</Typography>
                 <Typography variant="body2" color="text.secondary">
-                    Manage vendor notes, payment timelines, links, journals, and reconciliation. Customer master and invoice payments live in Business Desk.
+                    Manage vendor accounts, payment timelines, payment links, journals, and bank reconciliation.
                 </Typography>
             </Box>
 
@@ -193,10 +205,10 @@ const Payments: React.FC = () => {
                             <Typography variant="h6" fontWeight={700}>Vendors</Typography>
                             <Button variant="contained" size="small" startIcon={<AddIcon />} onClick={handleAddOpen}>Add Vendor</Button>
                         </Box>
-                        <PartyTable rows={vendors} />
+                        <PartyTable rows={vendors} onViewLedger={(v) => setSelectedLedger(v)} />
                         <Box sx={{ mt: 2, display: 'flex', gap: 1, alignItems: 'center' }}>
                             <LinearProgress sx={{ flex: 1, height: 6, borderRadius: 3 }} variant="determinate" value={vendors.length > 0 ? 100 : 0} color="secondary" />
-                            <Typography variant="caption" color="text.secondary">{vendors.length} Vendors</Typography>
+                            <Typography variant="caption" color="text.secondary">{vendors.length} Vendors Registered</Typography>
                         </Box>
                     </TabPanel>
 
@@ -227,9 +239,9 @@ const Payments: React.FC = () => {
                 <DialogTitle sx={{ fontWeight: 700, borderBottom: '1px solid', borderColor: 'divider' }}>Add {partyType}</DialogTitle>
                 <DialogContent sx={{ pt: 3 }}>
                     <Grid container spacing={2}>
-                        <Grid size={{ xs: 12, sm: 6 }}><TextField label="Name" fullWidth size="small" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required /></Grid>
-                        <Grid size={{ xs: 12, sm: 6 }}><TextField label="Contact Number" fullWidth size="small" value={form.contact} onChange={e => setForm({ ...form, contact: e.target.value })} /></Grid>
-                        <Grid size={{ xs: 12, sm: 6 }}><TextField type="number" label="Opening Balance (₹)" fullWidth size="small" value={form.balance || ''} onChange={e => setForm({ ...form, balance: parseFloat(e.target.value) || 0 })} /></Grid>
+                        <Grid size={{ xs: 12 }}><TextField label="Vendor / Company Name" fullWidth size="small" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required /></Grid>
+                        <Grid size={{ xs: 12 }}><TextField label="Contact Phone" fullWidth size="small" value={form.contact} onChange={e => setForm({ ...form, contact: e.target.value })} /></Grid>
+                        <Grid size={{ xs: 12 }}><TextField type="number" label="Opening Balance (₹)" fullWidth size="small" value={form.balance || ''} onChange={e => setForm({ ...form, balance: parseFloat(e.target.value) || 0 })} /></Grid>
                     </Grid>
                 </DialogContent>
                 <DialogActions sx={{ p: 2, borderTop: '1px solid', borderColor: 'divider' }}>
@@ -238,6 +250,52 @@ const Payments: React.FC = () => {
                 </DialogActions>
             </Dialog>
 
+            {/* View Ledger Dialog */}
+            <Dialog
+                open={Boolean(selectedLedger)}
+                onClose={() => setSelectedLedger(null)}
+                maxWidth="sm"
+                fullWidth
+                PaperProps={{ sx: { borderRadius: 3 } }}
+            >
+                <DialogTitle sx={{ fontWeight: 800 }}>
+                    Vendor Ledger: {selectedLedger?.name}
+                </DialogTitle>
+                <DialogContent>
+                    <Stack spacing={2} sx={{ pt: 1 }}>
+                        <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
+                            <Grid container spacing={2}>
+                                <Grid size={{ xs: 6 }}>
+                                    <Typography variant="caption" color="text.secondary">Contact Number</Typography>
+                                    <Typography variant="body1" fontWeight={600}>{selectedLedger?.contact || '—'}</Typography>
+                                </Grid>
+                                <Grid size={{ xs: 6 }}>
+                                    <Typography variant="caption" color="text.secondary">Current Balance</Typography>
+                                    <Typography variant="body1" fontWeight={800} color={selectedLedger?.balance > 0 ? 'error.main' : 'success.main'}>
+                                        ₹{(selectedLedger?.balance || 0).toLocaleString('en-IN')}
+                                    </Typography>
+                                </Grid>
+                                <Grid size={{ xs: 6 }}>
+                                    <Typography variant="caption" color="text.secondary">Account Status</Typography>
+                                    <Box sx={{ mt: 0.5 }}>
+                                        <Chip label={selectedLedger?.status || 'Active'} size="small" color={statusColor(selectedLedger?.status || 'Active')} />
+                                    </Box>
+                                </Grid>
+                            </Grid>
+                        </Paper>
+
+                        <Typography variant="subtitle2" fontWeight={700}>
+                            Account Summary & Notes
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                            Vendor purchases and inward material receipts recorded in Operations Desk automatically accrue to this vendor account. Use the Journals and Bank Reconciliation tabs to log bank transfers, cheques, and contra entries.
+                        </Typography>
+                    </Stack>
+                </DialogContent>
+                <DialogActions sx={{ p: 2 }}>
+                    <Button onClick={() => setSelectedLedger(null)}>Close</Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 };
