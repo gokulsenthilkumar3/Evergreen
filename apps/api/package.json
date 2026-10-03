@@ -89,8 +89,12 @@
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "moduleNameMapper": {
+<<<<<<< HEAD
       "^@evergreen/pdf$": "<rootDir>/../../../packages/pdf/src/index.ts",
       "^@evergreen/types$": "<rootDir>/../../../packages/types/index.ts"
+=======
+      "^@evergreen/pdf$": "<rootDir>/../../../packages/pdf/src/index.ts"
+>>>>>>> 00150265d55fc52cd88db9512cd099f04a14af02
     },
     "collectCoverageFrom": [
       "**/*.(t|j)s"
