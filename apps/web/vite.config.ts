@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 
 const publicPort = Number(process.env.EVERGREEN_PUBLIC_PORT || 4000)
 const apiPort = Number(process.env.EVERGREEN_API_PORT || 4301)
-if (![publicPort, apiPort].every(port => Number.isInteger(port) && port > 0 && port <= 65535) || apiPort === publicPort) {
+if (process.env.VITEST !== 'true' && (![publicPort, apiPort].every(port => Number.isInteger(port) && port > 0 && port <= 65535) || apiPort === publicPort)) {
   throw new Error('EverGreen public and API ports must be distinct valid ports')
 }
 const apiTarget = `http://127.0.0.1:${apiPort}`
@@ -40,5 +40,15 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     emptyOutDir: true,
-  }
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: ['./src/test/setup.ts'],
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+    },
+  },
 })
