@@ -53,6 +53,17 @@ import {
   SupportAgent as HelpdeskIcon,
   School as TutorialIcon,
   Translate as TranslateIcon,
+  Factory as FactoryIcon,
+  Speed as SpeedIcon,
+  PrecisionManufacturing as MachineIcon,
+  VerifiedUser as QualityIcon,
+  Schedule as ShiftIcon,
+  Warehouse as WarehouseIcon,
+  Badge as StaffIcon,
+  AutoAwesome as ForecastIcon,
+  LocalShipping as SupplierIcon,
+  Gavel as ComplianceIcon,
+  Payments as PaymentOpsIcon,
 } from '@mui/icons-material';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from './utils/api';
@@ -104,6 +115,7 @@ const YarnShiftManagement = lazy(() => import('./pages/yarn/ShiftManagement'));
 const YarnDemandForecasting = lazy(() => import('./pages/yarn/DemandForecasting'));
 const YarnSupplierPortal = lazy(() => import('./pages/yarn/SupplierPortal'));
 const YarnComplianceReports = lazy(() => import('./pages/yarn/ComplianceReports'));
+const YarnERP = lazy(() => import('./pages/YarnERP'));
 
 const drawerWidth = 260;
 const drawerCollapsedWidth = 72;
@@ -457,6 +469,7 @@ const App: React.FC = () => {
       yarnforecast: 'Demand Forecasting',
       yarnsupplier: 'Supplier Activity',
       yarncompliance: 'Compliance Readiness',
+      yarnerp: 'Yarn ERP Suite',
     };
 
     if (currentPage !== 'dashboard') {
@@ -525,22 +538,23 @@ const App: React.FC = () => {
     {
       label: 'Sales & Accounts',
       items: [
-        { text: 'Payment Operations', icon: <CostIcon />, page: 'paymentops' },
+        { text: 'Payment Operations', icon: <PaymentOpsIcon />, page: 'paymentops' },
         { text: 'Business Reports', icon: <InsightsIcon />, page: 'reports' },
       ]
     },
     {
       label: 'Yarn ERP',
       items: [
-        { text: 'Machine Status Overview', icon: <SummaryIcon />, page: 'yarnlive' },
-        { text: 'Machine Management', icon: <SyncIcon />, page: 'yarnmachine' },
-        { text: 'Quality Control', icon: <SecurityIcon />, page: 'yarnquality' },
-        { text: 'Shift Management', icon: <UsersIcon />, page: 'yarnshift' },
-        { text: 'Warehouse', icon: <StoreIcon />, page: 'yarnwarehouse' },
-        { text: 'HR & Payroll', icon: <UsersIcon />, page: 'yarnhr' },
-        { text: 'Demand Forecasting', icon: <InsightsIcon />, page: 'yarnforecast' },
-        { text: 'Supplier Activity', icon: <OutwardIcon />, page: 'yarnsupplier' },
-        { text: 'Compliance Readiness', icon: <SessionsIcon />, page: 'yarncompliance' },
+        { text: 'Yarn ERP Hub', icon: <FactoryIcon />, page: 'yarnerp' },
+        { text: 'Machine Status Overview', icon: <SpeedIcon />, page: 'yarnlive' },
+        { text: 'Machine Management', icon: <MachineIcon />, page: 'yarnmachine' },
+        { text: 'Quality Control', icon: <QualityIcon />, page: 'yarnquality' },
+        { text: 'Shift Management', icon: <ShiftIcon />, page: 'yarnshift' },
+        { text: 'Warehouse', icon: <WarehouseIcon />, page: 'yarnwarehouse' },
+        { text: 'HR & Payroll', icon: <StaffIcon />, page: 'yarnhr' },
+        { text: 'Demand Forecasting', icon: <ForecastIcon />, page: 'yarnforecast' },
+        { text: 'Supplier Activity', icon: <SupplierIcon />, page: 'yarnsupplier' },
+        { text: 'Compliance Readiness', icon: <ComplianceIcon />, page: 'yarncompliance' },
       ]
     },
     {
@@ -563,7 +577,37 @@ const App: React.FC = () => {
   ];
 
   const tamilLabels: Record<string, string> = {
-    'Business Workspace': 'வணிக மையம்', 'Business Desk': 'வணிக மேசை', Dashboard: 'முகப்பு', "Today's Summary": 'இன்றைய சுருக்கம்', Store: 'கடை', Inventory: 'சரக்கு', 'Inward / Batch': 'உள்வரவு / தொகுதி', 'Production & Job Work': 'உற்பத்தி மற்றும் வேலை ஒப்பந்தம்', 'Job Work Register': 'வேலை ஒப்பந்தப் பதிவு', Outwards: 'வெளியீடு', Costing: 'செலவீனம்', Insights: 'அறிக்கைகள்', Settings: 'அமைப்புகள்', Helpdesk: 'உதவி', Tutorial: 'பயிற்சி',
+    'Business Workspace': 'வணிக மையம்',
+    'Business Desk': 'வணிக மேசை',
+    Dashboard: 'முகப்பு',
+    "Today's Summary": 'இன்றைய சுருக்கம்',
+    Store: 'கடை',
+    Inventory: 'சரக்கு',
+    'Inward / Batch': 'உள்வரவு / தொகுதி',
+    'Production & Job Work': 'உற்பத்தி மற்றும் வேலை ஒப்பந்தம்',
+    'Job Work Register': 'வேலை ஒப்பந்தப் பதிவு',
+    'Operations Desk': 'செயல்பாடுகள் மேசை',
+    Outwards: 'வெளியீடு',
+    Costing: 'செலவீனம்',
+    Insights: 'அறிக்கைகள்',
+    Settings: 'அமைப்புகள்',
+    Helpdesk: 'உதவி',
+    Tutorial: 'பயிற்சி',
+    'Payment Operations': 'பணப்பரிவர்த்தனை மேலாண்மை',
+    'Business Reports': 'வணிக அறிக்கைகள்',
+    'Yarn ERP Hub': 'நூல் ஆலை முதன்மை மையம்',
+    'Machine Status Overview': 'இயந்திர நிலை மேலோட்டம்',
+    'Machine Management': 'இயந்திர மேலாண்மை',
+    'Quality Control': 'தரக் கட்டுப்பாடு',
+    'Shift Management': 'பணி முறை மேலாண்மை',
+    Warehouse: 'கிடங்கு மேலாண்மை',
+    'HR & Payroll': 'பணியாளர் & ஊதிய மேலாண்மை',
+    'Demand Forecasting': 'தேவை முன்கணிப்பு',
+    'Supplier Activity': 'வழங்குநர் தளம்',
+    'Compliance Readiness': 'இணக்க அறிக்கைகள்',
+    'User Management': 'பயனர் மேலாண்மை',
+    Sessions: 'அமர்வுகள்',
+    'Security Settings': 'பாதுகாப்பு அமைப்புகள்',
   };
   const labelFor = (label: string) => language === 'ta' ? (tamilLabels[label] || label) : label;
 
@@ -969,6 +1013,7 @@ const App: React.FC = () => {
                       {currentPage === 'yarnforecast' && <YarnDemandForecasting />}
                       {currentPage === 'yarnsupplier' && <YarnSupplierPortal />}
                       {currentPage === 'yarncompliance' && <YarnComplianceReports />}
+                      {currentPage === 'yarnerp' && <YarnERP onNavigate={setCurrentPage} />}
 
                       {!allPages.includes(currentPage) && (
                         <Box sx={{ p: 4, textAlign: 'center' }}>
