@@ -31,7 +31,12 @@ async function main() {
   const root = path.resolve(__dirname, '..');
   const apiDir = path.join(root, 'apps', 'api');
   const webDir = path.join(root, 'apps', 'web');
-  const npmCli = process.env.npm_execpath || path.join(root, 'node_modules', 'npm', 'bin', 'npm-cli.js');
+  const fs = require('node:fs');
+  const npmCli = (process.env.npm_execpath && fs.existsSync(process.env.npm_execpath))
+    ? process.env.npm_execpath
+    : (fs.existsSync('C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js'))
+      ? 'C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js'
+      : path.join(root, 'node_modules', 'npm', 'bin', 'npm-cli.js');
   const sharedBuild = spawnSync(process.execPath, [npmCli, 'run', 'build', '-w', 'packages/types', '-w', 'packages/pdf'], {
     cwd: root,
     env: process.env,

@@ -1,208 +1,84 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../services/prisma.service';
 import * as bcrypt from 'bcrypt';
+import { CreateUserDto, UpdateUserDto } from './users.dto';
 
-const SALT_ROUNDS = 10;
-const ASSIGNABLE_ROLES = new Set(['VIEWER', 'MODIFIER', 'ADMIN']);
+const PUBLIC_USER_FIELDS = {
+  id: true, username: true, name: true, email: true, role: true,
+  createdAt: true, updatedAt: true, createdBy: true, updatedBy: true,
+} satisfies Prisma.UserSelect;
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
-  private async logActivity(username: string, action: string, details: string) {
+  private async hashPassword(password: string) {
+    if (password.length < 12 || Buffer.byteLength(password, 'utf8') > 72) {
+      throw new BadRequestException('Password must contain at least 12 characters and at most 72 UTF-8 bytes');
+    }
+    return bcrypt.hash(password, 10);
+  }
+
+  private handleConflict(error: unknown): never {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      throw new ConflictException('Username or email already exists');
+    }
+    throw error;
+  }
+
+  async createUser(input: CreateUserDto, actor: string) {
+    const password = await this.hashPassword(input.password);
     try {
-      // @ts-ignore
-      await this.prisma.activityLog.create({
-        data: {
-          username,
-          action,
-          module: 'USER_MANAGEMENT',
-          details,
-        },
+      return await this.prisma.$transaction(async (tx) => {
+        const user = await tx.user.create({
+          data: { username: input.username, email: input.email, name: input.name, password, role: input.role ?? 'VIEWER', createdBy: actor },
+          select: PUBLIC_USER_FIELDS,
+        });
+        await tx.activityLog.create({ data: { username: actor, action: 'CREATE', module: 'USER_MANAGEMENT', details: `Created user ${user.id} (${user.role})` } });
+        return user;
       });
-    } catch (e) {
-      console.error('Failed to create log:', e);
-    }
+    } catch (error) { this.handleConflict(error); }
   }
 
-  async createUser(userDto: any) {
-    console.log('📝 Attempting to create user:', userDto.username);
-
-    if (!userDto.username) {
-      throw new UnauthorizedException('Username is required');
-    }
-    if (!userDto.password || userDto.password.length < 12) {
-      throw new BadRequestException('Password must be at least 12 characters');
-    }
-
-    const role = String(userDto.role || 'VIEWER').toUpperCase();
-    if (!ASSIGNABLE_ROLES.has(role)) {
-      throw new BadRequestException('Role must be VIEWER, MODIFIER, or ADMIN');
-    }
-
-    // Check if user exists
-    const existingUser = await this.prisma.user.findUnique({
-      where: { username: userDto.username },
-    });
-
-    if (existingUser) {
-      console.warn('⚠️ User already exists:', userDto.username);
-      throw new UnauthorizedException('Username already exists');
-    }
-
-    // Hash password before storing
-    const hashedPassword = await bcrypt.hash(userDto.password, SALT_ROUNDS);
-
-    const newUser = await this.prisma.user.create({
-      data: {
-        username: userDto.username,
-        name: userDto.name,
-        password: hashedPassword,
-        role,
-        email: userDto.email || `${userDto.username}-${Date.now()}@temp.local`,
-        createdBy: userDto.createdBy,
-      },
-    });
-
-    console.log('✅ User created successfully:', newUser.id);
-
-    await this.logActivity(
-      'SYSTEM',
-      'CREATE',
-      `Created user: ${newUser.username} (${newUser.role})`,
-    );
-
-    const { password, ...result } = newUser;
-    return result;
+  findAllUsers() {
+    return this.prisma.user.findMany({ select: PUBLIC_USER_FIELDS, orderBy: { username: 'asc' } });
   }
 
-  async findAllUsers() {
-    const users = await this.prisma.user.findMany({
-      select: {
-        id: true,
-        username: true,
-        name: true,
-        email: true,
-        role: true,
-        createdAt: true,
-        updatedAt: true,
-        createdBy: true,
-        updatedBy: true,
-      },
-    });
-    console.log(
-      `📋 Fetched ${users.length} users:`,
-      users.map((u: any) => u.username).join(', '),
-    );
-    return users;
-  }
-
-  async deleteUser(id: string) {
-    const userId = parseInt(id);
-    console.log('🗑️ Attempting to delete user ID:', userId);
-
-    if (isNaN(userId)) {
-      throw new UnauthorizedException('Invalid user ID');
-    }
-
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-    });
-
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
-
-    await this.prisma.user.delete({
-      where: { id: userId },
-    });
-
-    console.log('✅ User deleted successfully:', userId);
-
-    await this.logActivity('SYSTEM', 'DELETE', `Deleted user ID: ${userId}`);
-
-    return { message: 'User deleted successfully' };
-  }
-
-  async updateUser(id: string, userDto: any) {
-    const userId = parseInt(id);
-    console.log(
-      '🔄 Attempting to update user ID:',
-      userId,
-      'with data:',
-      userDto,
-    );
-
-    if (isNaN(userId)) {
-      throw new UnauthorizedException('Invalid user ID');
-    }
-
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-    });
-
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
-
-    // Check if username is being changed and if it already exists
-    if (userDto.username && userDto.username !== user.username) {
-      const existingUser = await this.prisma.user.findUnique({
-        where: { username: userDto.username },
+  async updateUser(id: number, input: UpdateUserDto, actor: string) {
+    const password = input.password === undefined ? undefined : await this.hashPassword(input.password);
+    try {
+      return await this.prisma.$transaction(async (tx) => {
+        const existing = await tx.user.findUnique({ where: { id } });
+        if (!existing) throw new NotFoundException('User not found');
+        if (existing.role === 'ADMIN' && input.role !== undefined && input.role !== 'ADMIN' && await tx.user.count({ where: { role: 'ADMIN' } }) <= 1) {
+          throw new BadRequestException('The last administrator cannot be demoted');
+        }
+        const user = await tx.user.update({
+          where: { id },
+          data: { username: input.username, name: input.name, email: input.email, role: input.role, password, updatedBy: actor },
+          select: PUBLIC_USER_FIELDS,
+        });
+        if (password !== undefined || (input.role !== undefined && input.role !== existing.role)) {
+          await tx.session.updateMany({ where: { userId: id, isValid: true }, data: { isValid: false } });
+        }
+        await tx.activityLog.create({ data: { username: actor, action: 'UPDATE', module: 'USER_MANAGEMENT', details: `Updated user ${id}: ${Object.keys(input).join(', ')}` } });
+        return user;
       });
-      if (existingUser) {
-        throw new UnauthorizedException('Username already exists');
+    } catch (error) { this.handleConflict(error); }
+  }
+
+  async deleteUser(id: number, actorId: number, actor: string) {
+    if (id === actorId) throw new BadRequestException('You cannot delete your own account');
+    return this.prisma.$transaction(async (tx) => {
+      const user = await tx.user.findUnique({ where: { id } });
+      if (!user) throw new NotFoundException('User not found');
+      if (user.role === 'ADMIN' && await tx.user.count({ where: { role: 'ADMIN' } }) <= 1) {
+        throw new BadRequestException('The last administrator cannot be deleted');
       }
-    }
-
-    // Validate password if provided
-    if (userDto.password && userDto.password.length < 12) {
-      throw new BadRequestException('Password must be at least 12 characters');
-    }
-
-    // Build update data
-    const updateData: any = {};
-    if (userDto.username) updateData.username = userDto.username;
-    if (userDto.name) updateData.name = userDto.name;
-    if (userDto.password) {
-      updateData.password = await bcrypt.hash(userDto.password, SALT_ROUNDS);
-    }
-
-    if (userDto.email !== undefined) {
-      updateData.email = userDto.email;
-    }
-
-    if (userDto.role) {
-      const role = String(userDto.role).toUpperCase();
-      if (!ASSIGNABLE_ROLES.has(role)) {
-        throw new BadRequestException('Role must be VIEWER, MODIFIER, or ADMIN');
-      }
-      updateData.role = role;
-    }
-    if (userDto.updatedBy) updateData.updatedBy = userDto.updatedBy;
-
-    const updatedUser = await this.prisma.user.update({
-      where: { id: userId },
-      data: updateData,
-      select: {
-        id: true,
-        username: true,
-        name: true,
-        email: true,
-        role: true,
-        createdAt: true,
-        updatedAt: true,
-      },
+      await tx.user.delete({ where: { id } });
+      await tx.activityLog.create({ data: { username: actor, action: 'DELETE', module: 'USER_MANAGEMENT', details: `Deleted user ${id}` } });
+      return { message: 'User deleted successfully' };
     });
-
-    console.log('✅ User updated successfully:', updatedUser.id);
-
-    await this.logActivity(
-      'SYSTEM',
-      'UPDATE',
-      `Updated user ${updatedUser.username}: ${Object.keys(updateData).join(', ')}`,
-    );
-
-    return updatedUser;
   }
 }

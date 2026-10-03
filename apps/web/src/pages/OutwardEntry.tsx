@@ -28,6 +28,7 @@ import {
     ListItemText,
     Tooltip,
     LinearProgress,
+    Stack,
 } from '@mui/material';
 import {
     Add as AddIcon,
@@ -37,7 +38,10 @@ import {
     TableView as ExcelIcon,
     PictureAsPdf as PdfIcon,
     FileDownload as ExportIcon,
+    QrCode2 as QrIcon,
 } from '@mui/icons-material';
+import BarcodeQRModal from '../components/common/BarcodeQRModal';
+import { formatOutwardCode, buildOutwardQRPayload } from '../utils/codeFormatters';
 import { useQuery } from '@tanstack/react-query';
 import api from '../utils/api';
 import { generateExcel } from '../utils/excelGenerator';
@@ -45,6 +49,7 @@ import { generatePDF } from '../utils/pdfGenerator';
 import { useConfirm } from '../context/ConfirmContext';
 import { toast } from 'sonner';
 import { SUCCESS_MESSAGES, ERROR_MESSAGES, WARNING_MESSAGES, INFO_MESSAGES, CONFIRM_TITLES, CONFIRM_MESSAGES, formatApiError } from '../utils/messages';
+import { handleDeleteGuardError } from '../utils/deleteGuardHandler';
 import EmptyState from '../components/common/EmptyState';
 import GlassDatePicker from '../components/common/GlassDatePicker';
 import ExportButtons from '../components/common/ExportButtons';
@@ -70,6 +75,7 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
     const [filterType, setFilterType] = useState<DateFilterType>('all');
     const [showErrors, setShowErrors] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [labelOutward, setLabelOutward] = useState<any | null>(null);
     const { confirm: confirmDialog } = useConfirm();
 
     const handleMenuOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -247,8 +253,8 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
             toast.success(SUCCESS_MESSAGES.DELETE);
             refetchHistory();
             refetchStock();
-        } catch (error) {
-            toast.error(ERROR_MESSAGES.DELETE_FAILED);
+        } catch (error: any) {
+            handleDeleteGuardError(error, ERROR_MESSAGES.DELETE_FAILED);
         }
     };
 
@@ -381,11 +387,25 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
                                     <TableCell align="center">{row.totalBags}</TableCell>
                                     <TableCell align="center" sx={{ fontWeight: 'bold', color: 'primary.main' }}>{row.totalWeight} kg</TableCell>
                                     <TableCell align="center">
-                                        {(userRole === 'ADMIN') && (
-                                            <IconButton color="error" onClick={() => handleDeleteOutward(row.id)}>
-                                                <DeleteIcon />
-                                            </IconButton>
-                                        )}
+                                        <Stack direction="row" spacing={0.5} justifyContent="center" alignItems="center">
+                                            <Tooltip title="Print Dispatch Sticker (Barcode & QR)">
+                                                <IconButton
+                                                    size="small"
+                                                    color="primary"
+                                                    onClick={() => setLabelOutward(row)}
+                                                    aria-label="Generate QR and Barcode Label"
+                                                >
+                                                    <QrIcon fontSize="small" />
+                                                </IconButton>
+                                            </Tooltip>
+                                            {(userRole === 'ADMIN') && (
+                                                <Tooltip title="Delete Entry">
+                                                    <IconButton color="error" size="small" onClick={() => handleDeleteOutward(row.id)}>
+                                                        <DeleteIcon fontSize="small" />
+                                                    </IconButton>
+                                                </Tooltip>
+                                            )}
+                                        </Stack>
                                     </TableCell>
                                 </TableRow>
                             ))}
@@ -568,6 +588,24 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
                 </DialogActions>
             </Dialog>
 
+            {labelOutward && (
+                <BarcodeQRModal
+                    open={Boolean(labelOutward)}
+                    onClose={() => setLabelOutward(null)}
+                    type="OUTWARD"
+                    title={`Outward Dispatch: ${formatOutwardCode(labelOutward.date, labelOutward.id)}`}
+                    code={formatOutwardCode(labelOutward.date, labelOutward.id)}
+                    qrPayload={buildOutwardQRPayload(labelOutward)}
+                    metadata={[
+                        { label: 'Customer', value: labelOutward.customerName },
+                        { label: 'Vehicle No', value: labelOutward.vehicleNo },
+                        { label: 'Driver', value: labelOutward.driverName || 'N/A' },
+                        { label: 'Dispatch Date', value: new Date(labelOutward.date).toLocaleDateString('en-IN') },
+                        { label: 'Total Bags', value: `${labelOutward.totalBags} bags` },
+                        { label: 'Total Weight', value: `${labelOutward.totalWeight.toLocaleString()} kg` },
+                    ]}
+                />
+            )}
         </Box>
     );
 };

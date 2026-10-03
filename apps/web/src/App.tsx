@@ -27,7 +27,6 @@ import {
   InputAdornment,
   Paper,
   Chip,
-  Alert,
   type PaletteMode,
 } from '@mui/material';
 import {
@@ -39,7 +38,6 @@ import {
   Logout as LogoutIcon,
   TrendingDown as WasteIcon,
   AccountBalanceWallet as CostIcon,
-  Receipt as BillingIcon,
   TrendingUp as OutwardIcon,
   Brightness4 as DarkModeIcon,
   Brightness7 as LightModeIcon,
@@ -52,16 +50,28 @@ import {
   VpnKey as SessionsIcon,
   Storefront as StoreIcon,
   Insights as InsightsIcon,
-  Payments as PaymentsIcon,
   SupportAgent as HelpdeskIcon,
   School as TutorialIcon,
   Translate as TranslateIcon,
+  Factory as FactoryIcon,
+  Speed as SpeedIcon,
+  PrecisionManufacturing as MachineIcon,
+  VerifiedUser as QualityIcon,
+  Schedule as ShiftIcon,
+  Warehouse as WarehouseIcon,
+  Badge as StaffIcon,
+  AutoAwesome as ForecastIcon,
+  LocalShipping as SupplierIcon,
+  Gavel as ComplianceIcon,
+  Payments as PaymentOpsIcon,
+  Person as PersonIcon,
 } from '@mui/icons-material';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from './utils/api';
 import getTheme from './theme';
 import type { ThemeName } from './theme';
 import Login from './components/Login';
+import ProfileModal from './components/ProfileModal';
 import { KeyboardShortcutsProvider } from './context/KeyboardShortcutsContext';
 import { ScreenReaderAnnouncer } from './components/common/ScreenReaderAnnouncer';
 import Breadcrumbs from './components/common/Breadcrumbs';
@@ -81,7 +91,6 @@ const Inventory = lazy(() => import('./pages/Inventory'));
 const InwardEntry = lazy(() => import('./pages/InwardEntry'));
 const ProductionEntry = lazy(() => import('./pages/ProductionEntry'));
 const Costing = lazy(() => import('./pages/Costing'));
-const Billing = lazy(() => import('./pages/Billing'));
 const Settings = lazy(() => import('./pages/Settings'));
 const TodayDashboard = lazy(() => import('./pages/TodayDashboard'));
 const OutwardEntry = lazy(() => import('./pages/OutwardEntry'));
@@ -99,18 +108,16 @@ const CommerceDesk = lazy(() => import('./pages/CommerceDesk'));
 const CommerceReports = lazy(() => import('./pages/CommerceReports'));
 const OperationsDesk = lazy(() => import('./pages/OperationsDesk'));
 // ── Merged sub-project pages ──
-const MsmeErp = lazy(() => import('./pages/MsmeErp'));
-const Vyapari = lazy(() => import('./pages/Vyapari'));
-const YarnERP = lazy(() => import('./pages/YarnERP'));
-const YarnLiveDashboard = lazy(() => import('./pages/yarn/LiveDashboard'));
 const YarnMachineManagement = lazy(() => import('./pages/yarn/MachineManagement'));
 const YarnQualityControl = lazy(() => import('./pages/yarn/QualityControl'));
-const YarnShiftManagement = lazy(() => import('./pages/yarn/ShiftManagement'));
 const YarnWarehouseManagement = lazy(() => import('./pages/yarn/WarehouseManagement'));
 const YarnHRManagement = lazy(() => import('./pages/yarn/HRManagement'));
+const YarnLiveDashboard = lazy(() => import('./pages/yarn/LiveDashboard'));
+const YarnShiftManagement = lazy(() => import('./pages/yarn/ShiftManagement'));
 const YarnDemandForecasting = lazy(() => import('./pages/yarn/DemandForecasting'));
 const YarnSupplierPortal = lazy(() => import('./pages/yarn/SupplierPortal'));
 const YarnComplianceReports = lazy(() => import('./pages/yarn/ComplianceReports'));
+const YarnERP = lazy(() => import('./pages/YarnERP'));
 
 const drawerWidth = 260;
 const drawerCollapsedWidth = 72;
@@ -121,6 +128,7 @@ interface NavItem {
   page: string;
   requiredRole?: string;
   badge?: number;
+  description?: string;
 }
 
 interface NavGroup {
@@ -353,6 +361,7 @@ const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [drawerOpen, setDrawerOpen] = useState(true);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const queryClient = useQueryClient();
 
@@ -385,6 +394,18 @@ const App: React.FC = () => {
     }
   }, [settings]);
 
+  // Global tab navigation listener for delete-guards and cross-module deep-links
+  useEffect(() => {
+    const handleNavigate = (event: Event) => {
+      const customEvent = event as CustomEvent<{ page?: string; params?: any }>;
+      if (customEvent.detail?.page) {
+        setCurrentPage(customEvent.detail.page);
+      }
+    };
+    window.addEventListener('evergreen:navigate', handleNavigate);
+    return () => window.removeEventListener('evergreen:navigate', handleNavigate);
+  }, []);
+
   const toggleTheme = () => {
     setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
   };
@@ -413,12 +434,15 @@ const App: React.FC = () => {
     } finally {
       localStorage.removeItem('user');
       localStorage.removeItem('token');
+      await queryClient.cancelQueries();
+      queryClient.clear();
       setUser(null);
       handleProfileClose();
     }
   };
 
   const handleLogin = (userData: any) => {
+    queryClient.clear();
     localStorage.setItem('user', JSON.stringify(userData));
     setUser(userData);
   };
@@ -436,38 +460,34 @@ const App: React.FC = () => {
       workspace: 'EverGreen One',
       jobwork: 'Job Work',
       operations: 'Operations Desk',
-      catalogue: 'Catalogue',
-      customers: 'Customers & Ledger',
-      orders: 'Sales Orders',
-      invoicestudio: 'Invoice Studio',
+      business: 'Business Desk',
       reports: 'Business Reports',
+      paymentops: 'Payment Operations',
       today: "Today's Summary",
       inventory: 'Inventory',
       inward: 'Inward Entry',
       outward: 'Outward Entry',
       production: 'Production',
       costing: 'Costing',
-      billing: 'Billing',
       users: 'User Management',
+      sessions: 'Sessions & Active Devices',
+      security: 'Security & 2FA Settings',
       settings: 'Settings',
       logs: 'Activity Logs',
       store: 'Store',
       insights: 'Insights & Reports',
-      payments: 'Payments',
       helpdesk: 'Helpdesk',
       tutorial: 'Tutorial',
-      msme: 'MSME ERP',
-      vyapari: 'Vyapari (B2B)',
-      yarnhub: 'Yarn ERP',
-      yarnlive: 'Live Production Dashboard',
       yarnmachine: 'Machine Management',
       yarnquality: 'Quality Control',
-      yarnshift: 'Shift Management',
       yarnwarehouse: 'Warehouse Management',
       yarnhr: 'HR & Payroll',
+      yarnlive: 'Machine Status Overview',
+      yarnshift: 'Shift Management',
       yarnforecast: 'Demand Forecasting',
-      yarnsupplier: 'Supplier Portal',
-      yarncompliance: 'Compliance Reports',
+      yarnsupplier: 'Supplier Activity',
+      yarncompliance: 'Compliance Readiness',
+      yarnerp: 'Yarn ERP Suite',
     };
 
     if (currentPage !== 'dashboard') {
@@ -514,73 +534,98 @@ const App: React.FC = () => {
     {
       label: 'EverGreen One',
       items: [
-        { text: 'Business Workspace', icon: <StoreIcon />, page: 'workspace' },
-        { text: 'Dashboard', icon: <DashboardIcon />, page: 'dashboard' },
-        { text: "Today's Summary", icon: <SummaryIcon />, page: 'today' },
+        { text: 'Business Workspace', icon: <StoreIcon />, page: 'workspace', description: 'Central command for production metrics, low stock alerts, and daily status' },
+        { text: 'Dashboard', icon: <DashboardIcon />, page: 'dashboard', description: 'Executive analytics, production efficiency, output trends, and waste rates' },
+        { text: "Today's Summary", icon: <SummaryIcon />, page: 'today', description: 'Real-time daily log of cotton consumed, yarn produced, and waste generated' },
       ]
     },
     {
       label: 'Operations & Job Work',
       items: [
-        { text: 'Store', icon: <StoreIcon />, page: 'store' },
-        { text: 'Inventory', icon: <InventoryIcon />, page: 'inventory', badge: lowStockCount > 0 ? lowStockCount : undefined },
-        { text: 'Inward / Batch', icon: <InwardIcon />, page: 'inward' },
-        { text: 'Production & Job Work', icon: <WasteIcon />, page: 'production' },
-        { text: 'Job Work Register', icon: <SyncIcon />, page: 'jobwork' },
-        { text: 'Operations Desk', icon: <InventoryIcon />, page: 'operations' },
-        { text: 'Outwards', icon: <OutwardIcon fontSize="small" />, page: 'outward' },
-        { text: 'Costing', icon: <CostIcon />, page: 'costing' },
-        { text: 'Catalogue', icon: <InventoryIcon />, page: 'catalogue' },
+        { text: 'Store', icon: <StoreIcon />, page: 'store', description: 'Spares inventory, machine components, consumables, and store item tracking' },
+        { text: 'Inventory', icon: <InventoryIcon />, page: 'inventory', badge: lowStockCount > 0 ? lowStockCount : undefined, description: 'Stock ledger for cotton bales, yarn bags by count, and waste inventory' },
+        { text: 'Inward / Batch', icon: <InwardIcon />, page: 'inward', description: 'Cotton gate receipts, batch lot creation, bale weights, and QR sticker generation' },
+        { text: 'Production & Job Work', icon: <WasteIcon />, page: 'production', description: 'Bale consumption mixing, yarn count production, waste tracking, and material balance' },
+        { text: 'Job Work Register', icon: <SyncIcon />, page: 'jobwork', description: 'External job work contracts, sent material, inward yarn returns, and reconciliation' },
+        { text: 'Operations Desk', icon: <InventoryIcon />, page: 'operations', description: 'Daily floor checklists, machine operational status, and shift supervisor notes' },
+        { text: 'Outwards', icon: <OutwardIcon fontSize="small" />, page: 'outward', description: 'Customer yarn dispatch gate pass, vehicle/driver logging, and barcode tags' },
+        { text: 'Costing', icon: <CostIcon />, page: 'costing', description: 'Per-kg spinning cost analysis: electricity, labor, packaging, and maintenance' },
+        { text: 'Business Desk', icon: <StoreIcon />, page: 'business', description: 'Customer sales orders, proforma generation, delivery tracking, and commercial orders' },
       ]
     },
     {
       label: 'Sales & Accounts',
       items: [
-        { text: 'Sales Orders', icon: <OutwardIcon />, page: 'orders' },
-        { text: 'Invoice Studio', icon: <BillingIcon />, page: 'invoicestudio' },
-        { text: 'Customers & Ledger', icon: <PaymentsIcon />, page: 'customers' },
-        { text: 'MSME ERP', icon: <StoreIcon />, page: 'msme' },
-        { text: 'Vyapari (B2B)', icon: <PaymentsIcon />, page: 'vyapari' },
-        { text: 'Business Reports', icon: <InsightsIcon />, page: 'reports' },
-        { text: 'Legacy Insights', icon: <InsightsIcon />, page: 'insights' },
+        { text: 'Payment Operations', icon: <PaymentOpsIcon />, page: 'paymentops', description: 'Customer receipts, supplier ledger entries, outstanding balances, and payment terms' },
+        { text: 'Business Reports', icon: <InsightsIcon />, page: 'reports', description: 'Financial statements, dispatch summaries, consumption reports, and Excel/PDF exports' },
       ]
     },
     {
       label: 'Yarn ERP',
       items: [
-        { text: 'Yarn ERP Hub', icon: <InventoryIcon />, page: 'yarnhub' },
-        { text: 'Live Dashboard', icon: <SummaryIcon />, page: 'yarnlive' },
-        { text: 'Machine Management', icon: <SyncIcon />, page: 'yarnmachine' },
-        { text: 'Quality Control', icon: <SecurityIcon />, page: 'yarnquality' },
-        { text: 'Shift Management', icon: <UsersIcon />, page: 'yarnshift' },
-        { text: 'Warehouse', icon: <StoreIcon />, page: 'yarnwarehouse' },
-        { text: 'HR & Payroll', icon: <UsersIcon />, page: 'yarnhr' },
-        { text: 'Demand Forecasting', icon: <InsightsIcon />, page: 'yarnforecast' },
-        { text: 'Supplier Portal', icon: <OutwardIcon />, page: 'yarnsupplier' },
-        { text: 'Compliance', icon: <SessionsIcon />, page: 'yarncompliance' },
+        { text: 'Yarn ERP Hub', icon: <FactoryIcon />, page: 'yarnerp', description: 'Complete spinning mill ERP overview linking machinery, quality, and logistics' },
+        { text: 'Machine Status Overview', icon: <SpeedIcon />, page: 'yarnlive', description: 'Live spindle speed, RPM, pneumatic pressure, running status, and power draw' },
+        { text: 'Machine Management', icon: <MachineIcon />, page: 'yarnmachine', description: 'Machine registry, scheduled preventive maintenance, breakdown logs, and spares' },
+        { text: 'Quality Control', icon: <QualityIcon />, page: 'yarnquality', description: 'Lab testing: CSP, count lea strength, evenness (U%), imperfections, and hairiness' },
+        { text: 'Shift Management', icon: <ShiftIcon />, page: 'yarnshift', description: 'Operator shift rostering, attendance records, machine allocations, and handovers' },
+        { text: 'Warehouse', icon: <WarehouseIcon />, page: 'yarnwarehouse', description: 'Storage bay and bin rack locations for finished yarn bags and raw cotton' },
+        { text: 'HR & Payroll', icon: <StaffIcon />, page: 'yarnhr', description: 'Staff directory, overtime calculations, piece-rate wages, and salary processing' },
+        { text: 'Demand Forecasting', icon: <ForecastIcon />, page: 'yarnforecast', description: 'Predictive yarn demand modeling, seasonality trends, and cotton purchase orders' },
+        { text: 'Supplier Activity', icon: <SupplierIcon />, page: 'yarnsupplier', description: 'Vendor performance ratings, cotton moisture test history, and lead-time tracking' },
+        { text: 'Compliance Readiness', icon: <ComplianceIcon />, page: 'yarncompliance', description: 'Industrial safety certificates, pollution control board audits, and legal compliance' },
       ]
     },
     {
       label: 'Support',
       items: [
-        { text: 'Helpdesk', icon: <HelpdeskIcon />, page: 'helpdesk' },
-        { text: 'Tutorial', icon: <TutorialIcon />, page: 'tutorial' },
+        { text: 'Helpdesk', icon: <HelpdeskIcon />, page: 'helpdesk', description: 'Internal support tickets, technical queries, and operational issue logs' },
+        { text: 'Tutorial', icon: <TutorialIcon />, page: 'tutorial', description: 'Step-by-step spinning mill workflows, standard operating procedures, and guides' },
       ]
     },
     {
       label: 'Admin',
       items: [
-        { text: 'User Management', icon: <UsersIcon />, page: 'users', requiredRole: 'ADMIN' },
+        { text: 'User Management', icon: <UsersIcon />, page: 'users', requiredRole: 'ADMIN', description: 'Role-based access permissions for admin, manager, operator, and viewer roles' },
         // B-18: Sessions and Security had the same icon; Sessions now uses VpnKey
-        { text: 'Sessions', icon: <SessionsIcon />, page: 'sessions' },
-        { text: 'Security Settings', icon: <SecurityIcon />, page: 'security' },
-        { text: 'Settings', icon: <SettingsIcon />, page: 'settings' },
+        { text: 'Sessions', icon: <SessionsIcon />, page: 'sessions', description: 'Active user login sessions, IP addresses, device types, and remote logout' },
+        { text: 'Security Settings', icon: <SecurityIcon />, page: 'security', description: 'Two-factor authentication, audit trails, and system access control policies' },
+        { text: 'Settings', icon: <SettingsIcon />, page: 'settings', description: 'Company details, count specifications, tare weights, and theme preferences' },
       ]
     },
   ];
 
   const tamilLabels: Record<string, string> = {
-    'Business Workspace': 'வணிக மையம்', Dashboard: 'முகப்பு', "Today's Summary": 'இன்றைய சுருக்கம்', Store: 'கடை', Inventory: 'சரக்கு', 'Inward / Batch': 'உள்வரவு / தொகுதி', 'Production & Job Work': 'உற்பத்தி மற்றும் வேலை ஒப்பந்தம்', 'Job Work Register': 'வேலை ஒப்பந்தப் பதிவு', Outwards: 'வெளியீடு', Costing: 'செலவீனம்', Catalogue: 'பொருள் பட்டியல்', 'Sales Orders': 'விற்பனை ஆணைகள்', 'Invoice Studio': 'விலைப்பட்டியல்', 'Customers & Ledger': 'வாடிக்கையாளர்கள் மற்றும் கணக்கு', 'Invoice Designer': 'விலைப்பட்டியல் வடிவமைப்பு', 'MSME ERP': 'MSME ERP', 'Vyapari (B2B)': 'வியாபாரி (B2B)', 'Yarn ERP Hub': 'நூல் ERP', 'Legacy Billing': 'முந்தைய பில்லிங்', Insights: 'அறிக்கைகள்', Settings: 'அமைப்புகள்', Helpdesk: 'உதவி', Tutorial: 'பயிற்சி',
+    'Business Workspace': 'வணிக மையம்',
+    'Business Desk': 'வணிக மேசை',
+    Dashboard: 'முகப்பு',
+    "Today's Summary": 'இன்றைய சுருக்கம்',
+    Store: 'கடை',
+    Inventory: 'சரக்கு',
+    'Inward / Batch': 'உள்வரவு / தொகுதி',
+    'Production & Job Work': 'உற்பத்தி மற்றும் வேலை ஒப்பந்தம்',
+    'Job Work Register': 'வேலை ஒப்பந்தப் பதிவு',
+    'Operations Desk': 'செயல்பாடுகள் மேசை',
+    Outwards: 'வெளியீடு',
+    Costing: 'செலவீனம்',
+    Insights: 'அறிக்கைகள்',
+    Settings: 'அமைப்புகள்',
+    Helpdesk: 'உதவி',
+    Tutorial: 'பயிற்சி',
+    'Payment Operations': 'பணப்பரிவர்த்தனை மேலாண்மை',
+    'Business Reports': 'வணிக அறிக்கைகள்',
+    'Yarn ERP Hub': 'நூல் ஆலை முதன்மை மையம்',
+    'Machine Status Overview': 'இயந்திர நிலை மேலோட்டம்',
+    'Machine Management': 'இயந்திர மேலாண்மை',
+    'Quality Control': 'தரக் கட்டுப்பாடு',
+    'Shift Management': 'பணி முறை மேலாண்மை',
+    Warehouse: 'கிடங்கு மேலாண்மை',
+    'HR & Payroll': 'பணியாளர் & ஊதிய மேலாண்மை',
+    'Demand Forecasting': 'தேவை முன்கணிப்பு',
+    'Supplier Activity': 'வழங்குநர் தளம்',
+    'Compliance Readiness': 'இணக்க அறிக்கைகள்',
+    'User Management': 'பயனர் மேலாண்மை',
+    Sessions: 'அமர்வுகள்',
+    'Security Settings': 'பாதுகாப்பு அமைப்புகள்',
   };
   const labelFor = (label: string) => language === 'ta' ? (tamilLabels[label] || label) : label;
 
@@ -605,7 +650,7 @@ const App: React.FC = () => {
               <CssBaseline />
               <PrintStyles />
               <ScreenReaderAnnouncer />
-              <Toaster position="top-center" richColors />
+              <Toaster position="top-center" richColors theme={mode === 'dark' ? 'dark' : 'light'} closeButton expand />
               {/* Floating bottom nav pill */}
               {floatingNav && (
                 <Box className="floating-bottom-nav" component="nav" aria-label="Bottom navigation">
@@ -614,7 +659,7 @@ const App: React.FC = () => {
                     { text: 'Dashboard', icon: <DashboardIcon />, page: 'dashboard' },
                     { text: 'Inventory', icon: <InventoryIcon />, page: 'inventory' },
                     { text: 'Production',icon: <WasteIcon />,     page: 'production' },
-                    { text: 'Invoice Studio', icon: <BillingIcon />, page: 'invoicestudio' },
+                    { text: 'Business Desk', icon: <StoreIcon />, page: 'business' },
                   ].map(item => {
                     const active = currentPage === item.page;
                     return (
@@ -731,13 +776,31 @@ const App: React.FC = () => {
                         onClose={handleProfileClose}
                         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
                         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-                        slotProps={{ paper: { sx: { mt: 1.5, minWidth: 200, borderRadius: '12px', boxShadow: (theme) => theme.shadows[10] } } }}
+                        slotProps={{ paper: { sx: { mt: 1.5, minWidth: 230, borderRadius: '14px', p: 0.5, boxShadow: (theme) => theme.shadows[10] } } }}
                       >
                         <Box sx={{ px: 2, py: 1.5 }}>
                           <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{user.name || user.username}</Typography>
-                          <Typography variant="caption" color="text.secondary">{user.role || 'Admin'}</Typography>
+                          <Typography variant="caption" color="text.secondary" display="block">@{user.username}</Typography>
+                          <Chip label={user.role || 'Admin'} size="small" color={user.role === 'ADMIN' ? 'error' : user.role === 'MODIFIER' ? 'primary' : 'default'} sx={{ mt: 0.5, height: 20, fontSize: '0.65rem', fontWeight: 700 }} />
                         </Box>
                         <Divider />
+                        <MenuItem onClick={() => { handleProfileClose(); setProfileModalOpen(true); }} sx={{ borderRadius: '8px', py: 1 }}>
+                          <ListItemIcon><PersonIcon fontSize="small" /></ListItemIcon>
+                          My Profile & Account
+                        </MenuItem>
+                        <MenuItem onClick={() => { handleProfileClose(); setCurrentPage('security'); }} sx={{ borderRadius: '8px', py: 1 }}>
+                          <ListItemIcon><SecurityIcon fontSize="small" /></ListItemIcon>
+                          Security & 2FA
+                        </MenuItem>
+                        <MenuItem onClick={() => { handleProfileClose(); setCurrentPage('sessions'); }} sx={{ borderRadius: '8px', py: 1 }}>
+                          <ListItemIcon><SessionsIcon fontSize="small" /></ListItemIcon>
+                          Active Sessions
+                        </MenuItem>
+                        <MenuItem onClick={() => { handleProfileClose(); setCurrentPage('settings'); }} sx={{ borderRadius: '8px', py: 1 }}>
+                          <ListItemIcon><SettingsIcon fontSize="small" /></ListItemIcon>
+                          System Settings
+                        </MenuItem>
+                        <Divider sx={{ my: 0.5 }} />
                         <MenuItem onClick={handleLogout} sx={{ color: 'error.main', py: 1.5, m: 0.5, borderRadius: '8px' }}>
                           <ListItemIcon sx={{ color: 'error.main' }}>
                             <LogoutIcon fontSize="small" />
@@ -818,7 +881,23 @@ const App: React.FC = () => {
                           <List disablePadding>
                             {filteredItems.map((item) => (
                               <ListItem key={item.text} disablePadding sx={{ display: 'block', mb: 0.5 }}>
-                                <Tooltip title={!drawerOpen ? labelFor(item.text) : ''} placement="right" arrow>
+                                <Tooltip
+                                  title={
+                                    <Box sx={{ p: 0.5, maxWidth: 260 }}>
+                                      <Typography variant="body2" sx={{ fontWeight: 700, fontSize: '0.82rem' }}>
+                                        {labelFor(item.text)}
+                                      </Typography>
+                                      {item.description && (
+                                        <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 0.35, lineHeight: 1.35 }}>
+                                          {item.description}
+                                        </Typography>
+                                      )}
+                                    </Box>
+                                  }
+                                  placement="right"
+                                  arrow
+                                  enterDelay={250}
+                                >
                                   <ListItemButton
                                     selected={currentPage === item.page}
                                     onClick={() => setCurrentPage(item.page)}
@@ -892,13 +971,18 @@ const App: React.FC = () => {
 
                   {/* User info at bottom of sidebar */}
                   {drawerOpen && (
-                    <Box sx={{
+                    <Box
+                      onClick={() => setProfileModalOpen(true)}
+                      sx={{
                       p: 2,
                       borderTop: 1,
                       borderColor: 'divider',
                       display: 'flex',
                       alignItems: 'center',
                       gap: 1.5,
+                      cursor: 'pointer',
+                      transition: 'background-color 0.2s',
+                      '&:hover': { bgcolor: 'action.hover' },
                     }}>
                       <Avatar sx={{ bgcolor: 'primary.main', width: 32, height: 32, fontSize: '0.8rem', fontWeight: 'bold' }}>
                         {(user.name || user.username)?.charAt(0).toUpperCase()}
@@ -950,11 +1034,9 @@ const App: React.FC = () => {
                       {currentPage === 'workspace' && <UnifiedWorkspace onNavigate={setCurrentPage} />}
                       {currentPage === 'jobwork' && <JobWork />}
                       {currentPage === 'operations' && <OperationsDesk />}
-                      {currentPage === 'catalogue' && <CommerceDesk initialTab={0} />}
-                      {currentPage === 'customers' && <CommerceDesk initialTab={1} />}
-                      {currentPage === 'orders' && <CommerceDesk initialTab={2} />}
-                      {currentPage === 'invoicestudio' && <CommerceDesk initialTab={3} />}
+                      {currentPage === 'business' && <CommerceDesk />}
                       {currentPage === 'reports' && <CommerceReports />}
+                      {currentPage === 'paymentops' && <Payments />}
                       {currentPage === 'dashboard' && <Dashboard onNavigate={setCurrentPage} />}
                       {currentPage === 'today' && <TodayDashboard onNavigate={setCurrentPage} />}
                       {currentPage === 'inventory' && <Inventory userRole={user.role} username={user.username} />}
@@ -962,10 +1044,8 @@ const App: React.FC = () => {
                       {currentPage === 'inward' && <InwardEntry userRole={user.role} username={user.username} />}
                       {currentPage === 'outward' && <OutwardEntry userRole={user.role} username={user.username} />}
                       {currentPage === 'production' && <ProductionEntry userRole={user.role} username={user.username} />}
-                      {currentPage === 'billing' && <Billing userRole={user.role} username={user.username} />}
                       {currentPage === 'store' && <Store onNavigate={setCurrentPage} />}
                       {currentPage === 'insights' && <Insights />}
-                      {currentPage === 'payments' && <Payments />}
                       {currentPage === 'helpdesk' && <Helpdesk />}
                       {currentPage === 'tutorial' && <Tutorial />}
                       {currentPage === 'users' && <UserManagement currentUserRole={user.role} username={user.username} />}
@@ -981,23 +1061,16 @@ const App: React.FC = () => {
                         />
                       )}
                       {/* ── Merged sub-project pages ── */}
-                      {['vyapari', 'yarnhub', 'yarnlive', 'yarnshift', 'yarnforecast', 'yarnsupplier', 'yarncompliance'].includes(currentPage) && (
-                        <Alert severity="warning" sx={{ m: 2 }}>
-                          Prototype view: figures and records on this screen are sample data, not live EverGreen business data. Do not use them for operational decisions.
-                        </Alert>
-                      )}
-                      {currentPage === 'msme' && <MsmeErp onNavigate={setCurrentPage} />}
-                      {currentPage === 'vyapari' && <Vyapari />}
-                      {currentPage === 'yarnhub' && <YarnERP onNavigate={setCurrentPage} />}
-                      {currentPage === 'yarnlive' && <YarnLiveDashboard />}
                       {currentPage === 'yarnmachine' && <YarnMachineManagement />}
                       {currentPage === 'yarnquality' && <YarnQualityControl />}
-                      {currentPage === 'yarnshift' && <YarnShiftManagement />}
                       {currentPage === 'yarnwarehouse' && <YarnWarehouseManagement />}
                       {currentPage === 'yarnhr' && <YarnHRManagement />}
+                      {currentPage === 'yarnlive' && <YarnLiveDashboard />}
+                      {currentPage === 'yarnshift' && <YarnShiftManagement />}
                       {currentPage === 'yarnforecast' && <YarnDemandForecasting />}
                       {currentPage === 'yarnsupplier' && <YarnSupplierPortal />}
                       {currentPage === 'yarncompliance' && <YarnComplianceReports />}
+                      {currentPage === 'yarnerp' && <YarnERP onNavigate={setCurrentPage} />}
 
                       {!allPages.includes(currentPage) && (
                         <Box sx={{ p: 4, textAlign: 'center' }}>
@@ -1011,6 +1084,28 @@ const App: React.FC = () => {
                   </Container>
                 </Box>
               </Box>
+              <ProfileModal
+                open={profileModalOpen}
+                onClose={() => setProfileModalOpen(false)}
+                currentUser={user}
+                onUserUpdate={(updated) => {
+                  const newUser = { ...user, ...updated };
+                  setUser(newUser);
+                  localStorage.setItem('user', JSON.stringify(newUser));
+                }}
+                mode={mode}
+                onToggleTheme={toggleTheme}
+                themeName={themeName}
+                onThemeChange={setThemeName}
+                language={language}
+                onToggleLanguage={toggleLanguage}
+                floatingNav={floatingNav}
+                onFloatingNavChange={setFloatingNav}
+                onNavigate={(pg) => {
+                  setProfileModalOpen(false);
+                  setCurrentPage(pg);
+                }}
+              />
             </ConfirmProvider>
           </KeyboardShortcutsProvider>
         </NotificationsProvider>

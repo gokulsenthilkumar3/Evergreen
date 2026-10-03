@@ -161,6 +161,10 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole, userna
     };
 
     const handleSubmit = () => {
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+            toast.error('Enter a valid email address');
+            return;
+        }
         if (!formData.username) {
             toast.error(ERROR_MESSAGES.REQUIRED_FIELD('Username'));
             return;
@@ -169,14 +173,13 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole, userna
         if (editingUser) {
             const updateData: any = { ...formData };
             if (!updateData.password) delete updateData.password;
-            updateData.updatedBy = username;
             updateUserMutation.mutate({ id: editingUser.id, data: updateData });
         } else {
             if (!formData.password) {
                 toast.error(ERROR_MESSAGES.REQUIRED_FIELD('Password'));
                 return;
             }
-            createUserMutation.mutate({ ...formData, createdBy: username });
+            createUserMutation.mutate(formData);
         }
     };
 

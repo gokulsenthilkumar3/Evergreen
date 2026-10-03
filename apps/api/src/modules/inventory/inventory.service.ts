@@ -1,5 +1,11 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
+import { randomUUID } from 'crypto';
 import { PrismaService } from '../../services/prisma.service';
+import {
+  throwInwardUnderProduction,
+  throwWasteSoldOrLinked,
+  throwOutwardBilled,
+} from '../../utils/delete-guard';
 
 @Injectable()
 export class InventoryService {
@@ -75,11 +81,18 @@ export class InventoryService {
 
     if (activeBatches.length === 0) return [];
 
-    // Fetch original batch details (including original kg and bale)
+    // Fetch original batch details (including original kg, bale, and timestamps)
     const ids = activeBatches.map((b) => b.batchId!).filter(Boolean);
     const details = await this.prisma.inwardBatch.findMany({
       where: { batchId: { in: ids } },
-      select: { batchId: true, supplier: true, bale: true, kg: true },
+      select: {
+        batchId: true,
+        supplier: true,
+        bale: true,
+        kg: true,
+        date: true,
+        createdAt: true,
+      },
       orderBy: { date: 'desc' },
     });
 
@@ -103,9 +116,12 @@ export class InventoryService {
       const usage = usageByBatch[d.batchId] ?? { bale: 0, weight: 0 };
       const remainingBale = d.bale - usage.bale;
       const remainingKg = bal?._sum.quantity ?? 0;
+      const receivedAt = d.date || d.createdAt;
       return {
         batchId: d.batchId,
         supplier: d.supplier,
+        receivedAt,
+        earliestStartAt: new Date(new Date(receivedAt).getTime() + 61_000),
         // Original totals
         originalKg: d.kg,
         originalBale: d.bale,
@@ -234,20 +250,20 @@ export class InventoryService {
   }
 
   async createInward(data: {
-    batchId: string;
+    batchId?: string;
     date: string;
     supplier: string;
     bale: number;
     kg: number;
     createdBy?: string;
   }) {
-    console.log('[Inventory] createInward called with data:', data);
     try {
       return await this.prisma.$transaction(async (tx) => {
+        const batchId = data.batchId?.trim() || `IN-${data.date.replace(/-/g, '').slice(0, 6)}-${randomUUID().slice(0, 8).toUpperCase()}`;
         // 1. Create Inward Batch record
         const batch = await tx.inwardBatch.create({
           data: {
-            batchId: data.batchId,
+            batchId,
             date: new Date(data.date),
             supplier: data.supplier,
             bale: data.bale,
@@ -269,8 +285,8 @@ export class InventoryService {
             type: 'INWARD',
             quantity: data.kg,
             balance: currentBalance + data.kg,
-            reference: data.batchId,
-            batchId: data.batchId,
+            reference: batchId,
+            batchId,
             createdBy: data.createdBy,
           },
         });
@@ -289,10 +305,11 @@ export class InventoryService {
             });
           }
         }
+        return batch;
       });
     } catch (error: any) {
       console.error('[Inventory] createInward error:', error);
-      return { error: true, details: error.message, stack: error.stack };
+      throw error;
     }
   }
 
@@ -587,7 +604,7 @@ export class InventoryService {
     });
   }
 
-  async deleteInward(id: number) {
+  async deleteInward(id: number, actor = 'SYSTEM', reason?: string) {
     return this.prisma.$transaction(async (tx) => {
       const batch = await tx.inwardBatch.findUnique({
         where: { id },
@@ -595,15 +612,40 @@ export class InventoryService {
 
       if (!batch) throw new BadRequestException('Batch not found');
 
-      // 1. Dependency Check: Check if batch is used in any production
-      const consumption = await tx.productionConsumption.findFirst({
-        where: { batchNo: batch.batchId },
+      // 1. Dependency Check: Check if batch is used in any genuine manufacturing production
+      const consumptions = await tx.productionConsumption.findMany({
+        where: {
+          batchNo: batch.batchId,
+          production: {
+            createdBy: { not: 'SYSTEM_MERGE' },
+          },
+        },
+        select: { productionId: true },
       });
 
-      if (consumption) {
-        throw new BadRequestException(
-          `Cannot delete batch ${batch.batchId} because it has been used in production. Delete the corresponding production entry first.`,
-        );
+      if (consumptions.length > 0) {
+        const prodIds = [...new Set(consumptions.map((c) => c.productionId))];
+        try {
+          await tx.activityLog.create({
+            data: {
+              username: actor,
+              action: 'DELETE_BLOCKED',
+              module: 'INWARD',
+              details: JSON.stringify({
+                inwardId: id,
+                batchId: batch.batchId,
+                blockingProductionIds: prodIds,
+                reason: reason || 'Attempted delete on batch under active production',
+              }),
+            },
+          });
+        } catch (_) {}
+
+        throwInwardUnderProduction({
+          inwardId: id,
+          batchNo: batch.batchId,
+          productionIds: prodIds,
+        });
       }
 
       // 2. Delete inward movements from inventory (reference is batchId)
@@ -611,12 +653,32 @@ export class InventoryService {
         where: { reference: batch.batchId },
       });
 
-      // 2. Delete batch
+      // 2.1 If deleting a merged batch, unmerge the original batches
+      if (batch.isMerged && batch.mergedFrom) {
+        const sourceBatchIds = batch.mergedFrom.split(',').map((s) => s.trim());
+        await tx.cottonInventory.deleteMany({
+          where: {
+            type: 'MERGE_OUT',
+            batchId: { in: sourceBatchIds },
+          },
+        });
+        await tx.productionConsumption.deleteMany({
+          where: {
+            batchNo: { in: sourceBatchIds },
+            production: { createdBy: 'SYSTEM_MERGE' },
+          },
+        });
+        await tx.production.deleteMany({
+          where: { createdBy: 'SYSTEM_MERGE' },
+        });
+      }
+
+      // 3. Delete batch
       await tx.inwardBatch.delete({
         where: { id },
       });
 
-      // 3. Recalculate Cotton Inventory Balances
+      // 4. Recalculate Cotton Inventory Balances
       const cottonMovements = await tx.cottonInventory.findMany({
         orderBy: [{ date: 'asc' }, { id: 'asc' }],
       });
@@ -633,11 +695,30 @@ export class InventoryService {
         }
       }
 
+      // 5. Audit log DELETE
+      try {
+        await tx.activityLog.create({
+          data: {
+            username: actor,
+            action: 'DELETE',
+            module: 'INWARD',
+            details: JSON.stringify({
+              inwardId: id,
+              batchId: batch.batchId,
+              bale: batch.bale,
+              kg: batch.kg,
+              supplier: batch.supplier,
+              reason: reason || 'Deleted inward batch',
+            }),
+          },
+        });
+      } catch (_) {}
+
       return { success: true };
     });
   }
 
-  async deleteOutward(id: number) {
+  async deleteOutward(id: number, actor = 'SYSTEM', reason?: string) {
     return this.prisma.$transaction(async (tx) => {
       // 1. Fetch outward to know which counts to recalculate (optimization) or just recalc all
       const outward = await tx.outward.findUnique({
@@ -645,7 +726,46 @@ export class InventoryService {
         include: { items: true },
       });
 
-      if (!outward) throw new Error('Outward entry not found');
+      if (!outward) throw new BadRequestException('Outward entry not found');
+
+      // Check if there is an invoice matching customer and date
+      const matchingInvoice = await tx.invoice.findFirst({
+        where: {
+          customerName: outward.customerName,
+          date: outward.date,
+        },
+        include: { payments: true },
+      });
+
+      if (
+        matchingInvoice &&
+        (matchingInvoice.status === 'PAID' ||
+          matchingInvoice.amountPaid > 0 ||
+          matchingInvoice.payments.length > 0)
+      ) {
+        try {
+          await tx.activityLog.create({
+            data: {
+              username: actor,
+              action: 'DELETE_BLOCKED',
+              module: 'OUTWARD',
+              details: JSON.stringify({
+                outwardId: id,
+                customerName: outward.customerName,
+                invoiceNo: matchingInvoice.invoiceNo,
+                status: matchingInvoice.status,
+                amountPaid: matchingInvoice.amountPaid,
+                reason: 'Payment has already been received for the linked invoice',
+              }),
+            },
+          });
+        } catch (_) {}
+
+        throwOutwardBilled({
+          outwardId: id,
+          invoiceNo: matchingInvoice.invoiceNo,
+        });
+      }
 
       // 2. Delete yarn inventory movements
       await tx.yarnInventory.deleteMany({
@@ -658,8 +778,6 @@ export class InventoryService {
       });
 
       // 4. Recalculate Yarn Inventory Balances
-      // We need to recalculate for each count involved, or all counts?
-      // Safer to recalculate specific counts affected.
       const countsAffected = [...new Set(outward.items.map((i) => i.count))];
 
       for (const count of countsAffected) {
@@ -679,6 +797,24 @@ export class InventoryService {
           }
         }
       }
+
+      // 5. Audit log DELETE
+      try {
+        await tx.activityLog.create({
+          data: {
+            username: actor,
+            action: 'DELETE',
+            module: 'OUTWARD',
+            details: JSON.stringify({
+              outwardId: id,
+              customerName: outward.customerName,
+              totalBags: outward.totalBags,
+              totalWeight: outward.totalWeight,
+              reason: reason || 'Deleted outward dispatch',
+            }),
+          },
+        });
+      } catch (_) {}
 
       return { success: true };
     });
@@ -815,15 +951,62 @@ export class InventoryService {
     });
   }
 
-  async deleteWaste(id: number) {
+  async deleteWaste(id: number, actor = 'SYSTEM', reason?: string) {
     return this.prisma.$transaction(async (tx) => {
       const waste = await tx.wasteInventory.findUnique({ where: { id } });
       if (!waste) throw new BadRequestException('Waste entry not found');
 
       if (waste.type === 'PRODUCTION') {
-        throw new BadRequestException(
-          'Cannot delete production waste directly. Please delete the production entry.',
-        );
+        let parentProdId: number | null = waste.productionId || null;
+        if (!parentProdId && waste.reference && waste.reference.startsWith('P-')) {
+          parentProdId = parseInt(waste.reference.replace('P-', ''), 10) || null;
+        }
+
+        try {
+          await tx.activityLog.create({
+            data: {
+              username: actor,
+              action: 'DELETE_BLOCKED',
+              module: 'WASTE',
+              details: JSON.stringify({
+                wasteId: id,
+                reference: waste.reference,
+                parentProdId,
+                reason: reason || 'Cannot delete production waste directly',
+              }),
+            },
+          });
+        } catch (_) {}
+
+        throwWasteSoldOrLinked({
+          wasteId: id,
+          productionId: parentProdId,
+          reference: waste.reference || undefined,
+          isSold: false,
+        });
+      }
+
+      if (waste.type === 'EXPORT') {
+        try {
+          await tx.activityLog.create({
+            data: {
+              username: actor,
+              action: 'DELETE_BLOCKED',
+              module: 'WASTE',
+              details: JSON.stringify({
+                wasteId: id,
+                reference: waste.reference,
+                reason: reason || 'Cannot delete sold/exported waste entry',
+              }),
+            },
+          });
+        } catch (_) {}
+
+        throwWasteSoldOrLinked({
+          wasteId: id,
+          reference: waste.reference || undefined,
+          isSold: true,
+        });
       }
 
       // 1. If it was RECYCLE, remove from Cotton Inventory
@@ -869,6 +1052,23 @@ export class InventoryService {
           });
         }
       }
+
+      // 4. Audit log DELETE
+      try {
+        await tx.activityLog.create({
+          data: {
+            username: actor,
+            action: 'DELETE',
+            module: 'WASTE',
+            details: JSON.stringify({
+              wasteId: id,
+              type: waste.type,
+              quantity: waste.quantity,
+              reason: reason || 'Deleted waste entry',
+            }),
+          },
+        });
+      } catch (_) {}
 
       return { success: true };
     });

@@ -42,7 +42,10 @@ import {
     Email as EmailIcon,
     TableView as ExcelIcon,
     PictureAsPdf as PdfIcon,
+    QrCode2 as QrIcon,
 } from '@mui/icons-material';
+import BarcodeQRModal from '../components/common/BarcodeQRModal';
+import { formatBagCode, formatDateCompact, padZero } from '../utils/codeFormatters';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../utils/api';
 import { generateExcel } from '../utils/excelGenerator';
@@ -50,6 +53,7 @@ import { generatePDF } from '../utils/pdfGenerator';
 import { useConfirm } from '../context/ConfirmContext';
 import { toast } from 'sonner';
 import { SUCCESS_MESSAGES, ERROR_MESSAGES, CONFIRM_TITLES, CONFIRM_MESSAGES, formatApiError } from '../utils/messages';
+import { handleDeleteGuardError } from '../utils/deleteGuardHandler';
 import { validateDate } from '../utils/validators';
 import EmptyState from '../components/common/EmptyState';
 import TableSkeleton from '../components/common/TableSkeleton';
@@ -125,6 +129,7 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
     });
 
     const [date, setDate] = useState(new Date().toLocaleDateString('en-CA'));
+    const [labelProduction, setLabelProduction] = useState<any | null>(null);
 
     const { data: availableBatches = [], isFetching: isFetchingBatches } = useQuery({
         queryKey: ['availableBatches', date],
@@ -338,7 +343,7 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
             queryClient.invalidateQueries({ queryKey: ['cottonInventory'] });
             handleCloseWizard();
         } catch (error: any) {
-            toast.error(formatApiError(error, ERROR_MESSAGES.SAVE_FAILED));
+            handleDeleteGuardError(error, ERROR_MESSAGES.SAVE_FAILED);
         }
     };
 
@@ -361,7 +366,7 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
             queryClient.invalidateQueries({ queryKey: ['yarnStock'] });
             queryClient.invalidateQueries({ queryKey: ['cottonInventory'] });
         } catch (error: any) {
-            toast.error(formatApiError(error, ERROR_MESSAGES.DELETE_FAILED));
+            handleDeleteGuardError(error, ERROR_MESSAGES.DELETE_FAILED);
         }
     };
 
@@ -533,15 +538,29 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                                         {((row.totalProduced / row.totalConsumed) * 100).toFixed(2)}%
                                     </TableCell>
                                     <TableCell align="center">
-                                        {(userRole === 'ADMIN') && (
-                                            <IconButton
-                                                size="small"
-                                                color="error"
-                                                onClick={() => handleDeleteProduction(row.id)}
-                                            >
-                                                <DeleteIcon fontSize="small" />
-                                            </IconButton>
-                                        )}
+                                        <Stack direction="row" spacing={0.5} justifyContent="center" alignItems="center">
+                                            <Tooltip title="Print Production & Yarn Label (Barcode & QR)">
+                                                <IconButton
+                                                    size="small"
+                                                    color="primary"
+                                                    onClick={() => setLabelProduction(row)}
+                                                    aria-label="Generate QR and Barcode Label"
+                                                >
+                                                    <QrIcon fontSize="small" />
+                                                </IconButton>
+                                            </Tooltip>
+                                            {(userRole === 'ADMIN') && (
+                                                <Tooltip title="Delete Entry">
+                                                    <IconButton
+                                                        size="small"
+                                                        color="error"
+                                                        onClick={() => handleDeleteProduction(row.id)}
+                                                    >
+                                                        <DeleteIcon fontSize="small" />
+                                                    </IconButton>
+                                                </Tooltip>
+                                            )}
+                                        </Stack>
                                     </TableCell>
                                 </TableRow>
                             ))
@@ -585,9 +604,13 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                                     value={date}
                                     onChange={(e) => setDate(e.target.value)}
                                     fullWidth
-                                    sx={{ mb: 3 }}
+                                    sx={{ mb: 2 }}
                                     InputLabelProps={{ shrink: true }}
                                 />
+
+                                <Alert severity="info" sx={{ mb: 3, borderRadius: 2, fontSize: '0.85rem' }}>
+                                    <strong>Rule 5 Settle Gap:</strong> Production start must be at least <strong>00:01:01</strong> after batch receipt. Total output (yarn + waste) cannot exceed consumed raw cotton beyond 2% mass-balance tolerance.
+                                </Alert>
 
                                 <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
                                     Cotton Consumption
@@ -955,6 +978,39 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                 </DialogContent>
             </Dialog>
 
+            {labelProduction && (
+                <BarcodeQRModal
+                    open={Boolean(labelProduction)}
+                    onClose={() => setLabelProduction(null)}
+                    type="BAG"
+                    title={`Production Label: PRD-${padZero(labelProduction.id, 4)}`}
+                    code={formatBagCode(
+                        labelProduction.producedYarn?.[0]?.count || 'MIX',
+                        labelProduction.date,
+                        labelProduction.id
+                    )}
+                    qrPayload={JSON.stringify({
+                        type: 'PRODUCTION_RUN',
+                        id: labelProduction.id,
+                        code: `PRD-${padZero(labelProduction.id, 4)}`,
+                        date: labelProduction.date ? new Date(labelProduction.date).toISOString().split('T')[0] : '',
+                        consumedKg: labelProduction.totalConsumed,
+                        producedKg: labelProduction.totalProduced,
+                        wasteKg: labelProduction.totalWaste,
+                        batches: (labelProduction.consumedBatches || []).map((b: any) => b.batchNo),
+                        system: 'EverGreen One',
+                        v: 1
+                    })}
+                    metadata={[
+                        { label: 'Date', value: new Date(labelProduction.date).toLocaleDateString('en-IN') },
+                        { label: 'Consumed Batches', value: (labelProduction.consumedBatches || []).map((b: any) => b.batchNo).join(', ') || 'N/A' },
+                        { label: 'Total Input', value: `${labelProduction.totalConsumed.toLocaleString()} kg` },
+                        { label: 'Total Produced', value: `${labelProduction.totalProduced.toLocaleString()} kg` },
+                        { label: 'Total Waste', value: `${labelProduction.totalWaste.toLocaleString()} kg` },
+                        { label: 'Efficiency', value: `${((labelProduction.totalProduced / labelProduction.totalConsumed) * 100).toFixed(2)}%` },
+                    ]}
+                />
+            )}
         </Box>
     );
 };

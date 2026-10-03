@@ -119,9 +119,54 @@ export class BillingController {
     const numId = parseInt(id);
     if (isNaN(numId)) throw new BadRequestException('Invalid ID');
 
+    const invoice = await this.prisma.invoice.findUnique({
+      where: { id: numId },
+      include: { payments: true },
+    });
+    if (!invoice) throw new BadRequestException('Invoice not found');
+
+    if (invoice.payments.length > 0 || invoice.amountPaid > 0) {
+      try {
+        await this.prisma.activityLog.create({
+          data: {
+            username: 'SYSTEM',
+            action: 'DELETE_BLOCKED',
+            module: 'INVOICE',
+            details: JSON.stringify({
+              invoiceId: numId,
+              invoiceNo: invoice.invoiceNo,
+              amountPaid: invoice.amountPaid,
+              paymentsCount: invoice.payments.length,
+              reason: 'Cannot delete invoice with recorded payments',
+            }),
+          },
+        });
+      } catch (_) {}
+
+      throw new BadRequestException(
+        `Cannot delete invoice "${invoice.invoiceNo}" — payments totaling ₹${invoice.amountPaid.toFixed(2)} have been recorded. Please reverse or remove all payment entries before deleting the invoice.`,
+      );
+    }
+
     await this.prisma.invoice.delete({
       where: { id: numId },
     });
+
+    try {
+      await this.prisma.activityLog.create({
+        data: {
+          username: 'SYSTEM',
+          action: 'DELETE',
+          module: 'INVOICE',
+          details: JSON.stringify({
+            invoiceId: numId,
+            invoiceNo: invoice.invoiceNo,
+            total: invoice.total,
+          }),
+        },
+      });
+    } catch (_) {}
+
     return { success: true };
   }
 
