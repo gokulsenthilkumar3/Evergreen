@@ -1,3 +1,4 @@
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip as ChartTooltip, CartesianGrid } from 'recharts';
 import React from 'react';
 import {
     Box,
@@ -106,10 +107,30 @@ const TodayDashboard: React.FC<TodayDashboardProps> = ({ onNavigate }) => {
         );
     }
 
+    const trend = Array.from({ length: 30 }, (_, index) => {
+        const day = new Date();
+        day.setDate(day.getDate() - 29 + index);
+        const date = day.toLocaleDateString('en-CA');
+        return {
+            date,
+            productionKg: (productionHistory ?? []).filter((entry: { date: string }) => entry.date?.startsWith(date))
+                .reduce((sum: number, entry: { totalProduced?: number }) => sum + (entry.totalProduced ?? 0), 0),
+        };
+    });
+
     const lastUpdated = prodUpdated ? new Date(prodUpdated).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : '--';
 
     return (
         <Box sx={{ maxWidth: '100%', width: '100%' }}>
+            <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
+                <Typography variant="h6">Production over the last 30 days (kg)</Typography>
+                <Box sx={{ height: 240 }}><ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={trend}><CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="date" tickFormatter={date => date.slice(5)} /><YAxis />
+                        <ChartTooltip /><Area type="monotone" dataKey="productionKg" name="Production (kg)" stroke="#059669" fill="#059669" fillOpacity={0.15} />
+                    </AreaChart>
+                </ResponsiveContainer></Box>
+            </Paper>
             {/* Header */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 4 }}>
                 <Box>

@@ -4,7 +4,7 @@ import {
     IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Chip, Grid, Tooltip
 } from '@mui/material';
 import { Add as AddIcon, Refresh as SyncIcon, Visibility as ViewIcon, Close as CancelIcon } from '@mui/icons-material';
-import { usePersist, today, fmtDate, fmtAmt } from '../../hooks/usePersist';
+import { usePersist, fmtDate, fmtAmt } from '../../hooks/usePersist';
 import { toast } from 'sonner';
 
 interface EwayBill {
@@ -19,38 +19,16 @@ interface EwayBill {
 }
 
 const EwayBills: React.FC = () => {
-    const { items, add, update } = usePersist<EwayBill>('eway_bills');
+    const { items } = usePersist<EwayBill>('eway_bills');
     const [open, setOpen] = useState(false);
     const [form, setForm] = useState({ invoiceNo: '', customer: '', amount: 0, distance: 0 });
 
     const handleGenerate = () => {
-        if (!form.invoiceNo || !form.customer || form.amount <= 0) {
-            toast.error('Please fill all fields'); return;
-        }
-
-        const dateObj = new Date();
-        const validObj = new Date(dateObj);
-        validObj.setDate(validObj.getDate() + Math.max(1, Math.ceil(form.distance / 200)));
-
-        add({
-            ewbNo: Math.floor(100000000000 + Math.random() * 900000000000).toString(),
-            date: dateObj.toISOString(),
-            invoiceNo: form.invoiceNo,
-            customer: form.customer,
-            amount: form.amount,
-            status: 'Active',
-            validUpto: validObj.toISOString()
-        });
-        
-        toast.success('E-Way Bill generated successfully');
-        setOpen(false);
+        toast.error('E-Way Bill issuance is unavailable until a provider is configured.');
     };
 
-    const handleCancel = (id: string) => {
-        if (confirm('Are you sure you want to cancel this E-Way Bill?')) {
-            update(id, { status: 'Cancelled' });
-            toast.success('E-Way Bill cancelled on NIC portal');
-        }
+    const handleCancel = (_id: string) => {
+        toast.error('Portal cancellation is unavailable until a provider is configured.');
     };
 
     return (
@@ -58,11 +36,11 @@ const EwayBills: React.FC = () => {
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                 <Box>
                     <Typography variant="h6" fontWeight={700}>E-Way Bills</Typography>
-                    <Typography variant="body2" color="text.secondary">Generate and manage GST E-Way Bills for goods in transit</Typography>
+                    <Typography variant="body2" color="text.secondary">Provider integration is not configured. Existing local records are unverified.</Typography>
                 </Box>
                 <Box sx={{ display: 'flex', gap: 1 }}>
-                    <Button variant="outlined" startIcon={<SyncIcon />} onClick={() => toast.success('Synced with NIC Portal')}>Sync NIC</Button>
-                    <Button variant="contained" startIcon={<AddIcon />} onClick={() => { setForm({ invoiceNo: '', customer: '', amount: 0, distance: 0 }); setOpen(true); }}>Generate EWB</Button>
+                    <Button variant="outlined" startIcon={<SyncIcon />} onClick={() => toast.error('NIC synchronization is unavailable until a provider is configured.')}>Sync NIC</Button>
+                    <Button disabled variant="contained" startIcon={<AddIcon />} onClick={() => { setForm({ invoiceNo: '', customer: '', amount: 0, distance: 0 }); setOpen(true); }}>Generate EWB</Button>
                 </Box>
             </Box>
             

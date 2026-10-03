@@ -32,7 +32,7 @@ describe('connected module smoke tests', () => {
 
     it('rejects malformed credentials without querying users', async () => {
       await expect(
-        controller.login({ username: 'admin' }, request),
+        controller.login({ username: 'admin' } as any, request),
       ).rejects.toBeInstanceOf(UnauthorizedException);
       expect(auth.validateUser).not.toHaveBeenCalled();
     });

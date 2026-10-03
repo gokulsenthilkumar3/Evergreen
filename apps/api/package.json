@@ -7,7 +7,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "dev": "npm run start:dev",
-    "prebuild": "npm run generate -w @evergreen/database",
+    "prebuild": "npm run generate -w @evergreen/database && npm run build -w @evergreen/pdf",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
@@ -23,18 +23,22 @@
   },
   "dependencies": {
     "@evergreen/database": "*",
+    "@evergreen/pdf": "*",
+    "@evergreen/types": "*",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.3",
     "@nestjs/core": "^11.0.1",
     "@nestjs/jwt": "^11.0.2",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/schedule": "^5.0.1",
     "@nestjs/swagger": "^11.2.6",
     "@prisma/client": "5.22.0",
     "@simplewebauthn/server": "^13.3.2",
     "bcrypt": "^6.0.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.3",
+    "helmet": "^8.3.0",
     "nodemailer": "^9.0.3",
     "otplib": "^13.4.1",
     "passport": "^0.7.0",
@@ -42,10 +46,7 @@
     "qrcode": "^1.5.4",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
-    "swagger-ui-express": "^5.0.1",
-    "@evergreen/types": "*",
-    "@evergreen/pdf": "*",
-    "@nestjs/schedule": "^5.0.1"
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
@@ -86,10 +87,20 @@
     "rootDir": "src",
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
+      "^.+\\.(t|j)s$": [
+        "ts-jest",
+        {
+          "tsconfig": {
+            "module": "CommonJS",
+            "moduleResolution": "Node",
+            "resolvePackageJsonExports": false
+          }
+        }
+      ]
     },
     "moduleNameMapper": {
-      "^@evergreen/pdf$": "<rootDir>/../../../packages/pdf/dist/index.js"
+      "^@evergreen/pdf$": "<rootDir>/../../../packages/pdf/src/index.ts",
+      "^@evergreen/types$": "<rootDir>/../../../packages/types/index.ts"
     },
     "collectCoverageFrom": [
       "**/*.(t|j)s"

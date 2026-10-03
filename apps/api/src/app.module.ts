@@ -17,6 +17,10 @@ import { SessionsModule } from './modules/sessions/sessions.module';
 import { DatabaseModule } from './modules/database/database.module';
 import { CommerceModule } from './modules/commerce/commerce.module';
 import { JobWorkModule } from './modules/jobwork/jobwork.module';
+import { WarehouseModule } from './modules/warehouse/warehouse.module';
+import { MachineModule } from './modules/machines/machine.module';
+import { QualityModule } from './modules/quality/quality.module';
+import { HrModule } from './modules/hr/hr.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
@@ -41,6 +45,11 @@ import { RolesGuard } from './guards/roles.guard';
     SearchModule,
     UsersModule,
     SessionsModule,
+    // Phase 3.5 — Operational modules
+    WarehouseModule,
+    MachineModule,
+    QualityModule,
+    HrModule,
   ],
   controllers: [AppController],
   providers: [

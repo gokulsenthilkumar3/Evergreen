@@ -1,70 +1,135 @@
-﻿import React, { useState } from 'react';
-import { Box, Typography, Paper, Grid, Card, CardContent, Chip, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tabs, Tab, Avatar } from '@mui/material';
-import { Add as AddIcon, Build as BuildIcon, Refresh as RefreshIcon } from '@mui/icons-material';
+import React, { useState } from 'react';
+import { Box, Typography, Paper, Grid, Card, CardContent, Chip, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tabs, Tab, CircularProgress, Alert } from '@mui/material';
+import { Refresh as RefreshIcon } from '@mui/icons-material';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import api from '../../utils/api';
 
-const MACHINES = [
-  { id: 'MC-01', name: 'Ring Frame A-01', type: 'Ring Frame', brand: 'LMW', spindles: 400, count: '8 / 6', status: 'Active', installDate: '2020-03-15', lastMaint: '2026-08-01', nextMaint: '2026-11-01' },
-  { id: 'MC-02', name: 'Ring Frame A-02', type: 'Ring Frame', brand: 'Rieter', spindles: 400, count: '6 / 8', status: 'Active', installDate: '2021-06-10', lastMaint: '2026-07-15', nextMaint: '2026-10-15' },
-  { id: 'MC-03', name: 'Ring Frame B-01', type: 'Ring Frame', brand: 'LMW', spindles: 360, count: '10', status: 'Under Maintenance', installDate: '2019-01-20', lastMaint: '2026-09-20', nextMaint: '2026-12-20' },
-  { id: 'MC-04', name: 'Winding M-01', type: 'Winder', brand: 'Savio', spindles: 120, count: 'All counts', status: 'Active', installDate: '2022-02-28', lastMaint: '2026-09-01', nextMaint: '2026-12-01' },
-  { id: 'MC-05', name: 'TFO Machine-01', type: 'TFO', brand: 'Volkmann', spindles: 64, count: '2/60', status: 'Active', installDate: '2023-07-05', lastMaint: '2026-09-10', nextMaint: '2026-12-10' },
-];
-const MAINT_LOG = [
-  { id: 1, machineId: 'MC-01', date: '2026-08-01', type: 'Preventive', desc: 'Roller change, bearing lubrication', tech: 'Suresh' },
-  { id: 2, machineId: 'MC-03', date: '2026-09-20', type: 'Breakdown', desc: 'Spindle bearing replacement', tech: 'Ravi' },
-  { id: 3, machineId: 'MC-02', date: '2026-07-15', type: 'Preventive', desc: 'Full spindle alignment', tech: 'Murugan' },
-];
+interface Machine {
+  id: number;
+  serialNo?: string;
+  name: string;
+  type: string;
+  manufacturer?: string;
+  active: boolean;
+  purchasedAt?: string;
+  inspections?: { type: string; date: string; createdBy?: string }[];
+}
+
+interface MachineInspection {
+  id: number;
+  machineId: number;
+  machine: { name: string; type: string };
+  type: string;
+  description?: string;
+  status: string;
+  createdBy?: string;
+  date: string;
+  resolvedAt?: string;
+}
 
 const MachineManagement: React.FC = () => {
   const [tab, setTab] = useState(0);
+  const qc = useQueryClient();
+
+  const { data: machines = [], isLoading: loadingMachines, error } = useQuery<Machine[]>({
+    queryKey: ['machines'],
+    queryFn: () => api.get('/machines').then(r => r.data),
+  });
+
+  const { data: inspections = [], isLoading: loadingInsp, error: inspectionError } = useQuery<MachineInspection[]>({
+    queryKey: ['machine-inspections'],
+    queryFn: () => api.get('/machines/inspections').then(r => r.data),
+  });
+
+  const active = machines.filter(m => m.active).length;
+  const underMaint = inspections.filter(i => i.status !== 'COMPLETED').length;
+  const inactive = machines.filter(m => !m.active).length;
+
+  if (error || inspectionError) return <Alert severity="error">Failed to load machine data</Alert>;
+
   return (
     <Box sx={{ width: '100%' }}>
       <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <Box><Typography variant="h4" fontWeight={800}>Machine Management</Typography><Typography color="text.secondary">Machine registry, capacity & maintenance</Typography></Box>
-        <Box sx={{ display: 'flex', gap: 1 }}><Button variant="outlined" startIcon={<RefreshIcon />} size="small">Refresh</Button><Button variant="contained" startIcon={<AddIcon />} size="small">Add Machine</Button></Box>
+        <Box><Typography variant="h4" fontWeight={800}>Machine Management</Typography><Typography color="text.secondary">Machine registry & maintenance</Typography></Box>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Button variant="outlined" startIcon={<RefreshIcon />} size="small" onClick={() => { qc.invalidateQueries({ queryKey: ['machines'] }); qc.invalidateQueries({ queryKey: ['machine-inspections'] }); }}>Refresh</Button>
+        </Box>
       </Box>
+
       <Grid container spacing={2} sx={{ mb: 3 }}>
-        {[['Total Machines', MACHINES.length, '#3b82f6'],['Active', MACHINES.filter(m=>m.status==='Active').length, '#059669'],['Under Maintenance', MACHINES.filter(m=>m.status==='Under Maintenance').length, '#ef4444'],['Total Spindles', MACHINES.reduce((s,m)=>s+m.spindles,0), '#8b5cf6']].map(([l,v,c])=>(
-          <Grid key={String(l)} size={{ xs: 6, md: 3 }}><Card variant="outlined" sx={{ borderRadius: 3 }}><CardContent sx={{ py: 1.5 }}><Typography variant="body2" color="text.secondary">{l}</Typography><Typography variant="h5" fontWeight={800} color={c as string}>{v}</Typography></CardContent></Card></Grid>
-        ))}
-      </Grid>
-      <Paper variant="outlined" sx={{ borderRadius: 3, overflow: 'hidden' }}>
-        <Tabs value={tab} onChange={(_,v)=>setTab(v)} sx={{ borderBottom: 1, borderColor: 'divider', px: 2, '& .MuiTab-root': { textTransform: 'none', fontWeight: 600 } }}>
-          <Tab label="Machine List" /><Tab label="Maintenance Log" />
-        </Tabs>
-        {tab === 0 && (
-          <TableContainer><Table size="small">
-            <TableHead><TableRow sx={{ bgcolor: 'action.hover' }}>
-              <TableCell sx={{ fontWeight: 700 }}>Machine</TableCell><TableCell sx={{ fontWeight: 700 }}>Type</TableCell><TableCell sx={{ fontWeight: 700 }}>Brand</TableCell><TableCell align="right" sx={{ fontWeight: 700 }}>Spindles</TableCell><TableCell sx={{ fontWeight: 700 }}>Counts</TableCell><TableCell sx={{ fontWeight: 700 }}>Status</TableCell><TableCell sx={{ fontWeight: 700 }}>Next Maintenance</TableCell>
-            </TableRow></TableHead>
-            <TableBody>{MACHINES.map(m=>(
-              <TableRow key={m.id} hover>
-                <TableCell><Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}><Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main', fontSize: '0.7rem', fontWeight: 700 }}>{m.id.split('-')[1]}</Avatar><Box><Typography variant="body2" fontWeight={700}>{m.name}</Typography><Typography variant="caption" color="text.secondary">{m.id}</Typography></Box></Box></TableCell>
-                <TableCell>{m.type}</TableCell>
-                <TableCell>{m.brand}</TableCell>
-                <TableCell align="right">{m.spindles}</TableCell>
-                <TableCell><Typography variant="body2" color="text.secondary">{m.count}</Typography></TableCell>
-                <TableCell><Chip label={m.status} size="small" color={m.status==='Active'?'success':'error'} variant="outlined" /></TableCell>
-                <TableCell><Typography variant="body2" color={new Date(m.nextMaint) < new Date() ? 'error.main' : 'text.secondary'}>{new Date(m.nextMaint).toLocaleDateString('en-IN')}</Typography></TableCell>
-              </TableRow>
-            ))}</TableBody>
-          </Table></TableContainer>
+        {loadingMachines ? <Grid size={{ xs: 12 }}><CircularProgress size={24} /></Grid> : (
+          [['Total Machines', machines.length, '#3b82f6'], ['Active', active, '#059669'], ['Open Inspections', underMaint, '#ef4444'], ['Inactive', inactive, '#8b5cf6']].map(([l, v, c]) => (
+            <Grid key={String(l)} size={{ xs: 6, md: 3 }}>
+              <Card variant="outlined" sx={{ borderRadius: 3 }}>
+                <CardContent sx={{ py: 1.5 }}>
+                  <Typography variant="body2" color="text.secondary">{l}</Typography>
+                  <Typography variant="h5" fontWeight={800} color={c as string}>{v}</Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))
         )}
+      </Grid>
+
+      <Paper variant="outlined" sx={{ borderRadius: 3, overflow: 'hidden' }}>
+        <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ borderBottom: 1, borderColor: 'divider', px: 2, '& .MuiTab-root': { textTransform: 'none', fontWeight: 600 } }}>
+          <Tab label="Machine Registry" /><Tab label="Maintenance Log" />
+        </Tabs>
+
+        {tab === 0 && (
+          <TableContainer>
+            <Table size="small">
+              <TableHead>
+                <TableRow sx={{ bgcolor: 'action.hover' }}>
+                  <TableCell sx={{ fontWeight: 700 }}>Serial No</TableCell><TableCell sx={{ fontWeight: 700 }}>Name</TableCell><TableCell sx={{ fontWeight: 700 }}>Type</TableCell><TableCell sx={{ fontWeight: 700 }}>Manufacturer</TableCell><TableCell align="right" sx={{ fontWeight: 700 }}>Purchased</TableCell><TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {loadingMachines ? (
+                  <TableRow><TableCell colSpan={6} align="center"><CircularProgress size={20} /></TableCell></TableRow>
+                ) : machines.length === 0 ? (
+                  <TableRow><TableCell colSpan={6} align="center" sx={{ color: 'text.secondary', py: 3 }}>No machines registered yet</TableCell></TableRow>
+                ) : machines.map(m => (
+                  <TableRow key={m.id} hover>
+                    <TableCell><Chip label={m.serialNo ?? '?'} size="small" variant="outlined" /></TableCell>
+                    <TableCell><Typography variant="body2" fontWeight={600}>{m.name}</Typography></TableCell>
+                    <TableCell>{m.type}</TableCell>
+                    <TableCell>{m.manufacturer ?? '—'}</TableCell>
+                    <TableCell align="right">{m.purchasedAt ? new Date(m.purchasedAt).toLocaleDateString('en-IN') : '—'}</TableCell>
+                    <TableCell><Chip label={m.active ? 'Active' : 'Inactive'} size="small" color={m.active ? 'success' : 'default'} variant="outlined" /></TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
+
         {tab === 1 && (
-          <TableContainer><Table size="small">
-            <TableHead><TableRow sx={{ bgcolor: 'action.hover' }}>
-              <TableCell sx={{ fontWeight: 700 }}>Machine</TableCell><TableCell sx={{ fontWeight: 700 }}>Date</TableCell><TableCell sx={{ fontWeight: 700 }}>Type</TableCell><TableCell sx={{ fontWeight: 700 }}>Description</TableCell><TableCell sx={{ fontWeight: 700 }}>Technician</TableCell>
-            </TableRow></TableHead>
-            <TableBody>{MAINT_LOG.map(l=>(
-              <TableRow key={l.id} hover>
-                <TableCell><Typography variant="body2" fontWeight={700} color="primary.main">{l.machineId}</Typography></TableCell>
-                <TableCell>{new Date(l.date).toLocaleDateString('en-IN')}</TableCell>
-                <TableCell><Chip label={l.type} size="small" color={l.type==='Breakdown'?'error':'info'} variant="outlined" /></TableCell>
-                <TableCell>{l.desc}</TableCell>
-                <TableCell>{l.tech}</TableCell>
-              </TableRow>
-            ))}</TableBody>
-          </Table></TableContainer>
+          <TableContainer>
+            <Table size="small">
+              <TableHead>
+                <TableRow sx={{ bgcolor: 'action.hover' }}>
+                  <TableCell sx={{ fontWeight: 700 }}>Machine</TableCell><TableCell sx={{ fontWeight: 700 }}>Type</TableCell><TableCell sx={{ fontWeight: 700 }}>Description</TableCell><TableCell sx={{ fontWeight: 700 }}>Recorded By</TableCell><TableCell sx={{ fontWeight: 700 }}>Date</TableCell><TableCell sx={{ fontWeight: 700 }}>Resolved</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {loadingInsp ? (
+                  <TableRow><TableCell colSpan={6} align="center"><CircularProgress size={20} /></TableCell></TableRow>
+                ) : inspections.length === 0 ? (
+                  <TableRow><TableCell colSpan={6} align="center" sx={{ color: 'text.secondary', py: 3 }}>No maintenance records yet</TableCell></TableRow>
+                ) : inspections.map(i => (
+                  <TableRow key={i.id} hover>
+                    <TableCell><Typography variant="body2" fontWeight={600}>{i.machine?.name}</Typography></TableCell>
+                    <TableCell><Chip label={i.type} size="small" color={i.type === 'BREAKDOWN' ? 'error' : 'info'} variant="outlined" /></TableCell>
+                    <TableCell><Typography variant="body2" color="text.secondary">{i.description ?? '—'}</Typography></TableCell>
+                    <TableCell>{i.createdBy ?? '—'}</TableCell>
+                    <TableCell><Typography variant="body2" color="text.secondary">{new Date(i.date).toLocaleDateString('en-IN')}</Typography></TableCell>
+                    <TableCell><Typography variant="body2" color="text.secondary">{i.resolvedAt ? new Date(i.resolvedAt).toLocaleDateString('en-IN') : '—'}</Typography></TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
         )}
       </Paper>
     </Box>

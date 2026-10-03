@@ -1,0 +1,44 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: file:./test.db
+      JWT_SECRET: ci-only-72dd710bab23369402ce86bd20a8ec597088fc320f4ec45e
+      NODE_ENV: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run generate -w @evergreen/database
+      - run: npm run build -w @evergreen/pdf
+      - name: API type check
+        run: npx tsc --noEmit -p apps/api/tsconfig.build.json
+      - name: Web type check
+        run: npx tsc --noEmit -p apps/web/tsconfig.json
+      - run: npm test -w apps/api -- --runInBand --no-coverage
+      - run: npm test -w apps/web
+      - run: npm run build -w apps/api
+      - run: npm run build -w apps/web
+      - name: Lint API (existing debt is tracked in AUDIT_IMPLEMENTATION_PLAN.md)
+        continue-on-error: true
+        working-directory: apps/api
+        run: npx eslint 'src/**/*.ts'
+      - name: Lint web (existing debt is tracked in AUDIT_IMPLEMENTATION_PLAN.md)
+        continue-on-error: true
+        run: npm run lint -w apps/web
+      - name: Dependency audit
+        continue-on-error: true
+        run: npm audit --audit-level=high
