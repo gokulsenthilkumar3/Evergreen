@@ -18,7 +18,13 @@ npm run build -w apps/api
 npm run build -w apps/web
 ```
 
-Current unit suite: 46 API tests across 10 suites and 13 web smoke tests. The new tests reject invalid MFA results, unknown machine fields, negative warehouse quantities, invalid shift times, unsupported QC status and the original JWT placeholder. These are unit/validation checks; they do not replace database integration or browser tests.
+Current unit suite: 47 API tests across 10 suites and 13 web smoke tests. A strict six-digit TOTP input regression test was added. TypeScript 6 deprecation options (`baseUrl` and `node10`) were removed/replaced. The new tests reject invalid MFA results, unknown machine fields, negative warehouse quantities, invalid shift times, unsupported QC status and the original JWT placeholder. These are unit/validation checks; they do not replace database integration or browser tests.
+
+## 1a. Invoice issuer and document handling
+
+Implemented locally: invoice records snapshot configured company legal name, address and GSTIN; issuing blocks while those settings are missing or placeholders. An additive nullable SQLite migration preserves old invoices. Invoice Studio downloads a PDF from persisted invoice data with issuer/customer details, item HSN/SAC/quantity/rates/tax, totals, payment balance, notes/terms and verification fingerprint. Void requires confirmation; browser print no longer targets the entire dashboard. The GST issuer pattern check is structural only and is not a compliance certification. The migration must be applied and actual legal details configured before issuance.
+
+Web tests (13/13), API tests (47/47), shared PDF build, web production build and direct Nest API build pass. TypeScript 6.0.3 checks pass for the API build, web and shared PDF. The API package prebuild’s Prisma client generation hit Windows EPERM replacing a locked query-engine DLL; the generated client was already available for direct compilation. The migration has not been applied to any database.
 
 ## 2. Complete input validation across legacy APIs
 
@@ -58,3 +64,6 @@ Prepare a PostgreSQL-specific Prisma migration history and an isolated target da
 Turn `PARITY_REGISTER.md` into explicit pass/fail gates. Add Playwright tests for login/MFA, roles, inventory, production, billing/payments and the new operational flows. Run against a disposable database. Measure load performance and split heavy avatar/export chunks as needed. Configure deployment only after these gates pass and verify health after deployment.
 
 Acceptance: reconciled migration, passing parity/browser gates, required GitHub checks, documented backup/restore, and a monitored deployment. These are separate deliverables; they are not inferred from passing unit tests.
+
+
+Global React Query caching was removed because it made unrelated mutable records stale for two minutes; data-specific caching remains configured at individual queries. API module registration and the canonical invoice route were reviewed: legacy Billing mutation routes are read-only (HTTP 410 for writes).

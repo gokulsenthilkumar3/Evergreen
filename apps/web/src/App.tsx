@@ -981,7 +981,7 @@ const App: React.FC = () => {
                         />
                       )}
                       {/* ── Merged sub-project pages ── */}
-                      {(currentPage === 'vyapari' || currentPage.startsWith('yarn')) && (
+                      {['vyapari', 'yarnhub', 'yarnlive', 'yarnshift', 'yarnforecast', 'yarnsupplier', 'yarncompliance'].includes(currentPage) && (
                         <Alert severity="warning" sx={{ m: 2 }}>
                           Prototype view: figures and records on this screen are sample data, not live EverGreen business data. Do not use them for operational decisions.
                         </Alert>

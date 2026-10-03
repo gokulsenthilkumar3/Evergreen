@@ -24,6 +24,15 @@ Checked against the repository on 2026-10-03. This replaces the duplicated audit
 
 ## Still open
 
+### Verified in this continuation
+
+- API/web/PDF TypeScript configs no longer use the screenshot’s deprecated `baseUrl` or `node10` settings. TypeScript 6 validation initially found two unsafe WebAuthn catch values; those are now handled with safe `Error` narrowing.
+- Global React Query caching was removed. Data-specific queries retain local staleness/refetch settings when needed.
+- Login accepts a TOTP code only when it matches `^\d{6}$`; the UI sanitizes numeric input and disables submit until six digits are present. API regression tests cover malformed lengths and characters.
+- AppModule registers each domain module once. Commerce Invoice Studio is the canonical invoice workflow; legacy Billing mutation routes reject writes with HTTP 410.
+- Invoice Studio now downloads PDFs generated from saved invoice snapshots. Invoice issuance requires configured legal issuer details and saves a snapshot using an additive migration. The migration has not been applied to any database.
+- API tests (47/47), web smoke tests (13/13), PDF build and web production build passed. Standard API prebuild hit Windows `EPERM` while Prisma replaced a locked query-engine DLL; no database migration or deployment was run.
+
 | Priority | Problem | Evidence and next step |
 | --- | --- | --- |
 | High | Legacy mutation bodies remain unvalidated | Billing, commerce/storefront, inventory, production, costing, jobwork, settings, users and some auth flows still use `any` or inline objects. Global whitelist does not validate those types. Add endpoint-specific DTOs, including nested arrays, and negative HTTP tests. The original report establishes a validation/mass-assignment risk, not proof of SQL injection. |

@@ -5,14 +5,9 @@ import App from './App.tsx'
 import ShopPortal from './pages/ShopPortal.tsx'
 import './index.css'
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 2, // 2 minutes
-      refetchOnWindowFocus: false,
-    },
-  },
-})
+// Keep server data fresh by default. Screens that benefit from caching set
+// their own staleTime/refetch policy at the query that owns that data.
+const queryClient = new QueryClient()
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

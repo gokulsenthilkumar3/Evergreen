@@ -183,7 +183,14 @@ export class CommerceService {
       if (salesOrder && salesOrder.customerId !== customer.id) throw new BadRequestException('Invoice customer must match the sales order');
       const items = await tx.catalogueItem.findMany({ where: { id: { in: lines.map(l => Number(l.itemId)) } } });
       const itemMap = new Map(items.map((item: any) => [item.id, item]));
-      const sellerState = body.sellerState || 'Tamil Nadu'; const buyerState = body.buyerState || customer.state || sellerState;
+        const settings = await tx.systemSettings.findFirst();
+        const sellerName = String(settings?.companyName || '').trim();
+        const sellerAddress = String(settings?.address || '').trim();
+        const sellerGSTIN = String(settings?.gstin || '').trim().toUpperCase();
+        if (!sellerName || !sellerAddress || sellerGSTIN === '33XXXXX1234X1Z5' || !/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/.test(sellerGSTIN)) {
+          throw new BadRequestException('Configure the company legal name, address, and valid GSTIN in Settings before issuing invoices');
+        }
+        const sellerState = body.sellerState || settings?.sellerState || 'Tamil Nadu'; const buyerState = body.buyerState || customer.state || sellerState;
       for (const line of lines) {
         const item = itemMap.get(Number(line.itemId)); if (!item) throw new BadRequestException(`Catalogue item ${line.itemId} not found`);
         if (!item.active && !salesOrder) throw new BadRequestException(`Catalogue item ${line.itemId} is archived`);
@@ -205,7 +212,7 @@ export class CommerceService {
       const documentHash = createHash('sha256').update(JSON.stringify({ invoiceNo, customerId: body.customerId, date: body.date, total: total.toFixed(2), lines })).digest('hex');
       const invoice = await tx.invoice.create({ data: {
         invoiceNo, date: body.date ? new Date(body.date) : new Date(), dueDate: body.dueDate ? new Date(body.dueDate) : null,
-        customerId: customer.id, customerName: customer.name, customerAddress: customer.address || '', customerGSTIN: customer.gstin || '', sellerState, buyerState,
+          customerId: customer.id, customerName: customer.name, customerAddress: customer.address || '', customerGSTIN: customer.gstin || '', sellerName, sellerAddress, sellerGSTIN, sellerState, buyerState,
         subtotal, cgst, sgst, igst, total, discount, currency: body.currency || 'INR', documentHash, verificationKey: randomUUID(),
         transportMode: body.transportMode || null, vehicleNo: body.vehicleNo || null, theme: body.theme || 'CLASSIC', issuerSignature: body.issuerSignature || null,
         notes: body.notes || null, terms: body.terms || null, salesOrderId: body.salesOrderId ? Number(body.salesOrderId) : null, createdBy: body.createdBy || null,

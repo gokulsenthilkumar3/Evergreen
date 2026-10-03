@@ -270,9 +270,12 @@ model Invoice {
   id              Int           @id @default(autoincrement())
   invoiceNo       String        @unique
   date            DateTime
-  customerName    String
-  customerAddress String?
-  customerGSTIN   String?
+    customerName    String
+    customerAddress String?
+    customerGSTIN   String?
+    sellerName      String?
+    sellerAddress   String?
+    sellerGSTIN     String?
   customerId      Int?
   customer        Customer?     @relation(fields: [customerId], references: [id])
   sellerState     String        @default("Tamil Nadu")

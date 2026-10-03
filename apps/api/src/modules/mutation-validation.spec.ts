@@ -5,6 +5,7 @@ import { CreateShiftDto } from './hr/hr.dto';
 import { CreateQualityInspectionDto } from './quality/quality.dto';
 import { requireJwtSecret } from './auth/jwt-secret';
 import { ConfigService } from '@nestjs/config';
+import { LoginDto } from './auth/auth.dto';
 
 describe('mutation validation', () => {
   const pipe = new ValidationPipe({
@@ -49,6 +50,22 @@ describe('mutation validation', () => {
         { type: 'body', metatype: CreateQualityInspectionDto },
       ),
     ).rejects.toThrow();
+  });
+  it('accepts only exactly six numeric TOTP digits at login', async () => {
+    await expect(
+      pipe.transform(
+        { username: 'operator', password: 'password', totpCode: '123456' },
+        { type: 'body', metatype: LoginDto },
+      ),
+    ).resolves.toMatchObject({ totpCode: '123456' });
+    for (const totpCode of ['12345', '1234567', '12a456', ' 12345']) {
+      await expect(
+        pipe.transform(
+          { username: 'operator', password: 'password', totpCode },
+          { type: 'body', metatype: LoginDto },
+        ),
+      ).rejects.toThrow();
+    }
   });
   it('rejects the original JWT placeholder despite its length', () => {
     expect(() =>

@@ -109,7 +109,8 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings, onSwitchToSignu
         const startTime = Date.now();
 
         try {
-            const response = await api.post('/auth/login', { username, password, totpCode });
+            const payload = { username, password, ...(totpCode ? { totpCode } : {}) };
+            const response = await api.post('/auth/login', payload);
 
             const elapsed = Date.now() - startTime;
             if (elapsed < 800) await new Promise(r => setTimeout(r, 800 - elapsed));
@@ -389,9 +390,10 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings, onSwitchToSignu
                                 fullWidth
                                 label="6-Digit Authenticator Code"
                                 value={totpCode}
-                                onChange={(e) => setTotpCode(e.target.value)}
-                                variant="outlined"
-                                autoFocus
+                                  onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                  variant="outlined"
+                                  autoFocus
+                                  slotProps={{ htmlInput: { inputMode: 'numeric', pattern: '[0-9]{6}', maxLength: 6 } }}
                             />
                         )}
 
@@ -426,7 +428,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings, onSwitchToSignu
                             type="submit"
                             fullWidth
                             variant="contained"
-                            disabled={loading || success}
+                              disabled={loading || success || (requiresTotp && !/^\d{6}$/.test(totpCode))}
                             color={success ? "success" : "primary"}
                             sx={{
                                 py: 1.5,
