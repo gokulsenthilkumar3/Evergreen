@@ -17,7 +17,6 @@ import {
     LinearProgress,
 } from '@mui/material';
 import {
-    People as CustomersIcon,
     Business as VendorsIcon,
     Timeline as TimelineIcon,
     Link as PaymentLinkIcon,
@@ -114,7 +113,6 @@ const PartyTable = ({ rows }: { rows: any[] }) => (
 
 // --- TABS CONFIG ---
 const PAYMENT_TABS = [
-    { label: 'Customers', icon: <CustomersIcon fontSize="small" /> },
     { label: 'Vendors', icon: <VendorsIcon fontSize="small" /> },
     { label: 'Timelines', icon: <TimelineIcon fontSize="small" /> },
     { label: 'Payment Links', icon: <PaymentLinkIcon fontSize="small" /> },
@@ -125,15 +123,13 @@ const PAYMENT_TABS = [
 // --- Main Component ---
 const Payments: React.FC = () => {
     const [tab, setTab] = useState(0);
-    const { items: customers, add: addCustomer } = usePersist<any>('customers', []);
     const { items: vendors, add: addVendor } = usePersist<any>('vendors', []);
     
     const [openAdd, setOpenAdd] = useState(false);
-    const [partyType, setPartyType] = useState<'Customer' | 'Vendor'>('Customer');
+    const [partyType] = useState<'Vendor'>('Vendor');
     const [form, setForm] = useState({ name: '', contact: '', balance: 0 });
 
-    const handleAddOpen = (type: 'Customer' | 'Vendor') => {
-        setPartyType(type);
+    const handleAddOpen = () => {
         setForm({ name: '', contact: '', balance: 0 });
         setOpenAdd(true);
     };
@@ -141,8 +137,7 @@ const Payments: React.FC = () => {
     const handleSaveParty = () => {
         if (!form.name.trim()) { toast.error('Name is required'); return; }
         const data = { ...form, status: 'Active' };
-        if (partyType === 'Customer') addCustomer(data);
-        else addVendor(data);
+        addVendor(data);
         toast.success(`${partyType} added successfully`);
         setOpenAdd(false);
     };
@@ -153,7 +148,7 @@ const Payments: React.FC = () => {
             <Box sx={{ mb: 3 }}>
                 <Typography variant="h4" fontWeight="bold">Payments</Typography>
                 <Typography variant="body2" color="text.secondary">
-                    Manage customers, vendors, payment links, journals, and bank reconciliation.
+                    Manage vendor notes, payment timelines, links, journals, and reconciliation. Customer master and invoice payments live in Business Desk.
                 </Typography>
             </Box>
 
@@ -192,24 +187,11 @@ const Payments: React.FC = () => {
                 </Tabs>
 
                 <Box sx={{ p: 3 }}>
-                    {/* Customers */}
+                    {/* Vendors */}
                     <TabPanel value={tab} index={0}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                            <Typography variant="h6" fontWeight={700}>Customers</Typography>
-                            <Button variant="contained" size="small" startIcon={<AddIcon />} onClick={() => handleAddOpen('Customer')}>Add Customer</Button>
-                        </Box>
-                        <PartyTable rows={customers} />
-                        <Box sx={{ mt: 2, display: 'flex', gap: 1, alignItems: 'center' }}>
-                            <LinearProgress sx={{ flex: 1, height: 6, borderRadius: 3 }} variant="determinate" value={customers.length > 0 ? 100 : 0} color="primary" />
-                            <Typography variant="caption" color="text.secondary">{customers.length} Customers</Typography>
-                        </Box>
-                    </TabPanel>
-
-                    {/* Vendors */}
-                    <TabPanel value={tab} index={1}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                             <Typography variant="h6" fontWeight={700}>Vendors</Typography>
-                            <Button variant="contained" size="small" startIcon={<AddIcon />} onClick={() => handleAddOpen('Vendor')}>Add Vendor</Button>
+                            <Button variant="contained" size="small" startIcon={<AddIcon />} onClick={handleAddOpen}>Add Vendor</Button>
                         </Box>
                         <PartyTable rows={vendors} />
                         <Box sx={{ mt: 2, display: 'flex', gap: 1, alignItems: 'center' }}>
@@ -219,22 +201,22 @@ const Payments: React.FC = () => {
                     </TabPanel>
 
                     {/* Timelines */}
-                    <TabPanel value={tab} index={2}>
+                    <TabPanel value={tab} index={1}>
                         <Timelines />
                     </TabPanel>
 
                     {/* Payment Links */}
-                    <TabPanel value={tab} index={3}>
+                    <TabPanel value={tab} index={2}>
                         <PaymentLinks />
                     </TabPanel>
 
                     {/* Journals */}
-                    <TabPanel value={tab} index={4}>
+                    <TabPanel value={tab} index={3}>
                         <Journals />
                     </TabPanel>
 
                     {/* Bank Reconciliation */}
-                    <TabPanel value={tab} index={5}>
+                    <TabPanel value={tab} index={4}>
                         <BankReconciliation />
                     </TabPanel>
                 </Box>

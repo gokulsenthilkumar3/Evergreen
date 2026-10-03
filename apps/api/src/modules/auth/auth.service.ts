@@ -225,9 +225,13 @@ export class AuthService implements OnModuleInit {
   }
 
   async generateTotpSecret(userId: number, email: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user || user.isTotpEnabled) {
+      throw new BadRequestException('Disable existing two-factor authentication before setting it up again');
+    }
     const secret = authenticator.generateSecret();
     const otpauth = generateURI({
-      issuer: 'Ever Green Yarn Mills',
+      issuer: this.configService.get<string>('TOTP_ISSUER') || 'EverGreen',
       label: email,
       secret,
     });
@@ -261,7 +265,13 @@ export class AuthService implements OnModuleInit {
     return { success: true };
   }
 
-  async disableTotp(userId: number) {
+  async disableTotp(userId: number, code: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user?.isTotpEnabled || !user.totpSecret || !/^\d{6}$/.test(code)) {
+      throw new BadRequestException('A valid current authentication code is required');
+    }
+    const result = await authenticator.verify(code, { secret: user.totpSecret });
+    if (!result.valid) throw new BadRequestException('Invalid authentication code');
     await this.prisma.user.update({
       where: { id: userId },
       data: { isTotpEnabled: false, totpSecret: null },

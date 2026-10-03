@@ -3,12 +3,10 @@ import {
   Box, Button, Chip, Grid, Paper, Stack, Typography,
 } from '@mui/material';
 import {
-  AccountBalanceWallet as AccountsIcon,
   ArrowForward as ArrowIcon,
   Description as InvoiceIcon,
   Factory as ProductionIcon,
   Inventory2 as InventoryIcon,
-  PeopleAlt as CustomersIcon,
   Storefront as StoreIcon,
   TrendingUp as InsightsIcon,
 } from '@mui/icons-material';
@@ -34,14 +32,14 @@ const modules: WorkspaceModule[] = [
     page: 'jobwork', action: 'Manage job work', icon: <InventoryIcon />, color: '#0ea5e9',
   },
   {
-    title: 'GST invoicing',
-    description: 'Create branded invoices, quotations, delivery challans and printable sales documents.',
-    page: 'invoicestudio', action: 'Create invoice', icon: <InvoiceIcon />, color: '#7c3aed',
+    title: 'Business Desk',
+    description: 'Manage the shared catalogue, customers, sales orders, GST invoices and customer ledger.',
+    page: 'business', action: 'Open business desk', icon: <InvoiceIcon />, color: '#7c3aed',
   },
   {
-    title: 'MSME business desk',
-    description: 'Keep customer and vendor ledgers, dues, payment links and bank reconciliation together.',
-    page: 'customers', action: 'Open business desk', icon: <CustomersIcon />, color: '#ea580c',
+    title: 'Machine & quality operations',
+    description: 'Use the machine register, inspections and quality control workspaces for live operational records.',
+    page: 'yarnquality', action: 'Open quality control', icon: <InventoryIcon />, color: '#ea580c',
   },
 ];
 
@@ -64,15 +62,15 @@ const UnifiedWorkspace: React.FC<UnifiedWorkspaceProps> = ({ onNavigate }) => (
       <Typography variant="h3" sx={{ fontWeight: 800, maxWidth: 680, mb: 1.5 }}>
         EverGreen One
       </Typography>
-      <Typography variant="h6" sx={{ maxWidth: 720, color: 'rgba(255,255,255,0.82)', fontWeight: 400, lineHeight: 1.55 }}>
-        Your yarn mill, shop floor, invoices and MSME accounts now work as one connected business system.
+        <Typography variant="h6" sx={{ maxWidth: 720, color: 'rgba(255,255,255,0.82)', fontWeight: 400, lineHeight: 1.55 }}>
+        Operate inventory, production, job work and commerce from shared business records.
       </Typography>
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ mt: 3 }}>
         <Button variant="contained" color="inherit" onClick={() => onNavigate('dashboard')} endIcon={<ArrowIcon />} sx={{ color: '#065f46', fontWeight: 800 }}>
           View business dashboard
         </Button>
-        <Button variant="outlined" onClick={() => onNavigate('invoicestudio')} sx={{ color: 'common.white', borderColor: 'rgba(255,255,255,.55)', fontWeight: 700 }}>
-          New invoice
+        <Button variant="outlined" onClick={() => onNavigate('business')} sx={{ color: 'common.white', borderColor: 'rgba(255,255,255,.55)', fontWeight: 700 }}>
+          Open Business Desk
         </Button>
       </Stack>
     </Paper>
@@ -101,8 +99,7 @@ const UnifiedWorkspace: React.FC<UnifiedWorkspaceProps> = ({ onNavigate }) => (
         <Typography fontWeight={800}>One catalogue, one source of truth</Typography>
         <Typography variant="body2" color="text.secondary">Inventory, sales documents and customer balances are available from the same navigation.</Typography>
       </Box>
-      <Button variant="outlined" startIcon={<InsightsIcon />} onClick={() => onNavigate('insights')}>Business insights</Button>
-      <Button variant="outlined" startIcon={<AccountsIcon />} onClick={() => onNavigate('payments')}>Payments & ledgers</Button>
+      <Button variant="outlined" startIcon={<InsightsIcon />} onClick={() => onNavigate('reports')}>Business reports</Button>
     </Paper>
   </Box>
 );

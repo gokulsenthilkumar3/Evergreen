@@ -10,7 +10,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { LoginDto } from './auth.dto';
+import { LoginDto, TotpCodeDto } from './auth.dto';
 import { WebAuthnService } from './webauthn.service';
 import { JwtAuthGuard } from '../../guards/jwt-auth.guard';
 import { PrismaService } from '../../services/prisma.service';
@@ -67,12 +67,9 @@ export class AuthController {
     const sessionId = req.user?.sessionId;
     if (sessionId) {
       await this.prisma.session
-        .update({
+        .updateMany({
           where: { id: sessionId },
           data: { isValid: false },
-        })
-        .catch(() => {
-          /* session may already be invalid — ignore */
         });
     }
     return { message: 'Logged out successfully' };
@@ -125,14 +122,14 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Post('totp/verify')
-  async verifyTotp(@Req() req: any, @Body('code') code: string) {
-    return this.authService.verifyAndEnableTotp(req.user.userId, code);
+  async verifyTotp(@Req() req: any, @Body() body: TotpCodeDto) {
+    return this.authService.verifyAndEnableTotp(req.user.userId, body.code);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('totp/disable')
-  async disableTotp(@Req() req: any) {
-    return this.authService.disableTotp(req.user.userId);
+  async disableTotp(@Req() req: any, @Body() body: TotpCodeDto) {
+    return this.authService.disableTotp(req.user.userId, body.code);
   }
 
   // WebAuthn Passkeys Endpoints

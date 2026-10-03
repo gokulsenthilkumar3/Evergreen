@@ -3,32 +3,61 @@ import { Box, Typography, Paper, Button, TextField, Alert, Divider } from '@mui/
 import { QRCodeSVG } from 'qrcode.react';
 import { startRegistration } from '@simplewebauthn/browser';
 import api from '../utils/api';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 const SecuritySettings: React.FC = () => {
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const [totpCode, setTotpCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const queryClient = useQueryClient();
+  const { data: currentUser, isLoading, isError } = useQuery({
+    queryKey: ['currentUser'], queryFn: async () => (await api.get('/auth/me')).data,
+  });
 
   const handleGenerateTotp = async () => {
+    setBusy(true);
+    setSuccess(null);
     try {
       const res = await api.get('/auth/totp/generate');
       setQrCodeUrl(res.data.otpauth);
       setError(null);
     } catch (e: any) {
       setError(e.response?.data?.message || 'Failed to generate TOTP');
+    } finally {
+      setBusy(false);
     }
   };
 
   const handleVerifyTotp = async () => {
+    setBusy(true);
+    setError(null);
     try {
       await api.post('/auth/totp/verify', { code: totpCode });
       setSuccess('Two-Factor Authentication successfully enabled!');
       setQrCodeUrl(null);
       setTotpCode('');
+      await queryClient.invalidateQueries({ queryKey: ['currentUser'] });
     } catch (e: any) {
       setError(e.response?.data?.message || 'Invalid code');
+    } finally {
+      setBusy(false);
     }
+  };
+
+  const handleDisableTotp = async () => {
+    setBusy(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      await api.post('/auth/totp/disable', { code: totpCode });
+      setTotpCode('');
+      setSuccess('Two-factor authentication disabled.');
+      await queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+    } catch (e: any) {
+      setError(e.response?.data?.message || 'Could not disable two-factor authentication');
+    } finally { setBusy(false); }
   };
 
   const handleRegisterPasskey = async () => {
@@ -54,6 +83,7 @@ const SecuritySettings: React.FC = () => {
 
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
       {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
+      {isError && <Alert severity="error">Could not load your security status. Refresh before making changes.</Alert>}
 
       <Paper sx={{ p: 4, mb: 4, borderRadius: 2 }}>
         <Typography variant="h6" sx={{ mb: 2 }}>Two-Factor Authentication (TOTP)</Typography>
@@ -61,8 +91,15 @@ const SecuritySettings: React.FC = () => {
           Use an authenticator app (like Google Authenticator or Authy) to generate one-time passwords for extra security.
         </Typography>
 
-        {!qrCodeUrl ? (
-          <Button variant="contained" onClick={handleGenerateTotp}>
+        {currentUser?.isTotpEnabled ? (
+          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
+            <TextField label="Current 6-digit code" value={totpCode}
+              onChange={e => setTotpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+              inputProps={{ inputMode: 'numeric', autoComplete: 'one-time-code', maxLength: 6 }} />
+            <Button color="warning" variant="outlined" disabled={busy || !/^\d{6}$/.test(totpCode)} onClick={handleDisableTotp}>Disable authenticator</Button>
+          </Box>
+        ) : !qrCodeUrl ? (
+          <Button variant="contained" disabled={busy || isLoading || isError} onClick={handleGenerateTotp}>
             Setup Authenticator App
           </Button>
         ) : (
@@ -72,10 +109,11 @@ const SecuritySettings: React.FC = () => {
             <TextField
               label="6-digit code"
               value={totpCode}
-              onChange={(e) => setTotpCode(e.target.value)}
+              onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+              inputProps={{ inputMode: 'numeric', autoComplete: 'one-time-code', maxLength: 6 }}
               sx={{ width: 200 }}
             />
-            <Button variant="contained" onClick={handleVerifyTotp} disabled={totpCode.length !== 6}>
+            <Button variant="contained" onClick={handleVerifyTotp} disabled={busy || !/^\d{6}$/.test(totpCode)}>
               Verify & Enable
             </Button>
           </Box>

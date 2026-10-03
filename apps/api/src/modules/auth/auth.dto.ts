@@ -20,3 +20,9 @@ export class LoginDto {
   @Matches(/^\d{6}$/)
   totpCode?: string;
 }
+
+export class TotpCodeDto {
+  @IsString()
+  @Matches(/^\d{6}$/)
+  code!: string;
+}

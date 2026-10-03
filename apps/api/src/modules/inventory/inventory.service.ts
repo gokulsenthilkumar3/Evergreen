@@ -1,4 +1,5 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
+import { randomUUID } from 'crypto';
 import { PrismaService } from '../../services/prisma.service';
 
 @Injectable()
@@ -234,20 +235,20 @@ export class InventoryService {
   }
 
   async createInward(data: {
-    batchId: string;
+    batchId?: string;
     date: string;
     supplier: string;
     bale: number;
     kg: number;
     createdBy?: string;
   }) {
-    console.log('[Inventory] createInward called with data:', data);
     try {
       return await this.prisma.$transaction(async (tx) => {
+        const batchId = data.batchId?.trim() || `IN-${data.date.replace(/-/g, '').slice(0, 6)}-${randomUUID().slice(0, 8).toUpperCase()}`;
         // 1. Create Inward Batch record
         const batch = await tx.inwardBatch.create({
           data: {
-            batchId: data.batchId,
+            batchId,
             date: new Date(data.date),
             supplier: data.supplier,
             bale: data.bale,
@@ -269,8 +270,8 @@ export class InventoryService {
             type: 'INWARD',
             quantity: data.kg,
             balance: currentBalance + data.kg,
-            reference: data.batchId,
-            batchId: data.batchId,
+            reference: batchId,
+            batchId,
             createdBy: data.createdBy,
           },
         });
@@ -289,10 +290,11 @@ export class InventoryService {
             });
           }
         }
+        return batch;
       });
     } catch (error: any) {
       console.error('[Inventory] createInward error:', error);
-      return { error: true, details: error.message, stack: error.stack };
+      throw error;
     }
   }
 

@@ -27,7 +27,6 @@ import {
   InputAdornment,
   Paper,
   Chip,
-  Alert,
   type PaletteMode,
 } from '@mui/material';
 import {
@@ -39,7 +38,6 @@ import {
   Logout as LogoutIcon,
   TrendingDown as WasteIcon,
   AccountBalanceWallet as CostIcon,
-  Receipt as BillingIcon,
   TrendingUp as OutwardIcon,
   Brightness4 as DarkModeIcon,
   Brightness7 as LightModeIcon,
@@ -52,7 +50,6 @@ import {
   VpnKey as SessionsIcon,
   Storefront as StoreIcon,
   Insights as InsightsIcon,
-  Payments as PaymentsIcon,
   SupportAgent as HelpdeskIcon,
   School as TutorialIcon,
   Translate as TranslateIcon,
@@ -81,7 +78,6 @@ const Inventory = lazy(() => import('./pages/Inventory'));
 const InwardEntry = lazy(() => import('./pages/InwardEntry'));
 const ProductionEntry = lazy(() => import('./pages/ProductionEntry'));
 const Costing = lazy(() => import('./pages/Costing'));
-const Billing = lazy(() => import('./pages/Billing'));
 const Settings = lazy(() => import('./pages/Settings'));
 const TodayDashboard = lazy(() => import('./pages/TodayDashboard'));
 const OutwardEntry = lazy(() => import('./pages/OutwardEntry'));
@@ -99,15 +95,12 @@ const CommerceDesk = lazy(() => import('./pages/CommerceDesk'));
 const CommerceReports = lazy(() => import('./pages/CommerceReports'));
 const OperationsDesk = lazy(() => import('./pages/OperationsDesk'));
 // ── Merged sub-project pages ──
-const MsmeErp = lazy(() => import('./pages/MsmeErp'));
-const Vyapari = lazy(() => import('./pages/Vyapari'));
-const YarnERP = lazy(() => import('./pages/YarnERP'));
-const YarnLiveDashboard = lazy(() => import('./pages/yarn/LiveDashboard'));
 const YarnMachineManagement = lazy(() => import('./pages/yarn/MachineManagement'));
 const YarnQualityControl = lazy(() => import('./pages/yarn/QualityControl'));
-const YarnShiftManagement = lazy(() => import('./pages/yarn/ShiftManagement'));
 const YarnWarehouseManagement = lazy(() => import('./pages/yarn/WarehouseManagement'));
 const YarnHRManagement = lazy(() => import('./pages/yarn/HRManagement'));
+const YarnLiveDashboard = lazy(() => import('./pages/yarn/LiveDashboard'));
+const YarnShiftManagement = lazy(() => import('./pages/yarn/ShiftManagement'));
 const YarnDemandForecasting = lazy(() => import('./pages/yarn/DemandForecasting'));
 const YarnSupplierPortal = lazy(() => import('./pages/yarn/SupplierPortal'));
 const YarnComplianceReports = lazy(() => import('./pages/yarn/ComplianceReports'));
@@ -413,12 +406,15 @@ const App: React.FC = () => {
     } finally {
       localStorage.removeItem('user');
       localStorage.removeItem('token');
+      await queryClient.cancelQueries();
+      queryClient.clear();
       setUser(null);
       handleProfileClose();
     }
   };
 
   const handleLogin = (userData: any) => {
+    queryClient.clear();
     localStorage.setItem('user', JSON.stringify(userData));
     setUser(userData);
   };
@@ -436,38 +432,31 @@ const App: React.FC = () => {
       workspace: 'EverGreen One',
       jobwork: 'Job Work',
       operations: 'Operations Desk',
-      catalogue: 'Catalogue',
-      customers: 'Customers & Ledger',
-      orders: 'Sales Orders',
-      invoicestudio: 'Invoice Studio',
+      business: 'Business Desk',
       reports: 'Business Reports',
+      paymentops: 'Payment Operations',
       today: "Today's Summary",
       inventory: 'Inventory',
       inward: 'Inward Entry',
       outward: 'Outward Entry',
       production: 'Production',
       costing: 'Costing',
-      billing: 'Billing',
       users: 'User Management',
       settings: 'Settings',
       logs: 'Activity Logs',
       store: 'Store',
       insights: 'Insights & Reports',
-      payments: 'Payments',
       helpdesk: 'Helpdesk',
       tutorial: 'Tutorial',
-      msme: 'MSME ERP',
-      vyapari: 'Vyapari (B2B)',
-      yarnhub: 'Yarn ERP',
-      yarnlive: 'Live Production Dashboard',
       yarnmachine: 'Machine Management',
       yarnquality: 'Quality Control',
-      yarnshift: 'Shift Management',
       yarnwarehouse: 'Warehouse Management',
       yarnhr: 'HR & Payroll',
+      yarnlive: 'Machine Status Overview',
+      yarnshift: 'Shift Management',
       yarnforecast: 'Demand Forecasting',
-      yarnsupplier: 'Supplier Portal',
-      yarncompliance: 'Compliance Reports',
+      yarnsupplier: 'Supplier Activity',
+      yarncompliance: 'Compliance Readiness',
     };
 
     if (currentPage !== 'dashboard') {
@@ -530,34 +519,28 @@ const App: React.FC = () => {
         { text: 'Operations Desk', icon: <InventoryIcon />, page: 'operations' },
         { text: 'Outwards', icon: <OutwardIcon fontSize="small" />, page: 'outward' },
         { text: 'Costing', icon: <CostIcon />, page: 'costing' },
-        { text: 'Catalogue', icon: <InventoryIcon />, page: 'catalogue' },
+        { text: 'Business Desk', icon: <StoreIcon />, page: 'business' },
       ]
     },
     {
       label: 'Sales & Accounts',
       items: [
-        { text: 'Sales Orders', icon: <OutwardIcon />, page: 'orders' },
-        { text: 'Invoice Studio', icon: <BillingIcon />, page: 'invoicestudio' },
-        { text: 'Customers & Ledger', icon: <PaymentsIcon />, page: 'customers' },
-        { text: 'MSME ERP', icon: <StoreIcon />, page: 'msme' },
-        { text: 'Vyapari (B2B)', icon: <PaymentsIcon />, page: 'vyapari' },
+        { text: 'Payment Operations', icon: <CostIcon />, page: 'paymentops' },
         { text: 'Business Reports', icon: <InsightsIcon />, page: 'reports' },
-        { text: 'Legacy Insights', icon: <InsightsIcon />, page: 'insights' },
       ]
     },
     {
       label: 'Yarn ERP',
       items: [
-        { text: 'Yarn ERP Hub', icon: <InventoryIcon />, page: 'yarnhub' },
-        { text: 'Live Dashboard', icon: <SummaryIcon />, page: 'yarnlive' },
+        { text: 'Machine Status Overview', icon: <SummaryIcon />, page: 'yarnlive' },
         { text: 'Machine Management', icon: <SyncIcon />, page: 'yarnmachine' },
         { text: 'Quality Control', icon: <SecurityIcon />, page: 'yarnquality' },
         { text: 'Shift Management', icon: <UsersIcon />, page: 'yarnshift' },
         { text: 'Warehouse', icon: <StoreIcon />, page: 'yarnwarehouse' },
         { text: 'HR & Payroll', icon: <UsersIcon />, page: 'yarnhr' },
         { text: 'Demand Forecasting', icon: <InsightsIcon />, page: 'yarnforecast' },
-        { text: 'Supplier Portal', icon: <OutwardIcon />, page: 'yarnsupplier' },
-        { text: 'Compliance', icon: <SessionsIcon />, page: 'yarncompliance' },
+        { text: 'Supplier Activity', icon: <OutwardIcon />, page: 'yarnsupplier' },
+        { text: 'Compliance Readiness', icon: <SessionsIcon />, page: 'yarncompliance' },
       ]
     },
     {
@@ -580,7 +563,7 @@ const App: React.FC = () => {
   ];
 
   const tamilLabels: Record<string, string> = {
-    'Business Workspace': 'வணிக மையம்', Dashboard: 'முகப்பு', "Today's Summary": 'இன்றைய சுருக்கம்', Store: 'கடை', Inventory: 'சரக்கு', 'Inward / Batch': 'உள்வரவு / தொகுதி', 'Production & Job Work': 'உற்பத்தி மற்றும் வேலை ஒப்பந்தம்', 'Job Work Register': 'வேலை ஒப்பந்தப் பதிவு', Outwards: 'வெளியீடு', Costing: 'செலவீனம்', Catalogue: 'பொருள் பட்டியல்', 'Sales Orders': 'விற்பனை ஆணைகள்', 'Invoice Studio': 'விலைப்பட்டியல்', 'Customers & Ledger': 'வாடிக்கையாளர்கள் மற்றும் கணக்கு', 'Invoice Designer': 'விலைப்பட்டியல் வடிவமைப்பு', 'MSME ERP': 'MSME ERP', 'Vyapari (B2B)': 'வியாபாரி (B2B)', 'Yarn ERP Hub': 'நூல் ERP', 'Legacy Billing': 'முந்தைய பில்லிங்', Insights: 'அறிக்கைகள்', Settings: 'அமைப்புகள்', Helpdesk: 'உதவி', Tutorial: 'பயிற்சி',
+    'Business Workspace': 'வணிக மையம்', 'Business Desk': 'வணிக மேசை', Dashboard: 'முகப்பு', "Today's Summary": 'இன்றைய சுருக்கம்', Store: 'கடை', Inventory: 'சரக்கு', 'Inward / Batch': 'உள்வரவு / தொகுதி', 'Production & Job Work': 'உற்பத்தி மற்றும் வேலை ஒப்பந்தம்', 'Job Work Register': 'வேலை ஒப்பந்தப் பதிவு', Outwards: 'வெளியீடு', Costing: 'செலவீனம்', Insights: 'அறிக்கைகள்', Settings: 'அமைப்புகள்', Helpdesk: 'உதவி', Tutorial: 'பயிற்சி',
   };
   const labelFor = (label: string) => language === 'ta' ? (tamilLabels[label] || label) : label;
 
@@ -614,7 +597,7 @@ const App: React.FC = () => {
                     { text: 'Dashboard', icon: <DashboardIcon />, page: 'dashboard' },
                     { text: 'Inventory', icon: <InventoryIcon />, page: 'inventory' },
                     { text: 'Production',icon: <WasteIcon />,     page: 'production' },
-                    { text: 'Invoice Studio', icon: <BillingIcon />, page: 'invoicestudio' },
+                    { text: 'Business Desk', icon: <StoreIcon />, page: 'business' },
                   ].map(item => {
                     const active = currentPage === item.page;
                     return (
@@ -950,11 +933,9 @@ const App: React.FC = () => {
                       {currentPage === 'workspace' && <UnifiedWorkspace onNavigate={setCurrentPage} />}
                       {currentPage === 'jobwork' && <JobWork />}
                       {currentPage === 'operations' && <OperationsDesk />}
-                      {currentPage === 'catalogue' && <CommerceDesk initialTab={0} />}
-                      {currentPage === 'customers' && <CommerceDesk initialTab={1} />}
-                      {currentPage === 'orders' && <CommerceDesk initialTab={2} />}
-                      {currentPage === 'invoicestudio' && <CommerceDesk initialTab={3} />}
+                      {currentPage === 'business' && <CommerceDesk />}
                       {currentPage === 'reports' && <CommerceReports />}
+                      {currentPage === 'paymentops' && <Payments />}
                       {currentPage === 'dashboard' && <Dashboard onNavigate={setCurrentPage} />}
                       {currentPage === 'today' && <TodayDashboard onNavigate={setCurrentPage} />}
                       {currentPage === 'inventory' && <Inventory userRole={user.role} username={user.username} />}
@@ -962,10 +943,8 @@ const App: React.FC = () => {
                       {currentPage === 'inward' && <InwardEntry userRole={user.role} username={user.username} />}
                       {currentPage === 'outward' && <OutwardEntry userRole={user.role} username={user.username} />}
                       {currentPage === 'production' && <ProductionEntry userRole={user.role} username={user.username} />}
-                      {currentPage === 'billing' && <Billing userRole={user.role} username={user.username} />}
                       {currentPage === 'store' && <Store onNavigate={setCurrentPage} />}
                       {currentPage === 'insights' && <Insights />}
-                      {currentPage === 'payments' && <Payments />}
                       {currentPage === 'helpdesk' && <Helpdesk />}
                       {currentPage === 'tutorial' && <Tutorial />}
                       {currentPage === 'users' && <UserManagement currentUserRole={user.role} username={user.username} />}
@@ -981,20 +960,12 @@ const App: React.FC = () => {
                         />
                       )}
                       {/* ── Merged sub-project pages ── */}
-                      {['vyapari', 'yarnhub', 'yarnlive', 'yarnshift', 'yarnforecast', 'yarnsupplier', 'yarncompliance'].includes(currentPage) && (
-                        <Alert severity="warning" sx={{ m: 2 }}>
-                          Prototype view: figures and records on this screen are sample data, not live EverGreen business data. Do not use them for operational decisions.
-                        </Alert>
-                      )}
-                      {currentPage === 'msme' && <MsmeErp onNavigate={setCurrentPage} />}
-                      {currentPage === 'vyapari' && <Vyapari />}
-                      {currentPage === 'yarnhub' && <YarnERP onNavigate={setCurrentPage} />}
-                      {currentPage === 'yarnlive' && <YarnLiveDashboard />}
                       {currentPage === 'yarnmachine' && <YarnMachineManagement />}
                       {currentPage === 'yarnquality' && <YarnQualityControl />}
-                      {currentPage === 'yarnshift' && <YarnShiftManagement />}
                       {currentPage === 'yarnwarehouse' && <YarnWarehouseManagement />}
                       {currentPage === 'yarnhr' && <YarnHRManagement />}
+                      {currentPage === 'yarnlive' && <YarnLiveDashboard />}
+                      {currentPage === 'yarnshift' && <YarnShiftManagement />}
                       {currentPage === 'yarnforecast' && <YarnDemandForecasting />}
                       {currentPage === 'yarnsupplier' && <YarnSupplierPortal />}
                       {currentPage === 'yarncompliance' && <YarnComplianceReports />}

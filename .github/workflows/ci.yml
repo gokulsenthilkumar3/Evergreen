@@ -23,6 +23,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run generate -w @evergreen/database
+      - name: Replay migrations and reject schema drift
+        run: npm run migrate:check -w @evergreen/database
       - run: npm run build -w @evergreen/pdf
       - name: API type check
         run: npx tsc --noEmit -p apps/api/tsconfig.build.json

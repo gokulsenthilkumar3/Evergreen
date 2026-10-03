@@ -1,62 +1,49 @@
-﻿import React from 'react';
-import { Box, Typography, Paper, Grid, Card, CardContent, Chip, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip, ResponsiveContainer, LineChart, Line, Legend } from 'recharts';
-import { Refresh as RefreshIcon, AutoAwesome as AIIcon } from '@mui/icons-material';
-const FORECAST_DATA = [
-  { month: 'Oct', demand: 42000, actual: null, orders: 38000 },
-  { month: 'Nov', demand: 45000, actual: null, orders: 41000 },
-  { month: 'Dec', demand: 52000, actual: null, orders: 48000 },
-];
-const HISTORICAL = [
-  { month: 'Apr', actual: 35000 },{ month: 'May', actual: 38000 },{ month: 'Jun', actual: 41000 },
-  { month: 'Jul', actual: 39000 },{ month: 'Aug', actual: 43000 },{ month: 'Sep', actual: 44000 },
-];
-const RECO = [
-  { count: '8', currentStock: 1200, forecastDemand: 2800, recommendation: 'Order 1600 kg', urgency: 'High' },
-  { count: '6', currentStock: 800, forecastDemand: 1500, recommendation: 'Order 700 kg', urgency: 'Medium' },
-  { count: '10', currentStock: 2100, forecastDemand: 1800, recommendation: 'Sufficient stock', urgency: 'Low' },
-];
-const DemandForecasting: React.FC = () => (
-  <Box sx={{ width: '100%' }}>
-    <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}><AIIcon color="primary" sx={{ fontSize: 32 }} /><Box><Typography variant="h4" fontWeight={800}>Demand Forecasting</Typography><Typography color="text.secondary">AI-powered demand analysis & procurement recommendations</Typography></Box></Box>
-      <Button variant="outlined" startIcon={<RefreshIcon />} size="small">Regenerate</Button>
+import React, { useMemo } from 'react';
+import { AutoAwesome as ForecastIcon, Refresh as RefreshIcon } from '@mui/icons-material';
+import { Alert, Box, Button, CircularProgress, Paper, Typography } from '@mui/material';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import api from '../../utils/api';
+
+type SalesOrder = { date: string; total: number; status: string };
+
+const DemandForecasting: React.FC = () => {
+  const queryClient = useQueryClient();
+  const { data: orders = [], isLoading, error } = useQuery<SalesOrder[]>({
+    queryKey: ['commerce-orders'],
+    queryFn: () => api.get('/commerce/orders').then(response => response.data),
+  });
+  const forecast = useMemo(() => {
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const historical = Array.from({ length: 6 }, (_, index) => {
+      const date = new Date(monthStart.getFullYear(), monthStart.getMonth() - 6 + index, 1);
+      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      const value = orders.filter(order => order.status !== 'CANCELLED' && order.date?.slice(0, 7) === key)
+        .reduce((sum, order) => sum + Number(order.total || 0), 0);
+      return { key, month: date.toLocaleDateString('en-IN', { month: 'short', year: '2-digit' }), actual: value, projected: null as number | null };
+    });
+    const trailing = historical.slice(-3).map(row => row.actual);
+    const avg = trailing.some(value => value > 0) ? trailing.reduce((sum, value) => sum + value, 0) / trailing.length : null;
+    const future = Array.from({ length: 3 }, (_, index) => {
+      const date = new Date(monthStart.getFullYear(), monthStart.getMonth() + index, 1);
+      return { key: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`, month: date.toLocaleDateString('en-IN', { month: 'short', year: '2-digit' }), actual: null as number | null, projected: avg };
+    });
+    return { rows: [...historical, ...future], avg };
+  }, [orders]);
+
+  return <Box>
+    <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, mb: 3 }}>
+      <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}><ForecastIcon color="primary" /><Box><Typography variant="h4" fontWeight={800}>Demand Forecasting</Typography><Typography color="text.secondary">Order-value outlook calculated from saved sales orders.</Typography></Box></Box>
+      <Button startIcon={<RefreshIcon />} onClick={() => queryClient.invalidateQueries({ queryKey: ['commerce-orders'] })}>Refresh</Button>
     </Box>
-    <Grid container spacing={3} sx={{ mb: 3 }}>
-      <Grid size={{ xs: 12, md: 6 }}>
-        <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 3 }}>
-          <Typography fontWeight={700} sx={{ mb: 2 }}>3-Month Demand Forecast</Typography>
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={FORECAST_DATA}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="month" /><YAxis /><RTooltip formatter={(v: any) => `${Number(v).toLocaleString('en-IN')} kg`} /><Bar dataKey="demand" fill="#059669" radius={[4,4,0,0]} name="Forecast" /><Bar dataKey="orders" fill="#3b82f6" radius={[4,4,0,0]} name="Confirmed Orders" /></BarChart>
-          </ResponsiveContainer>
-        </Paper>
-      </Grid>
-      <Grid size={{ xs: 12, md: 6 }}>
-        <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 3 }}>
-          <Typography fontWeight={700} sx={{ mb: 2 }}>Historical Trend (Apr–Sep)</Typography>
-          <ResponsiveContainer width="100%" height={200}>
-            <LineChart data={HISTORICAL}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="month" /><YAxis /><RTooltip formatter={(v: any) => `${Number(v).toLocaleString('en-IN')} kg`} /><Line type="monotone" dataKey="actual" stroke="#059669" strokeWidth={2} dot={{ r: 4 }} name="Actual" /></LineChart>
-          </ResponsiveContainer>
-        </Paper>
-      </Grid>
-    </Grid>
-    <Paper variant="outlined" sx={{ borderRadius: 3, overflow: 'hidden' }}>
-      <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 1 }}><AIIcon color="primary" fontSize="small" /><Typography fontWeight={700}>AI Procurement Recommendations</Typography></Box>
-      <TableContainer><Table size="small">
-        <TableHead><TableRow sx={{ bgcolor: 'action.hover' }}>
-          <TableCell sx={{ fontWeight: 700 }}>Yarn Count</TableCell><TableCell align="right" sx={{ fontWeight: 700 }}>Current Stock</TableCell><TableCell align="right" sx={{ fontWeight: 700 }}>Forecast Demand</TableCell><TableCell sx={{ fontWeight: 700 }}>Recommendation</TableCell><TableCell sx={{ fontWeight: 700 }}>Urgency</TableCell>
-        </TableRow></TableHead>
-        <TableBody>{RECO.map(r=>(
-          <TableRow key={r.count} hover>
-            <TableCell><Typography variant="body2" fontWeight={700}>{r.count}</Typography></TableCell>
-            <TableCell align="right">{r.currentStock.toLocaleString('en-IN')} kg</TableCell>
-            <TableCell align="right">{r.forecastDemand.toLocaleString('en-IN')} kg</TableCell>
-            <TableCell><Typography variant="body2" fontWeight={600} color={r.urgency==='High'?'error.main':r.urgency==='Medium'?'warning.main':'text.secondary'}>{r.recommendation}</Typography></TableCell>
-            <TableCell><Chip label={r.urgency} size="small" color={r.urgency==='High'?'error':r.urgency==='Medium'?'warning':'success'} variant="outlined" /></TableCell>
-          </TableRow>
-        ))}</TableBody>
-      </Table></TableContainer>
-    </Paper>
-  </Box>
-);
+    {error && <Alert severity="error" sx={{ mb: 2 }}>Could not load sales orders for the forecast.</Alert>}
+    <Alert severity="info" sx={{ mb: 2 }}>Projection method: average of the previous three calendar months of non-cancelled sales order value. This is a simple baseline, not an AI forecast or purchase recommendation.</Alert>
+    {isLoading ? <CircularProgress aria-label="Loading sales history" /> : forecast.avg === null ? <Alert severity="warning">There is not enough recorded sales history to calculate a projection yet.</Alert> : <>
+      <Paper variant="outlined" sx={{ p: 2.5, mb: 2 }}><Typography variant="body2" color="text.secondary">Baseline monthly order value</Typography><Typography variant="h4" fontWeight={800}>₹{forecast.avg.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</Typography></Paper>
+      <Paper variant="outlined" sx={{ p: 2.5 }}><Box sx={{ width: '100%', height: 330 }}><ResponsiveContainer><LineChart data={forecast.rows} margin={{ top: 10, right: 20, bottom: 5, left: 10 }}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="month" /><YAxis tickFormatter={value => `₹${Number(value).toLocaleString('en-IN')}`} /><Tooltip formatter={value => value == null ? '—' : `₹${Number(value).toLocaleString('en-IN')}`} /><Legend /><Line type="monotone" dataKey="actual" name="Recorded order value" stroke="#059669" strokeWidth={2} connectNulls={false} /><Line type="monotone" dataKey="projected" name="Average baseline" stroke="#2563eb" strokeWidth={2} strokeDasharray="6 4" connectNulls={false} /></LineChart></ResponsiveContainer></Box></Paper>
+    </>}
+  </Box>;
+};
+
 export default DemandForecasting;

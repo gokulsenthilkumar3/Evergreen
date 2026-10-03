@@ -20,7 +20,6 @@ const EDITABLE_SETTINGS = new Set([
   'language',
   'sellerState',
   'supportedCounts',
-  'updatedBy',
 ]);
 const CANONICAL_COUNTS = new Set(['2', '4', '6', '8', '10']);
 
@@ -39,7 +38,7 @@ export class SettingsService {
     return settings;
   }
 
-  async updateSettings(data: any) {
+  async updateSettings(data: any, actor?: string) {
     const settings = await this.getSettings();
 
     if (!data || typeof data !== 'object' || Array.isArray(data)) {
@@ -54,6 +53,10 @@ export class SettingsService {
       );
     }
     const updateData = { ...data };
+    if (actor) updateData.updatedBy = actor;
+    if (data.gstPercent !== undefined && Number(data.gstPercent) > 100) {
+      throw new BadRequestException('GST percentage cannot exceed 100');
+    }
     if (updateData.language && !['en', 'ta'].includes(updateData.language)) {
       throw new BadRequestException('Language must be en or ta');
     }

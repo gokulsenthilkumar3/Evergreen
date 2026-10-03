@@ -7,6 +7,8 @@ import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  // Company logo uploads are limited to 500 KB before base64 encoding.
+  app.useBodyParser('json', { limit: '1mb' });
   // Only the loopback web proxy may supply the original client address.
   app.set('trust proxy', 'loopback');
 

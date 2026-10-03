@@ -67,3 +67,9 @@ Acceptance: reconciled migration, passing parity/browser gates, required GitHub 
 
 
 Global React Query caching was removed because it made unrelated mutable records stale for two minutes; data-specific caching remains configured at individual queries. API module registration and the canonical invoice route were reviewed: legacy Billing mutation routes are read-only (HTTP 410 for writes).
+
+## 7. Preserve workflows while consolidating duplicate surfaces
+
+The active sidebar provides one Business Desk for catalogue, customers/ledger, sales orders and invoices. Payment Operations remains separate because its timelines, payment links, journals and reconciliation tools are distinct. Yarn operational routes remain available for machines/status, quality, shifts, warehouse, HR/payroll, demand forecast, supplier receipt activity and compliance readiness. The tutorial describes these destinations and current integration limits. Invoice defaults no longer insert a generic payment term, and editing a customer no longer silently assigns Tamil Nadu.
+
+No tracked files are deleted in the current worktree. The old Billing page is retained pending a tab-by-tab parity review; overlapping invoice/catalogue/order entry points are not canonical navigation, and legacy billing writes return 410. Vyapari's sample-only screen is not a source of business data; customer and ledger records are managed in Business Desk, while supplier receipts are surfaced by operations workflows. Do not delete either legacy page until remaining unique functionality is verified elsewhere or explicitly retired. Vendor master data, supplier onboarding/ratings/purchase orders, shift attendance, statutory filings, live machine telemetry and provider-backed E-Way Bills remain gaps rather than implemented features.

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
     Box,
     Paper,
@@ -37,7 +37,6 @@ import {
     Close as CloseIcon,
     Delete as DeleteIcon,
     Add as AddIcon,
-    Refresh as RefreshIcon,
     WarningAmber as WarnIcon,
     MergeType as MergeIcon,
 } from '@mui/icons-material';
@@ -100,7 +99,6 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
         bale: '',
         kg: '',
     });
-    const [batchSuffix, setBatchSuffix] = useState('');
     const { confirm: confirmDialog } = useConfirm();
     const queryClient = useQueryClient();
 
@@ -126,21 +124,6 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
         });
         return Array.from(uniqueSuppliers).sort();
     }, [batchHistory]);
-
-    useEffect(() => { generateRandomSuffix(); }, []);
-
-    const generateRandomSuffix = () => {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        let suffix = '';
-        for (let i = 0; i < 3; i++) suffix += chars.charAt(Math.floor(Math.random() * chars.length));
-        setBatchSuffix(suffix);
-    };
-
-    const getBatchPrefix = () => {
-        if (!formData.date) return '';
-        const [y, m] = formData.date.split('-');
-        return `${y}${m}`;
-    };
 
     const handleDateFilterChange = (event: SelectChangeEvent) => setDateFilter(event.target.value as DateFilterType);
 
@@ -202,9 +185,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
 
         setIsSubmitting(true);
         try {
-            const batchId = `${getBatchPrefix()}${batchSuffix}`;
             await api.post('/inventory/inward', {
-                batchId,
                 date: formData.date,
                 supplier: formData.supplier.trim(),
                 bale: Number(formData.bale),
@@ -225,7 +206,6 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                 bale: '',
                 kg: '',
             });
-            generateRandomSuffix();
         } catch (error: any) {
             toast.error(formatApiError(error, ERROR_MESSAGES.SAVE_FAILED));
         } finally {
@@ -406,16 +386,6 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                 <DialogContent sx={{ pt: 3 }}>
                     {isSubmitting && <LinearProgress sx={{ mb: 2 }} />}
 
-                    {/* Batch ID Preview */}
-                    <Paper variant="outlined" sx={{ p: 2, mb: 3, bgcolor: 'action.hover', borderRadius: 2 }}>
-                        <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 700, letterSpacing: 1 }}>
-                            Batch ID Preview
-                        </Typography>
-                        <Typography variant="h5" sx={{ fontFamily: 'monospace', fontWeight: 800, letterSpacing: 2, mt: 0.5 }}>
-                            {getBatchPrefix()}<Box component="span" sx={{ color: 'primary.main' }}>{batchSuffix}</Box>
-                        </Typography>
-                    </Paper>
-
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
                         <Box sx={{ display: 'flex', gap: 2 }}>
                             <GlassDatePicker
@@ -429,22 +399,6 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                                 InputLabelProps={{ shrink: true }}
                                 error={!!getFieldError('date')}
                                 helperText={getFieldError('date') || (isFutureDate(formData.date) ? '⚠️ Future date not allowed' : ' ')}
-                            />
-                            <TextField
-                                label="Batch Suffix"
-                                value={batchSuffix}
-                                onChange={(e) => setBatchSuffix(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 3))}
-                                helperText="3-char alphanumeric"
-                                InputProps={{
-                                    endAdornment: (
-                                        <Tooltip title="Regenerate random suffix">
-                                            <IconButton size="small" onClick={generateRandomSuffix}>
-                                                <RefreshIcon fontSize="small" />
-                                            </IconButton>
-                                        </Tooltip>
-                                    )
-                                }}
-                                sx={{ width: 180, flexShrink: 0 }}
                             />
                         </Box>
 

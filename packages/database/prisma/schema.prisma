@@ -218,11 +218,11 @@ model ActivityLog {
 
 model SystemSettings {
   id                  Int      @id @default(autoincrement())
-  companyName         String   @default("Ever Green Yarn Mills")
-  address             String   @default("Industrial Area, Coimbatore")
-  gstin               String   @default("33XXXXX1234X1Z5")
-  phone               String   @default("+91 98765 43210")
-  email               String   @default("info@evergreenyarn.com")
+  companyName         String   @default("")
+  address             String   @default("")
+  gstin               String   @default("")
+  phone               String   @default("")
+  email               String   @default("")
   logo                String?
   autoBackup          Boolean  @default(true)
   emailNotifications  Boolean  @default(true)

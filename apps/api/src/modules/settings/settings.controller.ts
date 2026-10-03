@@ -1,4 +1,6 @@
-import { Controller, Get, Put, Body } from '@nestjs/common';
+import { Controller, Get, Put, Body, Req } from '@nestjs/common';
+import { UpdateSettingsDto } from './settings.dto';
+import type { AuthenticatedRequest } from '../../types/authenticated-request';
 import { SettingsService } from './settings.service';
 import { Roles } from '../../decorators/roles.decorator';
 
@@ -13,7 +15,7 @@ export class SettingsController {
 
   @Put()
   @Roles('ADMIN')
-  async updateSettings(@Body() data: any) {
-    return this.settingsService.updateSettings(data);
+  async updateSettings(@Body() data: UpdateSettingsDto, @Req() req: AuthenticatedRequest) {
+    return this.settingsService.updateSettings(data, req.user.username);
   }
 }
