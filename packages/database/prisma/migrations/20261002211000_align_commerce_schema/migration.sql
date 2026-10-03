@@ -248,7 +248,7 @@ CREATE TABLE "new_Invoice" (
     CONSTRAINT "Invoice_customerId_fkey" FOREIGN KEY ("customerId") REFERENCES "Customer" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT "Invoice_salesOrderId_fkey" FOREIGN KEY ("salesOrderId") REFERENCES "SalesOrder" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
-INSERT INTO "new_Invoice" ("amountPaid", "authorizedSignatory", "cgst", "createdAt", "createdBy", "customerAddress", "customerGSTIN", "customerName", "customerSignature", "date", "entryTimestamp", "id", "invoiceNo", "issuerSignature", "notes", "senderName", "sgst", "status", "subtotal", "terms", "theme", "total", "transportMode", "updatedAt", "updatedBy", "vehicleNo") SELECT "amountPaid", "authorizedSignatory", "cgst", "createdAt", "createdBy", "customerAddress", "customerGSTIN", "customerName", "customerSignature", "date", "entryTimestamp", "id", "invoiceNo", "issuerSignature", "notes", "senderName", "sgst", "status", "subtotal", "terms", "theme", "total", "transportMode", "updatedAt", "updatedBy", "vehicleNo" FROM "Invoice";
+INSERT INTO "new_Invoice" ("amountPaid", "authorizedSignatory", "buyerState", "cgst", "createdAt", "createdBy", "currency", "customerAddress", "customerGSTIN", "customerId", "customerName", "customerSignature", "date", "discount", "documentHash", "dueDate", "entryTimestamp", "id", "igst", "invoiceNo", "issuerSignature", "notes", "salesOrderId", "sellerState", "senderName", "sgst", "status", "subtotal", "terms", "theme", "total", "transportMode", "updatedAt", "updatedBy", "vehicleNo", "verificationKey") SELECT "amountPaid", "authorizedSignatory", "buyerState", "cgst", "createdAt", "createdBy", "currency", "customerAddress", "customerGSTIN", "customerId", "customerName", "customerSignature", "date", "discount", "documentHash", "dueDate", "entryTimestamp", "id", "igst", "invoiceNo", "issuerSignature", "notes", "salesOrderId", "sellerState", "senderName", "sgst", "status", "subtotal", "terms", "theme", "total", "transportMode", "updatedAt", "updatedBy", "vehicleNo", "verificationKey" FROM "Invoice";
 DROP TABLE "Invoice";
 ALTER TABLE "new_Invoice" RENAME TO "Invoice";
 CREATE UNIQUE INDEX IF NOT EXISTS "Invoice_invoiceNo_key" ON "Invoice"("invoiceNo");
@@ -344,4 +344,3 @@ CREATE UNIQUE INDEX IF NOT EXISTS "JobWorkChallan_challanNo_key" ON "JobWorkChal
 
 -- CreateIndex
 CREATE UNIQUE INDEX IF NOT EXISTS "SalesOrder_orderNo_key" ON "SalesOrder"("orderNo");
-

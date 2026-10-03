@@ -53,8 +53,11 @@ async function bootstrap() {
   }
 
   const port = process.env.EVERGREEN_API_PORT ?? process.env.PORT ?? 4301;
-  await app.listen(port, '127.0.0.1');
-  console.log(`🚀 Application is running on: http://localhost:${port}`);
+  const host =
+    process.env.EVERGREEN_API_HOST ??
+    (process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1');
+  await app.listen(port, host);
+  console.log(`🚀 Application is listening on ${host}:${port}`);
   if (process.env.NODE_ENV !== 'production') {
     console.log(`📊 API Documentation: http://localhost:${port}/api/docs`);
   }
