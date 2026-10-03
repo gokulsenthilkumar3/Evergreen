@@ -31,6 +31,16 @@ async function main() {
   const root = path.resolve(__dirname, '..');
   const apiDir = path.join(root, 'apps', 'api');
   const webDir = path.join(root, 'apps', 'web');
+  const npmCli = process.env.npm_execpath || path.join(root, 'node_modules', 'npm', 'bin', 'npm-cli.js');
+  const sharedBuild = spawnSync(process.execPath, [npmCli, 'run', 'build', '-w', 'packages/types', '-w', 'packages/pdf'], {
+    cwd: root,
+    env: process.env,
+    stdio: 'inherit',
+    windowsHide: true,
+  });
+  if (sharedBuild.error || sharedBuild.status !== 0) {
+    throw new Error(`EverGreen shared package compilation failed (${sharedBuild.error?.message || sharedBuild.status}).`);
+  }
   const compile = spawnSync(process.execPath, [path.join(root, 'node_modules', '@nestjs', 'cli', 'bin', 'nest.js'), 'build'], {
     cwd: apiDir,
     env: process.env,

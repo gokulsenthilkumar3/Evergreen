@@ -1,6 +1,7 @@
 {
   "name": "@evergreen/pdf",
   "version": "1.0.0",
+<<<<<<< HEAD
   "type": "module",
   "main": "./src/index.ts",
   "module": "./src/index.ts",
@@ -12,6 +13,11 @@
       "default": "./src/index.ts"
     }
   },
+=======
+  "type": "commonjs",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+>>>>>>> 05aea36f3282e084109386f393c7cf3195b16b1b
   "scripts": {
     "build": "tsc"
   },
