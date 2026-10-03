@@ -1,0 +1,15 @@
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+Error: Prisma schema validation - (get-dmmf wasm)
+Error code: P1012
+[1;91merror[0m: [1mThe generator "client" cannot be defined because a generator with that name already exists.[0m
+  [1;94m-->[0m  [4mprisma\schema.prisma:11[0m
+[1;94m   | [0m
+[1;94m10 | [0m
+[1;94m11 | [0mgenerator [1;91mclient[0m {
+[1;94m   | [0m
+
+Validation Error Count: 1
+[Context: getDmmf]
+
+Prisma CLI Version : 6.19.2

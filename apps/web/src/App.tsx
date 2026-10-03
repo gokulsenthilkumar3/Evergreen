@@ -128,6 +128,7 @@ interface NavItem {
   page: string;
   requiredRole?: string;
   badge?: number;
+  description?: string;
 }
 
 interface NavGroup {
@@ -393,6 +394,18 @@ const App: React.FC = () => {
     }
   }, [settings]);
 
+  // Global tab navigation listener for delete-guards and cross-module deep-links
+  useEffect(() => {
+    const handleNavigate = (event: Event) => {
+      const customEvent = event as CustomEvent<{ page?: string; params?: any }>;
+      if (customEvent.detail?.page) {
+        setCurrentPage(customEvent.detail.page);
+      }
+    };
+    window.addEventListener('evergreen:navigate', handleNavigate);
+    return () => window.removeEventListener('evergreen:navigate', handleNavigate);
+  }, []);
+
   const toggleTheme = () => {
     setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
   };
@@ -521,62 +534,62 @@ const App: React.FC = () => {
     {
       label: 'EverGreen One',
       items: [
-        { text: 'Business Workspace', icon: <StoreIcon />, page: 'workspace' },
-        { text: 'Dashboard', icon: <DashboardIcon />, page: 'dashboard' },
-        { text: "Today's Summary", icon: <SummaryIcon />, page: 'today' },
+        { text: 'Business Workspace', icon: <StoreIcon />, page: 'workspace', description: 'Central command for production metrics, low stock alerts, and daily status' },
+        { text: 'Dashboard', icon: <DashboardIcon />, page: 'dashboard', description: 'Executive analytics, production efficiency, output trends, and waste rates' },
+        { text: "Today's Summary", icon: <SummaryIcon />, page: 'today', description: 'Real-time daily log of cotton consumed, yarn produced, and waste generated' },
       ]
     },
     {
       label: 'Operations & Job Work',
       items: [
-        { text: 'Store', icon: <StoreIcon />, page: 'store' },
-        { text: 'Inventory', icon: <InventoryIcon />, page: 'inventory', badge: lowStockCount > 0 ? lowStockCount : undefined },
-        { text: 'Inward / Batch', icon: <InwardIcon />, page: 'inward' },
-        { text: 'Production & Job Work', icon: <WasteIcon />, page: 'production' },
-        { text: 'Job Work Register', icon: <SyncIcon />, page: 'jobwork' },
-        { text: 'Operations Desk', icon: <InventoryIcon />, page: 'operations' },
-        { text: 'Outwards', icon: <OutwardIcon fontSize="small" />, page: 'outward' },
-        { text: 'Costing', icon: <CostIcon />, page: 'costing' },
-        { text: 'Business Desk', icon: <StoreIcon />, page: 'business' },
+        { text: 'Store', icon: <StoreIcon />, page: 'store', description: 'Spares inventory, machine components, consumables, and store item tracking' },
+        { text: 'Inventory', icon: <InventoryIcon />, page: 'inventory', badge: lowStockCount > 0 ? lowStockCount : undefined, description: 'Stock ledger for cotton bales, yarn bags by count, and waste inventory' },
+        { text: 'Inward / Batch', icon: <InwardIcon />, page: 'inward', description: 'Cotton gate receipts, batch lot creation, bale weights, and QR sticker generation' },
+        { text: 'Production & Job Work', icon: <WasteIcon />, page: 'production', description: 'Bale consumption mixing, yarn count production, waste tracking, and material balance' },
+        { text: 'Job Work Register', icon: <SyncIcon />, page: 'jobwork', description: 'External job work contracts, sent material, inward yarn returns, and reconciliation' },
+        { text: 'Operations Desk', icon: <InventoryIcon />, page: 'operations', description: 'Daily floor checklists, machine operational status, and shift supervisor notes' },
+        { text: 'Outwards', icon: <OutwardIcon fontSize="small" />, page: 'outward', description: 'Customer yarn dispatch gate pass, vehicle/driver logging, and barcode tags' },
+        { text: 'Costing', icon: <CostIcon />, page: 'costing', description: 'Per-kg spinning cost analysis: electricity, labor, packaging, and maintenance' },
+        { text: 'Business Desk', icon: <StoreIcon />, page: 'business', description: 'Customer sales orders, proforma generation, delivery tracking, and commercial orders' },
       ]
     },
     {
       label: 'Sales & Accounts',
       items: [
-        { text: 'Payment Operations', icon: <PaymentOpsIcon />, page: 'paymentops' },
-        { text: 'Business Reports', icon: <InsightsIcon />, page: 'reports' },
+        { text: 'Payment Operations', icon: <PaymentOpsIcon />, page: 'paymentops', description: 'Customer receipts, supplier ledger entries, outstanding balances, and payment terms' },
+        { text: 'Business Reports', icon: <InsightsIcon />, page: 'reports', description: 'Financial statements, dispatch summaries, consumption reports, and Excel/PDF exports' },
       ]
     },
     {
       label: 'Yarn ERP',
       items: [
-        { text: 'Yarn ERP Hub', icon: <FactoryIcon />, page: 'yarnerp' },
-        { text: 'Machine Status Overview', icon: <SpeedIcon />, page: 'yarnlive' },
-        { text: 'Machine Management', icon: <MachineIcon />, page: 'yarnmachine' },
-        { text: 'Quality Control', icon: <QualityIcon />, page: 'yarnquality' },
-        { text: 'Shift Management', icon: <ShiftIcon />, page: 'yarnshift' },
-        { text: 'Warehouse', icon: <WarehouseIcon />, page: 'yarnwarehouse' },
-        { text: 'HR & Payroll', icon: <StaffIcon />, page: 'yarnhr' },
-        { text: 'Demand Forecasting', icon: <ForecastIcon />, page: 'yarnforecast' },
-        { text: 'Supplier Activity', icon: <SupplierIcon />, page: 'yarnsupplier' },
-        { text: 'Compliance Readiness', icon: <ComplianceIcon />, page: 'yarncompliance' },
+        { text: 'Yarn ERP Hub', icon: <FactoryIcon />, page: 'yarnerp', description: 'Complete spinning mill ERP overview linking machinery, quality, and logistics' },
+        { text: 'Machine Status Overview', icon: <SpeedIcon />, page: 'yarnlive', description: 'Live spindle speed, RPM, pneumatic pressure, running status, and power draw' },
+        { text: 'Machine Management', icon: <MachineIcon />, page: 'yarnmachine', description: 'Machine registry, scheduled preventive maintenance, breakdown logs, and spares' },
+        { text: 'Quality Control', icon: <QualityIcon />, page: 'yarnquality', description: 'Lab testing: CSP, count lea strength, evenness (U%), imperfections, and hairiness' },
+        { text: 'Shift Management', icon: <ShiftIcon />, page: 'yarnshift', description: 'Operator shift rostering, attendance records, machine allocations, and handovers' },
+        { text: 'Warehouse', icon: <WarehouseIcon />, page: 'yarnwarehouse', description: 'Storage bay and bin rack locations for finished yarn bags and raw cotton' },
+        { text: 'HR & Payroll', icon: <StaffIcon />, page: 'yarnhr', description: 'Staff directory, overtime calculations, piece-rate wages, and salary processing' },
+        { text: 'Demand Forecasting', icon: <ForecastIcon />, page: 'yarnforecast', description: 'Predictive yarn demand modeling, seasonality trends, and cotton purchase orders' },
+        { text: 'Supplier Activity', icon: <SupplierIcon />, page: 'yarnsupplier', description: 'Vendor performance ratings, cotton moisture test history, and lead-time tracking' },
+        { text: 'Compliance Readiness', icon: <ComplianceIcon />, page: 'yarncompliance', description: 'Industrial safety certificates, pollution control board audits, and legal compliance' },
       ]
     },
     {
       label: 'Support',
       items: [
-        { text: 'Helpdesk', icon: <HelpdeskIcon />, page: 'helpdesk' },
-        { text: 'Tutorial', icon: <TutorialIcon />, page: 'tutorial' },
+        { text: 'Helpdesk', icon: <HelpdeskIcon />, page: 'helpdesk', description: 'Internal support tickets, technical queries, and operational issue logs' },
+        { text: 'Tutorial', icon: <TutorialIcon />, page: 'tutorial', description: 'Step-by-step spinning mill workflows, standard operating procedures, and guides' },
       ]
     },
     {
       label: 'Admin',
       items: [
-        { text: 'User Management', icon: <UsersIcon />, page: 'users', requiredRole: 'ADMIN' },
+        { text: 'User Management', icon: <UsersIcon />, page: 'users', requiredRole: 'ADMIN', description: 'Role-based access permissions for admin, manager, operator, and viewer roles' },
         // B-18: Sessions and Security had the same icon; Sessions now uses VpnKey
-        { text: 'Sessions', icon: <SessionsIcon />, page: 'sessions' },
-        { text: 'Security Settings', icon: <SecurityIcon />, page: 'security' },
-        { text: 'Settings', icon: <SettingsIcon />, page: 'settings' },
+        { text: 'Sessions', icon: <SessionsIcon />, page: 'sessions', description: 'Active user login sessions, IP addresses, device types, and remote logout' },
+        { text: 'Security Settings', icon: <SecurityIcon />, page: 'security', description: 'Two-factor authentication, audit trails, and system access control policies' },
+        { text: 'Settings', icon: <SettingsIcon />, page: 'settings', description: 'Company details, count specifications, tare weights, and theme preferences' },
       ]
     },
   ];
@@ -637,7 +650,7 @@ const App: React.FC = () => {
               <CssBaseline />
               <PrintStyles />
               <ScreenReaderAnnouncer />
-              <Toaster position="top-center" richColors />
+              <Toaster position="top-center" richColors theme={mode === 'dark' ? 'dark' : 'light'} closeButton expand />
               {/* Floating bottom nav pill */}
               {floatingNav && (
                 <Box className="floating-bottom-nav" component="nav" aria-label="Bottom navigation">
@@ -868,7 +881,23 @@ const App: React.FC = () => {
                           <List disablePadding>
                             {filteredItems.map((item) => (
                               <ListItem key={item.text} disablePadding sx={{ display: 'block', mb: 0.5 }}>
-                                <Tooltip title={!drawerOpen ? labelFor(item.text) : ''} placement="right" arrow>
+                                <Tooltip
+                                  title={
+                                    <Box sx={{ p: 0.5, maxWidth: 260 }}>
+                                      <Typography variant="body2" sx={{ fontWeight: 700, fontSize: '0.82rem' }}>
+                                        {labelFor(item.text)}
+                                      </Typography>
+                                      {item.description && (
+                                        <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 0.35, lineHeight: 1.35 }}>
+                                          {item.description}
+                                        </Typography>
+                                      )}
+                                    </Box>
+                                  }
+                                  placement="right"
+                                  arrow
+                                  enterDelay={250}
+                                >
                                   <ListItemButton
                                     selected={currentPage === item.page}
                                     onClick={() => setCurrentPage(item.page)}

@@ -1,0 +1,113 @@
+.invoice-status-tracker {
+    padding: 1rem;
+    background: #f9fafb;
+    border-radius: 8px;
+}
+
+.timeline {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    margin-left: 1rem;
+    border-left: 2px solid #e5e7eb;
+}
+
+.timeline-item {
+    position: relative;
+    padding-left: 1.5rem;
+    padding-bottom: 2rem;
+}
+
+.timeline-item:last-child {
+    padding-bottom: 0;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -9px;
+    /* center on 2px border: -1px border + -8px radius diff? No. circle is 16px. left should be - (16/2 + 2/2) = -9 */
+    top: 0;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid #d1d5db;
+    transition: all 0.3s ease;
+}
+
+.timeline-item.completed .timeline-marker {
+    background: #10b981;
+    border-color: #10b981;
+}
+
+.timeline-item.current .timeline-marker {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+}
+
+.timeline-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.step-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.step-label {
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: #374151;
+}
+
+.step-date {
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+.step-description {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin: 0;
+}
+
+.reminders-section {
+    margin-top: 2rem;
+    border-top: 1px solid #e5e7eb;
+    padding-top: 1rem;
+}
+
+.reminders-section h4 {
+    font-size: 0.875rem;
+    color: #374151;
+    margin-bottom: 0.75rem;
+}
+
+.reminder-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.reminder-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.reminder-type {
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.reminder-date {
+    color: #6b7280;
+}

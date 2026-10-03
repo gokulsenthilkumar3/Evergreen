@@ -1,0 +1,103 @@
+.b{
+    background-image: url(assets/img/commercial-street-ppt-background-loom.jpg);
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+#logo{
+    margin-inline-start: 2%;
+}
+#li{
+    display: flex;
+    justify-content: space-between;
+    padding-inline-start: 40%;
+    padding-block-start: 2%;
+    padding-inline-end: 10%;
+    margin-block-start: -6%;
+    color: #ffffff;
+    list-style-type: none;
+    font-size:125%;
+    font-family: 'Times New Roman';
+}
+#button{
+    color: beige;
+    font-size: 100%;
+    background-color: transparent;
+    font-family: 'Times New Roman';
+    inline-size: 150px;
+    block-size: 80px;
+    margin-block-start: -17%;
+    border-radius: 20px;
+    border: aqua solid 2px;
+}
+#div2{
+    margin-block-start: 11%;
+}
+#tit{
+    font-weight: bold ;
+    color: aquamarine;
+}
+h3{
+    color: #e1e1e1;
+    font-size: 350%;
+}
+#div3{
+    text-align: center;
+    margin-block-start: 8%;
+    
+}
+div input{
+    inline-size:50%;
+    block-size:50px;
+    background: transparent;
+    border-inline-start: none;
+    border-inline-end: none;
+    border-block-start: none;
+    border-color:aqua;
+    font-size: xx-large;
+    color: beige;
+    text-align: center;
+    font-family: 'Courier New';
+    
+}
+::placeholder{
+    color: #ffffff;
+    font-size: xx-large;
+    font-family: 'Courier New';
+}
+#div3btn{
+    inline-size: 250px;
+    block-size: 100px;
+    border-radius: 12px;
+    border-color: aqua;
+    background-color: aqua;
+    font-size: x-large;
+    font-family: 'Courier New';
+    margin-inline-start: 70px;
+}
+#ddn{
+    inline-size: 125%;
+    block-size: 80%;
+    color: white;
+    background: transparent;
+    border: none;
+    font-size: 95%;
+    font-family: 'Times New Roman';
+    margin-block-start: -8px;
+    appearance: none;
+    outline: none;
+}
+#ddn option{
+    background-color: rgb(255, 255, 255);
+    border:none;
+    color: #000;
+}
+#div4p{
+    color: mediumspringgreen;
+    font-size: 30px;
+    margin-inline-start: 80%;
+    margin-block-start: 8%;
+    font-family:'Gill Sans';
+}
+input:focus{
+    outline: none;
+}

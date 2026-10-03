@@ -39,6 +39,8 @@ import {
     Add as AddIcon,
     WarningAmber as WarnIcon,
     MergeType as MergeIcon,
+    QrCode2 as QrIcon,
+    AutoAwesome as AutoIcon,
 } from '@mui/icons-material';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -57,11 +59,14 @@ import {
     safeParseFloat,
 } from '../utils/validators';
 import { SUCCESS_MESSAGES, ERROR_MESSAGES, CONFIRM_TITLES, CONFIRM_MESSAGES, formatApiError } from '../utils/messages';
+import { handleDeleteGuardError } from '../utils/deleteGuardHandler';
 import { getDateRange as getStandardDateRange, type DateFilterType } from '../utils/dateFilters';
 import GlassDatePicker from '../components/common/GlassDatePicker';
 import EmptyState from '../components/common/EmptyState';
 import TableSkeleton from '../components/common/TableSkeleton';
 import RequiredLabel from '../components/common/RequiredLabel';
+import BarcodeQRModal from '../components/common/BarcodeQRModal';
+import { formatBatchCode, buildBatchQRPayload } from '../utils/codeFormatters';
 import ExportButtons from '../components/common/ExportButtons';
 
 
@@ -85,15 +90,17 @@ interface InwardEntryProps {
 }
 
 const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
-    const [dateFilter, setDateFilter] = useState<DateFilterType>('today');
+    const [dateFilter, setDateFilter] = useState<DateFilterType>('all');
     const [customFrom, setCustomFrom] = useState<string>('');
     const [customTo, setCustomTo] = useState<string>('');
     const [openWizard, setOpenWizard] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [touched, setTouched] = useState<Record<string, boolean>>({});
     const [selectedBatches, setSelectedBatches] = useState<string[]>([]);
+    const [labelBatch, setLabelBatch] = useState<BatchEntry | null>(null);
 
     const [formData, setFormData] = useState({
+        batchId: '',
         date: new Date().toLocaleDateString('en-CA'),
         supplier: '',
         bale: '',
@@ -172,7 +179,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
             toast.success(SUCCESS_MESSAGES.DELETE);
             queryClient.invalidateQueries({ queryKey: ['inwardHistory'] });
         } catch (error: any) {
-            toast.error(formatApiError(error, ERROR_MESSAGES.DELETE_FAILED));
+            handleDeleteGuardError(error, ERROR_MESSAGES.DELETE_FAILED);
         }
     };
 
@@ -201,6 +208,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
             queryClient.invalidateQueries({ queryKey: ['inwardHistory'] });
             setOpenWizard(false);
             setFormData({
+                batchId: '',
                 date: new Date().toLocaleDateString('en-CA'),
                 supplier: '',
                 bale: '',
@@ -299,6 +307,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                     <FormControl sx={{ minWidth: { xs: '100%', sm: 180 } }} size="small">
                         <InputLabel>Date Filter</InputLabel>
                         <Select value={dateFilter} label="Date Filter" onChange={handleDateFilterChange}>
+                            <MenuItem value="all">All Batches</MenuItem>
                             <MenuItem value="today">Today</MenuItem>
                             <MenuItem value="yesterday">Yesterday</MenuItem>
                             <MenuItem value="week">Past Week</MenuItem>
@@ -387,6 +396,26 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                     {isSubmitting && <LinearProgress sx={{ mb: 2 }} />}
 
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+                        <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start' }}>
+                            <TextField
+                                label="Batch ID (Optional)"
+                                name="batchId"
+                                value={formData.batchId}
+                                onChange={handleInputChange}
+                                placeholder="e.g. BATCH-20261004-9842"
+                                fullWidth
+                                helperText="Leave empty to auto-assign, or click Auto-Format to generate standard code"
+                            />
+                            <Button
+                                variant="outlined"
+                                startIcon={<AutoIcon />}
+                                sx={{ height: 42, whiteSpace: 'nowrap', mt: 0.5 }}
+                                onClick={() => setFormData(p => ({ ...p, batchId: formatBatchCode(p.date) }))}
+                            >
+                                Auto-Format
+                            </Button>
+                        </Box>
+
                         <Box sx={{ display: 'flex', gap: 2 }}>
                             <GlassDatePicker
                                 label={<RequiredLabel label="Date" required />}
@@ -617,13 +646,20 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                                                 {(row.remainingKg ?? row.kg).toLocaleString()} kg
                                             </TableCell>
                                             <TableCell align="center">
-                                                {(userRole === 'ADMIN') && (
-                                                    <Tooltip title="Delete Batch (Admin only)">
-                                                        <IconButton size="small" color="error" onClick={() => handleDeleteBatch(row.id)}>
-                                                            <DeleteIcon fontSize="small" />
+                                                <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
+                                                    <Tooltip title="View & Print QR / Barcode Tag">
+                                                        <IconButton size="small" color="primary" onClick={() => setLabelBatch(row)}>
+                                                            <QrIcon fontSize="small" />
                                                         </IconButton>
                                                     </Tooltip>
-                                                )}
+                                                    {(userRole === 'ADMIN') && (
+                                                        <Tooltip title="Delete Batch (Admin only)">
+                                                            <IconButton size="small" color="error" onClick={() => handleDeleteBatch(row.id)}>
+                                                                <DeleteIcon fontSize="small" />
+                                                            </IconButton>
+                                                        </Tooltip>
+                                                    )}
+                                                </Box>
                                             </TableCell>
                                         </TableRow>
                                     ))
@@ -648,6 +684,24 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                     </Box>
                 )}
             </Paper>
+
+            {labelBatch && (
+                <BarcodeQRModal
+                    open={Boolean(labelBatch)}
+                    onClose={() => setLabelBatch(null)}
+                    type="BATCH"
+                    title={`Batch Label: ${labelBatch.batchId}`}
+                    code={labelBatch.batchId}
+                    qrPayload={buildBatchQRPayload(labelBatch)}
+                    metadata={[
+                        { label: 'Supplier', value: labelBatch.supplier },
+                        { label: 'Date', value: new Date(labelBatch.date).toLocaleDateString('en-IN') },
+                        { label: 'Total Bales', value: labelBatch.bale },
+                        { label: 'Gross Weight', value: `${labelBatch.kg.toLocaleString()} kg` },
+                        { label: 'Remaining Stock', value: `${(labelBatch.remainingKg ?? labelBatch.kg).toLocaleString()} kg` },
+                    ]}
+                />
+            )}
         </Box>
     );
 };

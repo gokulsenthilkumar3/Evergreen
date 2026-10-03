@@ -1,0 +1,135 @@
+
+Running 1 test using 1 worker
+
+[1A[2K[1/1] [setup] › e2e\auth.setup.ts:5:1 › authenticate
+[1A[2K[setup] › e2e\auth.setup.ts:5:1 › authenticate
+Navigating to login...
+
+[1A[2KFilling credentials...
+
+[1A[2KClicking Sign in...
+
+[1A[2KWaiting for dashboard...
+
+[1A[2K[2/1] (retries) [setup] › e2e\auth.setup.ts:5:1 › authenticate (retry #1)
+[1A[2KNavigating to login...
+
+[1A[2KFilling credentials...
+
+[1A[2KClicking Sign in...
+
+[1A[2KWaiting for dashboard...
+
+[1A[2K[3/1] (retries) [setup] › e2e\auth.setup.ts:5:1 › authenticate (retry #2)
+[1A[2KNavigating to login...
+
+[1A[2KFilling credentials...
+
+[1A[2KClicking Sign in...
+
+[1A[2KWaiting for dashboard...
+
+[1A[2K  1) [setup] › e2e\auth.setup.ts:5:1 › authenticate ────────────────────────────────────────────────
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByText('Dashboard')
+    Expected: visible
+    Error: strict mode violation: getByText('Dashboard') resolved to 3 elements:
+        1) <span class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-o9rrf7-MuiTypography-root">Dashboard</span> aka getByRole('link', { name: 'Dashboard' })
+        2) <h4 class="MuiTypography-root MuiTypography-h4 css-gf90nl-MuiTypography-root">Dashboard</h4> aka getByRole('heading', { name: 'Dashboard' })
+        3) <span class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-o9rrf7-MuiTypography-root">Dashboard</span> aka getByText('Dashboard').nth(2)
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByText('Dashboard')[22m
+
+
+      22 |
+      23 |     // Alternatively, you can wait until the page reaches a state where all cookies are set.
+    > 24 |     await expect(page.getByText('Dashboard')).toBeVisible();
+         |                                               ^
+      25 |
+      26 |     // End of authentication steps.
+      27 |
+        at C:\Users\gokul\Downloads\Yarn Management\Yarn-Management\apps\web\e2e\auth.setup.ts:24:47
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\auth.setup.ts-authenticate-setup\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\auth.setup.ts-authenticate-setup\error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByText('Dashboard')
+    Expected: visible
+    Error: strict mode violation: getByText('Dashboard') resolved to 3 elements:
+        1) <span class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-o9rrf7-MuiTypography-root">Dashboard</span> aka getByRole('link', { name: 'Dashboard' })
+        2) <h4 class="MuiTypography-root MuiTypography-h4 css-gf90nl-MuiTypography-root">Dashboard</h4> aka getByRole('heading', { name: 'Dashboard' })
+        3) <span class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-o9rrf7-MuiTypography-root">Dashboard</span> aka getByText('Dashboard').nth(2)
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByText('Dashboard')[22m
+
+
+      22 |
+      23 |     // Alternatively, you can wait until the page reaches a state where all cookies are set.
+    > 24 |     await expect(page.getByText('Dashboard')).toBeVisible();
+         |                                               ^
+      25 |
+      26 |     // End of authentication steps.
+      27 |
+        at C:\Users\gokul\Downloads\Yarn Management\Yarn-Management\apps\web\e2e\auth.setup.ts:24:47
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\auth.setup.ts-authenticate-setup-retry1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\auth.setup.ts-authenticate-setup-retry1\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\auth.setup.ts-authenticate-setup-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\auth.setup.ts-authenticate-setup-retry1\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #2 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByText('Dashboard')
+    Expected: visible
+    Error: strict mode violation: getByText('Dashboard') resolved to 3 elements:
+        1) <span class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-o9rrf7-MuiTypography-root">Dashboard</span> aka getByRole('link', { name: 'Dashboard' })
+        2) <h4 class="MuiTypography-root MuiTypography-h4 css-gf90nl-MuiTypography-root">Dashboard</h4> aka getByRole('heading', { name: 'Dashboard' })
+        3) <span class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-o9rrf7-MuiTypography-root">Dashboard</span> aka getByText('Dashboard').nth(2)
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByText('Dashboard')[22m
+
+
+      22 |
+      23 |     // Alternatively, you can wait until the page reaches a state where all cookies are set.
+    > 24 |     await expect(page.getByText('Dashboard')).toBeVisible();
+         |                                               ^
+      25 |
+      26 |     // End of authentication steps.
+      27 |
+        at C:\Users\gokul\Downloads\Yarn Management\Yarn-Management\apps\web\e2e\auth.setup.ts:24:47
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\auth.setup.ts-authenticate-setup-retry2\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\auth.setup.ts-authenticate-setup-retry2\error-context.md
+
+
+[1A[2K  1 failed
+    [setup] › e2e\auth.setup.ts:5:1 › authenticate ─────────────────────────────────────────────────

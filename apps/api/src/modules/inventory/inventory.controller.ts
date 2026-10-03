@@ -6,6 +6,7 @@ import {
   Query,
   Delete,
   Param,
+  Req,
 } from '@nestjs/common';
 import { InventoryService } from './inventory.service';
 
@@ -178,13 +179,25 @@ export class InventoryController {
   }
 
   @Delete('inward/:id')
-  async deleteInward(@Param('id') id: string) {
-    return this.inventoryService.deleteInward(parseInt(id));
+  async deleteInward(
+    @Param('id') id: string,
+    @Body('reason') reason?: string,
+    @Query('reason') queryReason?: string,
+    @Req() req?: any,
+  ) {
+    const actor = req?.user?.username || 'SYSTEM';
+    return this.inventoryService.deleteInward(parseInt(id), actor, reason || queryReason);
   }
 
   @Delete('outward/:id')
-  async deleteOutward(@Param('id') id: string) {
-    return this.inventoryService.deleteOutward(parseInt(id));
+  async deleteOutward(
+    @Param('id') id: string,
+    @Body('reason') reason?: string,
+    @Query('reason') queryReason?: string,
+    @Req() req?: any,
+  ) {
+    const actor = req?.user?.username || 'SYSTEM';
+    return this.inventoryService.deleteOutward(parseInt(id), actor, reason || queryReason);
   }
 
   @Post('waste/recycle')
@@ -198,7 +211,13 @@ export class InventoryController {
   }
 
   @Delete('waste/:id')
-  async deleteWaste(@Param('id') id: string) {
-    return this.inventoryService.deleteWaste(parseInt(id));
+  async deleteWaste(
+    @Param('id') id: string,
+    @Body('reason') reason?: string,
+    @Query('reason') queryReason?: string,
+    @Req() req?: any,
+  ) {
+    const actor = req?.user?.username || 'SYSTEM';
+    return this.inventoryService.deleteWaste(parseInt(id), actor, reason || queryReason);
   }
 }
