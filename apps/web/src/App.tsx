@@ -64,12 +64,14 @@ import {
   LocalShipping as SupplierIcon,
   Gavel as ComplianceIcon,
   Payments as PaymentOpsIcon,
+  Person as PersonIcon,
 } from '@mui/icons-material';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from './utils/api';
 import getTheme from './theme';
 import type { ThemeName } from './theme';
 import Login from './components/Login';
+import ProfileModal from './components/ProfileModal';
 import { KeyboardShortcutsProvider } from './context/KeyboardShortcutsContext';
 import { ScreenReaderAnnouncer } from './components/common/ScreenReaderAnnouncer';
 import Breadcrumbs from './components/common/Breadcrumbs';
@@ -358,6 +360,7 @@ const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [drawerOpen, setDrawerOpen] = useState(true);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const queryClient = useQueryClient();
 
@@ -758,13 +761,31 @@ const App: React.FC = () => {
                         onClose={handleProfileClose}
                         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
                         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-                        slotProps={{ paper: { sx: { mt: 1.5, minWidth: 200, borderRadius: '12px', boxShadow: (theme) => theme.shadows[10] } } }}
+                        slotProps={{ paper: { sx: { mt: 1.5, minWidth: 230, borderRadius: '14px', p: 0.5, boxShadow: (theme) => theme.shadows[10] } } }}
                       >
                         <Box sx={{ px: 2, py: 1.5 }}>
                           <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{user.name || user.username}</Typography>
-                          <Typography variant="caption" color="text.secondary">{user.role || 'Admin'}</Typography>
+                          <Typography variant="caption" color="text.secondary" display="block">@{user.username}</Typography>
+                          <Chip label={user.role || 'Admin'} size="small" color={user.role === 'ADMIN' ? 'error' : user.role === 'MODIFIER' ? 'primary' : 'default'} sx={{ mt: 0.5, height: 20, fontSize: '0.65rem', fontWeight: 700 }} />
                         </Box>
                         <Divider />
+                        <MenuItem onClick={() => { handleProfileClose(); setProfileModalOpen(true); }} sx={{ borderRadius: '8px', py: 1 }}>
+                          <ListItemIcon><PersonIcon fontSize="small" /></ListItemIcon>
+                          My Profile & Account
+                        </MenuItem>
+                        <MenuItem onClick={() => { handleProfileClose(); setCurrentPage('security'); }} sx={{ borderRadius: '8px', py: 1 }}>
+                          <ListItemIcon><SecurityIcon fontSize="small" /></ListItemIcon>
+                          Security & 2FA
+                        </MenuItem>
+                        <MenuItem onClick={() => { handleProfileClose(); setCurrentPage('sessions'); }} sx={{ borderRadius: '8px', py: 1 }}>
+                          <ListItemIcon><SessionsIcon fontSize="small" /></ListItemIcon>
+                          Active Sessions
+                        </MenuItem>
+                        <MenuItem onClick={() => { handleProfileClose(); setCurrentPage('settings'); }} sx={{ borderRadius: '8px', py: 1 }}>
+                          <ListItemIcon><SettingsIcon fontSize="small" /></ListItemIcon>
+                          System Settings
+                        </MenuItem>
+                        <Divider sx={{ my: 0.5 }} />
                         <MenuItem onClick={handleLogout} sx={{ color: 'error.main', py: 1.5, m: 0.5, borderRadius: '8px' }}>
                           <ListItemIcon sx={{ color: 'error.main' }}>
                             <LogoutIcon fontSize="small" />
@@ -919,13 +940,18 @@ const App: React.FC = () => {
 
                   {/* User info at bottom of sidebar */}
                   {drawerOpen && (
-                    <Box sx={{
+                    <Box
+                      onClick={() => setProfileModalOpen(true)}
+                      sx={{
                       p: 2,
                       borderTop: 1,
                       borderColor: 'divider',
                       display: 'flex',
                       alignItems: 'center',
                       gap: 1.5,
+                      cursor: 'pointer',
+                      transition: 'background-color 0.2s',
+                      '&:hover': { bgcolor: 'action.hover' },
                     }}>
                       <Avatar sx={{ bgcolor: 'primary.main', width: 32, height: 32, fontSize: '0.8rem', fontWeight: 'bold' }}>
                         {(user.name || user.username)?.charAt(0).toUpperCase()}
@@ -1027,6 +1053,28 @@ const App: React.FC = () => {
                   </Container>
                 </Box>
               </Box>
+              <ProfileModal
+                open={profileModalOpen}
+                onClose={() => setProfileModalOpen(false)}
+                currentUser={user}
+                onUserUpdate={(updated) => {
+                  const newUser = { ...user, ...updated };
+                  setUser(newUser);
+                  localStorage.setItem('user', JSON.stringify(newUser));
+                }}
+                mode={mode}
+                onToggleTheme={toggleTheme}
+                themeName={themeName}
+                onThemeChange={setThemeName}
+                language={language}
+                onToggleLanguage={toggleLanguage}
+                floatingNav={floatingNav}
+                onFloatingNavChange={setFloatingNav}
+                onNavigate={(pg) => {
+                  setProfileModalOpen(false);
+                  setCurrentPage(pg);
+                }}
+              />
             </ConfirmProvider>
           </KeyboardShortcutsProvider>
         </NotificationsProvider>

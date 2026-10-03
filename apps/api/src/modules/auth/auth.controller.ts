@@ -4,13 +4,14 @@ import {
   Body,
   Get,
   Delete,
+  Put,
   UseGuards,
   Req,
   UnauthorizedException,
   ForbiddenException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { LoginDto, TotpCodeDto } from './auth.dto';
+import { LoginDto, TotpCodeDto, UpdateProfileDto, ChangePasswordDto } from './auth.dto';
 import { WebAuthnService } from './webauthn.service';
 import { JwtAuthGuard } from '../../guards/jwt-auth.guard';
 import { PrismaService } from '../../services/prisma.service';
@@ -130,6 +131,18 @@ export class AuthController {
   @Post('totp/disable')
   async disableTotp(@Req() req: any, @Body() body: TotpCodeDto) {
     return this.authService.disableTotp(req.user.userId, body.code);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('profile')
+  async updateProfile(@Req() req: any, @Body() body: UpdateProfileDto) {
+    return this.authService.updateProfile(req.user.userId, req.user.username, body);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('change-password')
+  async changePassword(@Req() req: any, @Body() body: ChangePasswordDto) {
+    return this.authService.changePassword(req.user.userId, req.user.username, body);
   }
 
   // WebAuthn Passkeys Endpoints
