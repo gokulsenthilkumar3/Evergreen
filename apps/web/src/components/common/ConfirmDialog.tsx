@@ -6,8 +6,7 @@ import {
     DialogContentText,
     DialogActions,
     Button,
-    Typography,
-    Box
+    Typography
 } from '@mui/material';
 import { Warning as WarningIcon } from '@mui/icons-material';
 
@@ -39,7 +38,8 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             PaperProps={{
                 sx: {
                     borderRadius: 3,
-                    minWidth: 400,
+                    width: 'min(400px, calc(100vw - 32px))',
+                    maxWidth: 'calc(100vw - 32px)',
                     p: 1
                 }
             }}
@@ -47,7 +47,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 {severity === 'error' && <WarningIcon color="error" />}
                 {severity === 'warning' && <WarningIcon color="warning" />}
-                <Typography variant="h6" fontWeight="bold">
+                <Typography component="span" variant="h6" fontWeight="bold">
                     {title}
                 </Typography>
             </DialogTitle>
