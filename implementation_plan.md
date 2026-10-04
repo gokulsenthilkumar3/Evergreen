@@ -1,3 +1,5 @@
+> Historical planning/status document. Capability and readiness claims below require revalidation. Use [Quick Start](QUICK_START.md), [Business Flow](docs/BUSINESS_FLOW.md), and [Parity Register](PARITY_REGISTER.md) for current setup, workflow boundaries and release gates.
+
 # Ever Green Yarn Management System - Implementation Plan
 
 ## Project Overview
@@ -64,3 +66,4 @@ Ever Green Yarn Management System is an enterprise-level inventory and costing m
 All core features from Phases 1-9 have been successfully implemented!
 
 See `IMPLEMENTATION_COMPLETE.md` for detailed feature documentation.
+

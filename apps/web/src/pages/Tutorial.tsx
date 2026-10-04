@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import BusinessFlowGuide from '../components/BusinessFlowGuide';
 import {
     Box,
     Typography,
@@ -8,6 +9,7 @@ import {
     Chip,
     Card,
     CardContent,
+    CardActionArea,
     Stepper,
     Step,
     StepLabel,
@@ -86,7 +88,7 @@ const TUTORIAL_CHAPTERS = [
             { label: 'Review Line Items', description: 'Check each item’s HSN/SAC, quantity, rate, and tax before saving. Tax uses the configured invoice and catalogue details.' },
             { label: 'Save & Download', description: 'Save the invoice, then download its PDF from the saved invoice record. The PDF uses the issuer and customer details saved with that invoice.' },
             { label: 'Record Payment', description: 'Record a payment from the invoice workflow and review its balance and payment status in Business Desk.' },
-            { label: 'Payment Operations', description: 'Open Payment Operations for vendor notes, timelines, payment links, journals, and bank reconciliation. Customer records and invoice payments remain in Business Desk.' },
+            { label: 'Payment Operations', description: 'Customer records and invoice-linked payments are managed in Business Desk. Review balances in Reports. Other payment-operation screens require separate readiness checks; bank reconciliation is not part of this release.' },
         ],
     },
     {
@@ -139,8 +141,9 @@ const TUTORIAL_CHAPTERS = [
     },
 ];
 
-const ChapterCard = ({ chapter, onSelect, isSelected }: { chapter: typeof TUTORIAL_CHAPTERS[0]; onSelect: () => void; isSelected: boolean; }) => (
-    <Card elevation={0} onClick={onSelect} sx={{ border: '1.5px solid', borderColor: isSelected ? chapter.color : 'divider', borderRadius: 3, cursor: 'pointer', transition: 'transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease', bgcolor: isSelected ? `${chapter.color}08` : 'background.paper', '&:hover': { borderColor: chapter.color, transform: 'translateY(-2px)', boxShadow: `0 10px 28px ${chapter.color}20` } }}>
+const ChapterCard = ({ chapter, onSelect, isSelected, progress }: { chapter: typeof TUTORIAL_CHAPTERS[0]; onSelect: () => void; isSelected: boolean; progress: number; }) => (
+    <Card elevation={0} sx={{ border: '1.5px solid', borderColor: isSelected ? chapter.color : 'divider', borderRadius: 3, cursor: 'pointer', transition: 'transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease', bgcolor: isSelected ? `${chapter.color}08` : 'background.paper', '&:hover': { borderColor: chapter.color, transform: 'translateY(-2px)', boxShadow: `0 10px 28px ${chapter.color}20` } }}>
+        <CardActionArea onClick={onSelect} aria-pressed={isSelected}>
         <CardContent sx={{ p: 2.5 }}>
             <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
                 <Typography sx={{ fontSize: '2rem', lineHeight: 1 }}>{chapter.emoji}</Typography>
@@ -150,13 +153,14 @@ const ChapterCard = ({ chapter, onSelect, isSelected }: { chapter: typeof TUTORI
             <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.5 }}>{chapter.description}</Typography>
             <Box sx={{ mt: 1.5 }}>
                 <Typography variant="caption" color="text.disabled">{chapter.steps.length} steps</Typography>
-                <LinearProgress variant="determinate" value={0} sx={{ mt: 0.5, height: 3, borderRadius: 2, bgcolor: 'divider', '& .MuiLinearProgress-bar': { bgcolor: chapter.color } }} />
+                <LinearProgress aria-label={`${chapter.title} completion`} variant="determinate" value={progress} sx={{ mt: 0.5, height: 3, borderRadius: 2, bgcolor: 'divider', '& .MuiLinearProgress-bar': { bgcolor: chapter.color } }} />
             </Box>
         </CardContent>
+        </CardActionArea>
     </Card>
 );
 
-const Tutorial: React.FC = () => {
+const Tutorial: React.FC<{ onNavigate?: (page: string) => void }> = ({ onNavigate }) => {
     const [selectedChapter, setSelectedChapter] = useState<string>('getting-started');
     const [activeStep, setActiveStep] = useState(0);
     const [completedSteps, setCompletedSteps] = useState<Record<string, Set<number>>>({});
@@ -182,6 +186,7 @@ const Tutorial: React.FC = () => {
 
     return (
         <Box sx={{ width: '100%' }}>
+            <BusinessFlowGuide onNavigate={onNavigate} />
             <Box sx={{ mb: 4, p: { xs: 2.5, md: 3 }, borderRadius: 4, border: '1px solid', borderColor: 'divider', background: 'linear-gradient(135deg, rgba(5,150,105,0.12) 0%, rgba(8,145,178,0.08) 100%)' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
                     <Avatar sx={{ bgcolor: 'primary.main', width: 48, height: 48 }}><TutorialIcon /></Avatar>
@@ -201,7 +206,7 @@ const Tutorial: React.FC = () => {
                 <Grid size={{ xs: 12, md: 4 }}>
                     <Typography variant="subtitle2" fontWeight={800} color="text.secondary" sx={{ mb: 1.5, textTransform: 'uppercase', letterSpacing: '0.08em', fontSize: '0.7rem' }}>Chapters</Typography>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                        {TUTORIAL_CHAPTERS.map((c) => <ChapterCard key={c.id} chapter={c} onSelect={() => handleChapterChange(c.id)} isSelected={selectedChapter === c.id} />)}
+                        {TUTORIAL_CHAPTERS.map((c) => <ChapterCard key={c.id} chapter={c} onSelect={() => handleChapterChange(c.id)} isSelected={selectedChapter === c.id} progress={Math.round(((completedSteps[c.id]?.size || 0) / c.steps.length) * 100)} />)}
                     </Box>
                 </Grid>
 

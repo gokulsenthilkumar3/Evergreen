@@ -80,6 +80,7 @@ import { NotificationsProvider, NotificationsBell } from './context/Notification
 import { useNotificationSync } from './hooks/useNotificationSync';
 import { useDebounce } from './hooks/useDebounce';
 import { LinearProgress } from '@mui/material';
+import NotFound404 from './components/common/NotFound404';
 
 const NotificationSyncRunner = ({ settings }: { settings: any }) => {
   useNotificationSync(settings);
@@ -358,7 +359,29 @@ const App: React.FC = () => {
   const [themeName, setThemeName] = useState<ThemeName>((localStorage.getItem('themeName') as ThemeName) || 'emerald');
   const [floatingNav, setFloatingNav] = useState<boolean>(() => localStorage.getItem('floatingNav') === 'true');
   const [language, setLanguage] = useState<'en' | 'ta'>((localStorage.getItem('language') as 'en' | 'ta') || 'en');
-  const [currentPage, setCurrentPage] = useState('dashboard');
+  const getInitialPage = () => {
+    const path = window.location.pathname.replace(/^\//, '').trim();
+    if (!path || path === 'index.html') return 'dashboard';
+    return path;
+  };
+  const [currentPage, setCurrentPage] = useState<string>(getInitialPage);
+
+  const navigateTo = (page: string) => {
+    setCurrentPage(page);
+    const targetPath = page === 'dashboard' ? '/' : `/${page}`;
+    if (window.location.pathname !== targetPath) {
+      window.history.pushState(null, '', targetPath);
+    }
+  };
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const path = window.location.pathname.replace(/^\//, '').trim();
+      setCurrentPage(path || 'dashboard');
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
   const [drawerOpen, setDrawerOpen] = useState(true);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
@@ -640,6 +663,32 @@ const App: React.FC = () => {
 
   const allPages = navGroups.flatMap(g => g.items).map(i => i.page);
 
+  // Security: If route is invalid, render standalone isolated 404 view
+  // Zero leakage of internal sidebar modules, drawer chrome, topbar search, or user info
+  if (!allPages.includes(currentPage)) {
+    return (
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Box
+          sx={{
+            minHeight: '100vh',
+            width: '100vw',
+            bgcolor: mode === 'dark' ? '#090e17' : '#f8fafc',
+            backgroundImage: mode === 'dark'
+              ? 'radial-gradient(at 50% 20%, rgba(244, 63, 94, 0.08) 0px, transparent 60%)'
+              : 'radial-gradient(at 50% 20%, rgba(244, 63, 94, 0.04) 0px, transparent 60%)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            p: 3,
+          }}
+        >
+          <NotFound404 pageName={currentPage} onNavigate={navigateTo} />
+        </Box>
+      </ThemeProvider>
+    );
+  }
+
   return (
     <ThemeProvider theme={theme}>
       <ErrorBoundary>
@@ -788,17 +837,40 @@ const App: React.FC = () => {
                           <ListItemIcon><PersonIcon fontSize="small" /></ListItemIcon>
                           My Profile & Account
                         </MenuItem>
-                        <MenuItem onClick={() => { handleProfileClose(); setCurrentPage('security'); }} sx={{ borderRadius: '8px', py: 1 }}>
+                        <MenuItem onClick={() => { handleProfileClose(); navigateTo('security'); }} sx={{ borderRadius: '8px', py: 1 }}>
                           <ListItemIcon><SecurityIcon fontSize="small" /></ListItemIcon>
                           Security & 2FA
                         </MenuItem>
-                        <MenuItem onClick={() => { handleProfileClose(); setCurrentPage('sessions'); }} sx={{ borderRadius: '8px', py: 1 }}>
+                        <MenuItem onClick={() => { handleProfileClose(); navigateTo('sessions'); }} sx={{ borderRadius: '8px', py: 1 }}>
                           <ListItemIcon><SessionsIcon fontSize="small" /></ListItemIcon>
                           Active Sessions
                         </MenuItem>
-                        <MenuItem onClick={() => { handleProfileClose(); setCurrentPage('settings'); }} sx={{ borderRadius: '8px', py: 1 }}>
+                        <MenuItem onClick={() => { handleProfileClose(); navigateTo('settings'); }} sx={{ borderRadius: '8px', py: 1 }}>
                           <ListItemIcon><SettingsIcon fontSize="small" /></ListItemIcon>
                           System Settings
+                        </MenuItem>
+                        <Divider sx={{ my: 0.5 }} />
+                        <MenuItem
+                          component="a"
+                          href={localStorage.getItem('token') ? `http://localhost:4301/health?token=${encodeURIComponent(localStorage.getItem('token') || '')}` : 'http://localhost:4301/health'}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={handleProfileClose}
+                          sx={{ borderRadius: '8px', py: 1, textDecoration: 'none', color: 'inherit' }}
+                        >
+                          <ListItemIcon><SyncIcon fontSize="small" color="primary" /></ListItemIcon>
+                          🌱 API Health Hub (4301)
+                        </MenuItem>
+                        <MenuItem
+                          component="a"
+                          href={localStorage.getItem('token') ? `http://localhost:5555/?token=${encodeURIComponent(localStorage.getItem('token') || '')}` : 'http://localhost:5555'}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={handleProfileClose}
+                          sx={{ borderRadius: '8px', py: 1, textDecoration: 'none', color: 'inherit' }}
+                        >
+                          <ListItemIcon><WarehouseIcon fontSize="small" color="success" /></ListItemIcon>
+                          🗄️ Database Studio (5555)
                         </MenuItem>
                         <Divider sx={{ my: 0.5 }} />
                         <MenuItem onClick={handleLogout} sx={{ color: 'error.main', py: 1.5, m: 0.5, borderRadius: '8px' }}>
@@ -900,7 +972,7 @@ const App: React.FC = () => {
                                 >
                                   <ListItemButton
                                     selected={currentPage === item.page}
-                                    onClick={() => setCurrentPage(item.page)}
+                                    onClick={() => navigateTo(item.page)}
                                     sx={{
                                       minHeight: 44,
                                       justifyContent: drawerOpen ? 'initial' : 'center',
@@ -1031,7 +1103,7 @@ const App: React.FC = () => {
                     }}
                   >
                     <Suspense fallback={<LinearProgress />}>
-                      {currentPage === 'workspace' && <UnifiedWorkspace onNavigate={setCurrentPage} />}
+                      {currentPage === 'workspace' && <UnifiedWorkspace onNavigate={navigateTo} />}
                       {currentPage === 'jobwork' && <JobWork />}
                       {currentPage === 'operations' && <OperationsDesk />}
                       {currentPage === 'business' && <CommerceDesk />}
@@ -1047,7 +1119,7 @@ const App: React.FC = () => {
                       {currentPage === 'store' && <Store onNavigate={setCurrentPage} />}
                       {currentPage === 'insights' && <Insights />}
                       {currentPage === 'helpdesk' && <Helpdesk />}
-                      {currentPage === 'tutorial' && <Tutorial />}
+                      {currentPage === 'tutorial' && <Tutorial onNavigate={navigateTo} />}
                       {currentPage === 'users' && <UserManagement currentUserRole={user.role} username={user.username} />}
                       {currentPage === 'sessions' && <SessionManagement />}
                       {currentPage === 'security' && <SecuritySettings />}
@@ -1071,15 +1143,6 @@ const App: React.FC = () => {
                       {currentPage === 'yarnsupplier' && <YarnSupplierPortal />}
                       {currentPage === 'yarncompliance' && <YarnComplianceReports />}
                       {currentPage === 'yarnerp' && <YarnERP onNavigate={setCurrentPage} />}
-
-                      {!allPages.includes(currentPage) && (
-                        <Box sx={{ p: 4, textAlign: 'center' }}>
-                          <Typography variant="h4" sx={{ mb: 2, fontWeight: 'bold' }}>
-                            {currentPage.charAt(0).toUpperCase() + currentPage.slice(1)}
-                          </Typography>
-                          <Typography color="text.secondary">This page is currently under development.</Typography>
-                        </Box>
-                      )}
                     </Suspense>
                   </Container>
                 </Box>

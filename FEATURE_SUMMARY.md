@@ -1,3 +1,5 @@
+> Historical planning/status document. Capability and readiness claims below require revalidation. Use [Quick Start](QUICK_START.md), [Business Flow](docs/BUSINESS_FLOW.md), and [Parity Register](PARITY_REGISTER.md) for current setup, workflow boundaries and release gates.
+
 # Ever Green Yarn Management System - Feature Summary
 
 ## ✅ Completed Features
@@ -163,7 +165,7 @@ apps/web/src/
 - **Protected Routes** - requires authentication
 - **Mock Credentials**: 
   - Username: `admin`
-  - Password: `admin123`
+  - Password: use your configured bootstrap credentials; no shared default
 
 ---
 
@@ -263,22 +265,23 @@ GET /dashboard/notifications
 
 ## 🔧 Running the Application
 
-### Start API (Port 3001):
+### Start API (internal port 4301):
 ```bash
 cd d:/EverGreen
 npm run dev -w apps/api
 ```
 
-### Start Web (Port 3000):
+### Start Web (public port 4000):
 ```bash
 cd d:/EverGreen
 npm run dev -w apps/web
 ```
 
 ### Access:
-- **Web App**: http://localhost:3000
-- **API**: http://localhost:3001
+- **Web App**: http://localhost:4000
+- **API**: http://localhost:4301
 
 ---
 
 **Status**: ✅ Ready for demonstration and further development!
+

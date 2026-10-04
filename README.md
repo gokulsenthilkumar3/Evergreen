@@ -65,6 +65,8 @@ The shared navigation and catalogue mean teams do not need to switch between sep
 
 ## ⚙️ Installation & Setup
 
+Start with the maintained [quick start and service directory](QUICK_START.md). Run `npm run setup:check` for read-only configuration diagnostics. The [business-flow guide](docs/BUSINESS_FLOW.md) explains operational handoffs, and the [2030 roadmap](docs/2030_ROADMAP.md) separates delivered features from future work. The [agent system](agent-system/README.md) defines project-specific skills and validation gates for maintaining EverGreen.
+
 ### Prerequisites
 - Node.js 20.19+ or 22.12+ (the installed Vite version does not support Node 18)
 - npm or yarn

@@ -1,3 +1,5 @@
+> Historical planning/status document. Capability and readiness claims below require revalidation. Use [Quick Start](QUICK_START.md), [Business Flow](docs/BUSINESS_FLOW.md), and [Parity Register](PARITY_REGISTER.md) for current setup, workflow boundaries and release gates.
+
 # Ever Green Yarn Mills: Deployment & Distribution Guide
 
 Congratulations on completing the **Ever Green Yarn Mills SMS**. This guide details exactly how the offline desktop application is structured, why it looks the way it does, and how to distribute it to your clients.
@@ -49,3 +51,4 @@ You can copy-paste the instructions below in your email/delivery to the client:
 
 ### 💾 Backing Up Their Data
 Because the database is completely stored as a single local file (`dev.db`) inside their `resources/` folder, backing up the application is as simple as copying the entire extracted `EverGreen-Desktop-V1` folder to a USB thumb drive. No complex cloud or database exports are strictly required.
+

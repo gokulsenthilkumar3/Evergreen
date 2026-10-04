@@ -1,3 +1,5 @@
+> Historical planning/status document. Capability and readiness claims below require revalidation. Use [Quick Start](QUICK_START.md), [Business Flow](docs/BUSINESS_FLOW.md), and [Parity Register](PARITY_REGISTER.md) for current setup, workflow boundaries and release gates.
+
 # EverGreen - Distribution Package Ready
 
 ## ✅ What You Have
@@ -75,3 +77,4 @@ You must run the build script as **Administrator**:
 ---
 
 **Your distribution package is ready to share!** 🎉
+

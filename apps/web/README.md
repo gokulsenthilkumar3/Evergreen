@@ -1,73 +1,20 @@
-# React + TypeScript + Vite
+# EverGreen web application
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React, Material UI and TanStack Query power the staff application and public shop. Start the full system from the repository root with `npm run dev`; the default public URL is http://localhost:4000/.
 
-Currently, two official plugins are available:
+- [Setup and service directory](../../QUICK_START.md)
+- [Business flow and verification](../../docs/BUSINESS_FLOW.md)
+- [2030 development direction](../../docs/2030_ROADMAP.md)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Business Workspace (`/workspace`) provides live commerce summaries, a machine register count, API health, manual refresh and optional 30-second polling. Failed requests remain visible instead of becoming zero balances. Its searchable business guide is shared with Tutorial (`/tutorial`), and its navigation updates browser history.
 
-## React Compiler
+`src/components/BusinessFlowGuide.tsx` owns the shared operational handoffs. Update this guide when a workflow changes. Detailed tutorials remain in `src/pages/Tutorial.tsx`. Do not present planned features as operational capabilities.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Run from the root:
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```sh
+npm run build -w apps/web
+npm run test -w apps/web -- --run
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Browser API calls use `/api/backend`. The Vite development and preview proxies forward that prefix to the internal API. Configure equivalent routing when deploying static assets behind a production reverse proxy.
