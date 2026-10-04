@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EverGreen redacted agent task record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "taskId", "updatedAt", "objective", "state", "sources", "decisions", "assumptions", "evidence", "risks"],
+  "properties": {
+    "version": {"const": "1.0.0"},
+    "taskId": {"type": "string", "minLength": 1},
+    "updatedAt": {"type": "string", "format": "date-time"},
+    "objective": {"type": "string"},
+    "state": {"enum": ["DISCOVER", "PLAN", "EXECUTE", "VERIFY", "READY", "AWAITING_APPROVAL", "RELEASE", "OBSERVE", "DONE", "DIAGNOSE", "WAITING_INPUT"]},
+    "sources": {"type": "array", "items": {"type": "string"}},
+    "decisions": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["decision", "reason", "source"], "properties": {"decision": {"type": "string"}, "reason": {"type": "string"}, "source": {"type": "string"}}}},
+    "assumptions": {"type": "array", "items": {"type": "string"}},
+    "evidence": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["check", "result"], "properties": {"check": {"type": "string"}, "result": {"enum": ["passed", "failed", "not-run"]}, "exitCode": {"type": ["integer", "null"]}, "artifact": {"type": "string"}}}},
+    "risks": {"type": "array", "items": {"type": "string"}},
+    "approvalReferences": {"type": "array", "items": {"type": "string"}},
+    "nextAction": {"type": "string"}
+  },
+  "$comment": "Store references and summaries only. No secrets, tokens, customer ledger rows or employee data. Host must enforce redaction, access controls, retention and schema format validation."
+}

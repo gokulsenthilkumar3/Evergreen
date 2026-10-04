@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Button,
@@ -9,17 +9,19 @@ import {
   Paper,
   Stack,
   Typography,
+  Alert,
+  Switch,
+  FormControlLabel,
+  TextField,
 } from '@mui/material';
 import {
   AccountBalance as FinanceIcon,
   ArrowForward as ArrowIcon,
-  Build as MaintenanceIcon,
   Description as InvoiceIcon,
   Factory as ProductionIcon,
   Inventory2 as InventoryIcon,
   LocalShipping as ShippingIcon,
   PrecisionManufacturing as MachineIcon,
-  ReceiptLong as ReceiptIcon,
   Speed as LiveIcon,
   Storefront as StoreIcon,
   TrendingUp as InsightsIcon,
@@ -27,6 +29,7 @@ import {
 } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';
 import api from '../utils/api';
+import BusinessFlowGuide from '../components/BusinessFlowGuide';
 
 type WorkspaceModule = {
   title: string;
@@ -51,7 +54,7 @@ const modules: WorkspaceModule[] = [
   {
     title: 'Yarn ERP Suite (9 Dedicated Hubs)',
     category: 'Enterprise Mill Suite',
-    description: 'Central management for Machines, Lab Quality Control, Warehouses, Staff & Payroll, Shifts, and AI Forecasting.',
+    description: 'Explore machines, quality control, warehouses, staff and shifts. Review module readiness before operational use.',
     page: 'yarnerp',
     action: 'Launch Yarn ERP Hub',
     icon: <MachineIcon />,
@@ -78,7 +81,7 @@ const modules: WorkspaceModule[] = [
   {
     title: 'Store & Inventory Management',
     category: 'Stock Control',
-    description: 'Monitor count-wise yarn stocks, bag weights, location bins, and automatic low-stock reorder thresholds.',
+    description: 'Review count-wise yarn stock and bag weights, then reconcile available material before dispatch.',
     page: 'inventory',
     action: 'View Inventory',
     icon: <InventoryIcon />,
@@ -100,21 +103,26 @@ interface UnifiedWorkspaceProps {
 }
 
 const UnifiedWorkspace: React.FC<UnifiedWorkspaceProps> = ({ onNavigate }) => {
-  const { data: reportData } = useQuery({
+  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [search, setSearch] = useState('');
+  const report = useQuery<{ invoicedValue: number; receivables: number; openOrders: number; lowStock: unknown[]; openJobWork: number }>({
     queryKey: ['commerce-report'],
     queryFn: async () => (await api.get('/commerce/report')).data,
+    refetchInterval: autoRefresh ? 30000 : false,
   });
-
-  const { data: machineStats } = useQuery({
-    queryKey: ['machines-stats'],
-    queryFn: async () => {
-      try {
-        return (await api.get('/machines/stats')).data;
-      } catch {
-        return null;
-      }
-    },
+  const machines = useQuery<Array<{ id: number }>>({
+    queryKey: ['workspace-machines'],
+    queryFn: async () => (await api.get('/machines')).data,
+    refetchInterval: autoRefresh ? 30000 : false,
   });
+  const health = useQuery<{ status: string }>({
+    queryKey: ['workspace-health'],
+    queryFn: async () => (await api.get('/health?format=json')).data,
+    refetchInterval: autoRefresh ? 30000 : false,
+  });
+  const reportData = report.data;
+  const money = (value: number | undefined) => value === undefined ? 'Unavailable' : `₹${value.toLocaleString('en-IN')}`;
+  const visibleModules = modules.filter(module => `${module.title} ${module.category} ${module.description}`.toLowerCase().includes(search.trim().toLowerCase()));
 
   return (
     <Box sx={{ maxWidth: 1300, mx: 'auto', width: '100%' }}>
@@ -143,7 +151,7 @@ const UnifiedWorkspace: React.FC<UnifiedWorkspaceProps> = ({ onNavigate }) => {
             bgcolor: 'rgba(255,255,255,0.08)',
           }}
         />
-        <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
+        <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap', gap: 1 }}>
           <Chip
             label="ENTERPRISE WORKSPACE"
             size="small"
@@ -155,7 +163,7 @@ const UnifiedWorkspace: React.FC<UnifiedWorkspaceProps> = ({ onNavigate }) => {
             }}
           />
           <Chip
-            label="ALL SYSTEMS OPERATIONAL"
+            label={health.isError ? 'HEALTH UNAVAILABLE' : health.isPending ? 'CHECKING HEALTH' : health.data?.status === 'ok' ? 'API HEALTHY' : 'API DEGRADED'}
             size="small"
             sx={{
               bgcolor: 'rgba(16, 185, 129, 0.3)',
@@ -165,7 +173,7 @@ const UnifiedWorkspace: React.FC<UnifiedWorkspaceProps> = ({ onNavigate }) => {
           />
         </Stack>
 
-        <Typography variant="h3" sx={{ fontWeight: 800, maxWidth: 700, mb: 1.5 }}>
+        <Typography variant="h3" sx={{ fontWeight: 800, maxWidth: 700, mb: 1.5, fontSize: { xs: '2rem', md: '3rem' } }}>
           EverGreen One Business Suite
         </Typography>
 
@@ -178,7 +186,7 @@ const UnifiedWorkspace: React.FC<UnifiedWorkspaceProps> = ({ onNavigate }) => {
             lineHeight: 1.6,
           }}
         >
-          Unified textile & yarn ERP connecting yarn spinning, external job work, warehouse logistics, GST invoicing, and financial ledgers into one central source of truth.
+          Follow daily work from material receipt through production, dispatch, invoicing and collection. Review the numbers and the next handoff in one workspace.
         </Typography>
 
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ mt: 3.5 }}>
@@ -218,6 +226,14 @@ const UnifiedWorkspace: React.FC<UnifiedWorkspaceProps> = ({ onNavigate }) => {
         </Stack>
       </Paper>
 
+      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} alignItems={{ sm: 'center' }} sx={{ mb: 2 }}>
+        <FormControlLabel control={<Switch checked={autoRefresh} onChange={(_, checked) => setAutoRefresh(checked)} />} label="Refresh every 30 seconds" />
+        <Button disabled={report.isFetching || machines.isFetching || health.isFetching} onClick={() => { void report.refetch(); void machines.refetch(); void health.refetch(); }}>Refresh now</Button>
+        <Typography variant="caption" color="text.secondary" role="status">{report.dataUpdatedAt ? `Business data checked ${new Date(report.dataUpdatedAt).toLocaleTimeString()}` : 'Waiting for business data'}</Typography>
+      </Stack>
+      {(report.isError || machines.isError) && <Alert severity="warning" sx={{ mb: 2 }}>Some workspace data could not be refreshed. Existing values may be out of date; unavailable values are not zero. Use Refresh now to retry.</Alert>}
+      {report.isPending && <Alert severity="info" sx={{ mb: 2 }}>Loading business data…</Alert>}
+
       {/* Live System KPIs Strip */}
       <Grid container spacing={2.5} sx={{ mb: 3 }}>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
@@ -227,10 +243,10 @@ const UnifiedWorkspace: React.FC<UnifiedWorkspaceProps> = ({ onNavigate }) => {
                 INVOICED VALUE
               </Typography>
               <Typography variant="h5" fontWeight={800} sx={{ color: 'success.main', mt: 0.5 }}>
-                ₹{Number(reportData?.invoicedValue ?? 0).toLocaleString('en-IN')}
+                {money(reportData?.invoicedValue)}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                Consolidated sales revenue
+                Invoiced sales, before payment collection
               </Typography>
             </CardContent>
           </Card>
@@ -243,7 +259,7 @@ const UnifiedWorkspace: React.FC<UnifiedWorkspaceProps> = ({ onNavigate }) => {
                 RECEIVABLES DUE
               </Typography>
               <Typography variant="h5" fontWeight={800} sx={{ color: 'error.main', mt: 0.5 }}>
-                ₹{Number(reportData?.receivables ?? 0).toLocaleString('en-IN')}
+                {money(reportData?.receivables)}
               </Typography>
               <Typography variant="caption" color="text.secondary">
                 Pending customer balances
@@ -259,7 +275,7 @@ const UnifiedWorkspace: React.FC<UnifiedWorkspaceProps> = ({ onNavigate }) => {
                 OPEN SALES ORDERS
               </Typography>
               <Typography variant="h5" fontWeight={800} sx={{ color: 'primary.main', mt: 0.5 }}>
-                {reportData?.openOrders ?? 0} Orders
+                {reportData ? `${reportData.openOrders} orders` : 'Unavailable'}
               </Typography>
               <Typography variant="caption" color="text.secondary">
                 Pending dispatch / delivery
@@ -272,26 +288,33 @@ const UnifiedWorkspace: React.FC<UnifiedWorkspaceProps> = ({ onNavigate }) => {
           <Card variant="outlined" sx={{ borderRadius: 3 }}>
             <CardContent sx={{ py: 2 }}>
               <Typography variant="caption" color="text.secondary" fontWeight={700}>
-                MILL MACHINES RUNNING
+                REGISTERED MACHINES
               </Typography>
               <Typography variant="h5" fontWeight={800} sx={{ color: 'info.main', mt: 0.5 }}>
-                {machineStats?.running ?? machineStats?.total ?? 'Active'}
+                {machines.data?.length ?? 'Unavailable'}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                Production equipment online
+                Equipment register, not live telemetry
               </Typography>
             </CardContent>
           </Card>
         </Grid>
       </Grid>
 
+      {reportData && <Alert severity={reportData.lowStock.length || reportData.receivables > 0 ? 'warning' : 'success'} sx={{ mb: 2 }} action={<Button color="inherit" onClick={() => onNavigate('reports')}>Review</Button>}>
+        {reportData.lowStock.length} catalogue items at or below reorder level · {reportData.openOrders} open orders · {reportData.openJobWork} open job-work challans. Review receivables before closing the day.
+      </Alert>}
+      <BusinessFlowGuide onNavigate={onNavigate} />
+
       {/* Primary Workspace Modules */}
       <Typography variant="h5" fontWeight={800} sx={{ mb: 2 }}>
         Integrated Workspaces
       </Typography>
+      <TextField fullWidth size="small" label="Find a workspace" value={search} onChange={event => setSearch(event.target.value)} sx={{ mb: 2 }} />
+      {!visibleModules.length && <Alert severity="info">No matching workspaces. Try “stock”, “sales” or “production”.</Alert>}
 
       <Grid container spacing={2.5}>
-        {modules.map((module) => (
+        {visibleModules.map((module) => (
           <Grid key={module.title} size={{ xs: 12, sm: 6, md: 4 }}>
             <Paper
               variant="outlined"
@@ -388,7 +411,7 @@ const UnifiedWorkspace: React.FC<UnifiedWorkspaceProps> = ({ onNavigate }) => {
         <Box sx={{ flexGrow: 1 }}>
           <Typography fontWeight={800}>Unified Inventory, Customers & Ledgers</Typography>
           <Typography variant="body2" color="text.secondary">
-            Shared stock records ensure zero discrepancies between shop orders, warehouse lots, and GST invoices.
+            Review stock, orders and invoice balances together. Reconcile legacy mill movements with the commerce ledger before closing the day.
           </Typography>
         </Box>
         <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
@@ -418,6 +441,11 @@ const UnifiedWorkspace: React.FC<UnifiedWorkspaceProps> = ({ onNavigate }) => {
           </Button>
         </Stack>
       </Paper>
+      <Stack direction="row" spacing={2} useFlexGap sx={{ mt: 2, flexWrap: 'wrap' }}>
+        <Button onClick={() => onNavigate('tutorial')}>Workflow documentation</Button>
+        <Button href="/health" target="_blank" rel="noopener">Health hub</Button>
+        <Button href="/api/docs" target="_blank" rel="noopener">API explorer (development)</Button>
+      </Stack>
     </Box>
   );
 };
