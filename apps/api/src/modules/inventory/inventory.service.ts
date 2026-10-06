@@ -1,10 +1,13 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { randomUUID } from 'crypto';
+import { stockEventDate } from '../../utils/stock-event-date';
 import { PrismaService } from '../../services/prisma.service';
+import { unavailableStock } from '../../services/business-ledger';
 import {
   throwInwardUnderProduction,
   throwWasteSoldOrLinked,
   throwOutwardBilled,
+  SETTLE_GAP_MS,
 } from '../../utils/delete-guard';
 
 @Injectable()
@@ -57,7 +60,7 @@ export class InventoryService {
     return batches.map((b) => ({
       ...b,
       remainingKg: usageMap.get(b.batchId) ?? b.kg, // if no usage, remaining is original
-      remainingBale: b.bale - (baleMap.get(b.batchId) || 0),
+      remainingBale: (usageMap.get(b.batchId) ?? b.kg) > 0.01 ? Math.max(0, b.bale - (baleMap.get(b.batchId) || 0)) : 0,
     }));
   }
 
@@ -100,7 +103,7 @@ export class InventoryService {
     const baleUsageByBatch = await this.prisma.productionConsumption.groupBy({
       by: ['batchNo'],
       _sum: { bale: true, weight: true },
-      where: { batchNo: { in: ids } },
+      where: { batchNo: { in: ids }, production: { date: { lte: dateLimit } } },
     });
     const usageByBatch: Record<string, { bale: number; weight: number }> = {};
     for (const row of baleUsageByBatch) {
@@ -121,7 +124,7 @@ export class InventoryService {
         batchId: d.batchId,
         supplier: d.supplier,
         receivedAt,
-        earliestStartAt: new Date(new Date(receivedAt).getTime() + 61_000),
+        earliestStartAt: new Date(new Date(receivedAt).getTime() + SETTLE_GAP_MS),
         // Original totals
         originalKg: d.kg,
         originalBale: d.bale,
@@ -163,7 +166,15 @@ export class InventoryService {
     items: Array<{ count: string; bags: number; weight: number }>;
     createdBy?: string;
   }) {
-    return this.prisma.$transaction(async (tx) => {
+    data = { ...data, date: stockEventDate(data.date).toISOString() };
+    if (!Number.isFinite(new Date(data.date).getTime()) || !data.customerName?.trim() || !Array.isArray(data.items) || !data.items.length)
+      throw new BadRequestException('Date, customer and at least one yarn line are required');
+    if (new Set(data.items.map(item => item.count)).size !== data.items.length)
+      throw new BadRequestException('Combine duplicate yarn counts into one dispatch line');
+    if (data.items.some(item => !item.count?.trim() || !Number.isFinite(item.weight) || item.weight <= 0 || !Number.isInteger(item.bags) || item.bags <= 0))
+      throw new BadRequestException('Each dispatch line needs a yarn count, positive weight and whole bags');
+    if (data.items.some(item => Math.abs(item.weight - item.bags * 60) > 0.01)) throw new BadRequestException('Bag dispatch uses 60 kg per bag. Invoice loose yarn by its kilogram quantity.');
+    return this.prisma.stockTransaction(async (tx) => {
       const totalBags = data.items.reduce((sum, item) => sum + item.bags, 0);
       const totalWeight = data.items.reduce(
         (sum, item) => sum + item.weight,
@@ -171,9 +182,11 @@ export class InventoryService {
       );
 
       // 0. Validation: Check stock as of the specific date
-      const stockAtDate = await this.getYarnStockByCount(data.date);
       for (const item of data.items) {
-        const available = stockAtDate[item.count] || 0;
+        const dateLimit = new Date(data.date);
+        if (!data.date.includes('T')) dateLimit.setHours(23, 59, 59, 999);
+        const stock = await tx.yarnInventory.aggregate({ where: { count: item.count, date: { lte: dateLimit } }, _sum: { quantity: true } });
+        const available = stock._sum.quantity || 0;
         if (item.weight > available) {
           throw new BadRequestException(
             `Insufficient yarn stock for count ${item.count} on ${new Date(data.date).toLocaleDateString()}. ` +
@@ -257,8 +270,11 @@ export class InventoryService {
     kg: number;
     createdBy?: string;
   }) {
+    data = { ...data, date: stockEventDate(data.date).toISOString() };
+    if (!Number.isFinite(new Date(data.date).getTime()) || !data.supplier?.trim() || !Number.isInteger(data.bale) || data.bale <= 0 || !Number.isFinite(data.kg) || data.kg <= 0)
+      throw new BadRequestException('Enter a valid receipt date, supplier, whole bales and positive cotton weight');
     try {
-      return await this.prisma.$transaction(async (tx) => {
+      return await this.prisma.stockTransaction(async (tx) => {
         const batchId = data.batchId?.trim() || `IN-${data.date.replace(/-/g, '').slice(0, 6)}-${randomUUID().slice(0, 8).toUpperCase()}`;
         // 1. Create Inward Batch record
         const batch = await tx.inwardBatch.create({
@@ -318,7 +334,10 @@ export class InventoryService {
     date: string;
     createdBy?: string;
   }) {
-    return this.prisma.$transaction(async (tx) => {
+    data = { ...data, date: stockEventDate(data.date).toISOString() };
+    if (!Array.isArray(data.batchIds) || new Set(data.batchIds).size !== data.batchIds.length || data.batchIds.length < 2 || !Number.isFinite(new Date(data.date).getTime()))
+      throw new BadRequestException('Choose at least two different batches and a valid merge date');
+    return this.prisma.stockTransaction(async (tx) => {
       const { batchIds, date, createdBy } = data;
       let totalRemainingKg = 0;
       let totalRemainingBales = 0;
@@ -338,12 +357,11 @@ export class InventoryService {
         const batch = await tx.inwardBatch.findUnique({ where: { batchId } });
         if (!batch) throw new BadRequestException(`Batch ${batchId} not found`);
 
-        const usedAgg = await tx.cottonInventory.aggregate({
+        const stockAgg = await tx.cottonInventory.aggregate({
           _sum: { quantity: true },
-          where: { batchId, type: { in: ['PRODUCTION', 'MERGE_OUT'] } },
+          where: { batchId },
         });
-        const alreadyUsed = Math.abs(usedAgg._sum.quantity || 0);
-        const remainingKg = batch.kg - alreadyUsed;
+        const remainingKg = stockAgg._sum.quantity || 0;
 
         const baleAgg = await tx.productionConsumption.aggregate({
           _sum: { bale: true },
@@ -544,17 +562,12 @@ export class InventoryService {
     });
     const totalCotton = cottonAgg._sum.quantity || 0;
 
-    // Calculate Cotton Bales (Estimate based on Avg Bale Weight from Inward History)
-    // Total Inward Bales / Total Inward Kg
-    const inwardAgg = await this.prisma.inwardBatch.aggregate({
-      _sum: { bale: true, kg: true },
-    });
-    const totalInwardBales = inwardAgg._sum.bale || 0;
-    const totalInwardKg = inwardAgg._sum.kg || 0;
-    const avgBaleWeight =
-      totalInwardBales > 0 ? totalInwardKg / totalInwardBales : 170; // Fallback to 170kg
-
-    const cottonBales = Math.round(totalCotton / avgBaleWeight);
+    const batches = await this.prisma.inwardBatch.findMany({ where: { date: { lte: asOf } }, select: { batchId: true, bale: true } });
+    const usedBales = await this.prisma.productionConsumption.groupBy({ by: ['batchNo'], _sum: { bale: true }, where: { production: { date: { lte: asOf } } } });
+    const usedByBatch = new Map(usedBales.map(row => [row.batchNo, row._sum.bale || 0]));
+    const balances = await this.prisma.cottonInventory.groupBy({ by: ['batchId'], where: { date: { lte: asOf } }, _sum: { quantity: true } });
+    const remaining = new Map(balances.map(row => [row.batchId, row._sum.quantity || 0]));
+    const cottonBales = batches.reduce((sum, batch) => sum + ((remaining.get(batch.batchId) || 0) > 0.01 ? Math.max(0, batch.bale - (usedByBatch.get(batch.batchId) || 0)) : 0), 0);
 
     // Production & Waste Metrics (Period Based)
     let whereClause = {};
@@ -605,12 +618,16 @@ export class InventoryService {
   }
 
   async deleteInward(id: number, actor = 'SYSTEM', reason?: string) {
-    return this.prisma.$transaction(async (tx) => {
+    return this.prisma.stockTransaction(async (tx) => {
       const batch = await tx.inwardBatch.findUnique({
         where: { id },
       });
 
       if (!batch) throw new BadRequestException('Batch not found');
+      if (await tx.cottonInventory.count({ where: { batchId: batch.batchId, type: 'RECYCLED_WASTE' } })) throw new BadRequestException('Reverse the waste recycling entry to return this cotton to waste stock.');
+      if (batch.catalogueItemId) throw new BadRequestException('This cotton receipt belongs to procurement. Record its supplier return in Business flows to preserve the purchase and payable links.');
+      const receiptLinks = await tx.workflowDocument.findMany({ where: { kind: 'LINK_COTTON_RECEIPT' } });
+      if (receiptLinks.some(doc => JSON.parse(doc.metadata).batchId === batch.batchId)) throw new BadRequestException('This receipt is linked to supplier accounting. Record its supplier return in Business flows.');
 
       // 1. Dependency Check: Check if batch is used in any genuine manufacturing production
       const consumptions = await tx.productionConsumption.findMany({
@@ -656,6 +673,9 @@ export class InventoryService {
       // 2.1 If deleting a merged batch, unmerge the original batches
       if (batch.isMerged && batch.mergedFrom) {
         const sourceBatchIds = batch.mergedFrom.split(',').map((s) => s.trim());
+        // The source references identify this merge; other merges must remain intact.
+        const mergeMovements = await tx.cottonInventory.findMany({ where: { type: 'MERGE_OUT', batchId: { in: sourceBatchIds } } });
+        const mergeIds = [...new Set(mergeMovements.map(m => Number(m.reference.replace(/^MERGE-/, ''))).filter(Number.isFinite))];
         await tx.cottonInventory.deleteMany({
           where: {
             type: 'MERGE_OUT',
@@ -665,11 +685,12 @@ export class InventoryService {
         await tx.productionConsumption.deleteMany({
           where: {
             batchNo: { in: sourceBatchIds },
+            productionId: { in: mergeIds },
             production: { createdBy: 'SYSTEM_MERGE' },
           },
         });
         await tx.production.deleteMany({
-          where: { createdBy: 'SYSTEM_MERGE' },
+          where: { id: { in: mergeIds }, createdBy: 'SYSTEM_MERGE' },
         });
       }
 
@@ -719,30 +740,19 @@ export class InventoryService {
   }
 
   async deleteOutward(id: number, actor = 'SYSTEM', reason?: string) {
-    return this.prisma.$transaction(async (tx) => {
+    return this.prisma.stockTransaction(async (tx) => {
       // 1. Fetch outward to know which counts to recalculate (optimization) or just recalc all
       const outward = await tx.outward.findUnique({
         where: { id },
-        include: { items: true },
+        include: { items: true, invoices: true },
       });
 
       if (!outward) throw new BadRequestException('Outward entry not found');
+      if (outward.status === 'REVERSED') return { success: true };
 
-      // Check if there is an invoice matching customer and date
-      const matchingInvoice = await tx.invoice.findFirst({
-        where: {
-          customerName: outward.customerName,
-          date: outward.date,
-        },
-        include: { payments: true },
-      });
+      const matchingInvoice = outward.invoices.find(invoice => invoice.status !== 'VOID');
 
-      if (
-        matchingInvoice &&
-        (matchingInvoice.status === 'PAID' ||
-          matchingInvoice.amountPaid > 0 ||
-          matchingInvoice.payments.length > 0)
-      ) {
+      if (matchingInvoice) {
         try {
           await tx.activityLog.create({
             data: {
@@ -755,7 +765,7 @@ export class InventoryService {
                 invoiceNo: matchingInvoice.invoiceNo,
                 status: matchingInvoice.status,
                 amountPaid: matchingInvoice.amountPaid,
-                reason: 'Payment has already been received for the linked invoice',
+                reason: 'Void the linked invoice before reversing its dispatch',
               }),
             },
           });
@@ -767,14 +777,17 @@ export class InventoryService {
         });
       }
 
-      // 2. Delete yarn inventory movements
-      await tx.yarnInventory.deleteMany({
-        where: { reference: `O-${id}` },
-      });
+      // Preserve dispatch history and record the physical return once.
+      const original = await tx.yarnInventory.findMany({ where: { reference: `O-${id}`, type: 'OUTWARD' } });
+      for (const movement of original) await tx.yarnInventory.create({ data: {
+        date: new Date(), type: 'OUTWARD_REVERSAL', quantity: -movement.quantity, balance: 0,
+        reference: `O-${id}-REVERSAL`, count: movement.count, createdBy: actor,
+      } });
 
       // 3. Delete outward record
-      await tx.outward.delete({
+      await tx.outward.update({
         where: { id },
+        data: { status: 'REVERSED', updatedBy: actor },
       });
 
       // 4. Recalculate Yarn Inventory Balances
@@ -819,11 +832,11 @@ export class InventoryService {
       return { success: true };
     });
   }
-  async getYarnStockByCount(asOfDate?: string) {
+  async getYarnStockByCount(asOfDate?: string, availableOnly = false) {
     let dateLimit = new Date();
     if (asOfDate) {
       dateLimit = new Date(asOfDate);
-      dateLimit.setHours(23, 59, 59, 999);
+      if (!asOfDate.includes('T')) dateLimit.setHours(23, 59, 59, 999);
     }
 
     const counts = await this.prisma.yarnInventory.findMany({
@@ -845,7 +858,14 @@ export class InventoryService {
         },
         _sum: { quantity: true },
       });
-      const balance = entries._sum.quantity || 0;
+      let balance = entries._sum.quantity || 0;
+      if (availableOnly) {
+        const item = await this.prisma.catalogueItem.findUnique({ where: { sku: `LEGACY-YARN-${c.count}` } });
+        if (item) {
+          const catalogue = await this.prisma.stockMovement.aggregate({ where: { itemId: item.id }, _sum: { quantity: true, reservedQty: true } });
+          balance = Math.min(balance, (catalogue._sum.quantity || 0) - (catalogue._sum.reservedQty || 0) - await unavailableStock(this.prisma, item.id));
+        }
+      }
       if (balance > 0.01) {
         stock[c.count] = balance;
       }
@@ -858,7 +878,9 @@ export class InventoryService {
     quantity: number;
     createdBy?: string;
   }) {
-    return this.prisma.$transaction(async (tx) => {
+    data = { ...data, date: stockEventDate(data.date).toISOString() };
+    if (!Number.isFinite(data.quantity) || data.quantity <= 0 || !Number.isFinite(new Date(data.date).getTime())) throw new BadRequestException('Enter a valid recycle date and positive waste weight');
+    return this.prisma.stockTransaction(async (tx) => {
       // 1. Check Waste Balance as of the requested date
       const wasteAgg = await tx.wasteInventory.aggregate({
         _sum: { quantity: true },
@@ -877,7 +899,7 @@ export class InventoryService {
       const lastWaste = await tx.wasteInventory.findFirst({
         orderBy: { id: 'desc' },
       });
-      await tx.wasteInventory.create({
+      const recycled = await tx.wasteInventory.create({
         data: {
           date: new Date(data.date),
           type: 'RECYCLE',
@@ -889,6 +911,9 @@ export class InventoryService {
       });
 
       // 3. Add to Cotton Inventory (Recycled)
+      const batchId = `RECYCLE-${recycled.id}`;
+      await tx.wasteInventory.update({ where: { id: recycled.id }, data: { reference: batchId } });
+      await tx.inwardBatch.create({ data: { batchId, date: new Date(data.date), supplier: 'Internal waste recycling', bale: 0, kg: data.quantity, createdBy: data.createdBy } });
       const lastCotton = await tx.cottonInventory.findFirst({
         orderBy: { id: 'desc' },
       });
@@ -898,8 +923,8 @@ export class InventoryService {
           type: 'RECYCLED_WASTE',
           quantity: data.quantity,
           balance: (lastCotton?.balance || 0) + data.quantity, // Should this be + or -? Recycling ADDS to Cotton stock? Yes.
-          reference: 'RECYCLED',
-          batchId: null,
+          reference: batchId,
+          batchId,
           createdBy: data.createdBy,
         },
       });
@@ -915,7 +940,9 @@ export class InventoryService {
     price?: number;
     createdBy?: string;
   }) {
-    return this.prisma.$transaction(async (tx) => {
+    data = { ...data, date: stockEventDate(data.date).toISOString() };
+    if (!Number.isFinite(data.quantity) || data.quantity <= 0 || !Number.isFinite(new Date(data.date).getTime()) || (data.price !== undefined && (!Number.isFinite(data.price) || data.price < 0))) throw new BadRequestException('Enter a valid waste sale date, positive weight and non-negative price');
+    return this.prisma.stockTransaction(async (tx) => {
       // 1. Check Waste Balance as of the requested date
       const wasteAgg = await tx.wasteInventory.aggregate({
         _sum: { quantity: true },
@@ -952,7 +979,7 @@ export class InventoryService {
   }
 
   async deleteWaste(id: number, actor = 'SYSTEM', reason?: string) {
-    return this.prisma.$transaction(async (tx) => {
+    return this.prisma.stockTransaction(async (tx) => {
       const waste = await tx.wasteInventory.findUnique({ where: { id } });
       if (!waste) throw new BadRequestException('Waste entry not found');
 
@@ -1011,13 +1038,13 @@ export class InventoryService {
 
       // 1. If it was RECYCLE, remove from Cotton Inventory
       if (waste.type === 'RECYCLE') {
+        const linked = await tx.cottonInventory.findMany({ where: { type: 'RECYCLED_WASTE', ...(waste.reference?.startsWith('RECYCLE-') ? { reference: waste.reference } : { date: waste.date, quantity: Math.abs(waste.quantity) }) } });
+        if (linked.length !== 1) throw new BadRequestException('This historical recycling entry has no unique cotton link. Reconcile its history before reversing it.');
+        if (linked[0].batchId && await tx.productionConsumption.count({ where: { batchNo: linked[0].batchId } })) throw new BadRequestException('Recycled cotton is already used in production or a merge. Reverse the dependent entry first.');
         await tx.cottonInventory.deleteMany({
-          where: {
-            type: 'RECYCLED_WASTE',
-            date: waste.date,
-            quantity: Math.abs(waste.quantity),
-          },
+          where: { id: linked[0].id },
         });
+        if (linked[0].batchId) await tx.inwardBatch.delete({ where: { batchId: linked[0].batchId } });
 
         // Recalculate Cotton Inventory
         const cottonMovements = await tx.cottonInventory.findMany({

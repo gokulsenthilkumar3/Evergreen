@@ -369,7 +369,7 @@ const JobWork: React.FC = () => {
           }}
         >
           <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
-            {['ALL', 'DISPATCHED', 'PART_RECEIVED', 'COMPLETED'].map((status) => (
+            {['ALL', 'DISPATCHED', 'PART_RECEIVED', 'COMPLETED', 'CANCELLED'].map((status) => (
               <Chip
                 key={status}
                 label={status === 'ALL' ? 'All Challans' : status.replace('_', ' ')}
@@ -492,7 +492,7 @@ const JobWork: React.FC = () => {
                       />
                     </TableCell>
                     <TableCell align="right">
-                      {job.status !== 'COMPLETED' && (
+                      {!['COMPLETED', 'CANCELLED'].includes(job.status) && (
                         <Button
                           size="small"
                           variant="outlined"
@@ -502,6 +502,11 @@ const JobWork: React.FC = () => {
                           Receive
                         </Button>
                       )}
+                      {!['COMPLETED', 'CANCELLED'].includes(job.status) && <Button size="small" color="error" onClick={async () => {
+                        if (!window.confirm('Confirm the outstanding material has physically returned. Received material and recorded scrap will be retained.')) return;
+                        try { await api.post(`/job-work/${job.id}/cancel`, { notes: 'Outstanding material returned; job cancelled', returnConfirmed: true }); await refresh(); toast.success('Job cancelled; outstanding material returned once'); }
+                        catch (error: any) { toast.error(error.response?.data?.message || 'Could not cancel job'); }
+                      }}>Cancel & return</Button>}
                     </TableCell>
                   </TableRow>
                 ))

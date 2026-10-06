@@ -21,6 +21,7 @@ import { WarehouseModule } from './modules/warehouse/warehouse.module';
 import { MachineModule } from './modules/machines/machine.module';
 import { QualityModule } from './modules/quality/quality.module';
 import { HrModule } from './modules/hr/hr.module';
+import { WorkflowsModule } from './modules/workflows/workflows.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
@@ -50,6 +51,7 @@ import { RolesGuard } from './guards/roles.guard';
     MachineModule,
     QualityModule,
     HrModule,
+    WorkflowsModule,
   ],
   controllers: [AppController],
   providers: [

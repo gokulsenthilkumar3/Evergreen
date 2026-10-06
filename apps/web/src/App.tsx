@@ -100,7 +100,7 @@ const SessionManagement = lazy(() => import('./pages/SessionManagement'));
 const SecuritySettings = lazy(() => import('./pages/SecuritySettings'));
 const Store = lazy(() => import('./pages/Store'));
 const Insights = lazy(() => import('./pages/Insights'));
-const Payments = lazy(() => import('./pages/Payments'));
+const Payments = lazy(() => import('./pages/SharedPayments'));
 const Helpdesk = lazy(() => import('./pages/Helpdesk'));
 const Tutorial = lazy(() => import('./pages/Tutorial'));
 const UnifiedWorkspace = lazy(() => import('./pages/UnifiedWorkspace'));
@@ -108,6 +108,7 @@ const JobWork = lazy(() => import('./pages/JobWork'));
 const CommerceDesk = lazy(() => import('./pages/CommerceDesk'));
 const CommerceReports = lazy(() => import('./pages/CommerceReports'));
 const OperationsDesk = lazy(() => import('./pages/OperationsDesk'));
+const WorkflowDesk = lazy(() => import('./pages/WorkflowDesk'));
 // ── Merged sub-project pages ──
 const YarnMachineManagement = lazy(() => import('./pages/yarn/MachineManagement'));
 const YarnQualityControl = lazy(() => import('./pages/yarn/QualityControl'));
@@ -483,6 +484,7 @@ const App: React.FC = () => {
       workspace: 'EverGreen One',
       jobwork: 'Job Work',
       operations: 'Operations Desk',
+      workflows: 'Business flows',
       business: 'Business Desk',
       reports: 'Business Reports',
       paymentops: 'Payment Operations',
@@ -571,6 +573,7 @@ const App: React.FC = () => {
         { text: 'Production & Job Work', icon: <WasteIcon />, page: 'production', description: 'Bale consumption mixing, yarn count production, waste tracking, and material balance' },
         { text: 'Job Work Register', icon: <SyncIcon />, page: 'jobwork', description: 'External job work contracts, sent material, inward yarn returns, and reconciliation' },
         { text: 'Operations Desk', icon: <InventoryIcon />, page: 'operations', description: 'Daily floor checklists, machine operational status, and shift supervisor notes' },
+        { text: 'Business flows', icon: <SyncIcon />, page: 'workflows', description: 'Returns, procurement, conversion, quality holds and accounting' },
         { text: 'Outwards', icon: <OutwardIcon fontSize="small" />, page: 'outward', description: 'Customer yarn dispatch gate pass, vehicle/driver logging, and barcode tags' },
         { text: 'Costing', icon: <CostIcon />, page: 'costing', description: 'Per-kg spinning cost analysis: electricity, labor, packaging, and maintenance' },
         { text: 'Business Desk', icon: <StoreIcon />, page: 'business', description: 'Customer sales orders, proforma generation, delivery tracking, and commercial orders' },
@@ -699,7 +702,8 @@ const App: React.FC = () => {
               <CssBaseline />
               <PrintStyles />
               <ScreenReaderAnnouncer />
-              <Toaster position="top-center" richColors theme={mode === 'dark' ? 'dark' : 'light'} closeButton expand />
+              <Toaster position="top-center" richColors theme={mode === 'dark' ? 'dark' : 'light'} closeButton expand
+                toastOptions={{ className: 'evergreen-toast', style: { fontFamily: 'inherit', borderRadius: '12px' } }} />
               {/* Floating bottom nav pill */}
               {floatingNav && (
                 <Box className="floating-bottom-nav" component="nav" aria-label="Bottom navigation">
@@ -1106,6 +1110,7 @@ const App: React.FC = () => {
                       {currentPage === 'workspace' && <UnifiedWorkspace onNavigate={navigateTo} />}
                       {currentPage === 'jobwork' && <JobWork />}
                       {currentPage === 'operations' && <OperationsDesk />}
+                      {currentPage === 'workflows' && <WorkflowDesk />}
                       {currentPage === 'business' && <CommerceDesk />}
                       {currentPage === 'reports' && <CommerceReports />}
                       {currentPage === 'paymentops' && <Payments />}

@@ -1,5 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../services/prisma.service';
+import { stockEventDate } from '../../utils/stock-event-date';
+import { unavailableStock } from '../../services/business-ledger';
 
 @Injectable()
 export class JobWorkService {
@@ -7,7 +9,7 @@ export class JobWorkService {
 
   private async available(tx: any, itemId: number) {
     const result = await tx.stockMovement.aggregate({ where: { itemId }, _sum: { quantity: true, reservedQty: true } });
-    return Number(result._sum.quantity || 0) - Number(result._sum.reservedQty || 0);
+    return Number(result._sum.quantity || 0) - Number(result._sum.reservedQty || 0) - await unavailableStock(tx, itemId);
   }
 
   listWorkers() { return this.prisma.jobWorker.findMany({ where: { active: true }, orderBy: { name: 'asc' } }); }
@@ -25,18 +27,18 @@ export class JobWorkService {
     const lines = body.lines || [];
     if (!body.jobWorkerId || !body.processType?.trim() || lines.length === 0) throw new BadRequestException('Job worker, process and at least one material line are required');
     if (new Set(lines.map((line: any) => Number(line.itemId))).size !== lines.length) throw new BadRequestException('Combine duplicate materials into one dispatch line');
-    return this.prisma.$transaction(async (tx) => {
+    return this.prisma.stockTransaction(async (tx) => {
       for (const line of lines) {
         const quantity = Number(line.quantity);
-        if (!line.itemId || quantity <= 0) throw new BadRequestException('Every dispatch line needs an item and positive quantity');
+        if (!line.itemId || !Number.isFinite(quantity) || quantity <= 0) throw new BadRequestException('Every dispatch line needs an item and positive quantity');
         if (await this.available(tx, Number(line.itemId)) + 0.0001 < quantity) throw new BadRequestException(`Insufficient stock for item ${line.itemId}`);
       }
       const challan = await tx.jobWorkChallan.create({ data: {
-        challanNo: body.challanNo || `JW-${Date.now()}`, date: body.date ? new Date(body.date) : new Date(), jobWorkerId: Number(body.jobWorkerId),
+        challanNo: body.challanNo || `JW-${Date.now()}`, date: stockEventDate(body.date), jobWorkerId: Number(body.jobWorkerId),
         processType: body.processType.trim(), notes: body.notes || null, createdBy: body.createdBy || null,
         dispatchLines: { create: lines.map((line: any) => ({ itemId: Number(line.itemId), quantity: Number(line.quantity) })) },
       }, include: { dispatchLines: true } });
-      for (const line of lines) await tx.stockMovement.create({ data: { itemId: Number(line.itemId), quantity: -Number(line.quantity), movementType: 'JOB_DISPATCH', referenceType: 'JOB_WORK', referenceId: String(challan.id), notes: body.processType, createdBy: body.createdBy || null } });
+      for (const line of lines) await tx.stockMovement.create({ data: { itemId: Number(line.itemId), date: challan.date, quantity: -Number(line.quantity), movementType: 'JOB_DISPATCH', referenceType: 'JOB_WORK', referenceId: String(challan.id), notes: body.processType, createdBy: body.createdBy || null } });
       return challan;
     });
   }
@@ -45,14 +47,14 @@ export class JobWorkService {
     const lines = body.lines || [];
     if (!lines.length) throw new BadRequestException('At least one receipt line is required');
     if (new Set(lines.map((line: any) => Number(line.itemId))).size !== lines.length) throw new BadRequestException('Combine duplicate materials into one receipt line');
-    return this.prisma.$transaction(async (tx) => {
+    return this.prisma.stockTransaction(async (tx) => {
       const challan = await tx.jobWorkChallan.findUnique({ where: { id: challanId }, include: { dispatchLines: true, receiptLines: true } });
       if (!challan) throw new BadRequestException('Job-work challan not found');
       if (challan.status === 'COMPLETED') throw new BadRequestException('This challan is already completed');
       if (challan.status === 'CANCELLED') throw new BadRequestException('Cancelled challans cannot receive stock');
       for (const line of lines) {
         const qty = Number(line.quantity); const scrap = Number(line.scrapQty || 0);
-        if (!line.itemId || qty <= 0 || scrap < 0) throw new BadRequestException('Receipt quantities must be valid');
+        if (!line.itemId || !Number.isFinite(qty) || !Number.isFinite(scrap) || qty < 0 || scrap < 0 || qty + scrap <= 0) throw new BadRequestException('Receipt quantities must be valid');
         const dispatched = challan.dispatchLines.filter(d => d.itemId === Number(line.itemId)).reduce((sum, d) => sum + d.quantity, 0);
         const alreadyReceived = challan.receiptLines.filter(r => r.itemId === Number(line.itemId)).reduce((sum, r) => sum + r.quantity + r.scrapQty, 0);
         if (qty + scrap + alreadyReceived > dispatched + 0.0001) throw new BadRequestException('Received and scrap quantity cannot exceed dispatched quantity');
@@ -66,10 +68,12 @@ export class JobWorkService {
   }
 
   async cancel(challanId: number, body: any) {
-    return this.prisma.$transaction(async (tx) => {
+    return this.prisma.stockTransaction(async (tx) => {
       const challan = await tx.jobWorkChallan.findUnique({ where: { id: challanId }, include: { dispatchLines: true, receiptLines: true } });
       if (!challan) throw new BadRequestException('Job-work challan not found');
       if (challan.status === 'COMPLETED') throw new BadRequestException('Completed challans cannot be cancelled');
+      if (challan.status === 'CANCELLED') return challan;
+      if (body.returnConfirmed !== true) throw new BadRequestException('Confirm the outstanding material has physically returned before cancelling this job');
       const received = new Map<number, number>();
       for (const line of challan.receiptLines) received.set(line.itemId, (received.get(line.itemId) || 0) + line.quantity + line.scrapQty);
       for (const line of challan.dispatchLines) {

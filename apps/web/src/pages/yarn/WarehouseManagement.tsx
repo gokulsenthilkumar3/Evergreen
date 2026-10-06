@@ -64,7 +64,8 @@ const initialLocationForm = {
 
 const initialMovementForm = {
   locationId: '' as number | '',
-  itemId: 1,
+  toLocationId: '' as number | '',
+  itemId: '' as number | '',
   movementType: 'IN',
   quantity: 50,
   referenceId: '',
@@ -88,6 +89,7 @@ const WarehouseManagement: React.FC = () => {
     queryKey: ['warehouse-locations'],
     queryFn: () => api.get('/warehouse/locations').then((r) => r.data),
   });
+  const { data: catalogue = [] } = useQuery<Array<{ id: number; name: string; type: string; uom: string; active: boolean }>>({ queryKey: ['commerce-items'], queryFn: () => api.get('/commerce/items').then(r => r.data) });
 
   const {
     data: movements = [],
@@ -122,6 +124,7 @@ const WarehouseManagement: React.FC = () => {
       api.post('/warehouse/movements', {
         locationId: Number(data.locationId),
         itemId: Number(data.itemId),
+        toLocationId: data.movementType === 'TRANSFER' ? Number(data.toLocationId) : undefined,
         movementType: data.movementType,
         quantity: Number(data.quantity),
         referenceId: data.referenceId.trim() || undefined,
@@ -383,7 +386,7 @@ const WarehouseManagement: React.FC = () => {
               ) : (
                 movements.map((m) => (
                   <TableRow key={m.id} hover>
-                    <TableCell sx={{ fontWeight: 600 }}>Item #{m.itemId}</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>{catalogue.find(item => item.id === m.itemId)?.name || `Item #${m.itemId}`}</TableCell>
                     <TableCell>
                       <Typography variant="body2">
                         {m.location?.name || `Location #${m.locationId}`}
@@ -536,24 +539,30 @@ const WarehouseManagement: React.FC = () => {
                     setMovementForm({ ...movementForm, movementType: e.target.value })
                   }
                 >
-                  <MenuItem value="IN">IN (Receipt / Inward)</MenuItem>
-                  <MenuItem value="OUT">OUT (Dispatch / Outward)</MenuItem>
+                  <MenuItem value="IN">IN (Place received stock here)</MenuItem>
+                  <MenuItem value="OUT">OUT (Release stock for use)</MenuItem>
                   <MenuItem value="TRANSFER">TRANSFER (Internal Relocation)</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
+            {movementForm.movementType === 'TRANSFER' && <Grid size={{ xs: 12, sm: 6 }}>
+              <TextField select label="Destination location" fullWidth size="small" value={movementForm.toLocationId} onChange={e => setMovementForm({ ...movementForm, toLocationId: Number(e.target.value) })}>
+                {locations.filter(loc => loc.active && loc.id !== movementForm.locationId).map(loc => <MenuItem key={loc.id} value={loc.id}>{loc.name}</MenuItem>)}
+              </TextField>
+            </Grid>}
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
-                type="number"
-                label="Item / Batch Reference ID"
+                select
+                label="Stock item"
                 fullWidth
                 size="small"
                 required
                 value={movementForm.itemId}
                 onChange={(e) =>
-                  setMovementForm({ ...movementForm, itemId: Number(e.target.value) || 1 })
+                  setMovementForm({ ...movementForm, itemId: Number(e.target.value) || '' })
                 }
-              />
+                helperText="Locations track existing company stock; they do not create new stock."
+              >{catalogue.filter(item => item.active && item.type !== 'SERVICE').map(item => <MenuItem key={item.id} value={item.id}>{item.name} · {item.uom}</MenuItem>)}</TextField>
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField

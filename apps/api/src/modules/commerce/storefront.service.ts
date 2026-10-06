@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { PrismaService } from '../../services/prisma.service';
 import { calculateInvoiceTotals } from './invoice-totals';
+import { unavailableStock } from '../../services/business-ledger';
 
 const publicTypes = ['YARN', 'FINISHED_GOOD', 'SERVICE'];
 const roundMoney = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100;
@@ -19,7 +20,7 @@ export class StorefrontService {
     });
     return Promise.all(items.map(async item => {
       const stock = item.type === 'SERVICE' ? null : await this.prisma.stockMovement.aggregate({ where: { itemId: item.id }, _sum: { quantity: true, reservedQty: true } });
-      const available = item.type === 'SERVICE' ? null : Math.max(0, roundMoney(Number(stock?._sum.quantity || 0) - Number(stock?._sum.reservedQty || 0)));
+      const available = item.type === 'SERVICE' ? null : Math.max(0, roundMoney(Number(stock?._sum.quantity || 0) - Number(stock?._sum.reservedQty || 0) - await unavailableStock(this.prisma, item.id)));
       return {
         id: item.id, sku: item.sku, name: item.name, description: item.description,
         type: item.type, uom: item.uom, gstRate: item.gstRate, salePrice: item.salePrice,
@@ -53,7 +54,7 @@ export class StorefrontService {
     if (parsedLines.some((line: any) => !Number.isSafeInteger(line.itemId) || line.itemId <= 0 || !Number.isFinite(line.quantity) || line.quantity <= 0 || line.quantity > 100000 || Math.abs(Math.round(line.quantity * 1000) - line.quantity * 1000) > 0.000001)) throw new BadRequestException('Order quantities are invalid');
     if (new Set(parsedLines.map((line: any) => line.itemId)).size !== parsedLines.length) throw new BadRequestException('Combine duplicate products');
 
-    return this.prisma.$transaction(async tx => {
+    return this.prisma.stockTransaction(async tx => {
       const items = await tx.catalogueItem.findMany({ where: { id: { in: parsedLines.map((line: any) => line.itemId) } } });
       const itemMap = new Map(items.map(item => [item.id, item]));
       for (const line of parsedLines) {
@@ -61,7 +62,7 @@ export class StorefrontService {
         if (!item || !item.active || !item.shopVisible || !publicTypes.includes(item.type)) throw new BadRequestException('A selected product is no longer available');
         if (item.type === 'SERVICE') continue;
         const stock = await tx.stockMovement.aggregate({ where: { itemId: item.id }, _sum: { quantity: true, reservedQty: true } });
-        const available = Number(stock._sum.quantity || 0) - Number(stock._sum.reservedQty || 0);
+        const available = Number(stock._sum.quantity || 0) - Number(stock._sum.reservedQty || 0) - await unavailableStock(tx, item.id);
         if (available + 0.0001 < line.quantity) throw new BadRequestException(`${item.name} has insufficient stock`);
       }
       const taxLines = parsedLines.map((line: any) => {
@@ -74,7 +75,7 @@ export class StorefrontService {
         data: {
           orderNo: `WEB-${Date.now()}-${randomUUID().slice(0, 6).toUpperCase()}`,
           customerId: customer.id, status: 'CONFIRMED', subtotal: estimate.subtotal,
-          total: estimate.subtotal, notes: notes || null, createdBy: 'STOREFRONT',
+          total: estimate.total, notes: notes || null, createdBy: 'STOREFRONT',
           lines: { create: parsedLines.map((line: any) => {
             const item = itemMap.get(line.itemId)!;
             return { itemId: item.id, quantity: line.quantity, rate: item.salePrice, gstRate: item.gstRate, discount: 0 };

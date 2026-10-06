@@ -59,6 +59,6 @@ export class HrService {
     if (netPay < 0 || Math.abs(data.netPay - netPay) > 0.01) {
       throw new BadRequestException('Net pay must equal basic pay plus overtime minus deductions');
     }
-    return (this.prisma as any).payrollEntry.create({ data: { ...data, netPay } });
+    return this.prisma.stockTransaction(tx => tx.payrollEntry.create({ data: { ...data, netPay } }));
   }
 }

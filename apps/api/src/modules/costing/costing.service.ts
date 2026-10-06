@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../services/prisma.service';
 
 @Injectable()
@@ -6,9 +6,11 @@ export class CostingService {
   constructor(private prisma: PrismaService) {}
 
   async addEntry(data: any) {
+    const amount = Number(data.totalCost ?? data.amount ?? 0);
+    if (!Number.isFinite(amount) || amount < 0 || !Number.isFinite(new Date(data.date).getTime())) throw new BadRequestException('Enter a valid expense date and non-negative amount');
     // Map frontend/controller data structure to Prisma Model
     // ensure numeric fields are numbers, dates are Dates.
-    return this.prisma.costingEntry.create({
+    return this.prisma.stockTransaction(tx => tx.costingEntry.create({
       data: {
         date: new Date(data.date),
         category: data.category,
@@ -37,7 +39,7 @@ export class CostingService {
         title: data.title,
         createdBy: data.createdBy,
       },
-    });
+    }));
   }
 
   async getCostEntries() {
@@ -55,6 +57,7 @@ export class CostingService {
     // If `getCostEntries` returns Int ID, frontend sends Int ID (as string in URL param).
     const numId = parseInt(id);
     if (isNaN(numId)) return false; // Or throw
+    if (await this.prisma.journalEntry.findUnique({ where: { sourceKey: `COST:${numId}` } })) throw new BadRequestException('Posted expenses retain their accounting history. Record an expense correction in Business flows.');
 
     try {
       await this.prisma.costingEntry.delete({ where: { id: numId } });
@@ -67,6 +70,7 @@ export class CostingService {
   async updateEntry(id: string, data: any) {
     const numId = parseInt(id);
     if (isNaN(numId)) return null;
+    if (await this.prisma.journalEntry.findUnique({ where: { sourceKey: `COST:${numId}` } })) throw new BadRequestException('Posted expenses retain their accounting history. Record an expense correction in Business flows.');
 
     try {
       return await this.prisma.costingEntry.update({

@@ -54,15 +54,17 @@ interface QualityInspection {
 
 const initialInspectionForm = {
   batchId: '',
-  yarnCount: '40s Combed Cotton',
-  sampleWeight: 100,
-  tenacity: 18.5,
-  elongation: 5.2,
-  unevenness: 11.8,
-  imperfections: 120,
-  classimateFaults: 12,
-  status: 'PASS',
-  disposition: 'RELEASE',
+  yarnCount: '',
+  lotId: '',
+  holdQuantity: '',
+  sampleWeight: '' as string | number,
+  tenacity: '' as string | number,
+  elongation: '' as string | number,
+  unevenness: '' as string | number,
+  imperfections: '' as string | number,
+  classimateFaults: '' as string | number,
+  status: 'PENDING',
+  disposition: '',
   remarks: '',
   inspectedBy: '',
 };
@@ -73,6 +75,7 @@ const QualityControl: React.FC = () => {
   const [form, setForm] = useState(initialInspectionForm);
 
   const queryClient = useQueryClient();
+  const { data: business } = useQuery<any>({ queryKey: ['workflows'], queryFn: async () => (await api.get('/workflows')).data });
 
   const {
     data: inspections = [],
@@ -94,6 +97,8 @@ const QualityControl: React.FC = () => {
     mutationFn: (data: typeof form) =>
       api.post('/quality/inspections', {
         batchId: data.batchId.trim() || undefined,
+        lotId: data.lotId ? Number(data.lotId) : undefined,
+        holdQuantity: data.holdQuantity ? Number(data.holdQuantity) : undefined,
         yarnCount: data.yarnCount.trim() || undefined,
         sampleWeight: Number(data.sampleWeight) || undefined,
         tenacity: Number(data.tenacity) || undefined,
@@ -102,7 +107,7 @@ const QualityControl: React.FC = () => {
         imperfections: Number(data.imperfections) || undefined,
         classimateFaults: Number(data.classimateFaults) || undefined,
         status: data.status,
-        disposition: data.disposition,
+        disposition: data.disposition || undefined,
         remarks: data.remarks.trim() || undefined,
         inspectedBy: data.inspectedBy.trim() || undefined,
       }),
@@ -369,6 +374,8 @@ const QualityControl: React.FC = () => {
         </DialogTitle>
         <DialogContent sx={{ pt: 3 }}>
           <Grid container spacing={2}>
+            <Grid size={{ xs: 12, sm: 8 }}><TextField select fullWidth label="Stock lot to inspect" value={form.lotId} onChange={e => setForm({ ...form, lotId: e.target.value })}><MenuItem value="">Measurement record only</MenuItem>{(business?.lots || []).filter((l: any) => l.quantity > 0).map((l: any) => <MenuItem key={l.id} value={String(l.id)}>{l.code} · {l.item.name} · {l.quantity} {l.item.uom}</MenuItem>)}</TextField></Grid>
+            <Grid size={{ xs: 12, sm: 4 }}><TextField fullWidth type="number" label="Quantity to quarantine" value={form.holdQuantity} onChange={e => setForm({ ...form, holdQuantity: e.target.value })} helperText="Required for HOLD or FAIL. Release in Business flows after inspection." /></Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 label="Batch / Lot Number"
