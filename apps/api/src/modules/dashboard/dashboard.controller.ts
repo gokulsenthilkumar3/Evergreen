@@ -48,7 +48,7 @@ export class DashboardController {
           value: hasCottonData
             ? `${metrics.totalCotton.toFixed(0)} kg`
             : 'No Data',
-          subValue: hasCottonData ? `≈ ${metrics.cottonBales} bales` : '',
+          subValue: hasCottonData ? `${metrics.cottonBales} recorded bales` : '',
           color: '#0288d1',
           trend: '',
           comparison: '',

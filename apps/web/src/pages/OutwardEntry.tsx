@@ -20,15 +20,16 @@ import {
     Grid,
     Divider,
     Dialog,
-    DialogTitle,
     DialogContent,
     DialogActions,
+    Chip,
     Menu,
     ListItemIcon,
     ListItemText,
     Tooltip,
     LinearProgress,
     Stack,
+    InputAdornment,
 } from '@mui/material';
 import {
     Add as AddIcon,
@@ -39,11 +40,13 @@ import {
     PictureAsPdf as PdfIcon,
     FileDownload as ExportIcon,
     QrCode2 as QrIcon,
+    LocalShippingOutlined,
 } from '@mui/icons-material';
 import BarcodeQRModal from '../components/common/BarcodeQRModal';
 import { formatOutwardCode, buildOutwardQRPayload } from '../utils/codeFormatters';
 import { useQuery } from '@tanstack/react-query';
 import api from '../utils/api';
+import { localTimeValue, productionTimestamp } from '../utils/productionTiming';
 import { generateExcel } from '../utils/excelGenerator';
 import { generatePDF } from '../utils/pdfGenerator';
 import { useConfirm } from '../context/ConfirmContext';
@@ -53,6 +56,7 @@ import { handleDeleteGuardError } from '../utils/deleteGuardHandler';
 import EmptyState from '../components/common/EmptyState';
 import GlassDatePicker from '../components/common/GlassDatePicker';
 import ExportButtons from '../components/common/ExportButtons';
+import EntryWizardHeader, { EntrySummary, SummaryValue } from '../components/common/EntryWizardHeader';
 
 
 interface OutwardItem {
@@ -111,14 +115,15 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
     });
 
     const [date, setDate] = useState(new Date().toLocaleDateString('en-CA'));
+    const [dispatchTime, setDispatchTime] = useState(() => localTimeValue());
     const [customerName, setCustomerName] = useState('');
     const [vehicleNo, setVehicleNo] = useState('');
     const [driverName, setDriverName] = useState('');
 
     const { data: yarnStock = {}, refetch: refetchStock, isFetching: isFetchingStock } = useQuery<{ [key: string]: number }>({
-        queryKey: ['yarnStock', date],
+        queryKey: ['yarnStock', date, dispatchTime, 'available'],
         queryFn: async () => {
-            const res = await api.get('/inventory/yarn-stock', { params: { date } });
+            const res = await api.get('/inventory/yarn-stock', { params: { date: productionTimestamp(date, dispatchTime) || date, available: true } });
             return res.data;
         }
     });
@@ -214,10 +219,11 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
             return;
         }
 
+        if (!productionTimestamp(date, dispatchTime)) { toast.error('Enter a valid dispatch time'); return; }
         setIsSubmitting(true);
         try {
             await api.post('/inventory/outward', {
-                date,
+                date: productionTimestamp(date, dispatchTime),
                 customerName: customerName.trim(),
                 vehicleNo: vehicleNo.trim().toUpperCase(),
                 driverName: driverName.trim(),
@@ -246,11 +252,11 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
     };
 
     const handleDeleteOutward = async (id: number) => {
-        if (!await confirmDialog({ title: 'Delete Outward Entry', message: 'Are you sure you want to delete this outward entry? This will also revert inventory changes.', severity: 'error', confirmText: 'Delete', cancelText: 'Cancel' })) return;
+        if (!await confirmDialog({ title: 'Reverse Dispatch', message: 'Confirm the yarn has returned to stock. Linked invoices must be voided first. Dispatch history will be retained.', severity: 'warning', confirmText: 'Return stock', cancelText: 'Cancel' })) return;
 
         try {
             await api.delete(`/inventory/outward/${id}`);
-            toast.success(SUCCESS_MESSAGES.DELETE);
+            toast.success('Dispatch reversed and yarn returned to stock');
             refetchHistory();
             refetchStock();
         } catch (error: any) {
@@ -343,7 +349,7 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
                     <Button
                         variant="contained"
                         startIcon={<AddIcon />}
-                        onClick={() => setOpenDialog(true)}
+                        onClick={() => { setDispatchTime(localTimeValue()); setOpenDialog(true); }}
                         sx={{ whiteSpace: 'nowrap' }}
                     >
                         Add Outward
@@ -379,7 +385,7 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
                                             </Box>
                                         </Tooltip>
                                     </TableCell>
-                                    <TableCell sx={{ fontWeight: 'bold' }}>{row.customerName}</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold' }}>{row.customerName}{row.status === 'REVERSED' && <Chip label="Reversed" size="small" sx={{ ml: 1 }} />}</TableCell>
                                     <TableCell>
                                         <Typography variant="body2">{row.vehicleNo}</Typography>
                                         <Typography variant="caption" color="text.secondary">{row.driverName}</Typography>
@@ -398,8 +404,8 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
                                                     <QrIcon fontSize="small" />
                                                 </IconButton>
                                             </Tooltip>
-                                            {(userRole === 'ADMIN') && (
-                                                <Tooltip title="Delete Entry">
+                                            {(userRole === 'ADMIN' && row.status !== 'REVERSED') && (
+                                                <Tooltip title="Reverse dispatch and return stock">
                                                     <IconButton color="error" size="small" onClick={() => handleDeleteOutward(row.id)}>
                                                         <DeleteIcon fontSize="small" />
                                                     </IconButton>
@@ -422,23 +428,28 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
                 </TableContainer>
             </Paper>
 
-            <Dialog open={openDialog} onClose={() => { setOpenDialog(false); setShowErrors(false); }} maxWidth="md" fullWidth>
-                <DialogTitle sx={{ fontWeight: 'bold', borderBottom: 1, borderColor: 'divider' }}>
-                    New Outward Entry
-                </DialogTitle>
-                <DialogContent sx={{ p: 3 }}>
+            <Dialog open={openDialog} onClose={() => { if (!isSubmitting) { setOpenDialog(false); setShowErrors(false); } }} maxWidth="md" fullWidth
+                aria-labelledby="outward-wizard-title" aria-describedby="outward-wizard-title-description">
+                <EntryWizardHeader id="outward-wizard-title" stage="03 · Yarn dispatch" title="New Outward Entry"
+                    description="Prepare the load, confirm available yarn, and record its destination."
+                    icon={<LocalShippingOutlined />} busy={isSubmitting} onClose={() => { setOpenDialog(false); setShowErrors(false); }} />
+                <DialogContent sx={{ p: { xs: 2, sm: 3 } }}>
                     <Box sx={{ mt: 1 }}>
+                        <Typography variant="overline" color="text.secondary" sx={{ display: 'block', mb: 2 }}>01 / Delivery details</Typography>
                         <Grid container spacing={2}>
                             <Grid size={{ xs: 12, sm: 6 }}>
-                                <GlassDatePicker
+                                <TextField type="date" size="small"
                                     label="Date"
                                     
                                     fullWidth
                                     value={date}
+                                    error={showErrors && !validateDate(date, false).valid}
+                                    helperText={showErrors ? validateDate(date, false).message : undefined}
                                     onChange={(e) => setDate(e.target.value)}
                                     InputLabelProps={{ shrink: true }}
                                 />
                             </Grid>
+                            <Grid size={{ xs: 12, sm: 6 }}><TextField type="time" label="Dispatch time" value={dispatchTime} onChange={e => setDispatchTime(e.target.value)} fullWidth slotProps={{ inputLabel: { shrink: true }, htmlInput: { step: 1 } }} helperText="Yarn must be available at this time." /></Grid>
                             <Grid size={{ xs: 12, sm: 6 }}>
                                 <TextField
                                     label="Customer Name"
@@ -446,7 +457,8 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
                                     value={customerName}
                                     onChange={(e) => setCustomerName(e.target.value)}
                                     required
-                                    error={showErrors && !customerName}
+                                    error={showErrors && !validateCustomerName(customerName).valid}
+                                    helperText={showErrors ? validateCustomerName(customerName).message : undefined}
                                 />
                             </Grid>
                             <Grid size={{ xs: 12, sm: 6 }}>
@@ -457,8 +469,8 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
                                     onChange={(e) => setVehicleNo(e.target.value.toUpperCase())}
                                     required
                                     placeholder="TN 01 AB 1234"
-                                    error={showErrors && !vehicleNo}
-                                    helperText="Format: TN 01 AB 1234"
+                                    error={showErrors && !validateVehicleNo(vehicleNo).valid}
+                                    helperText={(showErrors && validateVehicleNo(vehicleNo).message) || 'Format: TN 01 AB 1234'}
                                 />
                             </Grid>
                             <Grid size={{ xs: 12, sm: 6 }}>
@@ -468,15 +480,16 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
                                     value={driverName}
                                     onChange={(e) => setDriverName(e.target.value)}
                                     required
-                                    error={showErrors && !driverName}
+                                    error={showErrors && isEmptyOrWhitespace(driverName)}
+                                    helperText={showErrors && isEmptyOrWhitespace(driverName) ? 'Driver name is required' : undefined}
                                 />
                             </Grid>
                         </Grid>
 
                         <Divider sx={{ my: 3 }} />
 
-                        <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 'bold' }}>
-                            Items (Yarn Bags)
+                        <Typography variant="overline" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
+                            02 / Yarn to dispatch
                         </Typography>
 
                         <TableContainer component={Paper} variant="outlined" sx={{ mb: 2 }}>
@@ -518,6 +531,8 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
                                                     type="number"
                                                     fullWidth
                                                     value={item.bags}
+                                                    label="Bags to dispatch"
+                                                    InputProps={{ endAdornment: <InputAdornment position="end">bags</InputAdornment> }}
                                                     onChange={(e) => handleItemChange(item.id, 'bags', e.target.value)}
                                                     required
                                                     error={!item.bags || (yarnStock[item.count] !== undefined && item.weight > yarnStock[item.count])}
@@ -534,12 +549,14 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
                                                     type="number"
                                                     fullWidth
                                                     value={item.weight}
+                                                    label="Dispatch weight"
+                                                    InputProps={{ endAdornment: <InputAdornment position="end">kg</InputAdornment> }}
                                                     disabled // Auto-calculated
                                                     sx={{ bgcolor: 'action.hover' }}
                                                 />
                                             </TableCell>
                                             <TableCell>
-                                                <IconButton size="small" color="error" onClick={() => removeItemRow(item.id)} disabled={items.length === 1}>
+                                                <IconButton size="small" color="error" aria-label="Remove dispatch row" onClick={() => removeItemRow(item.id)} disabled={items.length === 1}>
                                                     <DeleteIcon fontSize="small" />
                                                 </IconButton>
                                             </TableCell>
@@ -549,7 +566,7 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
                             </Table>
                         </TableContainer>
 
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 1 }}>
+                        <Box sx={{ p: 1 }}>
                             <Button
                                 startIcon={<AddIcon />}
                                 onClick={addItemRow}
@@ -557,20 +574,12 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
                             >
                                 Add Row
                             </Button>
-                            <Box sx={{
-                                textAlign: 'right',
-                                p: 2,
-                                bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(16, 185, 129, 0.05)' : 'rgba(16, 185, 129, 0.03)',
-                                borderRadius: 3,
-                                minWidth: 200,
-                                border: '1px solid',
-                                borderColor: 'divider'
-                            }}>
-                                <Typography variant="body2" color="text.secondary">Total Bags: <strong>{getTotalBags()}</strong></Typography>
-                                <Typography variant="h5" color="primary.main" sx={{ fontWeight: 800 }}>
-                                    {getTotalWeight().toFixed(1)} <Box component="span" sx={{ fontSize: '0.9rem', fontWeight: 500 }}>kg</Box>
-                                </Typography>
-                            </Box>
+                            <EntrySummary title="Dispatch at a glance">
+                                <SummaryValue label="Customer" value={customerName.trim() || '—'} />
+                                <SummaryValue label="Total bags" value={getTotalBags()} />
+                                <SummaryValue label="Dispatch weight" value={`${getTotalWeight().toFixed(1)} kg`} />
+                                <SummaryValue label="Packing" value="60 kg / bag" />
+                            </EntrySummary>
                         </Box>
 
                     </Box>

@@ -5,7 +5,7 @@ type InvoiceDocumentData = {
   invoiceNo: string; date: string; dueDate?: string | null; currency?: string;
   sellerName?: string | null; sellerAddress?: string | null; sellerGSTIN?: string | null; sellerState?: string;
   customerName: string; customerAddress?: string | null; customerGSTIN?: string | null; buyerState?: string | null;
-  subtotal: number; discount: number; cgst: number; sgst: number; igst: number; total: number; amountPaid: number;
+  subtotal: number; discount: number; cgst: number; sgst: number; igst: number; total: number; amountPaid: number; creditTotal?: number;
   status: string; notes?: string | null; terms?: string | null; transportMode?: string | null; vehicleNo?: string | null;
   documentHash?: string | null; items: Array<{ description?: string | null; hsnSac?: string | null; quantity?: number | null; weight?: number; uom?: string | null; rate: number; discount: number; gstRate: number }>;
 };
@@ -48,7 +48,9 @@ export function downloadInvoicePdf(invoice: InvoiceDocumentData) {
   if (invoice.cgst) rows.push(['CGST', currency.format(invoice.cgst)]);
   if (invoice.sgst) rows.push(['SGST', currency.format(invoice.sgst)]);
   if (invoice.igst) rows.push(['IGST', currency.format(invoice.igst)]);
-  rows.push(['Invoice total', currency.format(invoice.total)], ['Amount paid', currency.format(invoice.amountPaid)], ['Balance due', currency.format(Math.max(0, invoice.total - invoice.amountPaid))]);
+  rows.push(['Invoice total', currency.format(invoice.total)]);
+  if (invoice.creditTotal) rows.push(['Linked credits', currency.format(invoice.creditTotal)]);
+  rows.push(['Amount paid', currency.format(invoice.amountPaid)], ['Balance due', currency.format(Math.max(0, invoice.total - (invoice.creditTotal || 0) - invoice.amountPaid))]);
   autoTable(doc, { startY: summaryY, body: rows, theme: 'plain', tableWidth: 85, margin: { left: pageWidth - 99 }, styles: { fontSize: 9, cellPadding: 2 }, columnStyles: { 0: { fontStyle: 'bold' }, 1: { halign: 'right' } }, didParseCell(data) { if (data.row.index === rows.length - 3) data.cell.styles.fontStyle = 'bold'; } });
   const footerY = (doc as jsPDF & { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY || summaryY;
   if (invoice.notes || invoice.terms) {

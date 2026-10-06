@@ -125,6 +125,8 @@ model InwardBatch {
   updatedBy    String?
   mergedFrom   String?
   isMerged     Boolean  @default(false)
+  catalogueItemId Int?
+  unitCost       Float?
 }
 
 model Production {
@@ -134,6 +136,7 @@ model Production {
   totalProduced   Float
   totalWaste      Float
   totalIntermediate Float                 @default(0)
+  processingCost  Float                  @default(0)
   wasteBlowRoom   Float                   @default(0)
   wasteCarding    Float                   @default(0)
   wasteOE         Float                   @default(0)
@@ -185,12 +188,14 @@ model Outward {
   driverName   String?
   totalBags    Int            @default(0)
   totalWeight  Float          @default(0)
+  status       String         @default("DISPATCHED")
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
   entryTimestamp DateTime     @default(now())
   createdBy    String?
   updatedBy    String?
   items        OutwardItem[]
+  invoices     Invoice[]
 }
 
 model OutwardItem {
@@ -287,6 +292,8 @@ model Invoice {
   verificationKey String?
   salesOrderId    Int?
   salesOrder      SalesOrder?   @relation(fields: [salesOrderId], references: [id])
+  outwardId       Int?
+  outward         Outward?      @relation(fields: [outwardId], references: [id])
   transportMode   String?
   vehicleNo       String?
   theme           String        @default("CLASSIC")
@@ -308,6 +315,11 @@ model Invoice {
   // Payment tracking
   status          String        @default("UNPAID")  // UNPAID, PARTIAL, PAID
   amountPaid      Float         @default(0)
+  creditTotal     Float         @default(0)
+  requestKey      String?       @unique
+  requestHash     String?
+  fulfilmentId    Int?
+  fulfilment      WorkflowDocument? @relation("FulfilmentInvoices", fields: [fulfilmentId], references: [id])
 
   items           InvoiceItem[]
   payments        Payment[]
@@ -401,6 +413,8 @@ model CatalogueItem {
   jobDispatchLines  JobWorkDispatchLine[]
   jobReceiptLines   JobWorkReceiptLine[]
   inwardLines       InwardReceiptLine[]
+  workflowLines     WorkflowLine[]
+  lots              StockLot[]
 
   @@index([type])
   @@index([name])
@@ -455,6 +469,10 @@ model StockMovement {
   legacySource  String?
   createdBy     String?
   createdAt     DateTime  @default(now())
+  lotId         Int?
+  lot           StockLot? @relation(fields: [lotId], references: [id])
+  unitCost      Float?
+  valuation     StockValuation?
 
   @@index([itemId, date])
   @@index([referenceType, referenceId])
@@ -570,6 +588,7 @@ model SalesOrderLine {
   item        CatalogueItem @relation(fields: [itemId], references: [id])
   quantity    Float
   invoicedQty Float     @default(0)
+  dispatchedQty Float   @default(0)
   rate        Float
   gstRate     Float     @default(0)
   discount    Float     @default(0)
@@ -652,10 +671,153 @@ model QualityInspection {
   disposition    String?  // RELEASE, REPROCESS, SCRAP
   remarks        String?
   inspectedBy    String?
+  lotId          Int?
+  holdQuantity   Float?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
   @@index([date])
+}
+
+// Immutable operational documents. Lines retain their exact source line identity.
+model WorkflowDocument {
+  id            Int       @id @default(autoincrement())
+  documentNo    String    @unique
+  kind          String
+  status        String    @default("POSTED")
+  date          DateTime  @default(now())
+  requestKey    String    @unique
+  requestHash   String
+  customerId    Int?
+  supplierId    Int?
+  supplier      Supplier? @relation(fields: [supplierId], references: [id])
+  invoiceId     Int?
+  orderId       Int?
+  originId      Int?
+  origin        WorkflowDocument? @relation("WorkflowOrigin", fields: [originId], references: [id])
+  children      WorkflowDocument[] @relation("WorkflowOrigin")
+  subtotal      Float     @default(0)
+  tax           Float     @default(0)
+  total         Float     @default(0)
+  amountPaid    Float     @default(0)
+  metadata      String    @default("{}")
+  notes         String?
+  createdBy     String
+  createdAt     DateTime  @default(now())
+  lines         WorkflowLine[]
+  fulfilmentInvoices Invoice[] @relation("FulfilmentInvoices")
+  @@index([kind, date])
+  @@index([invoiceId])
+  @@index([originId])
+}
+
+model WorkflowLine {
+  id             Int      @id @default(autoincrement())
+  documentId     Int
+  document       WorkflowDocument @relation(fields: [documentId], references: [id])
+  itemId         Int
+  item           CatalogueItem @relation(fields: [itemId], references: [id])
+  sourceLineId   Int?
+  invoiceItemId  Int?
+  lotId          Int?
+  quantity       Float
+  rejectedQty    Float    @default(0)
+  rate           Float    @default(0)
+  gstRate        Float    @default(0)
+  discount       Float    @default(0)
+  net            Float    @default(0)
+  tax            Float    @default(0)
+  direction      String   @default("IN")
+  @@index([sourceLineId])
+  @@index([invoiceItemId])
+}
+
+model Supplier {
+  id          Int     @id @default(autoincrement())
+  code        String  @unique
+  name        String
+  gstin       String?
+  address     String?
+  active      Boolean @default(true)
+  documents   WorkflowDocument[]
+}
+
+model StockLot {
+  id          Int     @id @default(autoincrement())
+  code        String  @unique
+  itemId      Int
+  item        CatalogueItem @relation(fields: [itemId], references: [id])
+  grade       String?
+  colour      String?
+  owner       String  @default("COMPANY")
+  origin      String?
+  movements   StockMovement[]
+  holds       StockHold[]
+  createdAt   DateTime @default(now())
+}
+
+model StockHold {
+  id          Int      @id @default(autoincrement())
+  lotId       Int
+  lot         StockLot @relation(fields: [lotId], references: [id])
+  quantity    Float
+  reason      String
+  status      String   @default("HELD")
+  inspectionId Int?
+  createdBy   String
+  releasedBy  String?
+  createdAt   DateTime @default(now())
+  releasedAt  DateTime?
+}
+
+model WipLot {
+  id           Int      @id @default(autoincrement())
+  productionId Int      @unique
+  code         String   @unique
+  quantity     Float
+  remaining    Float
+  date         DateTime
+  status       String   @default("OPEN")
+  unitCost     Float?
+}
+
+model JournalEntry {
+  id           Int      @id @default(autoincrement())
+  sourceKey    String   @unique
+  date         DateTime
+  description  String
+  createdBy    String
+  createdAt    DateTime @default(now())
+  lines        JournalLine[]
+}
+
+model JournalLine {
+  id           Int      @id @default(autoincrement())
+  entryId      Int
+  entry        JournalEntry @relation(fields: [entryId], references: [id])
+  account      String
+  party        String?
+  debit        Float    @default(0)
+  credit       Float    @default(0)
+  @@index([account])
+}
+
+model StockValuation {
+  id           Int      @id @default(autoincrement())
+  movementId   Int      @unique
+  movement     StockMovement @relation(fields: [movementId], references: [id])
+  quantity     Float
+  unitCost     Float?
+  value        Float?
+  status       String   @default("UNVALUED")
+}
+
+model AccountingPeriod {
+  id           Int      @id @default(autoincrement())
+  through      DateTime @unique
+  closedBy     String
+  reason       String
+  createdAt    DateTime @default(now())
 }
 
 model Staff {

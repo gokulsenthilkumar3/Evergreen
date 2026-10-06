@@ -18,7 +18,6 @@ import {
     Autocomplete,
     IconButton,
     Dialog,
-    DialogTitle,
     DialogContent,
     DialogActions,
     Tooltip,
@@ -34,17 +33,18 @@ import {
     Email as EmailIcon,
     PictureAsPdf as PdfIcon,
     TableView as ExcelIcon,
-    Close as CloseIcon,
     Delete as DeleteIcon,
     Add as AddIcon,
     WarningAmber as WarnIcon,
     MergeType as MergeIcon,
     QrCode2 as QrIcon,
-    AutoAwesome as AutoIcon,
+    Inventory2Outlined,
+    ScaleOutlined,
 } from '@mui/icons-material';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../utils/api';
+import { localTimeValue, productionTimestamp } from '../utils/productionTiming';
 import { generatePDF } from '../utils/pdfGenerator';
 import { generateExcel } from '../utils/excelGenerator';
 import { useConfirm } from '../context/ConfirmContext';
@@ -66,8 +66,10 @@ import EmptyState from '../components/common/EmptyState';
 import TableSkeleton from '../components/common/TableSkeleton';
 import RequiredLabel from '../components/common/RequiredLabel';
 import BarcodeQRModal from '../components/common/BarcodeQRModal';
-import { formatBatchCode, buildBatchQRPayload } from '../utils/codeFormatters';
+import { buildBatchQRPayload } from '../utils/codeFormatters';
 import ExportButtons from '../components/common/ExportButtons';
+import EntryWizardHeader from '../components/common/EntryWizardHeader';
+import BatchCodeBuilder from '../components/common/BatchCodeBuilder';
 
 
 interface BatchEntry {
@@ -94,6 +96,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
     const [customFrom, setCustomFrom] = useState<string>('');
     const [customTo, setCustomTo] = useState<string>('');
     const [openWizard, setOpenWizard] = useState(false);
+    const [receiptTime, setReceiptTime] = useState(() => localTimeValue());
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [touched, setTouched] = useState<Record<string, boolean>>({});
     const [selectedBatches, setSelectedBatches] = useState<string[]>([]);
@@ -137,7 +140,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
-        setTouched(prev => ({ ...prev, [name]: true }));
+        setTouched(prev => ({ ...prev, [name === 'kg' ? 'weight' : name]: true }));
     };
 
     const handleSupplierChange = (_event: any, newValue: string | null) => {
@@ -190,10 +193,12 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
             return;
         }
 
+        if (!productionTimestamp(formData.date, receiptTime)) { toast.error('Enter a valid receipt time'); return; }
         setIsSubmitting(true);
         try {
             await api.post('/inventory/inward', {
-                date: formData.date,
+                ...(formData.batchId.trim() ? { batchId: formData.batchId.trim() } : {}),
+                date: productionTimestamp(formData.date, receiptTime),
                 supplier: formData.supplier.trim(),
                 bale: Number(formData.bale),
                 kg: safeParseFloat(formData.kg),
@@ -207,6 +212,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
             toast.success(SUCCESS_MESSAGES.INWARD_SAVED);
             queryClient.invalidateQueries({ queryKey: ['inwardHistory'] });
             setOpenWizard(false);
+            setTouched({});
             setFormData({
                 batchId: '',
                 date: new Date().toLocaleDateString('en-CA'),
@@ -355,7 +361,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                             <Button
                                 variant="contained"
                                 startIcon={<AddIcon />}
-                                onClick={() => setOpenWizard(true)}
+                                onClick={() => { setReceiptTime(localTimeValue()); setOpenWizard(true); }}
                                 sx={{ height: 40, width: { xs: '100%', sm: 'auto' } }}
                             >
                                 Add Batch
@@ -377,47 +383,24 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
             {/* Add Batch Dialog */}
             <Dialog
                 open={openWizard}
-                onClose={() => { setOpenWizard(false); setTouched({}); }}
+                onClose={() => { if (!isSubmitting) { setOpenWizard(false); setTouched({}); } }}
                 maxWidth="sm"
                 fullWidth
                 aria-labelledby="add-batch-dialog-title"
-                aria-describedby="add-batch-dialog-description"
+                aria-describedby="add-batch-dialog-title-description"
             >
-                <DialogTitle id="add-batch-dialog-title" sx={{ fontWeight: 800, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: 1, borderColor: 'divider' }}>
-                    <Box>
-                        Add Cotton Batch
-                        <Typography id="add-batch-dialog-description" variant="caption" display="block" color="text.secondary" sx={{ fontWeight: 400 }}>
-                            All fields are required. Inventory updates automatically.
-                        </Typography>
-                    </Box>
-                    <IconButton onClick={() => { setOpenWizard(false); setTouched({}); }} aria-label="Close dialog"><CloseIcon /></IconButton>
-                </DialogTitle>
-                <DialogContent sx={{ pt: 3 }}>
+                <EntryWizardHeader id="add-batch-dialog-title" stage="01 · Cotton receipt" title="Add Cotton Batch"
+                    description="Give each receipt an identity. Record the cotton arriving at your mill."
+                    icon={<Inventory2Outlined />} busy={isSubmitting} onClose={() => { setOpenWizard(false); setTouched({}); }} />
+                <DialogContent sx={{ p: { xs: 2, sm: 3 } }}>
                     {isSubmitting && <LinearProgress sx={{ mb: 2 }} />}
 
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-                        <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start' }}>
-                            <TextField
-                                label="Batch ID (Optional)"
-                                name="batchId"
-                                value={formData.batchId}
-                                onChange={handleInputChange}
-                                placeholder="e.g. BATCH-20261004-9842"
-                                fullWidth
-                                helperText="Leave empty to auto-assign, or click Auto-Format to generate standard code"
-                            />
-                            <Button
-                                variant="outlined"
-                                startIcon={<AutoIcon />}
-                                sx={{ height: 42, whiteSpace: 'nowrap', mt: 0.5 }}
-                                onClick={() => setFormData(p => ({ ...p, batchId: formatBatchCode(p.date) }))}
-                            >
-                                Auto-Format
-                            </Button>
-                        </Box>
-
+                    <Box component="fieldset" disabled={isSubmitting} sx={{ m: 0, p: 0, border: 0, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2.5, mt: 2 }}>
+                        <Typography variant="overline" color="text.secondary">01 / Batch identity</Typography>
+                        <BatchCodeBuilder value={formData.batchId} date={formData.date} disabled={isSubmitting}
+                            onChange={batchId => setFormData(prev => ({ ...prev, batchId }))} />
                         <Box sx={{ display: 'flex', gap: 2 }}>
-                            <GlassDatePicker
+                            <TextField type="date" size="small"
                                 label={<RequiredLabel label="Date" required />}
                                 name="date"
                                 value={formData.date}
@@ -429,6 +412,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                                 error={!!getFieldError('date')}
                                 helperText={getFieldError('date') || (isFutureDate(formData.date) ? '⚠️ Future date not allowed' : ' ')}
                             />
+                            <TextField type="time" label="Receipt time" value={receiptTime} onChange={e => setReceiptTime(e.target.value)} size="small" fullWidth slotProps={{ inputLabel: { shrink: true }, htmlInput: { step: 1 } }} helperText="Production starts after the receipt settling time." />
                         </Box>
 
                         <Autocomplete
@@ -449,7 +433,8 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                             )}
                         />
 
-                        <Box sx={{ display: 'flex', gap: 2 }}>
+                        <Typography variant="overline" color="text.secondary">02 / Cotton received</Typography>
+                        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
                             <TextField
                                 label={<RequiredLabel label="Total Bales" required />}
                                 name="bale"
@@ -459,7 +444,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                                 onBlur={() => setTouched(p => ({ ...p, bale: true }))}
                                 required
                                 fullWidth
-                                InputProps={{ inputProps: { min: 1, step: 1 } }}
+                                InputProps={{ inputProps: { min: 1, step: 1 }, endAdornment: <InputAdornment position="end">bales</InputAdornment> }}
                                 error={!!getFieldError('bale')}
                                 helperText={getFieldError('bale') || 'Whole number (1–9999)'}
                             />
@@ -474,6 +459,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                                 fullWidth
                                 InputProps={{
                                     inputProps: { min: 0.01, step: 0.01 },
+                                    startAdornment: <InputAdornment position="start"><ScaleOutlined fontSize="small" /></InputAdornment>,
                                     endAdornment: <InputAdornment position="end">kg</InputAdornment>
                                 }}
                                 error={!!getFieldError('weight')}

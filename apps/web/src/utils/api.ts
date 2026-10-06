@@ -1,5 +1,8 @@
 import axios from 'axios';
 
+let onMutation: (() => void) | undefined;
+export const setMutationListener = (listener: () => void) => { onMutation = listener; };
+
 const api = axios.create({
     baseURL: import.meta.env.VITE_API_URL || (window.location.protocol === 'file:' ? 'http://localhost:3001' : '/api/backend'),
 });
@@ -19,7 +22,10 @@ api.interceptors.request.use((config) => {
 // On 401 we clear credentials and redirect to login so users are never left
 // staring at broken/empty pages when their JWT has expired.
 api.interceptors.response.use(
-    (response) => response,
+    (response) => {
+        if (['post', 'put', 'patch', 'delete'].includes(response.config.method || '')) onMutation?.();
+        return response;
+    },
     (error) => {
         const isSignInAttempt = /\/auth\/(login|passkey\/auth-options|passkey\/auth-verify)$/.test(String(error.config?.url || ''));
         if (error.response?.status === 401 && !isSignInAttempt) {

@@ -1,5 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../services/prisma.service';
+import { assertOverheadAvailable } from '../../services/business-ledger';
 import {
   SETTLE_GAP_MS,
   MASS_BALANCE_TOLERANCE,
@@ -15,13 +16,30 @@ export class ProductionService {
   constructor(private prisma: PrismaService) {}
 
   async create(data: any) {
+    if (!Number.isFinite(Number(data.processingCost || 0)) || Number(data.processingCost || 0) < 0) throw new BadRequestException('Allocated process cost must be non-negative');
+    if (!Number.isFinite(new Date(data.date).getTime()) || !Array.isArray(data.consumed) || !data.consumed.length || !Array.isArray(data.produced))
+      throw new BadRequestException('A valid start time and cotton consumption are required');
+    if (data.consumed.some((c: any) => !c.batchNo?.trim() || !Number.isFinite(Number(c.weight)) || Number(c.weight) <= 0 || !Number.isFinite(Number(c.bale)) || Number(c.bale) < 0))
+      throw new BadRequestException('Cotton consumption needs a batch, positive weight and non-negative bales');
+    if (data.produced.some((p: any) => !p.count?.trim() || !Number.isFinite(Number(p.weight)) || Number(p.weight) <= 0 || !Number.isInteger(Number(p.bags)) || Number(p.bags) < 0))
+      throw new BadRequestException('Produced yarn needs a count, positive weight and whole bags');
+    const wasteValues = ['blowRoom', 'carding', 'oe', 'others'].map(key => Number(data.waste?.[key] || 0));
+    if (wasteValues.some(value => !Number.isFinite(value) || value < 0) || !Number.isFinite(Number(data.totalIntermediate || 0)) || Number(data.totalIntermediate || 0) < 0 || !Number.isFinite(Number(data.totalWaste || 0)) || Number(data.totalWaste || 0) < 0)
+      throw new BadRequestException('Waste and intermediate weights must be finite, non-negative numbers');
+    // Derive stored totals from their actual rows, rather than trusting separately supplied totals.
+    data = { ...data, totalConsumed: data.consumed.reduce((sum: number, c: any) => sum + Number(c.weight), 0),
+      totalProduced: data.produced.reduce((sum: number, p: any) => sum + Number(p.weight), 0),
+      totalWaste: data.waste ? wasteValues.reduce((sum, value) => sum + value, 0) : Number(data.totalWaste || 0),
+      produced: data.produced.map((p: any) => ({ ...p, bags: Math.floor(Number(p.weight) / 60), remainingLog: Number(p.weight) % 60 })),
+    };
     console.log(
       '[Production] Starting create with data:',
       JSON.stringify(data, null, 2),
     );
     try {
-      return await this.prisma.$transaction(async (tx) => {
+      return await this.prisma.stockTransaction(async (tx) => {
         const prodDate = new Date(data.date);
+        await assertOverheadAvailable(tx, Number(data.processingCost || 0), prodDate);
 
         // 0. Time Validation: Production date cannot be in the future
         if (prodDate.getTime() > Date.now() + 60_000) {
@@ -48,7 +66,14 @@ export class ProductionService {
         }
 
         // 0.2 Validation: Check Per-Batch Availability & Settle Gap (Rule 5)
+        const requests = new Map<string, { batchNo: string; weight: number; bale: number }>();
         for (const c of data.consumed) {
+          const request = requests.get(c.batchNo) || { batchNo: c.batchNo, weight: 0, bale: 0 };
+          request.weight += Number(c.weight);
+          request.bale += Number(c.bale);
+          requests.set(c.batchNo, request);
+        }
+        for (const c of requests.values()) {
           const batch = await tx.inwardBatch.findUnique({
             where: { batchId: c.batchNo },
           });
@@ -72,17 +97,16 @@ export class ProductionService {
             });
           }
 
-          // Calculate used so far (Usage is negative in CottonInventory, so abs)
-          const usedAgg = await tx.cottonInventory.aggregate({
+          const stockAgg = await tx.cottonInventory.aggregate({
             _sum: { quantity: true },
             where: {
               batchId: c.batchNo,
-              type: { in: ['PRODUCTION', 'MERGE_OUT'] },
+              date: { lte: prodDate },
             },
           });
-          const alreadyUsed = Math.abs(usedAgg._sum.quantity || 0);
-          const requesting = parseFloat(c.weight);
-          const remaining = batch.kg - alreadyUsed;
+          const remaining = stockAgg._sum.quantity || 0;
+          const alreadyUsed = batch.kg - remaining;
+          const requesting = Number(c.weight);
 
           // Tolerance for float errors (0.01 kg)
           if (remaining - requesting < -0.01) {
@@ -92,7 +116,7 @@ export class ProductionService {
           }
 
           // Check remaining bales using typed Prisma aggregate
-          const requestingBales = parseFloat(c.bale) || 0;
+          const requestingBales = Number(c.bale) || 0;
           if (requestingBales > 0) {
             const baleAgg = await tx.productionConsumption.aggregate({
               _sum: { bale: true },
@@ -122,6 +146,7 @@ export class ProductionService {
             tolerance: MASS_BALANCE_TOLERANCE,
           });
         }
+        if (Math.abs(totalOutput - totalConsumption) > 0.010001) throw new BadRequestException('Cotton consumed must equal yarn, waste and intermediate output within 0.01 kg. Record any process loss explicitly.');
 
         // 1. Create Production Entry
         const production = await tx.production.create({
@@ -131,6 +156,7 @@ export class ProductionService {
             totalProduced: data.totalProduced,
             totalWaste: data.totalWaste,
             totalIntermediate: totalIntermediate,
+            processingCost: Number(data.processingCost || 0),
             createdBy: data.createdBy,
             wasteBlowRoom: parseFloat(data.waste?.blowRoom) || 0,
             wasteCarding: parseFloat(data.waste?.carding) || 0,
@@ -301,6 +327,7 @@ export class ProductionService {
           },
         });
 
+        if (totalIntermediate > 0) await tx.wipLot.create({ data: { productionId: production.id, code: `WIP-${production.id}`, date: prodDate, quantity: totalIntermediate, remaining: totalIntermediate } });
         return production;
       });
     } catch (error: any) {
@@ -321,12 +348,15 @@ export class ProductionService {
   }
 
   async delete(id: number, actor = 'SYSTEM', reason?: string) {
-    return this.prisma.$transaction(async (tx) => {
+    return this.prisma.stockTransaction(async (tx) => {
       const prod = await tx.production.findUnique({
         where: { id },
         include: { producedYarn: true, consumedBatches: true },
       });
       if (!prod) throw new BadRequestException('Production entry not found');
+      const wip = await tx.wipLot.findUnique({ where: { productionId: id } });
+      if (wip && wip.remaining < wip.quantity - 0.000001) throw new BadRequestException('Intermediate output from this production was converted; retain the source production history.');
+      if (wip) await tx.wipLot.update({ where: { id: wip.id }, data: { status: 'CANCELLED', remaining: 0 } });
 
       // 1. Dependency Checks: Packaging / Maintenance Costing
       const costing = await tx.costingEntry.findMany({

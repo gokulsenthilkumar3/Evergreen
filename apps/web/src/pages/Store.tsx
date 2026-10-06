@@ -19,7 +19,7 @@ export default function Store({ onNavigate }: { onNavigate?: (page: string) => v
   const [saving, setSaving] = useState(false);
   const { data: items = [], isLoading } = useQuery<StoreItem[]>({ queryKey: ['commerce-items'], queryFn: async () => (await api.get('/commerce/items')).data });
   const { data: customers = [] } = useQuery<StoreCustomer[]>({ queryKey: ['commerce-customers'], queryFn: async () => (await api.get('/commerce/customers')).data });
-  const visibleItems = useMemo(() => items.filter(item => item.active && (item.type === 'SERVICE' || item.stock.available > 0) && `${item.name} ${item.sku}`.toLowerCase().includes(search.toLowerCase())), [items, search]);
+  const visibleItems = useMemo(() => items.filter(item => item.active && ['YARN', 'FINISHED_GOOD', 'SERVICE'].includes(item.type) && (item.type === 'SERVICE' || item.stock.available > 0) && `${item.name} ${item.sku}`.toLowerCase().includes(search.toLowerCase())), [items, search]);
   const cartRows = useMemo(() => cart.map(line => ({ ...line, item: items.find(item => item.id === line.itemId) })).filter(row => !!row.item), [cart, items]);
   const estimatedTotal = cartRows.reduce((sum, row) => sum + row.quantity * row.item!.salePrice * (1 + row.item!.gstRate / 100), 0);
   const changeQuantity = (item: StoreItem, difference: number) => {

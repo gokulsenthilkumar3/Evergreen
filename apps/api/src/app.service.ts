@@ -114,11 +114,13 @@ export class AppService {
           latencyMs: dbLatencyMs,
           status: dbStatus,
         },
-        summary: { total: 14, healthy: 14, degraded: 0 },
+        summary: { total: 1, healthy: dbStatus === 'CONNECTED' ? 1 : 0, degraded: dbStatus === 'CONNECTED' ? 0 : 1 },
         processors: [],
       };
     }
 
+    let countReadFailed = false;
+    // Counts establish connectivity, not business-flow validation.
     // Collect counts across modules in parallel
     const [
       inwardBatchCount,
@@ -144,30 +146,38 @@ export class AppService {
       userCount,
       validSessionsCount,
     ] = await Promise.all([
-      this.prisma.inwardBatch.count().catch(() => 0),
-      this.prisma.cottonInventory.count().catch(() => 0),
-      this.prisma.production.count().catch(() => 0),
-      this.prisma.wasteInventory.count().catch(() => 0),
-      this.prisma.yarnInventory.count().catch(() => 0),
-      this.prisma.outward.count().catch(() => 0),
-      this.prisma.costingEntry.count().catch(() => 0),
-      this.prisma.invoice.count().catch(() => 0),
-      this.prisma.payment.count().catch(() => 0),
-      this.prisma.catalogueItem.count().catch(() => 0),
-      this.prisma.salesOrder.count().catch(() => 0),
-      this.prisma.jobWorker.count().catch(() => 0),
-      this.prisma.jobWorkChallan.count().catch(() => 0),
-      this.prisma.qualityInspection.count().catch(() => 0),
-      this.prisma.machine.count().catch(() => 0),
-      this.prisma.machineInspection.count().catch(() => 0),
-      this.prisma.warehouseLocation.count().catch(() => 0),
-      this.prisma.warehouseMovement.count().catch(() => 0),
-      this.prisma.staff.count().catch(() => 0),
-      this.prisma.shift.count().catch(() => 0),
-      this.prisma.user.count().catch(() => 0),
-      this.prisma.session.count({ where: { isValid: true } }).catch(() => 0),
+      this.prisma.inwardBatch.count().catch(() => { countReadFailed = true; return 0; }),
+      this.prisma.cottonInventory.count().catch(() => { countReadFailed = true; return 0; }),
+      this.prisma.production.count().catch(() => { countReadFailed = true; return 0; }),
+      this.prisma.wasteInventory.count().catch(() => { countReadFailed = true; return 0; }),
+      this.prisma.yarnInventory.count().catch(() => { countReadFailed = true; return 0; }),
+      this.prisma.outward.count().catch(() => { countReadFailed = true; return 0; }),
+      this.prisma.costingEntry.count().catch(() => { countReadFailed = true; return 0; }),
+      this.prisma.invoice.count().catch(() => { countReadFailed = true; return 0; }),
+      this.prisma.payment.count().catch(() => { countReadFailed = true; return 0; }),
+      this.prisma.catalogueItem.count().catch(() => { countReadFailed = true; return 0; }),
+      this.prisma.salesOrder.count().catch(() => { countReadFailed = true; return 0; }),
+      this.prisma.jobWorker.count().catch(() => { countReadFailed = true; return 0; }),
+      this.prisma.jobWorkChallan.count().catch(() => { countReadFailed = true; return 0; }),
+      this.prisma.qualityInspection.count().catch(() => { countReadFailed = true; return 0; }),
+      this.prisma.machine.count().catch(() => { countReadFailed = true; return 0; }),
+      this.prisma.machineInspection.count().catch(() => { countReadFailed = true; return 0; }),
+      this.prisma.warehouseLocation.count().catch(() => { countReadFailed = true; return 0; }),
+      this.prisma.warehouseMovement.count().catch(() => { countReadFailed = true; return 0; }),
+      this.prisma.staff.count().catch(() => { countReadFailed = true; return 0; }),
+      this.prisma.shift.count().catch(() => { countReadFailed = true; return 0; }),
+      this.prisma.user.count().catch(() => { countReadFailed = true; return 0; }),
+      this.prisma.session.count({ where: { isValid: true } }).catch(() => { countReadFailed = true; return 0; }),
     ]);
 
+    const balances = await this.prisma.$transaction([
+      this.prisma.cottonInventory.aggregate({ _sum: { quantity: true } }),
+      this.prisma.yarnInventory.aggregate({ _sum: { quantity: true } }),
+      this.prisma.stockMovement.aggregate({ where: { item: { legacySource: 'EVERGREEN_LEGACY', type: 'RAW_MATERIAL' } }, _sum: { quantity: true } }),
+      this.prisma.stockMovement.aggregate({ where: { item: { legacySource: 'EVERGREEN_LEGACY', type: 'YARN' } }, _sum: { quantity: true } }),
+    ]).catch(() => null);
+    const cottonMatches = !!balances && Math.abs(Number(balances[0]._sum.quantity || 0) - Number(balances[2]._sum.quantity || 0)) <= 0.01;
+    const yarnMatches = !!balances && Math.abs(Number(balances[1]._sum.quantity || 0) - Number(balances[3]._sum.quantity || 0)) <= 0.01;
     const syncTime = new Date().toLocaleTimeString();
 
     const processors: ProcessorInfo[] = [
@@ -191,15 +201,16 @@ export class AppService {
         id: 'inward-cotton',
         name: 'Inward & Cotton Inventory Processor',
         category: 'SPINNING',
-        status: 'SYNCED',
-        latencyMs: Math.round((Math.random() * 0.8 + 0.4) * 100) / 100,
+        status: 'ONLINE',
+        latencyMs: dbLatencyMs,
         lastSync: syncTime,
-        summary: 'Manages incoming cotton bale gate passes, weighbridge logs, batch serials, and tare verification.',
+        summary: 'Records cotton batch identifiers, receipt timestamps, bales and weights.',
         metrics: {
           'Inward Batches': inwardBatchCount,
           'Cotton Ledger Records': cottonInventoryCount,
-          'Tare Validation': 'Active (100%)',
-          'Lot Status': 'Reconciled'
+          'Physical cotton kg': balances ? Number(balances[0]._sum.quantity || 0) : 'Unavailable',
+          'Catalogue cotton kg': balances ? Number(balances[2]._sum.quantity || 0) : 'Unavailable',
+          'Stock agreement': !balances ? 'Unavailable' : cottonMatches ? 'Matches' : 'Mismatch'
         },
         icon: '📦',
       },
@@ -207,15 +218,15 @@ export class AppService {
         id: 'spinning-production',
         name: 'Spinning & Daily Production Processor',
         category: 'SPINNING',
-        status: 'SYNCED',
-        latencyMs: Math.round((Math.random() * 0.7 + 0.5) * 100) / 100,
+        status: 'ONLINE',
+        latencyMs: dbLatencyMs,
         lastSync: syncTime,
         summary: 'Calculates Blow Room loss, Carding loss, OE yarn output, and invisible loss efficiency.',
         metrics: {
           'Production Runs': productionCount,
           'Waste Records': wasteInventoryCount,
-          'Invisible Loss Tracking': 'Active (1-3% Target)',
-          'Formula Engine': 'Validated'
+          'Material balance': 'Checked on write',
+          'Scenario verification': 'See business flow review'
         },
         icon: '🧵',
       },
@@ -223,15 +234,17 @@ export class AppService {
         id: 'yarn-inventory',
         name: 'Yarn Stock & Outwards Processor',
         category: 'SPINNING',
-        status: 'SYNCED',
-        latencyMs: Math.round((Math.random() * 0.6 + 0.3) * 100) / 100,
+        status: 'ONLINE',
+        latencyMs: dbLatencyMs,
         lastSync: syncTime,
-        summary: 'Real-time yarn inventory by count (20s, 30s, 40s, 60s) with vehicle dispatch gate pass generation.',
+        summary: 'Yarn inventory by configured count with vehicle dispatch gate pass generation.',
         metrics: {
           'Yarn Stock Ledger': yarnInventoryCount,
           'Outward Passes': outwardCount,
           'Stock Categorization': 'Count-wise (Bags/Kgs)',
-          'Alert System': 'Active'
+          'Physical yarn kg': balances ? Number(balances[1]._sum.quantity || 0) : 'Unavailable',
+          'Catalogue yarn kg': balances ? Number(balances[3]._sum.quantity || 0) : 'Unavailable',
+          'Stock agreement': !balances ? 'Unavailable' : yarnMatches ? 'Matches' : 'Mismatch'
         },
         icon: '🧶',
       },
@@ -239,8 +252,8 @@ export class AppService {
         id: 'costing-engine',
         name: 'Costing & EB Rate Engine',
         category: 'FINANCE',
-        status: 'SYNCED',
-        latencyMs: Math.round((Math.random() * 0.5 + 0.4) * 100) / 100,
+        status: 'ONLINE',
+        latencyMs: dbLatencyMs,
         lastSync: syncTime,
         summary: 'Computes per-kg yarn manufacturing cost: Electricity (EB unit rate), Labor, Packaging & Spares.',
         metrics: {
@@ -255,14 +268,14 @@ export class AppService {
         id: 'billing-gst',
         name: 'Billing & GST Invoicing Engine',
         category: 'FINANCE',
-        status: 'SYNCED',
-        latencyMs: Math.round((Math.random() * 0.6 + 0.5) * 100) / 100,
+        status: 'ONLINE',
+        latencyMs: dbLatencyMs,
         lastSync: syncTime,
-        summary: 'Generates GST-compliant tax invoices (CGST 9% + SGST 9% / IGST 18%), digital hash verification & payments.',
+        summary: 'Uses configured item tax rates, state-based tax splitting, document verification and payment records.',
         metrics: {
           'Tax Invoices': invoiceCount,
           'Payment Entries': paymentCount,
-          'HSN/SAC Validation': 'Enforced',
+          'HSN/SAC': 'Catalogue and invoice fields',
           'Verification Hashes': 'SHA-256'
         },
         icon: '🧾',
@@ -271,8 +284,8 @@ export class AppService {
         id: 'commerce-orders',
         name: 'Commerce & Sales Order Hub',
         category: 'OPERATIONS',
-        status: 'SYNCED',
-        latencyMs: Math.round((Math.random() * 0.7 + 0.4) * 100) / 100,
+        status: 'ONLINE',
+        latencyMs: dbLatencyMs,
         lastSync: syncTime,
         summary: 'Unified commercial SKU catalog, customer sales orders, inventory reservations & proformas.',
         metrics: {
@@ -287,8 +300,8 @@ export class AppService {
         id: 'jobwork-processor',
         name: 'Job Work & Outsourcing Register',
         category: 'OPERATIONS',
-        status: 'SYNCED',
-        latencyMs: Math.round((Math.random() * 0.5 + 0.4) * 100) / 100,
+        status: 'ONLINE',
+        latencyMs: dbLatencyMs,
         lastSync: syncTime,
         summary: 'Dispatches yarn/cotton to outside winders/knitters via delivery challans with scrap recovery tracking.',
         metrics: {
@@ -303,8 +316,8 @@ export class AppService {
         id: 'quality-lab',
         name: 'Quality Assurance & QC Testing',
         category: 'OPERATIONS',
-        status: 'SYNCED',
-        latencyMs: Math.round((Math.random() * 0.4 + 0.4) * 100) / 100,
+        status: 'ONLINE',
+        latencyMs: dbLatencyMs,
         lastSync: syncTime,
         summary: 'Lab testing suite: CSP (Lea strength), Tenacity, Elongation, U% evenness and Classimate fault classification.',
         metrics: {
@@ -319,8 +332,8 @@ export class AppService {
         id: 'machine-telemetry',
         name: 'Machinery & Maintenance Processor',
         category: 'OPERATIONS',
-        status: 'SYNCED',
-        latencyMs: Math.round((Math.random() * 0.6 + 0.3) * 100) / 100,
+        status: 'ONLINE',
+        latencyMs: dbLatencyMs,
         lastSync: syncTime,
         summary: 'Tracks machinery registry (Ring Frames, Open End, Blow Room, Carding), inspections & downtime logs.',
         metrics: {
@@ -335,8 +348,8 @@ export class AppService {
         id: 'warehouse-logistics',
         name: 'Warehouse & Bay Logistics',
         category: 'OPERATIONS',
-        status: 'SYNCED',
-        latencyMs: Math.round((Math.random() * 0.5 + 0.3) * 100) / 100,
+        status: 'ONLINE',
+        latencyMs: dbLatencyMs,
         lastSync: syncTime,
         summary: 'Manages godown locations, raw cotton storage bays, yarn bag bins, and inter-location transfers.',
         metrics: {
@@ -351,8 +364,8 @@ export class AppService {
         id: 'hr-payroll',
         name: 'HR, Staff & Shift Roster',
         category: 'OPERATIONS',
-        status: 'SYNCED',
-        latencyMs: Math.round((Math.random() * 0.5 + 0.4) * 100) / 100,
+        status: 'ONLINE',
+        latencyMs: dbLatencyMs,
         lastSync: syncTime,
         summary: 'Operator shift rostering (Morning, Afternoon, Night), attendance tracking, overtime, and wage processing.',
         metrics: {
@@ -368,13 +381,13 @@ export class AppService {
         name: 'Security, Auth & Session Guard',
         category: 'SECURITY',
         status: 'ONLINE',
-        latencyMs: Math.round((Math.random() * 0.3 + 0.3) * 100) / 100,
+        latencyMs: dbLatencyMs,
         lastSync: syncTime,
         summary: 'JWT authentication, WebAuthn passkey biometric challenges, session timeouts, and role-based access control.',
         metrics: {
           'Registered Users': userCount,
           'Active Sessions': validSessionsCount,
-          'JWT Secret': '64-char Verified',
+          'JWT Secret': 'Validated by authentication configuration',
           'RBAC Guard': 'Enforcing'
         },
         icon: '🛡️',
@@ -384,12 +397,12 @@ export class AppService {
         name: 'System Scheduler & Backup Daemon',
         category: 'CORE',
         status: 'ONLINE',
-        latencyMs: 0.2,
+        latencyMs: dbLatencyMs,
         lastSync: syncTime,
-        summary: 'Handles cron jobs: Nightly summary email dispatcher, hourly database snapshot scheduler & watchdog.',
+        summary: 'Runs registered scheduled tasks; email delivery depends on SMTP configuration.',
         metrics: {
-          'Auto Backup': 'Enabled',
-          'Daily Summary': '23:59 IST',
+          'Auto Backup': 'Check settings and backup scheduler',
+          'Daily Summary': process.env.SMTP_HOST ? 'SMTP configured' : 'SMTP not configured',
           'Scheduler Module': 'Active',
           'Event Loop': 'Healthy'
         },
@@ -397,9 +410,13 @@ export class AppService {
       }
     ];
 
+    for (const processor of processors) {
+      processor.metrics['Latency scope'] = 'Measured database ping';
+      if (countReadFailed || dbStatus !== 'CONNECTED' || (processor.id === 'inward-cotton' && !cottonMatches) || (processor.id === 'yarn-inventory' && !yarnMatches)) processor.status = 'DEGRADED';
+    }
     return {
       service: 'evergreen-api',
-      status: 'ok',
+      status: dbStatus === 'CONNECTED' && !countReadFailed && cottonMatches && yarnMatches ? 'ok' : 'degraded',
       timestamp: new Date().toISOString(),
       uptimeSeconds: uptimeSec,
       uptimeFormatted: this.formatUptime(uptimeSec),
@@ -428,7 +445,7 @@ export class AppService {
         authentication: 'JWT Bearer & SQLite Session Guard',
         corsPolicy: `Allowed origin: http://localhost:${webPort}`,
         cacheControl: 'no-store, no-cache, must-revalidate (Zero-Cache)',
-        rbac: 'Role-Based Access Control Active (ADMIN, OPERATOR)',
+        rbac: 'Role-Based Access Control Active (ADMIN, MODIFIER, VIEWER)',
       },
       endpoints: {
         apiDocs: `http://localhost:${webPort}/api/docs`,

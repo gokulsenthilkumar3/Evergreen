@@ -77,10 +77,10 @@ describe('connected module smoke tests', () => {
       commerce.listInvoices.mockResolvedValue([{ id: 3 }]);
       commerce.createInvoice.mockResolvedValue({ id: 4 });
       await expect(controller.invoices()).resolves.toEqual([{ id: 3 }]);
-      await expect(controller.invoice({ customerId: 1 })).resolves.toEqual({
+      await expect(controller.invoice({ customerId: 1 }, { user: { username: 'tester' } })).resolves.toEqual({
         id: 4,
       });
-      expect(commerce.createInvoice).toHaveBeenCalledWith({ customerId: 1 });
+      expect(commerce.createInvoice).toHaveBeenCalledWith({ customerId: 1, createdBy: 'tester' });
     });
   });
 

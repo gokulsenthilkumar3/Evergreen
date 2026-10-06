@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../services/prisma.service';
+import { freezeOrdersForHold } from '../../services/business-ledger';
 
 @Injectable()
 export class QualityService {
@@ -21,6 +22,8 @@ export class QualityService {
   }
 
   createInspection(data: {
+    lotId?: number;
+    holdQuantity?: number;
     productionId?: number;
     batchId?: string;
     yarnCount?: string;
@@ -35,6 +38,16 @@ export class QualityService {
     remarks?: string;
     inspectedBy?: string;
   }) {
-    return this.prisma.qualityInspection.create({ data });
+    return this.prisma.stockTransaction(async tx => {
+      if (['HOLD', 'FAIL'].includes(data.status || '') && (!data.lotId || !data.holdQuantity)) throw new BadRequestException('A failed/held inspection needs a stock lot and quarantined quantity');
+      if (data.lotId && !await tx.stockLot.findUnique({ where: { id: data.lotId } })) throw new BadRequestException('Stock lot not found');
+      const inspection = await tx.qualityInspection.create({ data });
+      if (['HOLD', 'FAIL'].includes(data.status || '')) {
+        const lot = await tx.stockLot.findUniqueOrThrow({ where: { id: data.lotId! } });
+        await freezeOrdersForHold(tx, lot.itemId, data.holdQuantity!, data.inspectedBy || 'UNKNOWN');
+      }
+      if (['HOLD', 'FAIL'].includes(data.status || '')) await tx.stockHold.create({ data: { lotId: data.lotId!, quantity: data.holdQuantity!, inspectionId: inspection.id, reason: data.remarks || 'Quality inspection hold', createdBy: data.inspectedBy || 'UNKNOWN' } });
+      return inspection;
+    });
   }
 }

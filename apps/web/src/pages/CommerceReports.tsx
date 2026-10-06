@@ -529,7 +529,7 @@ const CommerceReports: React.FC = () => {
                   </TableRow>
                 ) : (
                   filteredInvoices.map((inv) => {
-                    const balance = Number(inv.total || 0) - Number(inv.amountPaid || 0);
+                    const balance = Math.max(0, Number(inv.total || 0) - Number(inv.creditTotal || 0) - Number(inv.amountPaid || 0));
                     return (
                       <TableRow key={inv.id} hover>
                         <TableCell>
