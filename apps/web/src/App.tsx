@@ -119,7 +119,7 @@ const YarnShiftManagement = lazy(() => import('./pages/yarn/ShiftManagement'));
 const YarnDemandForecasting = lazy(() => import('./pages/yarn/DemandForecasting'));
 const YarnSupplierPortal = lazy(() => import('./pages/yarn/SupplierPortal'));
 const YarnComplianceReports = lazy(() => import('./pages/yarn/ComplianceReports'));
-const YarnERP = lazy(() => import('./pages/YarnERP'));
+const CommandCenter = lazy(() => import('./pages/CommandCenter'));
 
 const drawerWidth = 260;
 const drawerCollapsedWidth = 72;
@@ -510,9 +510,9 @@ const App: React.FC = () => {
       yarnlive: 'Machine Status Overview',
       yarnshift: 'Shift Management',
       yarnforecast: 'Demand Forecasting',
-      yarnsupplier: 'Supplier Activity',
-      yarncompliance: 'Compliance Readiness',
-      yarnerp: 'Yarn ERP Suite',
+      yarnsupplier: 'Supplier Portal',
+      yarncompliance: 'Compliance Reports',
+      'command-center': 'Operations Command',
     };
 
     if (currentPage !== 'dashboard') {
@@ -559,9 +559,10 @@ const App: React.FC = () => {
     {
       label: 'EverGreen One',
       items: [
-        { text: 'Business Workspace', icon: <StoreIcon />, page: 'workspace', description: 'Central command for production metrics, low stock alerts, and daily status' },
-        { text: 'Dashboard', icon: <DashboardIcon />, page: 'dashboard', description: 'Executive analytics, production efficiency, output trends, and waste rates' },
-        { text: "Today's Summary", icon: <SummaryIcon />, page: 'today', description: 'Real-time daily log of cotton consumed, yarn produced, and waste generated' },
+        { text: 'Business Workspace', icon: <StoreIcon />, page: 'workspace' },
+        { text: 'Dashboard', icon: <DashboardIcon />, page: 'dashboard' },
+        { text: "Today's Summary", icon: <SummaryIcon />, page: 'today' },
+        { text: 'Operations Command', icon: <SpeedIcon />, page: 'command-center', description: 'Live factory floor — strategy game view' },
       ]
     },
     {
@@ -1147,7 +1148,16 @@ const App: React.FC = () => {
                       {currentPage === 'yarnforecast' && <YarnDemandForecasting />}
                       {currentPage === 'yarnsupplier' && <YarnSupplierPortal />}
                       {currentPage === 'yarncompliance' && <YarnComplianceReports />}
-                      {currentPage === 'yarnerp' && <YarnERP onNavigate={setCurrentPage} />}
+                      {currentPage === 'command-center' && <CommandCenter onNavigate={setCurrentPage} />}
+
+                      {!allPages.includes(currentPage) && (
+                        <Box sx={{ p: 4, textAlign: 'center' }}>
+                          <Typography variant="h4" sx={{ mb: 2, fontWeight: 'bold' }}>
+                            {currentPage.charAt(0).toUpperCase() + currentPage.slice(1)}
+                          </Typography>
+                          <Typography color="text.secondary">This page is currently under development.</Typography>
+                        </Box>
+                      )}
                     </Suspense>
                   </Container>
                 </Box>

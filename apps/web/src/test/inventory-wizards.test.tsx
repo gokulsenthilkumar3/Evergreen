@@ -78,9 +78,10 @@ describe('restored inventory wizard controls', () => {
         fireEvent.change(screen.getByLabelText('Prefix'), { target: { value: 'EG' } });
         fireEvent.change(screen.getByLabelText('Suffix'), { target: { value: '005' } });
         fireEvent.change(screen.getByLabelText(/Date/), { target: { value: '2026-10-01' } });
+        fireEvent.change(screen.getByLabelText('Receipt time'), { target: { value: '09:30:00' } });
         expect(screen.getByRole('status')).toHaveTextContent('EG-20261001-005');
         fireEvent.click(screen.getByRole('button', { name: 'Add Batch' }));
-        await waitFor(() => expect(api.post).toHaveBeenCalledWith('/inventory/inward', expect.objectContaining({ date: '2026-10-01', batchId: 'EG-20261001-005' })));
+        await waitFor(() => expect(api.post).toHaveBeenCalledWith('/inventory/inward', expect.objectContaining({ date: new Date('2026-10-01T09:30:00').toISOString(), batchId: 'EG-20261001-005' })));
         client.clear();
     });
 
