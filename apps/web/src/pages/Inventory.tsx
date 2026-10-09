@@ -57,6 +57,7 @@ import { generatePDF } from '../utils/pdfGenerator';
 import api from '../utils/api';
 import { toast } from 'sonner';
 import { SUCCESS_MESSAGES, ERROR_MESSAGES, INFO_MESSAGES, formatApiError } from '../utils/messages';
+import { handleDeleteGuardError } from '../utils/deleteGuardHandler';
 import { useConfirm } from '../context/ConfirmContext';
 import { getDateRange as getStandardDateRange, DATE_FILTER_OPTIONS, type DateFilterType } from '../utils/dateFilters';
 import GlassDatePicker from '../components/common/GlassDatePicker';
@@ -167,7 +168,7 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
             toast.success(SUCCESS_MESSAGES.DELETE);
             refetch();
         } catch (error: any) {
-            toast.error(formatApiError(error, ERROR_MESSAGES.DELETE_FAILED));
+            handleDeleteGuardError(error, ERROR_MESSAGES.DELETE_FAILED);
         }
     };
 

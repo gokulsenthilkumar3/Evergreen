@@ -19,6 +19,16 @@ const backendProxy: ProxyOptions = {
   rewrite: (path) => path.replace(/^\/api\/backend/, ''),
 }
 
+const directApiProxy: ProxyOptions = {
+  target: apiTarget,
+  changeOrigin: true,
+  configure(proxy) {
+    proxy.on('proxyReq', (proxyReq, req) => {
+      proxyReq.setHeader('X-Forwarded-For', req.socket.remoteAddress || 'unknown')
+    })
+  },
+}
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
@@ -28,6 +38,11 @@ export default defineConfig({
     strictPort: true,
     proxy: {
       '/api/backend': backendProxy,
+      '/health': directApiProxy,
+      '/auth': directApiProxy,
+      '/api/processors': directApiProxy,
+      '/api/docs': directApiProxy,
+      '/docs': directApiProxy,
     },
   },
   preview: {
@@ -35,6 +50,11 @@ export default defineConfig({
     strictPort: true,
     proxy: {
       '/api/backend': backendProxy,
+      '/health': directApiProxy,
+      '/auth': directApiProxy,
+      '/api/processors': directApiProxy,
+      '/api/docs': directApiProxy,
+      '/docs': directApiProxy,
     },
   },
   build: {

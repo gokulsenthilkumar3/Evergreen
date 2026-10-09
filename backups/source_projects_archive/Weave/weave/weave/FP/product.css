@@ -1,0 +1,88 @@
+body{
+    background-color: antiquewhite;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: fixed;
+}
+.search{
+    text-align: end;
+    margin-block-start: -125px;
+    margin-inline-end: 2%;
+    color: #000;
+}
+input:focus{
+    outline: none;
+}
+#searchbox{
+    background-color: transparent;
+    margin-inline-end: 3%;
+    block-size: 30px;
+    inline-size: 500px;
+    border-inline-start: none;
+    border-inline-end: none;
+    border-block-start: none;
+    text-align: center;
+    color: rgb(0, 0, 0);
+    font-size: large;
+    font-family: 'Times New Roman';
+}
+#searchicon{
+    font-size: 25px;
+    color: wheat;
+}
+.maincontainer{
+    background-color: transparent;
+    margin-inline-start: -50px;
+    margin-inline-end: 50px;
+    margin-block-start: 150px;
+    margin-block-end: 50px;
+    display: flex;  
+}
+.product{
+    padding-inline-start: 5%;
+    color: aliceblue;
+  }
+#image1{
+    inline-size: 500px;
+    block-size: 480px;
+}
+#image2{
+    inline-size: 500px;
+    block-size: 480px;
+}
+#image3{
+    inline-size: 500px;
+    block-size: 480px;
+}
+h2{
+    padding-block-start: 2%;
+    font-family: 'Times New Roman';
+    text-align: center;
+}
+.productbtn{
+    display: flex;
+}
+#desc{
+    border: aquamarine solid;
+    background-color: transparent;
+    border-radius: 20px;
+    inline-size: 30%;
+    block-size: 50px;
+    color: aqua;
+    font-family: 'Times New Roman';
+    font-size: large;
+}
+#atc{
+    border: aquamarine solid;
+    background-color: transparent;
+    border-radius: 20px;
+    inline-size: 30%;
+    block-size: 50px;
+    margin-inline-start: 50%;
+    color: aqua;
+    font-family: 'Times New Roman';
+    font-size: large;
+}
+div h2{
+    color: aqua;
+}

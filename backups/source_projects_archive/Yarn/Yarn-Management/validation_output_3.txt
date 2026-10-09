@@ -1,0 +1,336 @@
+﻿Prisma schema loaded from apps\api\prisma\schema.prisma
+node.exe : 
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" 
+"C:\Users\gokul\AppData\Roaming\ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:Strin 
+   g) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Prisma schema warnings:
+- With `relationMode = "prisma"`, no foreign keys 
+are used, so relation fields will not benefit from 
+the index usually created by the relational 
+database under the hood. This can lead to poor 
+performance when querying these fields. We 
+recommend adding an index manually. Learn more at 
+https://pris.ly/d/relation-mode-prisma-indexes" 
+- With `relationMode = "prisma"`, no foreign keys 
+are used, so relation fields will not benefit from 
+the index usually created by the relational 
+database under the hood. This can lead to poor 
+performance when querying these fields. We 
+recommend adding an index manually. Learn more at 
+https://pris.ly/d/relation-mode-prisma-indexes" 
+- With `relationMode = "prisma"`, no foreign keys 
+are used, so relation fields will not benefit from 
+the index usually created by the relational 
+database under the hood. This can lead to poor 
+performance when querying these fields. We 
+recommend adding an index manually. Learn more at 
+https://pris.ly/d/relation-mode-prisma-indexes" 
+- With `relationMode = "prisma"`, no foreign keys 
+are used, so relation fields will not benefit from 
+the index usually created by the relational 
+database under the hood. This can lead to poor 
+performance when querying these fields. We 
+recommend adding an index manually. Learn more at 
+https://pris.ly/d/relation-mode-prisma-indexes" 
+- With `relationMode = "prisma"`, no foreign keys 
+are used, so relation fields will not benefit from 
+the index usually created by the relational 
+database under the hood. This can lead to poor 
+performance when querying these fields. We 
+recommend adding an index manually. Learn more at 
+https://pris.ly/d/relation-mode-prisma-indexes" 
+- With `relationMode = "prisma"`, no foreign keys 
+are used, so relation fields will not benefit from 
+the index usually created by the relational 
+database under the hood. This can lead to poor 
+performance when querying these fields. We 
+recommend adding an index manually. Learn more at 
+https://pris.ly/d/relation-mode-prisma-indexes" 
+- With `relationMode = "prisma"`, no foreign keys 
+are used, so relation fields will not benefit from 
+the index usually created by the relational 
+database under the hood. This can lead to poor 
+performance when querying these fields. We 
+recommend adding an index manually. Learn more at 
+https://pris.ly/d/relation-mode-prisma-indexes" 
+- With `relationMode = "prisma"`, no foreign keys 
+are used, so relation fields will not benefit from 
+the index usually created by the relational 
+database under the hood. This can lead to poor 
+performance when querying these fields. We 
+recommend adding an index manually. Learn more at 
+https://pris.ly/d/relation-mode-prisma-indexes" 
+- With `relationMode = "prisma"`, no foreign keys 
+are used, so relation fields will not benefit from 
+the index usually created by the relational 
+database under the hood. This can lead to poor 
+performance when querying these fields. We 
+recommend adding an index manually. Learn more at 
+https://pris.ly/d/relation-mode-prisma-indexes" 
+- With `relationMode = "prisma"`, no foreign keys 
+are used, so relation fields will not benefit from 
+the index usually created by the relational 
+database under the hood. This can lead to poor 
+performance when querying these fields. We 
+recommend adding an index manually. Learn more at 
+https://pris.ly/d/relation-mode-prisma-indexes" 
+- With `relationMode = "prisma"`, no foreign keys 
+are used, so relation fields will not benefit from 
+the index usually created by the relational 
+database under the hood. This can lead to poor 
+performance when querying these fields. We 
+recommend adding an index manually. Learn more at 
+https://pris.ly/d/relation-mode-prisma-indexes" 
+- With `relationMode = "prisma"`, no foreign keys 
+are used, so relation fields will not benefit from 
+the index usually created by the relational 
+database under the hood. This can lead to poor 
+performance when querying these fields. We 
+recommend adding an index manually. Learn more at 
+https://pris.ly/d/relation-mode-prisma-indexes" 
+- With `relationMode = "prisma"`, no foreign keys 
+are used, so relation fields will not benefit from 
+the index usually created by the relational 
+database under the hood. This can lead to poor 
+performance when querying these fields. We 
+recommend adding an index manually. Learn more at 
+https://pris.ly/d/relation-mode-prisma-indexes" 
+- With `relationMode = "prisma"`, no foreign keys 
+are used, so relation fields will not benefit from 
+the index usually created by the relational 
+database under the hood. This can lead to poor 
+performance when querying these fields. We 
+recommend adding an index manually. Learn more at 
+https://pris.ly/d/relation-mode-prisma-indexes" 
+- With `relationMode = "prisma"`, no foreign keys 
+are used, so relation fields will not benefit from 
+the index usually created by the relational 
+database under the hood. This can lead to poor 
+performance when querying these fields. We 
+recommend adding an index manually. Learn more at 
+https://pris.ly/d/relation-mode-prisma-indexes" 
+- With `relationMode = "prisma"`, no foreign keys 
+are used, so relation fields will not benefit from 
+the index usually created by the relational 
+database under the hood. This can lead to poor 
+performance when querying these fields. We 
+recommend adding an index manually. Learn more at 
+https://pris.ly/d/relation-mode-prisma-indexes" 
+- With `relationMode = "prisma"`, no foreign keys 
+are used, so relation fields will not benefit from 
+the index usually created by the relational 
+database under the hood. This can lead to poor 
+performance when querying these fields. We 
+recommend adding an index manually. Learn more at 
+https://pris.ly/d/relation-mode-prisma-indexes" 
+- With `relationMode = "prisma"`, no foreign keys 
+are used, so relation fields will not benefit from 
+the index usually created by the relational 
+database under the hood. This can lead to poor 
+performance when querying these fields. We 
+recommend adding an index manually. Learn more at 
+https://pris.ly/d/relation-mode-prisma-indexes" 
+- With `relationMode = "prisma"`, no foreign keys 
+are used, so relation fields will not benefit from 
+the index usually created by the relational 
+database under the hood. This can lead to poor 
+performance when querying these fields. We 
+recommend adding an index manually. Learn more at 
+https://pris.ly/d/relation-mode-prisma-indexes" 
+- With `relationMode = "prisma"`, no foreign keys 
+are used, so relation fields will not benefit from 
+the index usually created by the relational 
+database under the hood. This can lead to poor 
+performance when querying these fields. We 
+recommend adding an index manually. Learn more at 
+https://pris.ly/d/relation-mode-prisma-indexes" 
+- With `relationMode = "prisma"`, no foreign keys 
+are used, so relation fields will not benefit from 
+the index usually created by the relational 
+database under the hood. This can lead to poor 
+performance when querying these fields. We 
+recommend adding an index manually. Learn more at 
+https://pris.ly/d/relation-mode-prisma-indexes" 
+- With `relationMode = "prisma"`, no foreign keys 
+are used, so relation fields will not benefit from 
+the index usually created by the relational 
+database under the hood. This can lead to poor 
+performance when querying these fields. We 
+recommend adding an index manually. Learn more at 
+https://pris.ly/d/relation-mode-prisma-indexes" 
+- With `relationMode = "prisma"`, no foreign keys 
+are used, so relation fields will not benefit from 
+the index usually created by the relational 
+database under the hood. This can lead to poor 
+performance when querying these fields. We 
+recommend adding an index manually. Learn more at 
+https://pris.ly/d/relation-mode-prisma-indexes" 
+- With `relationMode = "prisma"`, no foreign keys 
+are used, so relation fields will not benefit from 
+the index usually created by the relational 
+database under the hood. This can lead to poor 
+performance when querying these fields. We 
+recommend adding an index manually. Learn more at 
+https://pris.ly/d/relation-mode-prisma-indexes" 
+- With `relationMode = "prisma"`, no foreign keys 
+are used, so relation fields will not benefit from 
+the index usually created by the relational 
+database under the hood. This can lead to poor 
+performance when querying these fields. We 
+recommend adding an index manually. Learn more at 
+https://pris.ly/d/relation-mode-prisma-indexes" 
+- With `relationMode = "prisma"`, no foreign keys 
+are used, so relation fields will not benefit from 
+the index usually created by the relational 
+database under the hood. This can lead to poor 
+performance when querying these fields. We 
+recommend adding an index manually. Learn more at 
+https://pris.ly/d/relation-mode-prisma-indexes" 
+- With `relationMode = "prisma"`, no foreign keys 
+are used, so relation fields will not benefit from 
+the index usually created by the relational 
+database under the hood. This can lead to poor 
+performance when querying these fields. We 
+recommend adding an index manually. Learn more at 
+https://pris.ly/d/relation-mode-prisma-indexes" 
+- With `relationMode = "prisma"`, no foreign keys 
+are used, so relation fields will not benefit from 
+the index usually created by the relational 
+database under the hood. This can lead to poor 
+performance when querying these fields. We 
+recommend adding an index manually. Learn more at 
+https://pris.ly/d/relation-mode-prisma-indexes" 
+- With `relationMode = "prisma"`, no foreign keys 
+are used, so relation fields will not benefit from 
+the index usually created by the relational 
+database under the hood. This can lead to poor 
+performance when querying these fields. We 
+recommend adding an index manually. Learn more at 
+https://pris.ly/d/relation-mode-prisma-indexes" 
+- With `relationMode = "prisma"`, no foreign keys 
+are used, so relation fields will not benefit from 
+the index usually created by the relational 
+database under the hood. This can lead to poor 
+performance when querying these fields. We 
+recommend adding an index manually. Learn more at 
+https://pris.ly/d/relation-mode-prisma-indexes" 
+- With `relationMode = "prisma"`, no foreign keys 
+are used, so relation fields will not benefit from 
+the index usually created by the relational 
+database under the hood. This can lead to poor 
+performance when querying these fields. We 
+recommend adding an index manually. Learn more at 
+https://pris.ly/d/relation-mode-prisma-indexes" 
+- With `relationMode = "prisma"`, no foreign keys 
+are used, so relation fields will not benefit from 
+the index usually created by the relational 
+database under the hood. This can lead to poor 
+performance when querying these fields. We 
+recommend adding an index manually. Learn more at 
+https://pris.ly/d/relation-mode-prisma-indexes" 
+- With `relationMode = "prisma"`, no foreign keys 
+are used, so relation fields will not benefit from 
+the index usually created by the relational 
+database under the hood. This can lead to poor 
+performance when querying these fields. We 
+recommend adding an index manually. Learn more at 
+https://pris.ly/d/relation-mode-prisma-indexes" 
+- With `relationMode = "prisma"`, no foreign keys 
+are used, so relation fields will not benefit from 
+the index usually created by the relational 
+database under the hood. This can lead to poor 
+performance when querying these fields. We 
+recommend adding an index manually. Learn more at 
+https://pris.ly/d/relation-mode-prisma-indexes" 
+- With `relationMode = "prisma"`, no foreign keys 
+are used, so relation fields will not benefit from 
+the index usually created by the relational 
+database under the hood. This can lead to poor 
+performance when querying these fields. We 
+recommend adding an index manually. Learn more at 
+https://pris.ly/d/relation-mode-prisma-indexes" 
+- With `relationMode = "prisma"`, no foreign keys 
+are used, so relation fields will not benefit from 
+the index usually created by the relational 
+database under the hood. This can lead to poor 
+performance when querying these fields. We 
+recommend adding an index manually. Learn more at 
+https://pris.ly/d/relation-mode-prisma-indexes" 
+
+Error: Prisma schema validation - (validate wasm)
+Error code: P1012
+[1;91merror[0m: [1mError validating: Invalid 
+referential action: `NoAction`. Allowed values: 
+(`Cascade`, `Restrict`, `SetNull`). `NoAction` is 
+not implemented for Postgres when using 
+`relationMode = "prisma"`, you could try using 
+`Restrict` instead. Learn more at 
+https://pris.ly/d/relation-mode[0m
+  [1;94m-->[0m  
+[4mapps\api\prisma\schema.prisma:1452[0m
+[1;94m   | [0m
+[1;94m1451 | [0m  
+[1;94m1452 | [0m  parent      DocumentFolder?  
+@relation("FolderHierarchy", fields: [parentId], 
+references: [id], [1;91monDelete: NoAction[0m, 
+onUpdate: NoAction)
+[1;94m   | [0m
+[1;91merror[0m: [1mError validating: Invalid 
+referential action: `NoAction`. Allowed values: 
+(`Cascade`, `Restrict`, `SetNull`). `NoAction` is 
+not implemented for Postgres when using 
+`relationMode = "prisma"`, you could try using 
+`Restrict` instead. Learn more at 
+https://pris.ly/d/relation-mode[0m
+  [1;94m-->[0m  
+[4mapps\api\prisma\schema.prisma:1452[0m
+[1;94m   | [0m
+[1;94m1451 | [0m  
+[1;94m1452 | [0m  parent      DocumentFolder?  
+@relation("FolderHierarchy", fields: [parentId], 
+references: [id], onDelete: NoAction, 
+[1;91monUpdate: NoAction[0m)
+[1;94m   | [0m
+[1;91merror[0m: [1mError validating: Invalid 
+referential action: `NoAction`. Allowed values: 
+(`Cascade`, `Restrict`, `SetNull`). `NoAction` is 
+not implemented for Postgres when using 
+`relationMode = "prisma"`, you could try using 
+`Restrict` instead. Learn more at 
+https://pris.ly/d/relation-mode[0m
+  [1;94m-->[0m  
+[4mapps\api\prisma\schema.prisma:1528[0m
+[1;94m   | [0m
+[1;94m1527 | [0m  
+[1;94m1528 | [0m  parent        Message?      
+@relation("MessageThread", fields: [parentId], 
+references: [id], [1;91monDelete: NoAction[0m, 
+onUpdate: NoAction)
+[1;94m   | [0m
+[1;91merror[0m: [1mError validating: Invalid 
+referential action: `NoAction`. Allowed values: 
+(`Cascade`, `Restrict`, `SetNull`). `NoAction` is 
+not implemented for Postgres when using 
+`relationMode = "prisma"`, you could try using 
+`Restrict` instead. Learn more at 
+https://pris.ly/d/relation-mode[0m
+  [1;94m-->[0m  
+[4mapps\api\prisma\schema.prisma:1528[0m
+[1;94m   | [0m
+[1;94m1527 | [0m  
+[1;94m1528 | [0m  parent        Message?      
+@relation("MessageThread", fields: [parentId], 
+references: [id], onDelete: NoAction, 
+[1;91monUpdate: NoAction[0m)
+[1;94m   | [0m
+
+Validation Error Count: 4
+[Context: validate]
+
+Prisma CLI Version : 6.19.2

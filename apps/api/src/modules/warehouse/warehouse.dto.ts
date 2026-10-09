@@ -30,6 +30,10 @@ export class CreateMovementDto {
   @IsInt()
   @Min(1)
   itemId!: number;
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  toLocationId?: number;
   @IsNumber()
   @Min(0)
   @Min(0.000001)

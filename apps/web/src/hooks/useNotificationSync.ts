@@ -88,7 +88,7 @@ export function useNotificationSync(settings: any) {
                         message: `₹${Number(outstanding).toLocaleString('en-IN')} outstanding. Due ${new Date(inv.dueDate).toLocaleDateString('en-IN')}.`,
                         type: 'error',
                         dedupeKey: key,
-                        link: 'billing',
+                        link: 'business',
                     });
                 }
             }

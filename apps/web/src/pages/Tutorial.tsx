@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
+import BusinessFlowGuide from '../components/BusinessFlowGuide';
 import {
     Box,
     Typography,
@@ -8,13 +9,13 @@ import {
     Chip,
     Card,
     CardContent,
+    CardActionArea,
     Stepper,
     Step,
     StepLabel,
     StepContent,
     LinearProgress,
     Avatar,
-    Divider,
 } from '@mui/material';
 import {
     PlayCircle as PlayIcon,
@@ -39,9 +40,9 @@ const TUTORIAL_CHAPTERS = [
         icon: <DashboardIcon />,
         steps: [
             { label: 'Login & Authentication', description: 'Use your username and password to log in. Enable 2FA or Passkey for extra security from Settings → Security.' },
-            { label: 'Navigate the Sidebar', description: 'The left sidebar contains all modules: Dashboard, Inventory, Production, Billing, and more. Click the hamburger icon to collapse or expand it.' },
+            { label: 'Navigate the Sidebar', description: 'Use the Business Desk for catalogue, customers and ledger, sales orders, and invoices. Inventory and production workflows remain in their operational sections. Click the menu button to collapse or expand the sidebar.' },
             { label: 'Theme & Appearance', description: 'Switch between light and dark mode using the sun/moon icon in the top bar. Choose from multiple colour themes in Settings.' },
-            { label: 'Company Setup', description: 'Go to Settings and fill in your Company Name, Address, GSTIN, Phone, and upload your logo. These appear on all invoices.' },
+            { label: 'Company Setup', description: 'Before issuing invoices, configure the legal business name, address, and GSTIN in Settings. Invoice issuance is blocked until the required issuer details are present; contact and branding settings are optional.' },
         ],
     },
     {
@@ -53,10 +54,10 @@ const TUTORIAL_CHAPTERS = [
         color: '#0284c7',
         icon: <InventoryIcon />,
         steps: [
-            { label: 'Inward Entry', description: 'Go to Inward / Batch. Click "New Inward Entry". Fill in the source, batch number, count, bags, weight per bag, and rate per kg.' },
+            { label: 'Inward Entry', description: 'Go to Inward / Batch and record the supplier, cotton details, quantity, and rate. The server generates the batch ID when one is not supplied.' },
             { label: 'View Cotton Inventory', description: 'Navigate to Inventory → Cotton Inventory to see all batches with remaining weight. Filter by count or date.' },
             { label: 'Merge Batches', description: 'When multiple batches of the same count exist, use the Merge Batches option to combine them for cleaner tracking.' },
-            { label: 'Low Stock Alerts', description: 'The Inventory sidebar item shows a red badge when any yarn count falls below your configured threshold in Settings.' },
+            { label: 'Low Stock Alerts', description: 'Review inventory balances and available alerts in Inventory. Threshold behavior depends on the configured inventory settings.' },
         ],
     },
     {
@@ -83,11 +84,11 @@ const TUTORIAL_CHAPTERS = [
         color: '#dc2626',
         icon: <BillingIcon />,
         steps: [
-            { label: 'Create an Invoice', description: 'Go to Billing → Invoices. Click "New Invoice". Enter customer details, transport info, and line items.' },
-            { label: 'Add Line Items', description: 'Each line item has a yarn count, bags, weight, and rate. GST is auto-calculated.' },
-            { label: 'Save & Print', description: 'Click "Save Invoice" to store. Use "Print / PDF" to generate a printable invoice. Use "Share" to email it.' },
-            { label: 'Record Payment', description: 'In the invoice list, click the payment icon to record a payment. Choose Cash, Bank Transfer, UPI, or Cheque.' },
-            { label: 'Payment Status', description: 'Invoices are automatically marked as PAID, PARTIAL, or UNPAID based on the payments recorded against them.' },
+            { label: 'Create an Invoice', description: 'Open Business Desk → Invoices. Choose a saved customer and add catalogue items. The legacy Billing menu is consolidated here so invoices have one owner.' },
+            { label: 'Review Line Items', description: 'Check each item’s HSN/SAC, quantity, rate, and tax before saving. Tax uses the configured invoice and catalogue details.' },
+            { label: 'Save & Download', description: 'Save the invoice, then download its PDF from the saved invoice record. The PDF uses the issuer and customer details saved with that invoice.' },
+            { label: 'Record Payment', description: 'Record a payment from the invoice workflow and review its balance and payment status in Business Desk.' },
+            { label: 'Payment Operations', description: 'Customer records and invoice-linked payments are managed in Business Desk. Review balances in Reports. Other payment-operation screens require separate readiness checks; bank reconciliation is not part of this release.' },
         ],
     },
     {
@@ -114,16 +115,35 @@ const TUTORIAL_CHAPTERS = [
         color: '#0891b2',
         icon: <UsersIcon />,
         steps: [
-            { label: 'User Roles', description: 'There are 4 roles: VIEWER, MODIFIER, and ADMIN.' },
+            { label: 'User Roles', description: 'The application uses three roles: VIEWER, MODIFIER, and ADMIN. Access to actions depends on the assigned role.' },
             { label: 'Add Users', description: 'Go to User Management. Click "Add User". Set username, name, email, and role.' },
             { label: 'Session Management', description: 'In Sessions, you can see all active login sessions and revoke suspicious ones remotely.' },
             { label: 'Security Settings', description: 'Enable Two-Factor Authentication or register a Passkey for passwordless login from Security Settings.' },
         ],
     },
+    {
+        id: 'operations',
+        title: 'Operations & Planning',
+        emoji: '🏗️',
+        description: 'Use the operational registers and understand which planning data is available.',
+        duration: '8 min',
+        color: '#0f766e',
+        icon: <InventoryIcon />,
+        steps: [
+            { label: 'Machines & quality', description: 'Machine Management and Quality Control are separate operational registers backed by their APIs. Machine Status Overview summarizes the current register and inspections; it does not provide live telemetry or OEE.' },
+            { label: 'Warehouse', description: 'Use Warehouse to review warehouse locations and movements. Stock totals are only available where the server supplies a balance; do not treat a short movement history as a complete stock ledger.' },
+            { label: 'People & shifts', description: 'HR & Payroll manages staff and payroll records. Shift Management manages shift records; attendance assignment is not currently part of that workflow.' },
+            { label: 'Demand forecast', description: 'Demand Forecasting summarizes actual recent commerce orders and shows a trailing-average baseline. It is not an AI forecast and does not create purchase recommendations.' },
+            { label: 'Supplier activity', description: 'Supplier Activity summarizes posted inward receipts. Create receipts in Operations Desk. Supplier onboarding, ratings, and purchase orders are not currently available.' },
+            { label: 'Compliance readiness', description: 'Compliance Readiness summarizes internal payroll and commerce records. It does not file returns or show provider acceptance.' },
+            { label: 'Vyapari and customer workflows', description: 'Customer and sales workflows are consolidated into Business Desk. Supplier receipts are available through Operations Desk and Supplier Activity; no separate Vyapari demo dataset is used.' },
+        ],
+    },
 ];
 
-const ChapterCard = ({ chapter, onSelect, isSelected }: { chapter: typeof TUTORIAL_CHAPTERS[0]; onSelect: () => void; isSelected: boolean; }) => (
-    <Card elevation={0} onClick={onSelect} sx={{ border: '1.5px solid', borderColor: isSelected ? chapter.color : 'divider', borderRadius: 3, cursor: 'pointer', transition: 'transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease', bgcolor: isSelected ? `${chapter.color}08` : 'background.paper', '&:hover': { borderColor: chapter.color, transform: 'translateY(-2px)', boxShadow: `0 10px 28px ${chapter.color}20` } }}>
+const ChapterCard = ({ chapter, onSelect, isSelected, progress }: { chapter: typeof TUTORIAL_CHAPTERS[0]; onSelect: () => void; isSelected: boolean; progress: number; }) => (
+    <Card elevation={0} sx={{ border: '1.5px solid', borderColor: isSelected ? chapter.color : 'divider', borderRadius: 3, cursor: 'pointer', transition: 'transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease', bgcolor: isSelected ? `${chapter.color}08` : 'background.paper', '&:hover': { borderColor: chapter.color, transform: 'translateY(-2px)', boxShadow: `0 10px 28px ${chapter.color}20` } }}>
+        <CardActionArea onClick={onSelect} aria-pressed={isSelected}>
         <CardContent sx={{ p: 2.5 }}>
             <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
                 <Typography sx={{ fontSize: '2rem', lineHeight: 1 }}>{chapter.emoji}</Typography>
@@ -133,13 +153,14 @@ const ChapterCard = ({ chapter, onSelect, isSelected }: { chapter: typeof TUTORI
             <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.5 }}>{chapter.description}</Typography>
             <Box sx={{ mt: 1.5 }}>
                 <Typography variant="caption" color="text.disabled">{chapter.steps.length} steps</Typography>
-                <LinearProgress variant="determinate" value={0} sx={{ mt: 0.5, height: 3, borderRadius: 2, bgcolor: 'divider', '& .MuiLinearProgress-bar': { bgcolor: chapter.color } }} />
+                <LinearProgress aria-label={`${chapter.title} completion`} variant="determinate" value={progress} sx={{ mt: 0.5, height: 3, borderRadius: 2, bgcolor: 'divider', '& .MuiLinearProgress-bar': { bgcolor: chapter.color } }} />
             </Box>
         </CardContent>
+        </CardActionArea>
     </Card>
 );
 
-const Tutorial: React.FC = () => {
+const Tutorial: React.FC<{ onNavigate?: (page: string) => void }> = ({ onNavigate }) => {
     const [selectedChapter, setSelectedChapter] = useState<string>('getting-started');
     const [activeStep, setActiveStep] = useState(0);
     const [completedSteps, setCompletedSteps] = useState<Record<string, Set<number>>>({});
@@ -165,6 +186,7 @@ const Tutorial: React.FC = () => {
 
     return (
         <Box sx={{ width: '100%' }}>
+            <BusinessFlowGuide onNavigate={onNavigate} />
             <Box sx={{ mb: 4, p: { xs: 2.5, md: 3 }, borderRadius: 4, border: '1px solid', borderColor: 'divider', background: 'linear-gradient(135deg, rgba(5,150,105,0.12) 0%, rgba(8,145,178,0.08) 100%)' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
                     <Avatar sx={{ bgcolor: 'primary.main', width: 48, height: 48 }}><TutorialIcon /></Avatar>
@@ -184,7 +206,7 @@ const Tutorial: React.FC = () => {
                 <Grid size={{ xs: 12, md: 4 }}>
                     <Typography variant="subtitle2" fontWeight={800} color="text.secondary" sx={{ mb: 1.5, textTransform: 'uppercase', letterSpacing: '0.08em', fontSize: '0.7rem' }}>Chapters</Typography>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                        {TUTORIAL_CHAPTERS.map((c) => <ChapterCard key={c.id} chapter={c} onSelect={() => handleChapterChange(c.id)} isSelected={selectedChapter === c.id} />)}
+                        {TUTORIAL_CHAPTERS.map((c) => <ChapterCard key={c.id} chapter={c} onSelect={() => handleChapterChange(c.id)} isSelected={selectedChapter === c.id} progress={Math.round(((completedSteps[c.id]?.size || 0) / c.steps.length) * 100)} />)}
                     </Box>
                 </Grid>
 
@@ -242,25 +264,6 @@ const Tutorial: React.FC = () => {
                         </Box>
                     </Paper>
 
-                    <Paper elevation={0} sx={{ mt: 3, borderRadius: 3, border: '1px solid', borderColor: 'divider', p: 3 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
-                            <Box>
-                                <Typography variant="h6" fontWeight={800}>Quick references</Typography>
-                                <Typography variant="body2" color="text.secondary">The most common places users jump to when they’re learning the app.</Typography>
-                            </Box>
-                            <Chip label="Always visible" size="small" />
-                        </Box>
-                        <Divider sx={{ my: 2 }} />
-                        <Grid container spacing={1.5}>
-                            {['Dashboard overview', 'Inventory controls', 'Billing workflow', 'Session management', 'User permissions', 'Security settings'].map((item) => (
-                                <Grid key={item} size={{ xs: 6, sm: 4 }}>
-                                    <Paper elevation={0} sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
-                                        <Typography variant="body2" fontWeight={600}>{item}</Typography>
-                                    </Paper>
-                                </Grid>
-                            ))}
-                        </Grid>
-                    </Paper>
                 </Grid>
             </Grid>
         </Box>

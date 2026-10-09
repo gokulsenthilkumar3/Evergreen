@@ -6,6 +6,7 @@ import {
   Query,
   Delete,
   Param,
+  Req,
 } from '@nestjs/common';
 import { InventoryService } from './inventory.service';
 
@@ -116,20 +117,21 @@ export class InventoryController {
   }
 
   @Post('inward')
-  async createInward(@Body() data: any) {
-    return this.inventoryService.createInward(data);
+  async createInward(@Body() data: any, @Req() req: any) {
+    return this.inventoryService.createInward({ ...data, createdBy: req.user.username });
   }
 
   @Post('inward/merge')
   async mergeBatches(
     @Body() data: { batchIds: string[]; date: string; createdBy?: string },
+    @Req() req: any,
   ) {
-    return this.inventoryService.mergeBatches(data);
+    return this.inventoryService.mergeBatches({ ...data, createdBy: req.user.username });
   }
 
   @Post('outward')
-  async createOutward(@Body() data: any) {
-    return this.inventoryService.createOutward(data);
+  async createOutward(@Body() data: any, @Req() req: any) {
+    return this.inventoryService.createOutward({ ...data, createdBy: req.user.username });
   }
 
   @Get('outward')
@@ -155,36 +157,50 @@ export class InventoryController {
 
   @Get('cotton-inventory')
   async getCottonInventory(@Query('range') range: DateRange = DateRange.MONTH) {
-    // This should also come from service eventually
+    const batches = await this.inventoryService.getAvailableBatches();
     return {
       range,
-      batches: [],
-      totalStock: 0,
+      batches,
+      totalStock: batches.reduce((sum, batch) => sum + batch.kg, 0),
     };
   }
 
   @Get('yarn-stock')
-  async getStockByCount(@Query('date') date?: string) {
-    return this.inventoryService.getYarnStockByCount(date);
+  async getStockByCount(@Query('date') date?: string, @Query('available') available?: string) {
+    return this.inventoryService.getYarnStockByCount(date, available === 'true');
   }
 
   @Get('yarn-inventory')
   async getYarnInventory(@Query('range') range: DateRange = DateRange.MONTH) {
+    const stock = await this.inventoryService.getYarnStockByCount();
+    const inventory = Object.entries(stock).map(([count, kg]) => ({ count, kg, bags: Math.floor(kg / 60) }));
     return {
       range,
-      inventory: [],
-      totalStock: 0,
+      inventory,
+      totalStock: inventory.reduce((sum, item) => sum + item.kg, 0),
     };
   }
 
   @Delete('inward/:id')
-  async deleteInward(@Param('id') id: string) {
-    return this.inventoryService.deleteInward(parseInt(id));
+  async deleteInward(
+    @Param('id') id: string,
+    @Body('reason') reason?: string,
+    @Query('reason') queryReason?: string,
+    @Req() req?: any,
+  ) {
+    const actor = req?.user?.username || 'SYSTEM';
+    return this.inventoryService.deleteInward(parseInt(id), actor, reason || queryReason);
   }
 
   @Delete('outward/:id')
-  async deleteOutward(@Param('id') id: string) {
-    return this.inventoryService.deleteOutward(parseInt(id));
+  async deleteOutward(
+    @Param('id') id: string,
+    @Body('reason') reason?: string,
+    @Query('reason') queryReason?: string,
+    @Req() req?: any,
+  ) {
+    const actor = req?.user?.username || 'SYSTEM';
+    return this.inventoryService.deleteOutward(parseInt(id), actor, reason || queryReason);
   }
 
   @Post('waste/recycle')
@@ -198,7 +214,13 @@ export class InventoryController {
   }
 
   @Delete('waste/:id')
-  async deleteWaste(@Param('id') id: string) {
-    return this.inventoryService.deleteWaste(parseInt(id));
+  async deleteWaste(
+    @Param('id') id: string,
+    @Body('reason') reason?: string,
+    @Query('reason') queryReason?: string,
+    @Req() req?: any,
+  ) {
+    const actor = req?.user?.username || 'SYSTEM';
+    return this.inventoryService.deleteWaste(parseInt(id), actor, reason || queryReason);
   }
 }

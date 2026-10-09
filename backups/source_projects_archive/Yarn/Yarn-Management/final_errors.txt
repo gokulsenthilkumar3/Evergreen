@@ -1,0 +1,2 @@
+apps/api/src/modules/portal/portal.routes.ts(2,24): error TS2307: Cannot find module '../../prisma' or its corresponding type declarations.
+apps/api/src/modules/portal/portal.routes.ts(3,30): error TS2307: Cannot find module '../../middleware/auth' or its corresponding type declarations.

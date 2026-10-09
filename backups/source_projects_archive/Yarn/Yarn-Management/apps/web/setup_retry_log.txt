@@ -1,0 +1,92 @@
+
+Running 1 test using 1 worker
+
+[1A[2K[1/1] [setup] › e2e\auth.setup.ts:5:1 › authenticate
+[1A[2K[2/1] (retries) [setup] › e2e\auth.setup.ts:5:1 › authenticate (retry #1)
+[1A[2K[3/1] (retries) [setup] › e2e\auth.setup.ts:5:1 › authenticate (retry #2)
+[1A[2K  1) [setup] › e2e\auth.setup.ts:5:1 › authenticate ────────────────────────────────────────────────
+
+    Error: locator.click: Error: strict mode violation: getByRole('button', { name: /sign in/i }) resolved to 2 elements:
+        1) <button tabindex="0" type="submit" class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary css-gxii5-MuiButtonBase-root-MuiButton-root">Sign in</button> aka getByRole('button', { name: 'Sign in', exact: true })
+        2) <button tabindex="0" type="button" class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-colorPrimary MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-colorPrimary css-5okwb3-MuiButtonBase-root-MuiButton-root">…</button> aka getByRole('button', { name: 'Sign in with Passkey' })
+
+    Call log:
+    [2m  - waiting for getByRole('button', { name: /sign in/i })[22m
+
+
+      12 |
+      13 |     // Click sign in
+    > 14 |     await page.getByRole('button', { name: /sign in/i }).click();
+         |                                                          ^
+      15 |     // Wait until the page receives the cookies.
+      16 |     //
+      17 |     // Sometimes login flow sets cookies in the process of several redirects.
+        at C:\Users\gokul\Downloads\Yarn Management\Yarn-Management\apps\web\e2e\auth.setup.ts:14:58
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\auth.setup.ts-authenticate-setup\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\auth.setup.ts-authenticate-setup\error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: locator.click: Error: strict mode violation: getByRole('button', { name: /sign in/i }) resolved to 2 elements:
+        1) <button tabindex="0" type="submit" class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary css-gxii5-MuiButtonBase-root-MuiButton-root">Sign in</button> aka getByRole('button', { name: 'Sign in', exact: true })
+        2) <button tabindex="0" type="button" class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-colorPrimary MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-colorPrimary css-5okwb3-MuiButtonBase-root-MuiButton-root">…</button> aka getByRole('button', { name: 'Sign in with Passkey' })
+
+    Call log:
+    [2m  - waiting for getByRole('button', { name: /sign in/i })[22m
+
+
+      12 |
+      13 |     // Click sign in
+    > 14 |     await page.getByRole('button', { name: /sign in/i }).click();
+         |                                                          ^
+      15 |     // Wait until the page receives the cookies.
+      16 |     //
+      17 |     // Sometimes login flow sets cookies in the process of several redirects.
+        at C:\Users\gokul\Downloads\Yarn Management\Yarn-Management\apps\web\e2e\auth.setup.ts:14:58
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\auth.setup.ts-authenticate-setup-retry1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\auth.setup.ts-authenticate-setup-retry1\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\auth.setup.ts-authenticate-setup-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\auth.setup.ts-authenticate-setup-retry1\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #2 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: locator.click: Error: strict mode violation: getByRole('button', { name: /sign in/i }) resolved to 2 elements:
+        1) <button tabindex="0" type="submit" class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary css-gxii5-MuiButtonBase-root-MuiButton-root">Sign in</button> aka getByRole('button', { name: 'Sign in', exact: true })
+        2) <button tabindex="0" type="button" class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-colorPrimary MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-colorPrimary css-5okwb3-MuiButtonBase-root-MuiButton-root">…</button> aka getByRole('button', { name: 'Sign in with Passkey' })
+
+    Call log:
+    [2m  - waiting for getByRole('button', { name: /sign in/i })[22m
+
+
+      12 |
+      13 |     // Click sign in
+    > 14 |     await page.getByRole('button', { name: /sign in/i }).click();
+         |                                                          ^
+      15 |     // Wait until the page receives the cookies.
+      16 |     //
+      17 |     // Sometimes login flow sets cookies in the process of several redirects.
+        at C:\Users\gokul\Downloads\Yarn Management\Yarn-Management\apps\web\e2e\auth.setup.ts:14:58
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\auth.setup.ts-authenticate-setup-retry2\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\auth.setup.ts-authenticate-setup-retry2\error-context.md
+
+
+[1A[2K  1 failed
+    [setup] › e2e\auth.setup.ts:5:1 › authenticate ─────────────────────────────────────────────────

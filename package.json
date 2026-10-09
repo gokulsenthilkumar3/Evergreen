@@ -9,8 +9,14 @@
   ],
   "scripts": {
     "dev": "node scripts/dev-evergreen.js",
+    "setup:check": "node scripts/setup-check.js",
+    "agent:check": "node agent-system/validate.mjs && node --test agent-system/runtime/planner.test.mjs",
+    "db:studio": "node scripts/database-studio.js",
+    "db:studio:prisma": "npm run db:studio -w @evergreen/database -- --hostname 127.0.0.1",
     "build": "npm run build --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
+    "typecheck": "npx tsc --noEmit -p apps/api/tsconfig.build.json && npx tsc --noEmit -p apps/web/tsconfig.json",
+    "verify": "npm run generate -w @evergreen/database && npm run migrate:check -w @evergreen/database && npm run typecheck && npm test && npm run build",
     "desktop": "npm run start -w apps/desktop",
     "dist:desktop": "npm run dist -w apps/desktop",
     "audit:roadmap": "node scripts/roadmap-audit.mjs"

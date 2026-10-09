@@ -1,0 +1,50 @@
+{
+    "root": true,
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "project": "./tsconfig.json",
+        "sourceType": "module"
+    },
+    "plugins": [
+        "@typescript-eslint",
+        "sonarjs",
+        "security",
+        "react",
+        "react-hooks",
+        "react-refresh"
+    ],
+    "extends": [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/recommended",
+        "plugin:sonarjs/recommended",
+        "plugin:security/recommended",
+        "plugin:react/recommended",
+        "plugin:react-hooks/recommended"
+    ],
+    "env": {
+        "browser": true,
+        "es2020": true
+    },
+    "settings": {
+        "react": {
+            "version": "detect"
+        }
+    },
+    "rules": {
+        "react-refresh/only-export-components": [
+            "warn",
+            {
+                "allowConstantExport": true
+            }
+        ],
+        "sonarjs/cognitive-complexity": [
+            "warn",
+            15
+        ],
+        "sonarjs/no-duplicate-string": "off",
+        "security/detect-object-injection": "off",
+        "@typescript-eslint/no-explicit-any": "off",
+        "react/prop-types": "off",
+        "react/react-in-jsx-scope": "off"
+    }
+}

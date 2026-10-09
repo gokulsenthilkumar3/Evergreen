@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
     Box,
     Paper,
@@ -18,7 +18,6 @@ import {
     Autocomplete,
     IconButton,
     Dialog,
-    DialogTitle,
     DialogContent,
     DialogActions,
     Tooltip,
@@ -34,16 +33,18 @@ import {
     Email as EmailIcon,
     PictureAsPdf as PdfIcon,
     TableView as ExcelIcon,
-    Close as CloseIcon,
     Delete as DeleteIcon,
     Add as AddIcon,
-    Refresh as RefreshIcon,
     WarningAmber as WarnIcon,
     MergeType as MergeIcon,
+    QrCode2 as QrIcon,
+    Inventory2Outlined,
+    ScaleOutlined,
 } from '@mui/icons-material';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../utils/api';
+import { localTimeValue, productionTimestamp } from '../utils/productionTiming';
 import { generatePDF } from '../utils/pdfGenerator';
 import { generateExcel } from '../utils/excelGenerator';
 import { useConfirm } from '../context/ConfirmContext';
@@ -58,12 +59,17 @@ import {
     safeParseFloat,
 } from '../utils/validators';
 import { SUCCESS_MESSAGES, ERROR_MESSAGES, CONFIRM_TITLES, CONFIRM_MESSAGES, formatApiError } from '../utils/messages';
+import { handleDeleteGuardError } from '../utils/deleteGuardHandler';
 import { getDateRange as getStandardDateRange, type DateFilterType } from '../utils/dateFilters';
 import GlassDatePicker from '../components/common/GlassDatePicker';
 import EmptyState from '../components/common/EmptyState';
 import TableSkeleton from '../components/common/TableSkeleton';
 import RequiredLabel from '../components/common/RequiredLabel';
+import BarcodeQRModal from '../components/common/BarcodeQRModal';
+import { buildBatchQRPayload } from '../utils/codeFormatters';
 import ExportButtons from '../components/common/ExportButtons';
+import EntryWizardHeader from '../components/common/EntryWizardHeader';
+import BatchCodeBuilder from '../components/common/BatchCodeBuilder';
 
 
 interface BatchEntry {
@@ -86,21 +92,23 @@ interface InwardEntryProps {
 }
 
 const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
-    const [dateFilter, setDateFilter] = useState<DateFilterType>('today');
+    const [dateFilter, setDateFilter] = useState<DateFilterType>('all');
     const [customFrom, setCustomFrom] = useState<string>('');
     const [customTo, setCustomTo] = useState<string>('');
     const [openWizard, setOpenWizard] = useState(false);
+    const [receiptTime, setReceiptTime] = useState(() => localTimeValue());
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [touched, setTouched] = useState<Record<string, boolean>>({});
     const [selectedBatches, setSelectedBatches] = useState<string[]>([]);
+    const [labelBatch, setLabelBatch] = useState<BatchEntry | null>(null);
 
     const [formData, setFormData] = useState({
+        batchId: '',
         date: new Date().toLocaleDateString('en-CA'),
         supplier: '',
         bale: '',
         kg: '',
     });
-    const [batchSuffix, setBatchSuffix] = useState('');
     const { confirm: confirmDialog } = useConfirm();
     const queryClient = useQueryClient();
 
@@ -127,27 +135,12 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
         return Array.from(uniqueSuppliers).sort();
     }, [batchHistory]);
 
-    useEffect(() => { generateRandomSuffix(); }, []);
-
-    const generateRandomSuffix = () => {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        let suffix = '';
-        for (let i = 0; i < 3; i++) suffix += chars.charAt(Math.floor(Math.random() * chars.length));
-        setBatchSuffix(suffix);
-    };
-
-    const getBatchPrefix = () => {
-        if (!formData.date) return '';
-        const [y, m] = formData.date.split('-');
-        return `${y}${m}`;
-    };
-
     const handleDateFilterChange = (event: SelectChangeEvent) => setDateFilter(event.target.value as DateFilterType);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
-        setTouched(prev => ({ ...prev, [name]: true }));
+        setTouched(prev => ({ ...prev, [name === 'kg' ? 'weight' : name]: true }));
     };
 
     const handleSupplierChange = (_event: any, newValue: string | null) => {
@@ -189,7 +182,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
             toast.success(SUCCESS_MESSAGES.DELETE);
             queryClient.invalidateQueries({ queryKey: ['inwardHistory'] });
         } catch (error: any) {
-            toast.error(formatApiError(error, ERROR_MESSAGES.DELETE_FAILED));
+            handleDeleteGuardError(error, ERROR_MESSAGES.DELETE_FAILED);
         }
     };
 
@@ -200,12 +193,12 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
             return;
         }
 
+        if (!productionTimestamp(formData.date, receiptTime)) { toast.error('Enter a valid receipt time'); return; }
         setIsSubmitting(true);
         try {
-            const batchId = `${getBatchPrefix()}${batchSuffix}`;
             await api.post('/inventory/inward', {
-                batchId,
-                date: formData.date,
+                ...(formData.batchId.trim() ? { batchId: formData.batchId.trim() } : {}),
+                date: productionTimestamp(formData.date, receiptTime),
                 supplier: formData.supplier.trim(),
                 bale: Number(formData.bale),
                 kg: safeParseFloat(formData.kg),
@@ -219,13 +212,14 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
             toast.success(SUCCESS_MESSAGES.INWARD_SAVED);
             queryClient.invalidateQueries({ queryKey: ['inwardHistory'] });
             setOpenWizard(false);
+            setTouched({});
             setFormData({
+                batchId: '',
                 date: new Date().toLocaleDateString('en-CA'),
                 supplier: '',
                 bale: '',
                 kg: '',
             });
-            generateRandomSuffix();
         } catch (error: any) {
             toast.error(formatApiError(error, ERROR_MESSAGES.SAVE_FAILED));
         } finally {
@@ -319,6 +313,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                     <FormControl sx={{ minWidth: { xs: '100%', sm: 180 } }} size="small">
                         <InputLabel>Date Filter</InputLabel>
                         <Select value={dateFilter} label="Date Filter" onChange={handleDateFilterChange}>
+                            <MenuItem value="all">All Batches</MenuItem>
                             <MenuItem value="today">Today</MenuItem>
                             <MenuItem value="yesterday">Yesterday</MenuItem>
                             <MenuItem value="week">Past Week</MenuItem>
@@ -366,7 +361,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                             <Button
                                 variant="contained"
                                 startIcon={<AddIcon />}
-                                onClick={() => setOpenWizard(true)}
+                                onClick={() => { setReceiptTime(localTimeValue()); setOpenWizard(true); }}
                                 sx={{ height: 40, width: { xs: '100%', sm: 'auto' } }}
                             >
                                 Add Batch
@@ -388,37 +383,24 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
             {/* Add Batch Dialog */}
             <Dialog
                 open={openWizard}
-                onClose={() => { setOpenWizard(false); setTouched({}); }}
+                onClose={() => { if (!isSubmitting) { setOpenWizard(false); setTouched({}); } }}
                 maxWidth="sm"
                 fullWidth
                 aria-labelledby="add-batch-dialog-title"
-                aria-describedby="add-batch-dialog-description"
+                aria-describedby="add-batch-dialog-title-description"
             >
-                <DialogTitle id="add-batch-dialog-title" sx={{ fontWeight: 800, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: 1, borderColor: 'divider' }}>
-                    <Box>
-                        Add Cotton Batch
-                        <Typography id="add-batch-dialog-description" variant="caption" display="block" color="text.secondary" sx={{ fontWeight: 400 }}>
-                            All fields are required. Inventory updates automatically.
-                        </Typography>
-                    </Box>
-                    <IconButton onClick={() => { setOpenWizard(false); setTouched({}); }} aria-label="Close dialog"><CloseIcon /></IconButton>
-                </DialogTitle>
-                <DialogContent sx={{ pt: 3 }}>
+                <EntryWizardHeader id="add-batch-dialog-title" stage="01 · Cotton receipt" title="Add Cotton Batch"
+                    description="Give each receipt an identity. Record the cotton arriving at your mill."
+                    icon={<Inventory2Outlined />} busy={isSubmitting} onClose={() => { setOpenWizard(false); setTouched({}); }} />
+                <DialogContent sx={{ p: { xs: 2, sm: 3 } }}>
                     {isSubmitting && <LinearProgress sx={{ mb: 2 }} />}
 
-                    {/* Batch ID Preview */}
-                    <Paper variant="outlined" sx={{ p: 2, mb: 3, bgcolor: 'action.hover', borderRadius: 2 }}>
-                        <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 700, letterSpacing: 1 }}>
-                            Batch ID Preview
-                        </Typography>
-                        <Typography variant="h5" sx={{ fontFamily: 'monospace', fontWeight: 800, letterSpacing: 2, mt: 0.5 }}>
-                            {getBatchPrefix()}<Box component="span" sx={{ color: 'primary.main' }}>{batchSuffix}</Box>
-                        </Typography>
-                    </Paper>
-
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+                    <Box component="fieldset" disabled={isSubmitting} sx={{ m: 0, p: 0, border: 0, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2.5, mt: 2 }}>
+                        <Typography variant="overline" color="text.secondary">01 / Batch identity</Typography>
+                        <BatchCodeBuilder value={formData.batchId} date={formData.date} disabled={isSubmitting}
+                            onChange={batchId => setFormData(prev => ({ ...prev, batchId }))} />
                         <Box sx={{ display: 'flex', gap: 2 }}>
-                            <GlassDatePicker
+                            <TextField type="date" size="small"
                                 label={<RequiredLabel label="Date" required />}
                                 name="date"
                                 value={formData.date}
@@ -430,22 +412,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                                 error={!!getFieldError('date')}
                                 helperText={getFieldError('date') || (isFutureDate(formData.date) ? '⚠️ Future date not allowed' : ' ')}
                             />
-                            <TextField
-                                label="Batch Suffix"
-                                value={batchSuffix}
-                                onChange={(e) => setBatchSuffix(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 3))}
-                                helperText="3-char alphanumeric"
-                                InputProps={{
-                                    endAdornment: (
-                                        <Tooltip title="Regenerate random suffix">
-                                            <IconButton size="small" onClick={generateRandomSuffix}>
-                                                <RefreshIcon fontSize="small" />
-                                            </IconButton>
-                                        </Tooltip>
-                                    )
-                                }}
-                                sx={{ width: 180, flexShrink: 0 }}
-                            />
+                            <TextField type="time" label="Receipt time" value={receiptTime} onChange={e => setReceiptTime(e.target.value)} size="small" fullWidth slotProps={{ inputLabel: { shrink: true }, htmlInput: { step: 1 } }} helperText="Production starts after the receipt settling time." />
                         </Box>
 
                         <Autocomplete
@@ -466,7 +433,8 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                             )}
                         />
 
-                        <Box sx={{ display: 'flex', gap: 2 }}>
+                        <Typography variant="overline" color="text.secondary">02 / Cotton received</Typography>
+                        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
                             <TextField
                                 label={<RequiredLabel label="Total Bales" required />}
                                 name="bale"
@@ -476,7 +444,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                                 onBlur={() => setTouched(p => ({ ...p, bale: true }))}
                                 required
                                 fullWidth
-                                InputProps={{ inputProps: { min: 1, step: 1 } }}
+                                InputProps={{ inputProps: { min: 1, step: 1 }, endAdornment: <InputAdornment position="end">bales</InputAdornment> }}
                                 error={!!getFieldError('bale')}
                                 helperText={getFieldError('bale') || 'Whole number (1–9999)'}
                             />
@@ -491,6 +459,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                                 fullWidth
                                 InputProps={{
                                     inputProps: { min: 0.01, step: 0.01 },
+                                    startAdornment: <InputAdornment position="start"><ScaleOutlined fontSize="small" /></InputAdornment>,
                                     endAdornment: <InputAdornment position="end">kg</InputAdornment>
                                 }}
                                 error={!!getFieldError('weight')}
@@ -663,13 +632,20 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                                                 {(row.remainingKg ?? row.kg).toLocaleString()} kg
                                             </TableCell>
                                             <TableCell align="center">
-                                                {(userRole === 'ADMIN') && (
-                                                    <Tooltip title="Delete Batch (Admin only)">
-                                                        <IconButton size="small" color="error" onClick={() => handleDeleteBatch(row.id)}>
-                                                            <DeleteIcon fontSize="small" />
+                                                <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
+                                                    <Tooltip title="View & Print QR / Barcode Tag">
+                                                        <IconButton size="small" color="primary" onClick={() => setLabelBatch(row)}>
+                                                            <QrIcon fontSize="small" />
                                                         </IconButton>
                                                     </Tooltip>
-                                                )}
+                                                    {(userRole === 'ADMIN') && (
+                                                        <Tooltip title="Delete Batch (Admin only)">
+                                                            <IconButton size="small" color="error" onClick={() => handleDeleteBatch(row.id)}>
+                                                                <DeleteIcon fontSize="small" />
+                                                            </IconButton>
+                                                        </Tooltip>
+                                                    )}
+                                                </Box>
                                             </TableCell>
                                         </TableRow>
                                     ))
@@ -694,6 +670,24 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                     </Box>
                 )}
             </Paper>
+
+            {labelBatch && (
+                <BarcodeQRModal
+                    open={Boolean(labelBatch)}
+                    onClose={() => setLabelBatch(null)}
+                    type="BATCH"
+                    title={`Batch Label: ${labelBatch.batchId}`}
+                    code={labelBatch.batchId}
+                    qrPayload={buildBatchQRPayload(labelBatch)}
+                    metadata={[
+                        { label: 'Supplier', value: labelBatch.supplier },
+                        { label: 'Date', value: new Date(labelBatch.date).toLocaleDateString('en-IN') },
+                        { label: 'Total Bales', value: labelBatch.bale },
+                        { label: 'Gross Weight', value: `${labelBatch.kg.toLocaleString()} kg` },
+                        { label: 'Remaining Stock', value: `${(labelBatch.remainingKg ?? labelBatch.kg).toLocaleString()} kg` },
+                    ]}
+                />
+            )}
         </Box>
     );
 };

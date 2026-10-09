@@ -108,11 +108,11 @@ const Settings: React.FC<SettingsProps> = ({
 
     // Rates State
     const [rateSettings, setRateSettings] = useState({
-        ebRate: '10',
-        packageRate: '1.60',
-        maintenanceRate: '4.00',
-        gstPercent: '18',
-        supportedCounts: '2,4,6,8,10',
+        ebRate: '',
+        packageRate: '',
+        maintenanceRate: '',
+        gstPercent: '',
+        supportedCounts: '',
     });
 
     // Populate state when data is fetched
@@ -134,11 +134,11 @@ const Settings: React.FC<SettingsProps> = ({
                 defaultInvoiceTheme: settings.defaultInvoiceTheme || 'CLASSIC',
             });
             setRateSettings({
-                ebRate: String(settings.ebRate || '10'),
-                packageRate: String(settings.packageRate || '1.60'),
-                maintenanceRate: String(settings.maintenanceRate || '4.00'),
-                gstPercent: String(settings.gstPercent || '18'),
-                supportedCounts: settings.supportedCounts || '2,4,6,8,10',
+                ebRate: String(settings.ebRate ?? ''),
+                packageRate: String(settings.packageRate ?? ''),
+                maintenanceRate: String(settings.maintenanceRate ?? ''),
+                gstPercent: String(settings.gstPercent ?? ''),
+                supportedCounts: settings.supportedCounts ?? '',
             });
         }
     }, [settings]);
@@ -175,7 +175,6 @@ const Settings: React.FC<SettingsProps> = ({
 
         updateSettingsMutation.mutate({
             ...companySettings,
-            updatedBy: username,
         });
     };
 
@@ -203,7 +202,6 @@ const Settings: React.FC<SettingsProps> = ({
             maintenanceRate: String(maint),
             gstPercent: String(gst),
             supportedCounts: rateSettings.supportedCounts,
-            updatedBy: username,
         });
     };
 
@@ -219,7 +217,6 @@ const Settings: React.FC<SettingsProps> = ({
 
         updateSettingsMutation.mutate({
             ...systemSettings,
-            updatedBy: username,
         });
     };
 

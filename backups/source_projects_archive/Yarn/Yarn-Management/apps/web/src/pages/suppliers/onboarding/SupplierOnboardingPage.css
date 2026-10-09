@@ -1,0 +1,21 @@
+.supplier-onboarding-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.page-header {
+    margin-bottom: 2rem;
+}
+
+.page-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 0.5rem;
+}
+
+.page-header p {
+    color: #6b7280;
+    font-size: 1rem;
+}

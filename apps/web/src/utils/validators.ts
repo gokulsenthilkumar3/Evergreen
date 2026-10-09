@@ -20,8 +20,9 @@ export const clamp = (value: number, min: number, max: number): number =>
     Math.min(Math.max(value, min), max);
 
 export const safeParseFloat = (val: string | number): number => {
-    const n = parseFloat(String(val));
-    return isNaN(n) ? 0 : n;
+    if (typeof val === 'string' && val.trim() === '') return 0;
+    const n = typeof val === 'number' ? val : Number(val);
+    return Number.isFinite(n) ? n : 0;
 };
 
 // ─── Date Validators ──────────────────────────────────────────────────────────
@@ -38,11 +39,20 @@ export const isFutureDate = (dateStr: string): boolean => {
 /** True if an ISO date string is a valid date */
 export const isValidDate = (dateStr: string): boolean => {
     if (!dateStr) return false;
+    const dateOnly = dateStr.split('T')[0];
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateOnly)) return false;
     // Append T00:00:00 so the date is parsed in local time, not UTC.
     // Without this, 'YYYY-MM-DD' is treated as UTC midnight, which shifts
     // the date by -5:30 in IST and causes off-by-one errors.
     const d = new Date(dateStr.includes('T') ? dateStr : `${dateStr}T00:00:00`);
-    return !isNaN(d.getTime());
+    if (Number.isNaN(d.getTime())) return false;
+
+    // Date normalisation makes values such as 2026-02-31 look valid. Compare
+    // the parsed local calendar components with the original input instead.
+    const [year, month, day] = dateOnly.split('-').map(Number);
+    return d.getFullYear() === year
+        && d.getMonth() + 1 === month
+        && d.getDate() === day;
 };
 
 export const validateDate = (dateStr: string, allowFuture = false): ValidationResult => {
@@ -114,7 +124,9 @@ export const validateProductionBalance = (
     toleranceKg = 0.01
 ): ValidationResult => {
     const diff = consumed - produced - waste - intermediate;
-    if (Math.abs(diff) > toleranceKg) {
+    // Decimal weights cannot always be represented exactly in binary (for
+    // example, 100 - 89.99 - 10 is slightly greater than 0.01).
+    if (Math.abs(diff) > toleranceKg + 1e-9) {
         return {
             valid: false,
             message: `Material balance mismatch: ${diff > 0 ? '+' : ''}${diff.toFixed(3)} kg. Input must equal Yarn + Waste + Intermediate.`

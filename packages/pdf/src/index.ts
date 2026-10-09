@@ -62,6 +62,7 @@ export function calculateInvoiceTotals(
     }
 
     const lineTotal = money(quantity * rate);
+    if (!Number.isFinite(lineTotal) || lineTotal > 1e12) throw new InvoiceCalculationError('Invoice line value exceeds the supported amount range');
     // The legacy boolean overload uses percentage discounts; the full API uses amounts.
     const lineDiscount = money(
       isSimpleMode ? (lineTotal * discount) / 100 : discount,
@@ -113,6 +114,7 @@ export function calculateInvoiceTotals(
   sgst = money(sgst);
   igst = money(igst);
   const total = money(taxable + cgst + sgst + igst);
+  if (!Number.isFinite(total) || total > 1e12) throw new InvoiceCalculationError('Invoice total exceeds the supported amount range');
   return {
     subtotal: isSimpleMode ? grossSubtotal : discountedSubtotal,
     discount: isSimpleMode ? lineDiscounts : documentDiscountRounded,

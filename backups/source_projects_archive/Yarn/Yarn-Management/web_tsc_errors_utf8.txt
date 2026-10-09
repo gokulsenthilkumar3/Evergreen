@@ -1,0 +1,11 @@
+﻿apps/web/src/components/billing/InvoiceList.tsx(129,21): error TS2322: Type '{ startDate: string; endDate: string; onStartDateChange: Dispatch<SetStateAction<string>>; onEndDateChange: Dispatch<SetStateAction<string>>; }' is not assignable to type 'IntrinsicAttributes & DateRangePickerProps'.
+  Property 'onStartDateChange' does not exist on type 'IntrinsicAttributes & DateRangePickerProps'.
+apps/web/src/components/GlobalSearch.tsx(219,42): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & ListItemOwnProps & CommonProps & Omit<any, "children" | ... 15 more ... | "secondaryAction">): Element | null', gave the following error.
+    Property 'component' is missing in type '{ children: Element[]; key: number; button: true; onClick: () => void; sx: { '&:hover': { bgcolor: "action.hover"; }; }; }' but required in type '{ component: ElementType<any, keyof IntrinsicElements>; }'.
+  Overload 2 of 2, '(props: DefaultComponentProps<ListItemTypeMap<{}, "li">>): Element | null', gave the following error.
+    Type '{ children: Element[]; key: number; button: true; onClick: () => void; sx: { '&:hover': { bgcolor: "action.hover"; }; }; }' is not assignable to type 'IntrinsicAttributes & ListItemOwnProps & CommonProps & Omit<Omit<DetailedHTMLProps<LiHTMLAttributes<HTMLLIElement>, HTMLLIElement>, "ref"> & { ...; }, "children" | ... 15 more ... | "secondaryAction">'.
+      Property 'button' does not exist on type 'IntrinsicAttributes & ListItemOwnProps & CommonProps & Omit<Omit<DetailedHTMLProps<LiHTMLAttributes<HTMLLIElement>, HTMLLIElement>, "ref"> & { ...; }, "children" | ... 15 more ... | "secondaryAction">'.
+apps/web/src/components/widgets/FinancialAnalyticsWidget.tsx(382,30): error TS2552: Cannot find name 'LineChart'. Did you mean 'PieChart'?
+apps/web/src/components/widgets/FinancialAnalyticsWidget.tsx(392,31): error TS2552: Cannot find name 'LineChart'. Did you mean 'PieChart'?
+apps/web/src/pages/QualityAnalyticsDashboard.tsx(272,75): error TS18048: 'percent' is possibly 'undefined'.

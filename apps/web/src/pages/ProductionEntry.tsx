@@ -16,7 +16,6 @@ import {
     Alert,
     Snackbar,
     Dialog,
-    DialogTitle,
     DialogContent,
     Stepper,
     Step,
@@ -31,18 +30,22 @@ import {
     FormControl,
     InputLabel,
     Select,
+    InputAdornment,
 } from '@mui/material';
 import {
     Add as AddIcon,
     Delete as DeleteIcon,
     Save as SaveIcon,
-    Close as CloseIcon,
     ArrowBack as BackIcon,
     ArrowForward as NextIcon,
     Email as EmailIcon,
     TableView as ExcelIcon,
     PictureAsPdf as PdfIcon,
+    QrCode2 as QrIcon,
+    PrecisionManufacturingOutlined,
 } from '@mui/icons-material';
+import BarcodeQRModal from '../components/common/BarcodeQRModal';
+import { formatBagCode, formatDateCompact, padZero } from '../utils/codeFormatters';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../utils/api';
 import { generateExcel } from '../utils/excelGenerator';
@@ -50,11 +53,15 @@ import { generatePDF } from '../utils/pdfGenerator';
 import { useConfirm } from '../context/ConfirmContext';
 import { toast } from 'sonner';
 import { SUCCESS_MESSAGES, ERROR_MESSAGES, CONFIRM_TITLES, CONFIRM_MESSAGES, formatApiError } from '../utils/messages';
+import { handleDeleteGuardError, type DeleteGuardErrorPayload } from '../utils/deleteGuardHandler';
+import { localTimeValue, productionTimestamp } from '../utils/productionTiming';
+import ProductionTimingAlert from '../components/common/ProductionTimingAlert';
 import { validateDate } from '../utils/validators';
 import EmptyState from '../components/common/EmptyState';
 import TableSkeleton from '../components/common/TableSkeleton';
 import GlassDatePicker from '../components/common/GlassDatePicker';
 import ExportButtons from '../components/common/ExportButtons';
+import EntryWizardHeader, { EntrySummary, SummaryValue } from '../components/common/EntryWizardHeader';
 import { getDateRange as getStandardDateRange, DATE_FILTER_OPTIONS_WITH_ALL, type DateFilterType } from '../utils/dateFilters';
 
 interface ConsumptionItem {
@@ -125,6 +132,12 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
     });
 
     const [date, setDate] = useState(new Date().toLocaleDateString('en-CA'));
+    const [startTime, setStartTime] = useState(() => localTimeValue());
+    const [timingError, setTimingError] = useState<DeleteGuardErrorPayload | null>(null);
+    const [isSaving, setIsSaving] = useState(false);
+    const startTimeInput = React.useRef<HTMLInputElement>(null);
+    const [editStartRequest, setEditStartRequest] = useState(0);
+    const [labelProduction, setLabelProduction] = useState<any | null>(null);
 
     const { data: availableBatches = [], isFetching: isFetchingBatches } = useQuery({
         queryKey: ['availableBatches', date],
@@ -153,6 +166,10 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
     const [activeStep, setActiveStep] = useState(0);
     const [outputTab, setOutputTab] = useState(0);
 
+    React.useEffect(() => {
+        if (activeStep === 0 && editStartRequest > 0) startTimeInput.current?.focus();
+    }, [activeStep, editStartRequest]);
+
     const [consumed, setConsumed] = useState<ConsumptionItem[]>([
         { id: 1, batchNo: '', bale: '', weight: '' },
     ]);
@@ -170,6 +187,7 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
 
     // Intermediate material (sliver, roving, etc. — not finished yarn, not waste)
     const [intermediate, setIntermediate] = useState<string>('');
+    const [processingCost, setProcessingCost] = useState('');
     const { confirm: confirmDialog } = useConfirm();
 
 
@@ -185,6 +203,7 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
 
     // Consumed handlers
     const handleConsumedChange = (id: number, field: keyof ConsumptionItem, value: any) => {
+        if (field === 'batchNo') setTimingError(null);
         setConsumed(prev => prev.map(item => {
             if (item.id === id) {
                 const updatedItem = { ...item, [field]: value };
@@ -253,10 +272,33 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
 
     const getTotalIntermediate = () => parseFloat(intermediate) || 0;
 
+    const validateStart = () => {
+        const timestamp = productionTimestamp(date, startTime);
+        if (!timestamp) { toast.error('Enter a valid production date and start time'); return null; }
+        if (new Date(timestamp).getTime() > Date.now()) { toast.error('Production cannot start in the future', { description: 'Choose the time the run actually started.' }); return null; }
+        return timestamp;
+    };
+
+    const checkBatchTiming = (timestamp: string) => {
+        for (const item of consumed) {
+            const batch = availableBatches.find((b: any) => b.batchId === item.batchNo);
+            const earliest = batch?.earliestStartAt;
+            if (earliest && new Date(timestamp).getTime() < new Date(earliest).getTime()) {
+                setTimingError({ code: 'PRODUCTION_TOO_EARLY', trace: { batchNo: item.batchNo }, inwardReceivedAt: batch.receivedAt, earliestStartAt: earliest });
+                return false;
+            }
+        }
+        setTimingError(null);
+        setEditStartRequest(0);
+        return true;
+    };
+
     const handleNext = () => {
         if (activeStep === 0) {
             const dateCheck = validateDate(date, false);
             if (!dateCheck.valid) { toast.error(dateCheck.message); return; }
+            const timestamp = validateStart();
+            if (!timestamp) return;
 
             // Validate input
             const hasValidInput = consumed.some(item => item.batchNo && parseFloat(item.weight) > 0 && parseFloat(item.bale) > 0);
@@ -285,16 +327,17 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                 const maxBale = selectedBatch?.bale || 0;
                 const maxWeight = selectedBatch?.kg || 0;
 
-                if (consumption.totalBales <= 0 || consumption.totalBales > maxBale) {
-                    toast.error(ERROR_MESSAGES.EXCEEDS_AVAILABLE_BALES);
+                if (maxBale > 0 ? consumption.totalBales <= 0 || consumption.totalBales > maxBale : consumption.totalBales !== 0) {
+                    toast.error(`Batch ${batchNo}: ${consumption.totalBales} bales entered; ${maxBale} available. Enter a positive quantity within the available stock.`);
                     return;
                 }
 
                 if (consumption.totalWeight <= 0 || consumption.totalWeight > maxWeight) {
-                    toast.error(ERROR_MESSAGES.EXCEEDS_AVAILABLE_WEIGHT);
+                    toast.error(`Batch ${batchNo}: ${consumption.totalWeight.toFixed(2)} kg entered; ${maxWeight.toFixed(2)} kg available. Enter a positive weight within the available stock.`);
                     return;
                 }
             }
+            if (!checkBatchTiming(timestamp)) return;
         }
         setActiveStep((prev) => prev + 1);
     };
@@ -304,6 +347,9 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
     };
 
     const handleSave = async () => {
+        if (isSaving) return;
+        const timestamp = validateStart();
+        if (!timestamp || !checkBatchTiming(timestamp)) return;
         try {
             const totalConsumed = getTotalConsumed();
             const totalProduced = getTotalProduced();
@@ -312,12 +358,12 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
             const balance = totalConsumed - totalProduced - totalWaste - totalIntermediate;
 
             if (Math.abs(balance) > 0.01) {
-                toast.error(ERROR_MESSAGES.MATERIAL_BALANCE_MISMATCH);
+                toast.error(`Material balance differs by ${balance.toFixed(2)} kg. Cotton must equal yarn + waste + intermediate, within 0.01 kg.`);
                 return;
             }
 
             const productionData = {
-                date,
+                date: timestamp,
                 consumed: consumed.filter(item => item.batchNo && parseFloat(item.weight) > 0),
                 produced: produced.filter(item => parseFloat(item.weight) > 0),
                 waste,
@@ -326,9 +372,11 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                 totalProduced,
                 totalWaste,
                 totalIntermediate,
+                processingCost: Number(processingCost || 0),
                 createdBy: username,
             };
 
+            setIsSaving(true);
             await api.post('/production', productionData);
             toast.success(SUCCESS_MESSAGES.PRODUCTION_SAVED);
             refetchProduction();
@@ -338,7 +386,13 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
             queryClient.invalidateQueries({ queryKey: ['cottonInventory'] });
             handleCloseWizard();
         } catch (error: any) {
-            toast.error(formatApiError(error, ERROR_MESSAGES.SAVE_FAILED));
+            if (error?.response?.data?.code === 'PRODUCTION_TOO_EARLY') {
+                setTimingError(error.response.data);
+            } else {
+                handleDeleteGuardError(error, ERROR_MESSAGES.SAVE_FAILED);
+            }
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -361,11 +415,12 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
             queryClient.invalidateQueries({ queryKey: ['yarnStock'] });
             queryClient.invalidateQueries({ queryKey: ['cottonInventory'] });
         } catch (error: any) {
-            toast.error(formatApiError(error, ERROR_MESSAGES.DELETE_FAILED));
+            handleDeleteGuardError(error, ERROR_MESSAGES.DELETE_FAILED);
         }
     };
 
     const handleCloseWizard = () => {
+        if (isSaving) return;
         setOpenWizard(false);
         setActiveStep(0);
         setOutputTab(0);
@@ -373,7 +428,17 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
         setProduced([{ id: 1, count: '2', weight: '', bags: 0, remainingLog: 0 }]);
         setWaste({ blowRoom: '', carding: '', oe: '', others: '' });
         setIntermediate('');
+        setProcessingCost('');
         setDate(new Date().toLocaleDateString('en-CA'));
+        setStartTime(localTimeValue());
+        setTimingError(null);
+        setEditStartRequest(0);
+    };
+
+    const handleOpenWizard = () => {
+        setStartTime(localTimeValue());
+        setTimingError(null);
+        setOpenWizard(true);
     };
 
     const handleExport = (type: 'email' | 'excel' | 'pdf' | 'image') => {
@@ -460,7 +525,7 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                         <Button
                             variant="contained"
                             startIcon={<AddIcon />}
-                            onClick={() => setOpenWizard(true)}
+                            onClick={handleOpenWizard}
                         >
                             Add Production
                         </Button>
@@ -498,7 +563,7 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                                         title="No Production Entries"
                                         message="No production entries found. Start by adding a new production entry."
                                         actionLabel={userRole !== 'VIEWER' ? "Add Production" : undefined}
-                                        onAction={userRole !== 'VIEWER' ? () => setOpenWizard(true) : undefined}
+                                        onAction={userRole !== 'VIEWER' ? handleOpenWizard : undefined}
                                     />
                                 </TableCell>
                             </TableRow>
@@ -533,15 +598,29 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                                         {((row.totalProduced / row.totalConsumed) * 100).toFixed(2)}%
                                     </TableCell>
                                     <TableCell align="center">
-                                        {(userRole === 'ADMIN') && (
-                                            <IconButton
-                                                size="small"
-                                                color="error"
-                                                onClick={() => handleDeleteProduction(row.id)}
-                                            >
-                                                <DeleteIcon fontSize="small" />
-                                            </IconButton>
-                                        )}
+                                        <Stack direction="row" spacing={0.5} justifyContent="center" alignItems="center">
+                                            <Tooltip title="Print Production & Yarn Label (Barcode & QR)">
+                                                <IconButton
+                                                    size="small"
+                                                    color="primary"
+                                                    onClick={() => setLabelProduction(row)}
+                                                    aria-label="Generate QR and Barcode Label"
+                                                >
+                                                    <QrIcon fontSize="small" />
+                                                </IconButton>
+                                            </Tooltip>
+                                            {(userRole === 'ADMIN') && (
+                                                <Tooltip title="Delete Entry">
+                                                    <IconButton
+                                                        size="small"
+                                                        color="error"
+                                                        onClick={() => handleDeleteProduction(row.id)}
+                                                    >
+                                                        <DeleteIcon fontSize="small" />
+                                                    </IconButton>
+                                                </Tooltip>
+                                            )}
+                                        </Stack>
                                     </TableCell>
                                 </TableRow>
                             ))
@@ -556,18 +635,16 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                 onClose={handleCloseWizard}
                 maxWidth="lg"
                 fullWidth
+                aria-labelledby="production-wizard-title"
+                aria-describedby="production-wizard-title-description"
             >
-                <DialogTitle sx={{ fontWeight: 'bold', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    Production Entry
-                    <IconButton
-                        onClick={handleCloseWizard}
-                        sx={{ color: 'text.secondary' }}
-                    >
-                        <CloseIcon />
-                    </IconButton>
-                </DialogTitle>
-                <DialogContent>
-                    <Box sx={{ mt: 2 }}>
+                <EntryWizardHeader id="production-wizard-title" stage="02 · Production" title="Production Entry"
+                    description="Follow cotton from the selected batches through yarn, waste, and material still in process."
+                    icon={<PrecisionManufacturingOutlined />} busy={isSaving} onClose={handleCloseWizard} />
+                <DialogContent sx={{ p: { xs: 2, sm: 3 } }}>
+                    <Box component="fieldset" disabled={isSaving} sx={{ mt: 2, mx: 0, p: 0, border: 0, minWidth: 0 }}>
+                        {isSaving && <LinearProgress sx={{ mb: 2 }} />}
+                        {timingError && <ProductionTimingAlert error={timingError} busy={isSaving} onEdit={() => { setActiveStep(0); setEditStartRequest(request => request + 1); }} />}
                         <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
                             {steps.map((label) => (
                                 <Step key={label}>
@@ -579,15 +656,18 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                         {/* Step 1: Input (Cotton Consumption) */}
                         {activeStep === 0 && (
                             <Box>
-                                <GlassDatePicker
-                                    label="Production Date"
-                                    
-                                    value={date}
-                                    onChange={(e) => setDate(e.target.value)}
-                                    fullWidth
-                                    sx={{ mb: 3 }}
-                                    InputLabelProps={{ shrink: true }}
-                                />
+                                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 2 }}>
+                                    <TextField type="date" label="Production Date" value={date} size="small" fullWidth
+                                        onChange={e => { setDate(e.target.value); setTimingError(null); }} InputLabelProps={{ shrink: true }} />
+                                    <TextField type="time" label="Production start time" value={startTime} size="small" fullWidth
+                                        inputRef={startTimeInput}
+                                        onChange={e => { setStartTime(e.target.value); setTimingError(null); }} InputLabelProps={{ shrink: true }}
+                                        inputProps={{ step: 1 }} helperText="Local time the run started; checked against batch receipt." />
+                                </Stack>
+
+                                <Alert severity="info" sx={{ mb: 3, borderRadius: '12px', fontSize: '0.85rem' }}>
+                                    Choose cotton available on the production date and allow at least 61 seconds after receipt before starting production. Before saving, account for the full input as yarn, waste, or intermediate material; the balance must be within 0.01 kg.
+                                </Alert>
 
                                 <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
                                     Cotton Consumption
@@ -667,12 +747,9 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                                                                 size="small"
                                                                 type="number"
                                                                 value={item.bale}
-                                                                onChange={(e) => {
-                                                                    const val = parseFloat(e.target.value) || 0;
-                                                                    if (val <= maxBale) {
-                                                                        handleConsumedChange(item.id, 'bale', e.target.value);
-                                                                    }
-                                                                }}
+                                                                onChange={(e) => handleConsumedChange(item.id, 'bale', e.target.value)}
+                                                                label="Bales consumed"
+                                                                InputProps={{ endAdornment: <InputAdornment position="end">bales</InputAdornment> }}
                                                                 fullWidth
                                                                 error={baleVal > maxBale || baleVal <= 0}
                                                                 helperText={item.batchNo ? `Max: ${maxBale}` : ''}
@@ -683,12 +760,9 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                                                                 size="small"
                                                                 type="number"
                                                                 value={item.weight}
-                                                                onChange={(e) => {
-                                                                    const val = parseFloat(e.target.value) || 0;
-                                                                    if (val <= maxWeight) {
-                                                                        handleConsumedChange(item.id, 'weight', e.target.value);
-                                                                    }
-                                                                }}
+                                                                onChange={(e) => handleConsumedChange(item.id, 'weight', e.target.value)}
+                                                                label="Cotton weight"
+                                                                InputProps={{ endAdornment: <InputAdornment position="end">kg</InputAdornment> }}
                                                                 fullWidth
                                                                 error={weightVal > maxWeight || weightVal <= 0}
                                                                 helperText={item.batchNo ? `Max: ${maxWeight} kg` : ''}
@@ -697,6 +771,7 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                                                         <TableCell>
                                                             <IconButton
                                                                 size="small"
+                                                                aria-label="Remove cotton row"
                                                                 onClick={() => removeConsumed(item.id)}
                                                                 disabled={consumed.length === 1}
                                                             >
@@ -718,11 +793,11 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                                     Add Row
                                 </Button>
 
-                                <Box sx={{ mt: 3, p: 2, bgcolor: 'primary.50', borderRadius: 1 }}>
-                                    <Typography variant="h6">
-                                        Total Consumed: <strong>{getTotalConsumed().toFixed(2)} kg</strong>
-                                    </Typography>
-                                </Box>
+                                <EntrySummary title="Cotton selected for this run">
+                                    <SummaryValue label="Batches" value={new Set(consumed.filter(item => item.batchNo).map(item => item.batchNo)).size} />
+                                    <SummaryValue label="Bales consumed" value={consumed.reduce((sum, item) => sum + (parseFloat(item.bale) || 0), 0)} />
+                                    <SummaryValue label="Total consumed" value={`${getTotalConsumed().toFixed(2)} kg`} />
+                                </EntrySummary>
                             </Box>
                         )}
 
@@ -730,7 +805,7 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                         {activeStep === 1 && (
                             <Box>
                                 <Paper sx={{ mb: 3 }}>
-                                    <Tabs value={outputTab} onChange={(_, v) => setOutputTab(v)}>
+                                    <Tabs value={outputTab} onChange={(_, v) => setOutputTab(v)} variant="scrollable" scrollButtons="auto" aria-label="Production output categories">
                                         <Tab label="Yarn Production" />
                                         <Tab label="Waste Breakdown" />
                                         <Tab label="Intermediate" />
@@ -760,6 +835,7 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                                                                     select
                                                                     size="small"
                                                                     value={item.count}
+                                                                    label="Yarn count"
                                                                     onChange={(e) => handleProducedChange(item.id, 'count', e.target.value)}
                                                                     fullWidth
                                                                 >
@@ -779,6 +855,8 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                                                                     size="small"
                                                                     type="number"
                                                                     value={item.weight}
+                                                                    label="Yarn weight"
+                                                                    InputProps={{ endAdornment: <InputAdornment position="end">kg</InputAdornment> }}
                                                                     onChange={(e) => handleProducedChange(item.id, 'weight', e.target.value)}
                                                                     fullWidth
                                                                 />
@@ -788,6 +866,7 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                                                             <TableCell>
                                                                 <IconButton
                                                                     size="small"
+                                                                    aria-label="Remove yarn row"
                                                                     onClick={() => removeProduced(item.id)}
                                                                     disabled={produced.length === 1}
                                                                 >
@@ -808,11 +887,10 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                                             Add Count
                                         </Button>
 
-                                        <Box sx={{ mt: 3, p: 2, bgcolor: 'success.50', borderRadius: 1 }}>
-                                            <Typography variant="h6">
-                                                Total Produced: <strong>{getTotalProduced().toFixed(2)} kg</strong>
-                                            </Typography>
-                                        </Box>
+                                        <EntrySummary title="Finished yarn">
+                                            <SummaryValue label="Total produced" value={`${getTotalProduced().toFixed(2)} kg`} />
+                                            <SummaryValue label="Full bags" value={produced.reduce((sum, item) => sum + item.bags, 0)} />
+                                        </EntrySummary>
                                     </TabPanel>
 
                                     <TabPanel value={outputTab} index={1}>
@@ -823,6 +901,7 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                                             <TextField
                                                 label="Blow Room Waste (kg)"
+                                                InputProps={{ endAdornment: <InputAdornment position="end">kg</InputAdornment> }}
                                                 type="number"
                                                 value={waste.blowRoom}
                                                 onChange={(e) => handleWasteChange('blowRoom', e.target.value)}
@@ -830,6 +909,7 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                                             />
                                             <TextField
                                                 label="Carding Waste (kg)"
+                                                InputProps={{ endAdornment: <InputAdornment position="end">kg</InputAdornment> }}
                                                 type="number"
                                                 value={waste.carding}
                                                 onChange={(e) => handleWasteChange('carding', e.target.value)}
@@ -837,6 +917,7 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                                             />
                                             <TextField
                                                 label="OE Waste (kg)"
+                                                InputProps={{ endAdornment: <InputAdornment position="end">kg</InputAdornment> }}
                                                 type="number"
                                                 value={waste.oe}
                                                 onChange={(e) => handleWasteChange('oe', e.target.value)}
@@ -844,6 +925,7 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                                             />
                                             <TextField
                                                 label="Others (kg)"
+                                                InputProps={{ endAdornment: <InputAdornment position="end">kg</InputAdornment> }}
                                                 type="number"
                                                 value={waste.others}
                                                 onChange={(e) => handleWasteChange('others', e.target.value)}
@@ -851,11 +933,9 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                                             />
                                         </Box>
 
-                                        <Box sx={{ mt: 3, p: 2, bgcolor: 'warning.50', borderRadius: 1 }}>
-                                            <Typography variant="h6">
-                                                Total Waste: <strong>{getTotalWaste().toFixed(2)} kg</strong>
-                                            </Typography>
-                                        </Box>
+                                        <EntrySummary title="Waste accounted for">
+                                            <SummaryValue label="Total waste" value={`${getTotalWaste().toFixed(2)} kg`} />
+                                        </EntrySummary>
                                     </TabPanel>
 
                                     <TabPanel value={outputTab} index={2}>
@@ -868,6 +948,7 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
 
                                         <TextField
                                             label="Intermediate Weight (kg)"
+                                            InputProps={{ endAdornment: <InputAdornment position="end">kg</InputAdornment> }}
                                             type="number"
                                             value={intermediate}
                                             onChange={(e) => {
@@ -877,21 +958,20 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                                                 }
                                             }}
                                             fullWidth
-                                            helperText="This material will carry forward and can be processed in future production entries."
+                                            helperText="This creates a traceable WIP lot. Complete it later in Business flows."
                                         />
+                                        <TextField sx={{ mt: 2 }} fullWidth label="Allocated processing cost (₹)" type="number" value={processingCost} onChange={e => setProcessingCost(e.target.value)} helperText="Verified labour, power and overhead allocated to this run. Raw-material cost comes from its receipt." />
 
-                                        <Box sx={{ mt: 3, p: 2, bgcolor: 'info.50', borderRadius: 1 }}>
-                                            <Typography variant="h6">
-                                                Total Intermediate: <strong>{getTotalIntermediate().toFixed(2)} kg</strong>
-                                            </Typography>
-                                        </Box>
+                                        <EntrySummary title="Material still in process">
+                                            <SummaryValue label="Total intermediate" value={`${getTotalIntermediate().toFixed(2)} kg`} />
+                                        </EntrySummary>
                                     </TabPanel>
                                 </Paper>
 
                                 {/* Summary */}
                                 <Paper sx={{ p: 2, bgcolor: 'background.default' }}>
-                                    <Typography variant="h6" sx={{ mb: 2 }}>Summary</Typography>
-                                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 2 }}>
+                                    <Typography variant="h6" sx={{ mb: 2 }}>Material balance</Typography>
+                                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: '1fr 1fr 1fr 1fr' }, gap: 2 }}>
                                         <Box>
                                             <Typography variant="body2" color="text.secondary">Input</Typography>
                                             <Typography variant="h6">{getTotalConsumed().toFixed(2)} kg</Typography>
@@ -913,7 +993,7 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                                         <Typography variant="body2" color="text.secondary">Balance (should be 0)</Typography>
                                         <Typography
                                             variant="h6"
-                                            color={Math.abs(getTotalConsumed() - getTotalProduced() - getTotalWaste() - getTotalIntermediate()) < 0.01 ? 'success.main' : 'error.main'}
+                                            color={Math.abs(getTotalConsumed() - getTotalProduced() - getTotalWaste() - getTotalIntermediate()) <= 0.01 ? 'success.main' : 'error.main'}
                                         >
                                             {(getTotalConsumed() - getTotalProduced() - getTotalWaste() - getTotalIntermediate()).toFixed(2)} kg
                                         </Typography>
@@ -925,7 +1005,7 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                         {/* Navigation Buttons */}
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
                             <Button
-                                disabled={activeStep === 0}
+                                disabled={activeStep === 0 || isSaving}
                                 onClick={handleBack}
                                 startIcon={<BackIcon />}
                             >
@@ -937,8 +1017,9 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                                         variant="contained"
                                         onClick={handleSave}
                                         startIcon={<SaveIcon />}
+                                        disabled={isSaving}
                                     >
-                                        Save Production
+                                        {isSaving ? 'Saving…' : 'Save Production'}
                                     </Button>
                                 ) : (
                                     <Button
@@ -955,6 +1036,39 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                 </DialogContent>
             </Dialog>
 
+            {labelProduction && (
+                <BarcodeQRModal
+                    open={Boolean(labelProduction)}
+                    onClose={() => setLabelProduction(null)}
+                    type="BAG"
+                    title={`Production Label: PRD-${padZero(labelProduction.id, 4)}`}
+                    code={formatBagCode(
+                        labelProduction.producedYarn?.[0]?.count || 'MIX',
+                        labelProduction.date,
+                        labelProduction.id
+                    )}
+                    qrPayload={JSON.stringify({
+                        type: 'PRODUCTION_RUN',
+                        id: labelProduction.id,
+                        code: `PRD-${padZero(labelProduction.id, 4)}`,
+                        date: labelProduction.date ? new Date(labelProduction.date).toISOString().split('T')[0] : '',
+                        consumedKg: labelProduction.totalConsumed,
+                        producedKg: labelProduction.totalProduced,
+                        wasteKg: labelProduction.totalWaste,
+                        batches: (labelProduction.consumedBatches || []).map((b: any) => b.batchNo),
+                        system: 'EverGreen One',
+                        v: 1
+                    })}
+                    metadata={[
+                        { label: 'Date', value: new Date(labelProduction.date).toLocaleDateString('en-IN') },
+                        { label: 'Consumed Batches', value: (labelProduction.consumedBatches || []).map((b: any) => b.batchNo).join(', ') || 'N/A' },
+                        { label: 'Total Input', value: `${labelProduction.totalConsumed.toLocaleString()} kg` },
+                        { label: 'Total Produced', value: `${labelProduction.totalProduced.toLocaleString()} kg` },
+                        { label: 'Total Waste', value: `${labelProduction.totalWaste.toLocaleString()} kg` },
+                        { label: 'Efficiency', value: `${((labelProduction.totalProduced / labelProduction.totalConsumed) * 100).toFixed(2)}%` },
+                    ]}
+                />
+            )}
         </Box>
     );
 };

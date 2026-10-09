@@ -1,0 +1,143 @@
+.review-step {
+    animation: fadeIn 0.3s ease;
+}
+
+.review-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.review-section {
+    background: #f9fafb;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+.section-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.review-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.review-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.review-item.full-width {
+    grid-column: 1 / -1;
+}
+
+.review-label {
+    font-size: 0.875rem;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.review-value {
+    font-size: 0.9rem;
+    color: #111827;
+    font-weight: 400;
+}
+
+.documents-list-review {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.document-item-review {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+}
+
+.document-item-review svg {
+    color: #3b82f6;
+    flex-shrink: 0;
+}
+
+.doc-name {
+    flex: 1;
+    font-weight: 500;
+    color: #111827;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.doc-type {
+    font-size: 0.75rem;
+    color: #6b7280;
+    text-transform: capitalize;
+    padding: 0.25rem 0.5rem;
+    background: #f3f4f6;
+    border-radius: 4px;
+}
+
+.submit-notice {
+    display: flex;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 8px;
+    margin-top: 2rem;
+}
+
+.submit-notice svg {
+    color: #3b82f6;
+    flex-shrink: 0;
+}
+
+.submit-notice strong {
+    display: block;
+    color: #1e40af;
+    margin-bottom: 0.25rem;
+}
+
+.submit-notice p {
+    color: #1e3a8a;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.info-box {
+    display: flex;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 6px;
+    margin-top: 1.5rem;
+    color: #1e3a8a;
+    font-size: 0.875rem;
+}
+
+.info-box svg {
+    color: #3b82f6;
+    flex-shrink: 0;
+    margin-top: 0.125rem;
+}
+
+@media (max-width: 768px) {
+    .review-grid {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,0 +1,19 @@
+
+Running 1 test using 1 worker
+
+Page Title: Yarn Management
+Page Content: <!DOCTYPE html><html lang="en" data-theme="light"><head><meta name="emotion-insertion-point" content="">
+    <script type="module">import { injectIntoGlobalHook } from "/@react-refresh";
+injectIntoGlobalHook(window);
+window.$RefreshReg$ = () => {};
+window.$RefreshSig$ = () => (type) => type;</script>
+
+    <script type="module" src="/@vite/client"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yarn Management</title>
+  <
+  ✓  1 [chromium] › e2e\debug.spec.ts:3:1 › debug page content (420ms)
+
+  1 passed (2.9s)

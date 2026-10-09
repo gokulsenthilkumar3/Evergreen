@@ -32,7 +32,17 @@ Status key: **Connected** = uses EverGreen API/persistent records for its princi
 | Legacy Billing (removed from primary navigation) | Legacy invoice/payment tables, read-only API | Legacy | Reconcile historical invoices then retire UI; writes now return 410 |
 | Public `/shop` | Commerce catalogue, orders, reservations | Connected | Published item → checkout → staff order → invoice → payment test |
 
-## Reference-project inventory still requiring function-level mapping
+## 6 October 2026 stock and business-flow corrections
+
+See [BUSINESS_FLOW_REVIEW.md](BUSINESS_FLOW_REVIEW.md) for the current code-derived scenarios, actual database reconciliation and remaining workflow gaps. Inventory, commerce, storefront reservations and job work now use a shared stock transaction/reconciliation path. Imported stale cotton quantities were reversed with corrective ledger records; live stock reconciles to 890 kg cotton and zero yarn. Explicit dispatch billing prevents a second stock deduction. Dispatch/payment reversals retain history, partial order cancellation releases only the remainder, and warehouse allocation/transfer rules use actual catalogue stock.
+
+Machine, quality, warehouse and HR destinations now have persistent APIs. Their earlier Prototype classification in this register is stale for their principal record-entry workflows. The later implementation below connects quality quarantine, WIP, company-owned transformation subcontracting, supplier accounting and valuation; execution-level integration and complete source-project data reconciliation remain unverified. The five reference projects are not yet fully merged or eligible for retirement. The review used business-flow derivation, not automated or browser scenario execution.
+
+## Reference-project inventory and function-level comparison
+
+The connected business-flow implementation is documented in [BUSINESS_FLOW_REVIEW.md](BUSINESS_FLOW_REVIEW.md). Returns/credit allocation, quality holds, intermediate completion, company-owned conversion, procurement/payables, journals/valuation, reserved-order dispatch and period controls now have persistent APIs and staff forms. Payment Operations opens these shared accounts; earlier browser-only financial drafts remain on the device with a download option for reconciliation.
+
+[SOURCE_FUNCTION_INVENTORY.md](docs/SOURCE_FUNCTION_INVENTORY.md) inventories 497 discovered routes/screens and 106 reference Prisma models with canonical review destinations. No SQLite business snapshot was found in the retained source folders. External databases and browser data have not been silently imported. This inventory is structural evidence; action-level equivalence, source-data reconciliation and release acceptance remain outstanding.
 
 | Source project | Scope to reconcile | Current retirement decision |
 | --- | --- | --- |
@@ -40,7 +50,7 @@ Status key: **Connected** = uses EverGreen API/persistent records for its princi
 | Weave | Brands, categories, products, images, shop, customer/order management | Retain; public shop loads but empty-catalog checkout untested |
 | MSME ERP | Customer profiles, ledgers, payments, bilingual finance UX | Retain; action-level comparison incomplete |
 | Invoice Generator | Branded themes, logo/signature, GST lines, PDF/print, verification | Retain; designer remains a separate draft experience |
-| Yarn | Procurement, warehouse, quality, production, HR, portals, documents, support, compliance | Retain; current EverGreen Yarn tabs are largely prototypes |
+| Yarn | Procurement, warehouse, quality, production, HR, portals, documents, support, compliance | Retain; core record/stock/accounting paths are connected, remaining portal/compliance/support parity is unverified |
 
 ## Hard gates before any archive or deletion
 

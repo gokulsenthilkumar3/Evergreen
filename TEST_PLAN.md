@@ -37,13 +37,13 @@
 ### 1.2 Roles Under Test
 | Role | Permissions |
 |------|-------------|
-| AUTHOR | Full access: create, edit, delete, manage users |
+| ADMIN | Full access: create, edit, delete, manage users |
 | MODIFIER | Create + Edit only. No delete, no user management |
 | VIEWER | Read-only |
 
 ### 1.3 Test Environment
-- **API:** http://localhost:3001
-- **Web:** http://localhost:3000
+- **API:** http://localhost:4301
+- **Web:** http://localhost:4000
 - **DB:** SQLite via Prisma (file-based) 
 
 ---
@@ -511,3 +511,4 @@ Before each release, run through:
 ---
 
 *Document maintained by: Dev Team | Next review: Monthly or after major feature changes*
+

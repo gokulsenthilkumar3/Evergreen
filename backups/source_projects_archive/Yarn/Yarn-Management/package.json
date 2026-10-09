@@ -1,0 +1,24 @@
+{
+  "name": "yarn-management",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev:api": "npm -w @yarn/api run dev",
+    "dev:web": "npm -w @yarn/web run dev",
+    "build:api": "npm -w @yarn/api run build",
+    "build:web": "npm -w @yarn/web run build",
+    "prisma:generate": "npm -w @yarn/api run prisma:generate",
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:web\" --names \"API,WEB\" --prefix-colors \"blue,green\"",
+    "build": "npm run build:api && npm run build:web",
+    "start": "npm run dev",
+    "build:app": "npm run build",
+    "dev:app": "npm run dev",
+    "lint": "npm run lint --workspaces",
+    "lint:fix": "npm run lint:fix --workspaces"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

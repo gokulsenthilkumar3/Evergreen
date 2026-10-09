@@ -225,9 +225,13 @@ export class AuthService implements OnModuleInit {
   }
 
   async generateTotpSecret(userId: number, email: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user || user.isTotpEnabled) {
+      throw new BadRequestException('Disable existing two-factor authentication before setting it up again');
+    }
     const secret = authenticator.generateSecret();
     const otpauth = generateURI({
-      issuer: 'Ever Green Yarn Mills',
+      issuer: this.configService.get<string>('TOTP_ISSUER') || 'EverGreen',
       label: email,
       secret,
     });
@@ -261,11 +265,82 @@ export class AuthService implements OnModuleInit {
     return { success: true };
   }
 
-  async disableTotp(userId: number) {
+  async disableTotp(userId: number, code: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user?.isTotpEnabled || !user.totpSecret || !/^\d{6}$/.test(code)) {
+      throw new BadRequestException('A valid current authentication code is required');
+    }
+    const result = await authenticator.verify(code, { secret: user.totpSecret });
+    if (!result.valid) throw new BadRequestException('Invalid authentication code');
     await this.prisma.user.update({
       where: { id: userId },
       data: { isTotpEnabled: false, totpSecret: null },
     });
     return { success: true };
+  }
+
+  async updateProfile(userId: number, username: string, data: { name?: string; email?: string }) {
+    if (data.email) {
+      const existing = await this.prisma.user.findFirst({
+        where: { email: data.email, NOT: { id: userId } },
+      });
+      if (existing) {
+        throw new BadRequestException('Email is already in use by another account');
+      }
+    }
+
+    const updated = await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        ...(data.name !== undefined && { name: data.name.trim() }),
+        ...(data.email !== undefined && { email: data.email.trim() }),
+        updatedBy: username,
+      },
+      select: {
+        id: true,
+        username: true,
+        name: true,
+        email: true,
+        role: true,
+        isTotpEnabled: true,
+      },
+    });
+
+    await this.logActivity(username, 'PROFILE_UPDATE', `User ${username} updated personal profile details`);
+    return updated;
+  }
+
+  async changePassword(userId: number, username: string, data: { currentPassword: string; newPassword: string }) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    let passwordMatch = false;
+    if (user.password.startsWith('$2b$') || user.password.startsWith('$2a$')) {
+      passwordMatch = await bcrypt.compare(data.currentPassword, user.password);
+    } else {
+      passwordMatch = user.password === data.currentPassword;
+    }
+
+    if (!passwordMatch) {
+      throw new BadRequestException('Current password is incorrect');
+    }
+
+    if (data.newPassword === data.currentPassword) {
+      throw new BadRequestException('New password must be different from current password');
+    }
+
+    const hashedPassword = await bcrypt.hash(data.newPassword, SALT_ROUNDS);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        password: hashedPassword,
+        updatedBy: username,
+      },
+    });
+
+    await this.logActivity(username, 'PASSWORD_CHANGE', `User ${username} changed account password`);
+    return { success: true, message: 'Password changed successfully' };
   }
 }
