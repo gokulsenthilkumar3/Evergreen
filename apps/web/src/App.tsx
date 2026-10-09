@@ -56,6 +56,7 @@ import {
   SupportAgent as HelpdeskIcon,
   School as TutorialIcon,
   Translate as TranslateIcon,
+  Speed as SpeedIcon,
 } from '@mui/icons-material';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from './utils/api';
@@ -111,6 +112,7 @@ const YarnHRManagement = lazy(() => import('./pages/yarn/HRManagement'));
 const YarnDemandForecasting = lazy(() => import('./pages/yarn/DemandForecasting'));
 const YarnSupplierPortal = lazy(() => import('./pages/yarn/SupplierPortal'));
 const YarnComplianceReports = lazy(() => import('./pages/yarn/ComplianceReports'));
+const CommandCenter = lazy(() => import('./pages/CommandCenter'));
 
 const drawerWidth = 260;
 const drawerCollapsedWidth = 72;
@@ -121,6 +123,7 @@ interface NavItem {
   page: string;
   requiredRole?: string;
   badge?: number;
+  description?: string;
 }
 
 interface NavGroup {
@@ -468,6 +471,7 @@ const App: React.FC = () => {
       yarnforecast: 'Demand Forecasting',
       yarnsupplier: 'Supplier Portal',
       yarncompliance: 'Compliance Reports',
+      'command-center': 'Operations Command',
     };
 
     if (currentPage !== 'dashboard') {
@@ -517,6 +521,7 @@ const App: React.FC = () => {
         { text: 'Business Workspace', icon: <StoreIcon />, page: 'workspace' },
         { text: 'Dashboard', icon: <DashboardIcon />, page: 'dashboard' },
         { text: "Today's Summary", icon: <SummaryIcon />, page: 'today' },
+        { text: 'Operations Command', icon: <SpeedIcon />, page: 'command-center', description: 'Live factory floor — strategy game view' },
       ]
     },
     {
@@ -998,6 +1003,7 @@ const App: React.FC = () => {
                       {currentPage === 'yarnforecast' && <YarnDemandForecasting />}
                       {currentPage === 'yarnsupplier' && <YarnSupplierPortal />}
                       {currentPage === 'yarncompliance' && <YarnComplianceReports />}
+                      {currentPage === 'command-center' && <CommandCenter onNavigate={setCurrentPage} />}
 
                       {!allPages.includes(currentPage) && (
                         <Box sx={{ p: 4, textAlign: 'center' }}>
