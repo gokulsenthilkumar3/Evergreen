@@ -53,7 +53,18 @@ import {
   SupportAgent as HelpdeskIcon,
   School as TutorialIcon,
   Translate as TranslateIcon,
+  Factory as FactoryIcon,
   Speed as SpeedIcon,
+  PrecisionManufacturing as MachineIcon,
+  VerifiedUser as QualityIcon,
+  Schedule as ShiftIcon,
+  Warehouse as WarehouseIcon,
+  Badge as StaffIcon,
+  AutoAwesome as ForecastIcon,
+  LocalShipping as SupplierIcon,
+  Gavel as ComplianceIcon,
+  Payments as PaymentOpsIcon,
+  Person as PersonIcon,
 } from '@mui/icons-material';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from './utils/api';
