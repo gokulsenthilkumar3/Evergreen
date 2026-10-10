@@ -33,6 +33,10 @@ describe('SettingsService', () => {
   });
 
   it.each([
+    [{ businessMode: 'OTHER' }],
+    [{ businessMode: null }],
+    [{ workspaceMode: 'ADMIN' }],
+    [{ workspaceMode: null }],
     [{ language: 'fr' }],
     [{ supportedCounts: '2,20' }],
     [{ supportedCounts: '2,2' }],
@@ -43,5 +47,10 @@ describe('SettingsService', () => {
       BadRequestException,
     );
     expect(prisma.systemSettings.update).not.toHaveBeenCalled();
+  });
+
+  it('saves processing-only guided setup with the authenticated actor', async () => {
+    const result = await service.updateSettings({ businessMode: 'PROCESSING', workspaceMode: 'GUIDED' }, 'owner');
+    expect(result).toMatchObject({ businessMode: 'PROCESSING', workspaceMode: 'GUIDED', updatedBy: 'owner' });
   });
 });

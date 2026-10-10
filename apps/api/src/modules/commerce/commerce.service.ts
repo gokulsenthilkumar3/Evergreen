@@ -376,4 +376,48 @@ export class CommerceService {
     const [items, orders, invoices, jobs, ledger] = await Promise.all([this.listItems(), this.prisma.salesOrder.count({ where: { status: { in: ['CONFIRMED', 'PARTIALLY_INVOICED'] } } }), this.prisma.invoice.aggregate({ where: { customerId: { not: null }, status: { not: 'VOID' } }, _sum: { total: true, amountPaid: true, creditTotal: true } }), this.prisma.jobWorkChallan.count({ where: { status: { in: ['DISPATCHED', 'PART_RECEIVED'] } } }), this.prisma.customerLedgerEntry.aggregate({ _sum: { debit: true, credit: true } })]);
     return { lowStock: items.filter((item: any) => item.active && item.type !== 'SERVICE' && item.stock.available <= item.reorderLevel), openOrders: orders, invoicedValue: Number(invoices._sum.total || 0) - Number(invoices._sum.creditTotal || 0), receivables: Number(ledger._sum.debit || 0) - Number(ledger._sum.credit || 0), openJobWork: jobs };
   }
+
+  async getUninvoicedChallans() {
+    const outwards = await this.prisma.outward.findMany({
+      include: { invoices: true, items: true },
+      orderBy: { date: 'desc' },
+    });
+
+    const now = Date.now();
+    const uninvoiced = outwards
+      .filter((o) => o.invoices.length === 0)
+      .map((o) => {
+        const daysElapsed = Math.floor((now - new Date(o.date).getTime()) / (1000 * 60 * 60 * 24));
+        const estimatedRate = 260;
+        const estimatedValue = Math.round(o.totalWeight * estimatedRate * 100) / 100;
+        return {
+          id: o.id,
+          challanNo: `DC-${o.id}`,
+          date: o.date,
+          customerName: o.customerName,
+          vehicleNo: o.vehicleNo,
+          driverName: o.driverName,
+          totalBags: o.totalBags,
+          totalWeight: o.totalWeight,
+          daysElapsed,
+          isOverdue: daysElapsed >= 7,
+          estimatedValue,
+          items: o.items.map((i) => ({ count: i.count, bags: i.bags, weight: i.weight })),
+        };
+      });
+
+    const overdueList = uninvoiced.filter((c) => c.isOverdue);
+    const totalCashAtRisk = Math.round(uninvoiced.reduce((sum, c) => sum + c.estimatedValue, 0) * 100) / 100;
+    const overdueCashAtRisk = Math.round(overdueList.reduce((sum, c) => sum + c.estimatedValue, 0) * 100) / 100;
+
+    return {
+      totalCount: uninvoiced.length,
+      overdueCount: overdueList.length,
+      totalWeightKg: Math.round(uninvoiced.reduce((sum, c) => sum + c.totalWeight, 0) * 100) / 100,
+      totalCashAtRisk,
+      overdueCashAtRisk,
+      challans: uninvoiced,
+    };
+  }
 }
+

@@ -127,6 +127,7 @@ model InwardBatch {
   isMerged     Boolean  @default(false)
   catalogueItemId Int?
   unitCost       Float?
+  weighbridgeReceipt String?
 }
 
 model Production {
@@ -221,8 +222,22 @@ model ActivityLog {
   entryTimestamp DateTime @default(now())
 }
 
+model ImportBatch {
+  id          Int      @id @default(autoincrement())
+  requestKey  String   @unique
+  fingerprint String   @unique
+  source      String
+  entity      String
+  rowCount    Int
+  recordIds   String
+  createdBy   String
+  createdAt   DateTime @default(now())
+}
+
 model SystemSettings {
   id                  Int      @id @default(autoincrement())
+  businessMode        String   @default("INTEGRATED")
+  workspaceMode       String   @default("FULL")
   companyName         String   @default("")
   address             String   @default("")
   gstin               String   @default("")
@@ -241,6 +256,23 @@ model SystemSettings {
   language            String   @default("en")
   sellerState         String   @default("Tamil Nadu")
   supportedCounts     String?  @default("2,4,6,8,10")
+  
+  // Licensing & Planetary Quotas (Synced from Provider Admin)
+  plan                String   @default("SEED")
+  pricingModel        String   @default("TIERED") // TRIAL, TIERED, PAYG
+  status              String   @default("ACTIVE")
+  licenseExpiresAt    DateTime?
+  gracePeriodDays     Int      @default(30) // 30-Day Unrestricted Grace Period Quota
+  graceExpiresAt      DateTime?
+  maxUsers            Int      @default(1) // Single-email license = 1; Multi-email = N
+  maxMachines         Int      @default(5)
+  maxDocsPerMonth     Int      @default(500)
+  allowedModules      String   @default("CORE,INVENTORY,COMMERCE")
+  tier                String   @default("TIER_2_CITY")
+  state               String   @default("Tamil Nadu")
+  country             String   @default("IN")
+  isMaintenance       Boolean  @default(false)
+  
   updatedAt           DateTime @updatedAt
   entryTimestamp      DateTime @default(now())
   createdBy           String?

@@ -1,0 +1,27 @@
+[Unit]
+Description=EverGreen OS Spinning Mill Customer Tenant API & Server
+After=network.target
+
+[Service]
+Type=simple
+User=evergreen
+WorkingDirectory=/opt/evergreen
+Environment=NODE_ENV=production
+Environment=EVERGREEN_API_PORT=4301
+Environment=PORT=4301
+Environment=DATABASE_URL="file:/opt/evergreen/data/tenant.db"
+EnvironmentFile=-/etc/evergreen/tenant.env
+ExecStart=/usr/bin/node /opt/evergreen/apps/api/dist/main.js
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=evergreen-tenant
+
+# Hardening
+ProtectSystem=full
+ProtectHome=true
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

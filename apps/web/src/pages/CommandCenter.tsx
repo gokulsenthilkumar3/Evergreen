@@ -581,7 +581,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onNavigate }) => {
                 Operations Command
               </Typography>
               <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.72rem', fontWeight: 600 }}>
-                Live factory floor strategy perspective · Real-time resource matrix
+                Recorded operations · Illustrative campus animation
               </Typography>
             </Box>
           </Box>
@@ -611,7 +611,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onNavigate }) => {
                 }}
               />
               <Typography variant="caption" sx={{ fontWeight: 800, fontSize: '0.72rem', color: isDark ? '#34d399' : '#059669' }}>
-                Mill Peak: 94% OEE
+                OEE: telemetry not connected
               </Typography>
             </Box>
 
@@ -630,7 +630,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onNavigate }) => {
             >
               <AccessTimeOutlined sx={{ fontSize: 13, color: '#38bdf8' }} />
               <Typography variant="caption" sx={{ fontWeight: 700, fontSize: '0.72rem', color: 'text.secondary' }}>
-                Shift 1 · 08:00 - 16:00
+                Shift telemetry unavailable
               </Typography>
             </Box>
 
@@ -649,7 +649,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onNavigate }) => {
             >
               <WbSunnyOutlined sx={{ fontSize: 13, color: '#f59e0b' }} />
               <Typography variant="caption" sx={{ fontWeight: 700, fontSize: '0.72rem', color: 'text.secondary' }}>
-                28°C · 65% RH Optimal
+                Environment sensors not connected
               </Typography>
             </Box>
           </Box>
@@ -868,7 +868,8 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onNavigate }) => {
                 productionRunning={isProductionRunning}
                 dispatchCount={dispatchCount}
                 qualityHolds={qualityHolds}
-                stockAvailable={!!summaryQ.data?.meta}
+                stockAvailable={!!summaryQ.data?.meta && !summaryQ.isError}
+                inspectionsAvailable={!!inspectionsQ.data && !inspectionsQ.isError}
                 machinesAvailable={!!machinesQ.data && !machinesQ.isError}
                 qualityAvailable={!!qualityQ.data && !qualityQ.isError}
                 dispatchAvailable={!!outwardQ.data && !outwardQ.isError}
@@ -899,12 +900,12 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onNavigate }) => {
                     Tactical 2D Schematic Floor
                   </Typography>
                   <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                    Interactive plant layout · Click any machine node to inspect telemetry
+                    Illustrative plant layout · Select a machine to inspect its records
                   </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Chip
-                    label={`${floorMachines.filter((m) => m.active).length} Running`}
+                    label={`${floorMachines.filter((m) => m.active).length} Active assets`}
                     size="small"
                     sx={{ bgcolor: 'rgba(16,185,129,0.15)', color: '#10b981', fontWeight: 800, fontSize: '0.65rem' }}
                   />

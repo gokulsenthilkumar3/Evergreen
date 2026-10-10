@@ -45,6 +45,9 @@ describe('Command Center API records', () => {
     expect(await screen.findByText('Batch B24 received')).toBeInTheDocument();
     expect(screen.getByText('890 kg · 18 bales')).toBeInTheDocument();
     expect(screen.getByText('Dispatch — 120 kg')).toBeInTheDocument();
+    expect(screen.queryByText(/94% OEE/)).not.toBeInTheDocument();
+    expect(screen.queryByText('Lakshmi Weaving Mills')).not.toBeInTheDocument();
+    expect(screen.getByText(/Shipment tracking is not connected/)).toBeInTheDocument();
     cleanup();
     client.clear();
     scroll.mockRestore();

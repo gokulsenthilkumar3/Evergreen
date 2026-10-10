@@ -1,0 +1,26 @@
+[Unit]
+Description=EverGreen Mission Control Provider Admin API & Control Plane
+After=network.target
+
+[Service]
+Type=simple
+User=evergreen
+WorkingDirectory=/opt/evergreen-admin
+Environment=NODE_ENV=production
+Environment=ADMIN_API_PORT=4300
+Environment=PORT=4300
+Environment=ADMIN_DATABASE_URL="file:/opt/evergreen-admin/data/admin.db"
+EnvironmentFile=-/etc/evergreen/admin.env
+ExecStart=/usr/bin/node /opt/evergreen-admin/apps/admin-api/dist/main.js
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=evergreen-admin
+
+ProtectSystem=full
+ProtectHome=true
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

@@ -121,6 +121,11 @@ export class InventoryController {
     return this.inventoryService.createInward({ ...data, createdBy: req.user.username });
   }
 
+  @Post('inward/weighbridge-sync')
+  async syncWeighbridgeReading(@Body() body: any, @Req() req: any) {
+    return this.inventoryService.syncWeighbridgeSlip(body, req?.user?.username || 'WEIGHBRIDGE_AGENT');
+  }
+
   @Post('inward/merge')
   async mergeBatches(
     @Body() data: { batchIds: string[]; date: string; createdBy?: string },
