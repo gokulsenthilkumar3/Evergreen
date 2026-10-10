@@ -1,0 +1,57 @@
+# ==============================================================================
+# Multi-stage Dockerfile for EverGreen Provider Admin Control API (Port 4300)
+# ==============================================================================
+
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+RUN apk add --no-cache python3 make g++
+
+COPY package.json package-lock.json ./
+COPY packages/admin-database/package.json ./packages/admin-database/
+COPY packages/types/package.json ./packages/types/
+COPY packages/config/package.json ./packages/config/
+COPY apps/admin-api/package.json ./apps/admin-api/
+
+RUN npm ci
+
+COPY packages/ ./packages/
+COPY apps/admin-api/ ./apps/admin-api/
+COPY tsconfig.json ./
+
+# Generate Prisma Client for Admin DB
+RUN npx prisma generate --schema=packages/admin-database/prisma/schema.prisma
+
+# Build shared types and admin-api
+RUN npm run build --workspace=@evergreen/types && \
+    npm run build --workspace=admin-api
+
+FROM node:20-alpine AS runner
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV ADMIN_API_PORT=4300
+ENV PORT=4300
+
+RUN addgroup -S evergreen && adduser -S evergreen -G evergreen
+
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/packages/admin-database ./packages/admin-database
+COPY --from=builder /app/packages/types ./packages/types
+COPY --from=builder /app/apps/admin-api/dist ./apps/admin-api/dist
+COPY --from=builder /app/apps/admin-api/package.json ./apps/admin-api/package.json
+
+COPY --chown=evergreen:evergreen deploy/docker/admin-entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+USER evergreen
+
+EXPOSE 4300
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://127.0.0.1:4300/health || exit 1
+
+ENTRYPOINT ["/entrypoint.sh"]

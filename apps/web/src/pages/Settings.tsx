@@ -23,6 +23,7 @@ import {
 } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../utils/api';
+import { BUSINESS_MODES, BUSINESS_MODE_LABELS, normalizeCompanyProfile, type BusinessMode, type WorkspaceMode } from '@evergreen/types';
 import { toast } from 'sonner';
 import { ERROR_MESSAGES } from '../utils/messages';
 import { validateRate, validateGST } from '../utils/validators';
@@ -95,6 +96,8 @@ const Settings: React.FC<SettingsProps> = ({
         phone: '',
         email: '',
         logo: '',
+        businessMode: 'INTEGRATED' as BusinessMode,
+        workspaceMode: 'FULL' as WorkspaceMode,
     });
 
     // System Settings State
@@ -125,6 +128,7 @@ const Settings: React.FC<SettingsProps> = ({
                 phone: settings.phone || '',
                 email: settings.email || '',
                 logo: settings.logo || '',
+                ...normalizeCompanyProfile(settings),
             });
             setSystemSettings({
                 autoBackup: settings.autoBackup ?? true,
@@ -335,6 +339,17 @@ const Settings: React.FC<SettingsProps> = ({
                                 onChange={(e) => setCompanySettings({ ...companySettings, companyName: e.target.value })}
                                 fullWidth
                             />
+                            <TextField select label="Business activities" value={companySettings.businessMode}
+                                onChange={event => setCompanySettings({ ...companySettings, businessMode: event.target.value as BusinessMode })}
+                                helperText="Choose the work your company does. You can change this as you grow." fullWidth>
+                                {BUSINESS_MODES.map(mode => <MenuItem key={mode} value={mode}>{BUSINESS_MODE_LABELS[mode]}</MenuItem>)}
+                            </TextField>
+                            <TextField select label="Workspace complexity" value={companySettings.workspaceMode}
+                                onChange={event => setCompanySettings({ ...companySettings, workspaceMode: event.target.value as WorkspaceMode })}
+                                helperText="Guided shows essential navigation. Full exposes all modules. Existing records remain accessible." fullWidth>
+                                <MenuItem value="GUIDED">Guided — essential daily work</MenuItem>
+                                <MenuItem value="FULL">Full — all operations</MenuItem>
+                            </TextField>
                             <TextField
                                 label="Address"
                                 value={companySettings.address}

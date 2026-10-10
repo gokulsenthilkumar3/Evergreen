@@ -1,6 +1,7 @@
 import {
   Injectable,
   UnauthorizedException,
+  ForbiddenException,
   OnModuleInit,
   BadRequestException,
   Logger,
@@ -85,6 +86,17 @@ export class AuthService implements OnModuleInit {
       }
       if (existingUser.email === email) {
         throw new BadRequestException('Email is already registered');
+      }
+    }
+
+    // License Quota: Single-email vs Multi-email license limits
+    const settings = await this.prisma.systemSettings.findFirst();
+    if (settings && typeof settings.maxUsers === 'number') {
+      const currentUserCount = await this.prisma.user.count();
+      if (currentUserCount >= settings.maxUsers) {
+        throw new ForbiddenException(
+          `User limit reached: Your current license plan allows a maximum of ${settings.maxUsers} user/email(s). Please upgrade to add more staff.`,
+        );
       }
     }
 

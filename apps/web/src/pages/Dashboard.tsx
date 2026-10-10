@@ -47,6 +47,7 @@ import {
     InsertChartOutlined as ChartIcon,
     AccountBalanceWallet as WalletIcon,
     ElectricBolt as EnergyIcon,
+    WarningAmber as WarningIcon,
 } from '@mui/icons-material';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -273,6 +274,19 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
         refetchInterval: 60000,
     });
 
+    const { data: uninvoicedData } = useQuery({
+        queryKey: ['uninvoiced-challans-alert'],
+        queryFn: async () => {
+            try {
+                const res = await api.get('/commerce/un-invoiced-challans');
+                return res.data;
+            } catch {
+                return null;
+            }
+        },
+        refetchInterval: 30000,
+    });
+
     const { data: settingsData } = useQuery({
         queryKey: ['settings'],
         queryFn: async () => (await api.get('/settings')).data,
@@ -462,6 +476,53 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                     <DashboardScene />
                 </Suspense>
             </Box>
+
+            {/* ── Cash Flow Recovery: Missing Invoice Alert ── */}
+            {uninvoicedData && uninvoicedData.totalCount > 0 && (
+                <Paper
+                    sx={{
+                        p: 2.5,
+                        mb: 3,
+                        borderRadius: 3,
+                        border: '1px solid',
+                        borderColor: uninvoicedData.overdueCount > 0 ? '#F59E0B' : '#38BDF8',
+                        bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(245, 158, 11, 0.08)' : 'rgba(245, 158, 11, 0.05)',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        flexWrap: 'wrap',
+                        gap: 2,
+                    }}
+                >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <WarningIcon sx={{ fontSize: 36, color: uninvoicedData.overdueCount > 0 ? '#F59E0B' : '#38BDF8' }} />
+                        <Box>
+                            <Typography variant="subtitle1" fontWeight={800} sx={{ color: uninvoicedData.overdueCount > 0 ? '#F59E0B' : 'text.primary' }}>
+                                {uninvoicedData.overdueCount > 0
+                                    ? `Missing Invoices Alert: ${uninvoicedData.overdueCount} Delivery Challans (>7 Days) Dispatched Without Invoices`
+                                    : `Pending Invoicing: ${uninvoicedData.totalCount} Delivery Challans Ready for GST Invoicing`}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                                Cash flow at risk: <strong>₹{uninvoicedData.totalCashAtRisk.toLocaleString('en-IN')}</strong> ({uninvoicedData.totalWeightKg.toLocaleString()} kg yarn). Convert delivery challans into GST invoices to avoid uncollected revenue.
+                            </Typography>
+                        </Box>
+                    </Box>
+                    <Button
+                        variant="contained"
+                        onClick={() => navigate('outward')}
+                        sx={{
+                            borderRadius: 2,
+                            textTransform: 'none',
+                            fontWeight: 700,
+                            bgcolor: '#F59E0B',
+                            color: '#070B14',
+                            '&:hover': { bgcolor: '#D97706' },
+                        }}
+                    >
+                        Review Challans &amp; Generate Invoices
+                    </Button>
+                </Paper>
+            )}
 
             {/* ── Sticky header ── */}
             <Box

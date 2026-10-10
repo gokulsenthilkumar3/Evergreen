@@ -51,4 +51,39 @@ describe('campus animation controls', () => {
     fireEvent.click(screen.getByRole('button', { name: /02 Receiving/ }));
     expect(screen.getByText('Cotton stock unavailable')).toBeInTheDocument();
   });
+
+  it('pauses a camera tour when hidden and resumes without skipping zones', () => {
+    vi.useFakeTimers();
+    const hidden = vi.spyOn(document, 'hidden', 'get').mockReturnValue(false);
+    render(<CampusScene {...props} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Camera tour' }));
+    hidden.mockReturnValue(true);
+    act(() => document.dispatchEvent(new Event('visibilitychange')));
+    act(() => vi.advanceTimersByTime(21000));
+    expect(screen.getByRole('button', { name: /01 Campus/ })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByTestId('campus-canvas')).toHaveAttribute('data-mode', 'demand');
+    hidden.mockReturnValue(false);
+    act(() => document.dispatchEvent(new Event('visibilitychange')));
+    act(() => vi.advanceTimersByTime(7000));
+    expect(screen.getByRole('button', { name: /02 Receiving/ })).toHaveAttribute('aria-pressed', 'true');
+    hidden.mockRestore();
+  });
+
+  it('cleans up tour timers on unmount', () => {
+    vi.useFakeTimers();
+    const mounted = render(<CampusScene {...props} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Camera tour' }));
+    mounted.unmount();
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('applies playback speed to the camera tour', () => {
+    vi.useFakeTimers();
+    render(<CampusScene {...props} />);
+    fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Animation speed' }));
+    fireEvent.click(screen.getByRole('option', { name: '2×' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Camera tour' }));
+    act(() => vi.advanceTimersByTime(3500));
+    expect(screen.getByRole('button', { name: /02 Receiving/ })).toHaveAttribute('aria-pressed', 'true');
+  });
 });

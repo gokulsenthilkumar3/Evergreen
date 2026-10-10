@@ -1,7 +1,10 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../services/prisma.service';
+import { BUSINESS_MODES, WORKSPACE_MODES } from '@evergreen/types';
 
 const EDITABLE_SETTINGS = new Set([
+  'businessMode',
+  'workspaceMode',
   'companyName',
   'address',
   'gstin',
@@ -53,6 +56,12 @@ export class SettingsService {
       );
     }
     const updateData = { ...data };
+    if (data.businessMode !== undefined && !BUSINESS_MODES.includes(data.businessMode)) {
+      throw new BadRequestException('Choose a supported business mode');
+    }
+    if (data.workspaceMode !== undefined && !WORKSPACE_MODES.includes(data.workspaceMode)) {
+      throw new BadRequestException('Workspace mode must be GUIDED or FULL');
+    }
     if (actor) updateData.updatedBy = actor;
     if (data.gstPercent !== undefined && Number(data.gstPercent) > 100) {
       throw new BadRequestException('GST percentage cannot exceed 100');

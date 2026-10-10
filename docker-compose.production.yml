@@ -1,0 +1,111 @@
+version: '3.8'
+
+# ==============================================================================
+# EverGreen OS Multi-Cloud Production Orchestration
+# Strict Dual-Plane Isolation: Provider Control Plane vs Tenant Customer Plane
+# ==============================================================================
+
+networks:
+  evergreen_tenant_net:
+    driver: bridge
+  evergreen_admin_net:
+    driver: bridge
+  evergreen_public_net:
+    driver: bridge
+
+volumes:
+  tenant_sqlite_data:
+  tenant_postgres_data:
+  admin_sqlite_data:
+  redis_data:
+
+services:
+  # ----------------------------------------------------------------------------
+  # 1. TENANT CUSTOMER PLANE (Isolated Factory Stack)
+  # ----------------------------------------------------------------------------
+  tenant-api:
+    build:
+      context: .
+      dockerfile: deploy/docker/Dockerfile.tenant-api
+    container_name: evergreen-tenant-api
+    restart: unless-stopped
+    ports:
+      - "4301:4301"
+    environment:
+      NODE_ENV: production
+      EVERGREEN_API_PORT: 4301
+      PORT: 4301
+      DATABASE_URL: "file:/app/packages/database/prisma/tenant.db"
+      JWT_SECRET: "${TENANT_JWT_SECRET:-change_in_production_tenant_jwt_key_92817}"
+      ADMIN_API_URL: "http://admin-api:4300"
+      HEARTBEAT_INTERVAL_MS: 3600000
+    volumes:
+      - tenant_sqlite_data:/app/packages/database/prisma
+    networks:
+      - evergreen_tenant_net
+      - evergreen_admin_net # For Zero-Leakage Hourly Telemetry Sync only
+
+  tenant-web:
+    build:
+      context: .
+      dockerfile: deploy/docker/Dockerfile.tenant-web
+    container_name: evergreen-tenant-web
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    depends_on:
+      - tenant-api
+    networks:
+      - evergreen_tenant_net
+      - evergreen_public_net
+
+  # ----------------------------------------------------------------------------
+  # 2. PROVIDER ADMIN CONTROL PLANE (Mission Control)
+  # ----------------------------------------------------------------------------
+  admin-api:
+    build:
+      context: .
+      dockerfile: deploy/docker/Dockerfile.admin-api
+    container_name: evergreen-admin-api
+    restart: unless-stopped
+    ports:
+      - "4300:4300"
+    environment:
+      NODE_ENV: production
+      ADMIN_API_PORT: 4300
+      PORT: 4300
+      ADMIN_DATABASE_URL: "file:/app/packages/admin-database/prisma/admin.db"
+      ADMIN_API_KEY: "${PROVIDER_ADMIN_API_KEY:-provider_master_key_9921_secret}"
+      JWT_SECRET: "${ADMIN_JWT_SECRET:-change_in_production_admin_jwt_key_77182}"
+    volumes:
+      - admin_sqlite_data:/app/packages/admin-database/prisma
+    networks:
+      - evergreen_admin_net
+
+  admin-web:
+    build:
+      context: .
+      dockerfile: deploy/docker/Dockerfile.admin-web
+    container_name: evergreen-admin-web
+    restart: unless-stopped
+    ports:
+      - "5174:5174"
+    depends_on:
+      - admin-api
+    networks:
+      - evergreen_admin_net
+      - evergreen_public_net
+
+  # ----------------------------------------------------------------------------
+  # 3. PUBLIC MARKETING SHOWCASE (High-Conversion Landing)
+  # ----------------------------------------------------------------------------
+  marketing-web:
+    build:
+      context: .
+      dockerfile: deploy/docker/Dockerfile.marketing
+    container_name: evergreen-marketing-web
+    restart: unless-stopped
+    ports:
+      - "3300:3300"
+    networks:
+      - evergreen_public_net

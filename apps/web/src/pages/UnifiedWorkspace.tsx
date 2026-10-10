@@ -29,6 +29,7 @@ import {
 } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';
 import api from '../utils/api';
+import { isCompanyPageVisible, type CompanyProfile } from '@evergreen/types';
 import BusinessFlowGuide from '../components/BusinessFlowGuide';
 
 type WorkspaceModule = {
@@ -100,9 +101,10 @@ const modules: WorkspaceModule[] = [
 
 interface UnifiedWorkspaceProps {
   onNavigate: (page: string) => void;
+  profile?: Partial<CompanyProfile>;
 }
 
-const UnifiedWorkspace: React.FC<UnifiedWorkspaceProps> = ({ onNavigate }) => {
+const UnifiedWorkspace: React.FC<UnifiedWorkspaceProps> = ({ onNavigate, profile }) => {
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [search, setSearch] = useState('');
   const report = useQuery<{ invoicedValue: number; receivables: number; openOrders: number; lowStock: unknown[]; openJobWork: number }>({
@@ -122,7 +124,7 @@ const UnifiedWorkspace: React.FC<UnifiedWorkspaceProps> = ({ onNavigate }) => {
   });
   const reportData = report.data;
   const money = (value: number | undefined) => value === undefined ? 'Unavailable' : `₹${value.toLocaleString('en-IN')}`;
-  const visibleModules = modules.filter(module => `${module.title} ${module.category} ${module.description}`.toLowerCase().includes(search.trim().toLowerCase()));
+  const visibleModules = modules.filter(module => isCompanyPageVisible(module.page, profile) && `${module.title} ${module.category} ${module.description}`.toLowerCase().includes(search.trim().toLowerCase()));
 
   return (
     <Box sx={{ maxWidth: 1300, mx: 'auto', width: '100%' }}>
@@ -304,7 +306,7 @@ const UnifiedWorkspace: React.FC<UnifiedWorkspaceProps> = ({ onNavigate }) => {
       {reportData && <Alert severity={reportData.lowStock.length || reportData.receivables > 0 ? 'warning' : 'success'} sx={{ mb: 2 }} action={<Button color="inherit" onClick={() => onNavigate('reports')}>Review</Button>}>
         {reportData.lowStock.length} catalogue items at or below reorder level · {reportData.openOrders} open orders · {reportData.openJobWork} open job-work challans. Review receivables before closing the day.
       </Alert>}
-      <BusinessFlowGuide onNavigate={onNavigate} />
+      <BusinessFlowGuide onNavigate={onNavigate} profile={profile} />
 
       {/* Primary Workspace Modules */}
       <Typography variant="h5" fontWeight={800} sx={{ mb: 2 }}>

@@ -1,9 +1,14 @@
 # Documentation directory
 
+The maintained knowledge set is [the page-level wiki](wiki/README.md), [operating guide](wiki/OPERATING_GUIDE.md), [current architecture](ARCHITECTURE.md), [licensing/pricing proposal](COMMERCIAL_MODEL.md), [migration and connectors](INTEGRATIONS.md), and [validation](VALIDATION.md). Generated references cover [UI controls](reference/UI_CONTROLS.md), [API handlers](reference/API.md), [workflow actions](reference/WORKFLOWS.md), [data models](reference/DATA_MODEL.md), and [code ownership](reference/CODE_INDEX.md). See [coverage counts](reference/COVERAGE.md).
+
 Start with [Quick Start](../QUICK_START.md), then follow the in-app searchable workflow guide at `/tutorial`. The same guide appears in Business Workspace at `/workspace`.
 
 | Document | Purpose / authority |
 | --- | --- |
+| [Gate workflow audit](GATE_WORKFLOW_AUDIT.md) | Current code evidence, first receipt implementation and remaining pilot blockers |
+| [Gate pilot plan](GATE_PILOT_PLAN.md) | Prioritized backlog, four-week validation, economics and release checks |
+| [Cotton moisture research](COTTON_MOISTURE_RESEARCH.md) | Primary-source findings, contract-specific policy and calculation examples |
 | [Root README](../README.md) | Active product, stack and environment setup |
 | [Quick Start](../QUICK_START.md) | Current service URLs, commands and bootstrap guidance |
 | [Business Flow](BUSINESS_FLOW.md) | Handoffs, ledger boundaries and action-level acceptance checks |

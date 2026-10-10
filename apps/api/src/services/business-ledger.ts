@@ -32,6 +32,7 @@ export async function assertOpenPeriod(tx: Tx, date: Date) {
 }
 
 export async function assertOverheadAvailable(tx: Tx, amount: number, date: Date) {
+  if (!Number.isFinite(amount) || amount < 0) throw new BadRequestException('Allocated overhead must be a finite non-negative amount');
   if (!amount) return;
   const entries = await tx.journalLine.aggregate({ where: { account: 'MANUFACTURING_OVERHEAD', entry: { date: { lte: date } } }, _sum: { debit: true, credit: true } });
   const available = money((entries._sum.debit || 0) - (entries._sum.credit || 0));
@@ -41,6 +42,7 @@ export async function assertOverheadAvailable(tx: Tx, amount: number, date: Date
 export async function journal(tx: Tx, sourceKey: string, date: Date, description: string, createdBy: string,
   lines: { account: string; debit?: number; credit?: number; party?: string }[]) {
   if (await tx.journalEntry.findUnique({ where: { sourceKey } })) return;
+  if (lines.some(line => !Number.isFinite(line.debit ?? 0) || !Number.isFinite(line.credit ?? 0) || (line.debit ?? 0) < 0 || (line.credit ?? 0) < 0 || ((line.debit ?? 0) > 0 && (line.credit ?? 0) > 0))) throw new BadRequestException('Invalid journal amounts');
   const normalized = lines.map(l => ({ ...l, debit: money(l.debit || 0), credit: money(l.credit || 0) })).filter(l => l.debit || l.credit);
   if (normalized.some(l => !Number.isFinite(l.debit + l.credit) || l.debit < 0 || l.credit < 0 || (l.debit && l.credit))) throw new BadRequestException('Invalid journal amounts');
   const net = money(normalized.reduce((s, l) => s + l.debit - l.credit, 0));

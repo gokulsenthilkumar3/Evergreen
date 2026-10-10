@@ -1,5 +1,6 @@
 import React, { Suspense, useEffect, useMemo, useRef, useState } from 'react';
-import { Box, MenuItem, Select, useMediaQuery, createTheme, ThemeProvider, useTheme } from '@mui/material';
+import { Alert, Box, Button, MenuItem, Select, useMediaQuery, createTheme, ThemeProvider, useTheme } from '@mui/material';
+import { useFullscreen } from '../../hooks/useFullscreen';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Html, OrbitControls } from '@react-three/drei';
 import { CatmullRomCurve3, OrthographicCamera, Vector3, type Group } from 'three';
@@ -349,8 +350,8 @@ function World({ props, motion, speed, selected, onSelect, view, onFocus, isDark
     />
 
     {/* Floating Strategy Game 3D Pins from Reference Video */}
-    <PinCallout position={[6.5, 3.8, 2.5]} code="Bay 01" label="Departing · TRK-102" color="#10b981" isDark={isDark} />
-    <PinCallout position={[9.2, 3.8, 2.5]} code="Bay 02" label="Loading (80%) · TRK-241" color="#0284c7" isDark={isDark} />
+    <PinCallout position={[6.5, 3.8, 2.5]} code="Bay 01" label="Illustrative dispatch bay" color="#10b981" isDark={isDark} />
+    <PinCallout position={[9.2, 3.8, 2.5]} code="Bay 02" label="Illustrative loading bay" color="#0284c7" isDark={isDark} />
     <PinCallout position={[-7, 3.8, -2.5]} code="Inward Yard" label="Raw Cotton Bales" color="#f59e0b" isDark={isDark} />
     <PinCallout position={[0, 3.8, -2]} code="Machine Hall" label={`${props.machines.length} Equipment Units`} color="#8b5cf6" isDark={isDark} />
   </>;
@@ -375,6 +376,7 @@ export default function CampusScene(props: Props) {
   const [cinema, setCinema] = useState(false);
   const [inView, setInView] = useState(true);
   const container = useRef<HTMLDivElement>(null);
+  const fullscreen = useFullscreen(container);
   const [visible, setVisible] = useState(!document.hidden);
   useEffect(() => {
     const update = () => setVisible(!document.hidden);
@@ -391,16 +393,16 @@ export default function CampusScene(props: Props) {
   const focus = (next: View) => { setView(next); setSelected(null); setTour(false); setZoom(1); };
   useEffect(() => {
     if (!cinema) return;
-    container.current?.scrollIntoView({ behavior: reduced ? 'instant' : 'smooth', block: 'start' });
+    container.current?.scrollIntoView?.({ behavior: reduced ? 'instant' : 'smooth', block: 'start' });
     const escape = (event: KeyboardEvent) => { if (event.key === 'Escape') setCinema(false); };
     window.addEventListener('keydown', escape);
     return () => window.removeEventListener('keydown', escape);
   }, [cinema, reduced]);
   useEffect(() => {
     if (!tour || !playing) return;
-    const timer = setInterval(() => setView(previous => VIEWS[(VIEWS.indexOf(previous) + 1) % VIEWS.length]), 7000);
+    const timer = setInterval(() => setView(previous => VIEWS[(VIEWS.indexOf(previous) + 1) % VIEWS.length]), 7000 / speed);
     return () => clearInterval(timer);
-  }, [tour, playing]);
+  }, [tour, playing, speed]);
   const selectMachine = (id: number) => {
     setSelected(id);
     setTour(false);
@@ -439,7 +441,9 @@ export default function CampusScene(props: Props) {
     [isDark],
   );
 
-  return <ThemeProvider theme={campusTheme}><Box ref={container} sx={{ minWidth: 0, scrollMarginTop: 12, '& button': { minHeight: 44, textTransform: 'none', fontWeight: 600 }, '& button:focus-visible': { outline: '2px solid #087f65', outlineOffset: -2 } }}>
+  return <ThemeProvider theme={campusTheme}><Box ref={container} sx={{ minWidth: 0, scrollMarginTop: 12, '&:fullscreen': { overflow: 'auto', bgcolor: 'background.default', p: 1 }, '& button': { minHeight: 44, textTransform: 'none', fontWeight: 600 }, '& button:focus-visible': { outline: '2px solid #087f65', outlineOffset: -2 } }}>
+    <Button onClick={fullscreen.toggle}>{fullscreen.fullscreen ? 'Exit TV fullscreen' : 'TV fullscreen'}</Button>
+    {fullscreen.error && <Alert severity="info">{fullscreen.error}</Alert>}
     <CampusWorkspace view={view} views={VIEWS} focus={value => focus(value as View)}
       motion={motion} playing={playing} reduced={reduced} toggleMotion={() => setMotion(value => !value)}
       tour={tour} toggleTour={() => { setTour(value => !value); setMotion(true); }} speed={speed} setSpeed={setSpeed}
@@ -458,9 +462,9 @@ export default function CampusScene(props: Props) {
         {props.machines.map(machine => <MenuItem key={machine.id} value={machine.id}>{machine.name}</MenuItem>)}
       </Select>}
     >
-      <SceneBoundary fallback={<FloorCanvas {...props} />}>
+      <SceneBoundary fallback={<FloorCanvas {...props} simulateFlow={playing} />}>
         <Suspense fallback={<Box sx={{ p: 5 }}>Preparing factory view…</Box>}>
-          <Canvas orthographic shadows={!compact} frameloop={playing ? 'always' : 'demand'} camera={{ position: [18, 18, 22], zoom: 12, near: 0.1, far: 100 }} dpr={compact ? 1 : [1, 1.5]} fallback={<FloorCanvas {...props} />}>
+          <Canvas orthographic shadows={!compact} frameloop={playing ? 'always' : 'demand'} camera={{ position: [18, 18, 22], zoom: 12, near: 0.1, far: 100 }} dpr={compact ? 1 : [1, 1.5]} fallback={<FloorCanvas {...props} simulateFlow={playing} />}>
             <World props={props} motion={playing} speed={speed} selected={selected} onSelect={selectMachine} view={view} onFocus={focus} isDark={isDark} />
             <CameraRig view={view} reset={reset} zoom={zoom} reduced={reduced} onInteract={() => setTour(false)} />
           </Canvas>

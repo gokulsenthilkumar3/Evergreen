@@ -1,0 +1,111 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../../node_modules/@prisma/admin-client"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("ADMIN_DATABASE_URL")
+}
+
+model Company {
+  id             String   @id @default(uuid())
+  name           String
+  deploymentUrl  String?
+  cloudProvider  String   @default("LOCAL_VM")
+  appVersion     String   @default("1.0.0")
+  apiKey         String   @unique
+  plan           String   @default("SEED")
+  businessMode   String   @default("INTEGRATED")
+  workspaceMode  String   @default("GUIDED")
+  activeStaff    Int      @default(0)
+  docsPosted     Int      @default(0)
+  // Regional & Planetary Tiers
+  tier                String   @default("TIER_2_CITY") // TIER_1_CITY, TIER_2_CITY, RURAL, INTERNATIONAL
+  state               String   @default("Tamil Nadu")
+  country             String   @default("IN")
+
+  // Granular Licensing, Dates & Quotas
+  pricingModel        String   @default("TIERED") // TRIAL, TIERED, PAYG
+  licenseKey          String?
+  validFrom           DateTime @default(now())
+  expiresAt           DateTime?
+  gracePeriodDays     Int      @default(30) // 30-Day Unrestricted Grace Period Quota
+  graceExpiresAt      DateTime?
+  maxUsers            Int      @default(1) // Single-email license = 1; Multi-email = N
+  maxMachines         Int      @default(5) // Machine license quota
+  maxDocsPerMonth     Int      @default(500) // Transaction volume cap
+  allowedModules      String   @default("CORE,INVENTORY,COMMERCE") // e.g. "CORE,INVENTORY,COMMERCE,MACHINES,QUALITY,HR,JOBWORK"
+  isMaintenance       Boolean  @default(false)
+  lastMigrationStatus String   @default("UP_TO_DATE")
+  status              String   @default("ACTIVE")
+  lastSyncAt          DateTime?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  metrics             CompanyMetrics[]
+  actions             RemoteAction[]
+}
+
+model RemoteAction {
+  id          String   @id @default(uuid())
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  actionType  String   // TRIGGER_MIGRATION, TOGGLE_MAINTENANCE, FORCE_SYNC, REFRESH_LICENSE
+  status      String   @default("PENDING") // PENDING, EXECUTED, FAILED
+  details     String?
+  createdAt   DateTime @default(now())
+  completedAt DateTime?
+}
+
+model CompanyMetrics {
+  id                Int      @id @default(autoincrement())
+  companyId         String
+  company           Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  date              DateTime
+  totalInwards      Int      @default(0)
+  totalOutwards     Int      @default(0)
+  totalInvoices     Int      @default(0)
+  activeUsers       Int      @default(0)
+  additionalMetrics String?
+  createdAt         DateTime @default(now())
+
+  @@unique([companyId, date])
+}
+
+model ProviderAdmin {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("SUPER_ADMIN")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ControlRecord {
+  id         String   @id @default(uuid())
+  kind       String
+  title      String
+  companyId  String?
+  status     String   @default("DRAFT")
+  priority   String   @default("NORMAL")
+  owner      String   @default("Unassigned")
+  dueAt      DateTime?
+  payload    String   @default("{}")
+  version    Int      @default(1)
+  requestKey String?  @unique
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  @@index([kind, status])
+}
+
+model ControlAudit {
+  id        String   @id @default(uuid())
+  recordId  String?
+  actor     String
+  action    String
+  details   String
+  createdAt DateTime @default(now())
+  @@index([createdAt])
+}

@@ -1,13 +1,15 @@
 {
   "name": "@evergreen/types",
   "version": "1.0.0",
-  "main": "./index.ts",
+  "main": "./dist/index.js",
   "types": "./index.ts",
   "exports": {
     ".": {
-      "import": "./index.ts",
-      "require": "./index.ts",
-      "default": "./index.ts"
+      "types": "./index.ts",
+      "browser": "./index.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
     }
   },
   "scripts": {

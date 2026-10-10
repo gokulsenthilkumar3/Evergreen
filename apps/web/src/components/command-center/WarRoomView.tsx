@@ -67,12 +67,8 @@ export const WarRoomView: React.FC<WarRoomViewProps> = ({
   // Active vs Maintenance metrics
   const activeMachines = useMemo(() => machines.filter((m) => m.active), [machines]);
   const alertMachines = useMemo(() => machines.filter((m) => (m.openInspections ?? 0) > 0), [machines]);
-  const oeePercent = useMemo(() => {
-    if (machines.length === 0) return 0;
-    const runningRatio = activeMachines.length / machines.length;
-    const qualityFactor = qualityHolds > 0 ? 0.92 : 0.98;
-    return Math.round(runningRatio * qualityFactor * 100);
-  }, [machines, activeMachines, qualityHolds]);
+  // Registry activation is not runtime telemetry or overall equipment effectiveness.
+  const oeePercent = machines.length ? Math.round(activeMachines.length / machines.length * 100) : 0;
 
   // Group machines by process stage
   const machineGroups = useMemo(() => {
@@ -139,7 +135,7 @@ export const WarRoomView: React.FC<WarRoomViewProps> = ({
               Material Throughput Pipeline
             </Typography>
             <Chip
-              label={productionRunning ? '⚡ Run in Progress' : 'Idle / Ready'}
+              label={productionRunning ? '⚡ Run in Progress' : 'Running state unavailable'}
               size="small"
               sx={{
                 fontSize: '0.65rem',
@@ -156,7 +152,7 @@ export const WarRoomView: React.FC<WarRoomViewProps> = ({
               Plant Availability Rating:
             </Typography>
             <Chip
-              label={`${oeePercent}% OEE`}
+              label={`${oeePercent}% registered active`}
               size="small"
               sx={{
                 fontWeight: 800,
@@ -472,7 +468,7 @@ export const WarRoomView: React.FC<WarRoomViewProps> = ({
                               />
                             ) : (
                               <Chip
-                                label={m.active ? 'Operational' : 'Idle'}
+                                label={m.active ? 'Active asset' : 'Inactive asset'}
                                 size="small"
                                 sx={{
                                   height: 18,

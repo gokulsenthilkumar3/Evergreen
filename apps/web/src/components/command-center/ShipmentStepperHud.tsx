@@ -40,35 +40,8 @@ interface ShipmentStepperHudProps {
   defaultOpen?: boolean;
 }
 
-const DEFAULT_SHIPMENTS: ActiveShipment[] = [
-  {
-    id: 'shp-1',
-    orderCode: 'SO-8924',
-    customerName: 'Lakshmi Weaving Mills',
-    yarnBags: 7,
-    weightKg: 420,
-    driverName: 'Marcus Vance',
-    vehicleNo: 'TN-38-AX-4821',
-    eta: '45 mins',
-    currentStep: 2, // 0: Placed, 1: Staged, 2: Loaded to Truck, 3: In Transit, 4: Delivered
-    steps: ['Order Placed', 'Bales Settled', 'Loaded (Bay 02)', 'In Transit', 'Delivered'],
-  },
-  {
-    id: 'shp-2',
-    orderCode: 'SO-8931',
-    customerName: 'Sri Amman Spinners',
-    yarnBags: 12,
-    weightKg: 720,
-    driverName: 'S. Rajendran',
-    vehicleNo: 'TN-33-BZ-1904',
-    eta: '1h 20m',
-    currentStep: 3,
-    steps: ['Order Placed', 'Bales Settled', 'Loaded (Bay 01)', 'In Transit', 'Delivered'],
-  },
-];
-
 export const ShipmentStepperHud: React.FC<ShipmentStepperHudProps> = ({
-  shipments = DEFAULT_SHIPMENTS,
+  shipments = [],
   defaultOpen = true,
 }) => {
   const theme = useTheme();
@@ -76,12 +49,14 @@ export const ShipmentStepperHud: React.FC<ShipmentStepperHudProps> = ({
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [expanded, setExpanded] = useState(defaultOpen);
 
-  const activeShipment = shipments[selectedIndex] || DEFAULT_SHIPMENTS[0];
+  const activeShipment = shipments[selectedIndex] || shipments[0];
 
   const hudBg = isDark
     ? 'linear-gradient(135deg, rgba(15, 23, 42, 0.92) 0%, rgba(10, 16, 32, 0.96) 100%)'
     : 'linear-gradient(135deg, rgba(255, 255, 255, 0.96) 0%, rgba(248, 250, 252, 0.98) 100%)';
   const borderCol = isDark ? 'rgba(16, 185, 129, 0.25)' : 'rgba(8, 127, 101, 0.2)';
+
+  if (!activeShipment) return <Box role="status" sx={{ p: 2 }}>Shipment tracking is not connected. Recorded dispatches are available in Outwards.</Box>;
 
   return (
     <Box

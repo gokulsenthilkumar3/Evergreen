@@ -70,6 +70,8 @@ import { buildBatchQRPayload } from '../utils/codeFormatters';
 import ExportButtons from '../components/common/ExportButtons';
 import EntryWizardHeader from '../components/common/EntryWizardHeader';
 import BatchCodeBuilder from '../components/common/BatchCodeBuilder';
+import WeighbridgeReceiptDialog from '../components/WeighbridgeReceiptDialog';
+import type { WeighbridgeReceipt } from '@evergreen/types';
 
 
 interface BatchEntry {
@@ -84,6 +86,7 @@ interface BatchEntry {
     remainingBale?: number;
     mergedFrom?: string;
     isMerged?: boolean;
+    weighbridgeReceipt?: WeighbridgeReceipt | null;
 }
 
 interface InwardEntryProps {
@@ -96,6 +99,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
     const [customFrom, setCustomFrom] = useState<string>('');
     const [customTo, setCustomTo] = useState<string>('');
     const [openWizard, setOpenWizard] = useState(false);
+    const [openWeighbridge, setOpenWeighbridge] = useState(false);
     const [receiptTime, setReceiptTime] = useState(() => localTimeValue());
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [touched, setTouched] = useState<Record<string, boolean>>({});
@@ -346,6 +350,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                     )}
                     {(userRole === 'MODIFIER' || userRole === 'ADMIN') && (
                         <Box sx={{ display: 'flex', gap: 1 }}>
+                            <Button variant="outlined" startIcon={<ScaleOutlined />} onClick={() => setOpenWeighbridge(true)}>Weighbridge receipt</Button>
                             {selectedBatches.length > 1 && (
                                 <Button
                                     variant="contained"
@@ -380,6 +385,11 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                 </Box>
             )}
 
+            {openWeighbridge && <WeighbridgeReceiptDialog onClose={() => setOpenWeighbridge(false)} onSaved={() => {
+                setOpenWeighbridge(false);
+                queryClient.invalidateQueries();
+                toast.success('Weighbridge receipt saved');
+            }} />}
             {/* Add Batch Dialog */}
             <Dialog
                 open={openWizard}
@@ -624,6 +634,9 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                                             <TableCell align="right" sx={{ color: 'text.secondary' }}>{row.bale}</TableCell>
                                             <TableCell align="right" sx={{ color: 'text.secondary' }}>
                                                 {row.kg?.toLocaleString()} kg
+                                                {row.weighbridgeReceipt && <Typography variant="caption" display="block">
+                                                    {row.weighbridgeReceipt.finalBillableKg === null ? 'Billable: pending' : `Billable: ${row.weighbridgeReceipt.finalBillableKg.toLocaleString()} kg`}
+                                                </Typography>}
                                             </TableCell>
                                             <TableCell align="right" sx={{ fontWeight: 600 }}>
                                                 {row.remainingBale ?? row.bale}
@@ -683,7 +696,15 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                         { label: 'Supplier', value: labelBatch.supplier },
                         { label: 'Date', value: new Date(labelBatch.date).toLocaleDateString('en-IN') },
                         { label: 'Total Bales', value: labelBatch.bale },
-                        { label: 'Gross Weight', value: `${labelBatch.kg.toLocaleString()} kg` },
+                        { label: 'Physical net weight', value: `${labelBatch.kg.toLocaleString()} kg` },
+                        ...(labelBatch.weighbridgeReceipt ? [
+                            { label: 'Gross / tare', value: `${labelBatch.weighbridgeReceipt.grossWeightKg} / ${labelBatch.weighbridgeReceipt.tareWeightKg} kg` },
+                            { label: 'Moisture content', value: `${labelBatch.weighbridgeReceipt.moisturePercent}%` },
+                            { label: 'Deduction policy', value: labelBatch.weighbridgeReceipt.method },
+                            { label: 'Contract / baseline', value: `${labelBatch.weighbridgeReceipt.contractReference || 'Pending'} / ${labelBatch.weighbridgeReceipt.standardMoistureBase ?? '—'}%` },
+                            { label: 'Billable weight', value: labelBatch.weighbridgeReceipt.finalBillableKg === null ? 'Pending contract confirmation' : `${labelBatch.weighbridgeReceipt.finalBillableKg} kg` },
+                            { label: 'Device verification', value: 'Unverified' },
+                        ] : []),
                         { label: 'Remaining Stock', value: `${(labelBatch.remainingKg ?? labelBatch.kg).toLocaleString()} kg` },
                     ]}
                 />

@@ -1,4 +1,5 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, ConflictException } from '@nestjs/common';
+import { calculateWeighbridge, type WeighbridgeReceipt } from '@evergreen/types';
 import { randomUUID } from 'crypto';
 import { stockEventDate } from '../../utils/stock-event-date';
 import { PrismaService } from '../../services/prisma.service';
@@ -59,6 +60,7 @@ export class InventoryService {
 
     return batches.map((b) => ({
       ...b,
+      weighbridgeReceipt: b.weighbridgeReceipt ? JSON.parse(b.weighbridgeReceipt) : null,
       remainingKg: usageMap.get(b.batchId) ?? b.kg, // if no usage, remaining is original
       remainingBale: (usageMap.get(b.batchId) ?? b.kg) > 0.01 ? Math.max(0, b.bale - (baleMap.get(b.batchId) || 0)) : 0,
     }));
@@ -269,13 +271,22 @@ export class InventoryService {
     bale: number;
     kg: number;
     createdBy?: string;
-  }) {
+  }, receipt?: WeighbridgeReceipt) {
     data = { ...data, date: stockEventDate(data.date).toISOString() };
     if (!Number.isFinite(new Date(data.date).getTime()) || !data.supplier?.trim() || !Number.isInteger(data.bale) || data.bale <= 0 || !Number.isFinite(data.kg) || data.kg <= 0)
       throw new BadRequestException('Enter a valid receipt date, supplier, whole bales and positive cotton weight');
     try {
       return await this.prisma.stockTransaction(async (tx) => {
         const batchId = data.batchId?.trim() || `IN-${data.date.replace(/-/g, '').slice(0, 6)}-${randomUUID().slice(0, 8).toUpperCase()}`;
+        const receiptJson = receipt ? JSON.stringify(receipt) : null;
+        if (receipt) {
+          const existing = await tx.inwardBatch.findUnique({ where: { batchId } });
+          if (existing) {
+            if (existing.weighbridgeReceipt === receiptJson && existing.supplier === data.supplier &&
+                existing.bale === data.bale && existing.date.toISOString() === data.date) return existing;
+            throw new ConflictException('This lot already exists with different receipt details. Review the saved lot.');
+          }
+        }
         // 1. Create Inward Batch record
         const batch = await tx.inwardBatch.create({
           data: {
@@ -285,6 +296,7 @@ export class InventoryService {
             bale: data.bale,
             kg: data.kg,
             createdBy: data.createdBy,
+            weighbridgeReceipt: receiptJson,
           },
         });
 
@@ -321,6 +333,10 @@ export class InventoryService {
             });
           }
         }
+        if (receipt) await tx.activityLog.create({ data: {
+          username: data.createdBy || 'SYSTEM', action: 'CREATE', module: 'WEIGHBRIDGE',
+          details: JSON.stringify({ batchId, ...receipt }),
+        } });
         return batch;
       });
     } catch (error: any) {
@@ -624,6 +640,7 @@ export class InventoryService {
       });
 
       if (!batch) throw new BadRequestException('Batch not found');
+      if (batch.weighbridgeReceipt) throw new BadRequestException('Weighbridge receipts retain their measurement history. Use a reviewed reversal workflow instead of deleting this lot.');
       if (await tx.cottonInventory.count({ where: { batchId: batch.batchId, type: 'RECYCLED_WASTE' } })) throw new BadRequestException('Reverse the waste recycling entry to return this cotton to waste stock.');
       if (batch.catalogueItemId) throw new BadRequestException('This cotton receipt belongs to procurement. Record its supplier return in Business flows to preserve the purchase and payable links.');
       const receiptLinks = await tx.workflowDocument.findMany({ where: { kind: 'LINK_COTTON_RECEIPT' } });
@@ -1100,4 +1117,43 @@ export class InventoryService {
       return { success: true };
     });
   }
+
+  async syncWeighbridgeSlip(body: any, actor: string) {
+    if (!body || typeof body !== 'object') throw new BadRequestException('Receipt details are required.');
+    // Agent envelopes are accepted as unverified readings only. Client totals and seals are never trusted.
+    const data = body.slip ? { ...body.metadata, ...(body.slip.payload || body.slip) } : body;
+    const number = (value: unknown) =>
+      (typeof value === 'number' || (typeof value === 'string' && value.trim() !== '')) ? Number(value) : NaN;
+    const batchId = typeof (data.batchId ?? data.lotNumber) === 'string' ? (data.batchId ?? data.lotNumber).trim() : '';
+    if (!batchId || batchId.length > 100) throw new BadRequestException('A stable lot reference of at most 100 characters is required for safe retries.');
+    if (typeof data.supplier !== 'string' || !data.supplier.trim()) throw new BadRequestException('Supplier is required.');
+    const dateStr = data.date ?? data.timestamp;
+    if (typeof dateStr !== 'string' || !/^\d{4}-\d{2}-\d{2}T.*(Z|[+-]\d{2}:\d{2})$/.test(dateStr))
+      throw new BadRequestException('Receipt time must include a time zone and remain unchanged on retries.');
+    const method = data.method ?? 'PENDING';
+    const measurement = {
+      grossWeightKg: number(data.grossWeightKg ?? data.rawGrossKg),
+      tareWeightKg: number(data.tareWeightKg ?? data.rawTareKg),
+      moisturePercent: number(data.moisturePercent),
+      method,
+      ...(method !== 'PENDING' ? {
+        standardMoistureBase: number(data.standardMoistureBase),
+        contractReference: typeof data.contractReference === 'string' ? data.contractReference.trim() : '',
+      } : {}),
+    };
+    let totals: ReturnType<typeof calculateWeighbridge>;
+    try { totals = calculateWeighbridge(measurement); }
+    catch (error) { throw new BadRequestException((error as Error).message); }
+    const receipt: WeighbridgeReceipt = {
+      version: 1, ...measurement, ...totals,
+      deviceSerial: typeof data.deviceSerial === 'string' ? data.deviceSerial.trim() || null : null,
+      verificationStatus: 'UNVERIFIED',
+    };
+    const inward = await this.createInward({
+      batchId, date: dateStr, supplier: data.supplier.trim(),
+      bale: number(data.bale ?? data.bales), kg: totals.netWeightKg, createdBy: actor,
+    }, receipt);
+    return { success: true, batchId, ...receipt, inward: { ...inward, weighbridgeReceipt: receipt } };
+  }
 }
+
