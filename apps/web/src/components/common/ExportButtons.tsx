@@ -54,7 +54,7 @@ const ExportButtons: React.FC<ExportButtonsProps> = ({
       label:  'Excel',
       icon:   <ExcelIcon fontSize={size === 'small' ? 'small' : 'medium'} />,
       cls:    'btn-export-excel',
-      tip:    'Download as Excel spreadsheet (.xlsx)',
+      tip:    'Download as Excel workbook (.xlsx)',
       onClick: onExcel || (onExport ? () => onExport('excel') : undefined),
       show:   showExcel,
     },

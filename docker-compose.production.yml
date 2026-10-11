@@ -36,7 +36,7 @@ services:
       EVERGREEN_API_PORT: 4301
       PORT: 4301
       DATABASE_URL: "file:/app/packages/database/prisma/tenant.db"
-      JWT_SECRET: "${TENANT_JWT_SECRET:-change_in_production_tenant_jwt_key_92817}"
+      JWT_SECRET: "${TENANT_JWT_SECRET:?Set a unique tenant JWT secret}"
       ADMIN_API_URL: "http://admin-api:4300"
       HEARTBEAT_INTERVAL_MS: 3600000
     volumes:
@@ -75,8 +75,8 @@ services:
       ADMIN_API_PORT: 4300
       PORT: 4300
       ADMIN_DATABASE_URL: "file:/app/packages/admin-database/prisma/admin.db"
-      ADMIN_API_KEY: "${PROVIDER_ADMIN_API_KEY:-provider_master_key_9921_secret}"
-      JWT_SECRET: "${ADMIN_JWT_SECRET:-change_in_production_admin_jwt_key_77182}"
+      ADMIN_API_KEY: "${PROVIDER_ADMIN_API_KEY:?Set a unique provider API key}"
+      JWT_SECRET: "${ADMIN_JWT_SECRET:?Set a unique provider JWT secret}"
     volumes:
       - admin_sqlite_data:/app/packages/admin-database/prisma
     networks:

@@ -43,6 +43,13 @@ async function openApp() {
 }
 
 describe("Provider admin workspace", () => {
+  it("reports unavailable data without substituting demo mills", async () => {
+    vi.mocked(fetch).mockResolvedValue({ ok: false, status: 503 } as Response);
+    await openApp();
+    expect(await screen.findByText(/Mill data is unavailable/)).toBeInTheDocument();
+    expect(screen.queryByText(DEMO_TENANTS[0].name)).not.toBeInTheDocument();
+  });
+
   it("renders every module with one page heading and an active navigation item", async () => {
     const nav = await openApp();
     const pages = [

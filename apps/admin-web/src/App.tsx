@@ -5,8 +5,6 @@ import { WorkspaceIcon } from './WorkspaceIcon';
 import { AdminModal } from './AdminModal';
 import {
   CONNECTORS,
-  DEMO_RECORDS,
-  DEMO_TENANTS,
   money,
   uid
 } from './control-data';
@@ -145,14 +143,7 @@ function planColor(plan: string): string {
 /* ─────────────────────────────────────────────────────────────────────────── */
 /*  SAMPLE RECENT ACTIVITY LOGS                                                */
 /* ─────────────────────────────────────────────────────────────────────────── */
-const SAMPLE_ACTIVITY = [
-  { dot: 'success', msg: 'Sri Murugan Handlooms Tally Prime XML export successful — 48 purchase vouchers synced', time: '2 min ago' },
-  { dot: 'warning', msg: 'Kavitha Cotton Mills grace quota 7-day watch activated — renewal call scheduled', time: '14 min ago' },
-  { dot: 'info', msg: 'v1.2.4-lts deployed to Selvam Spinning Works (GCP Cloud Run) via Rolling strategy', time: '1 hr ago' },
-  { dot: 'success', msg: 'TareZero weighbridge anti-fraud caught 180 kg moisture discrepancy at Coimbatore node', time: '2 hr ago' },
-  { dot: 'info', msg: 'New tenant: Mahalakshmi Spinning Mills Pvt Ltd — Tirupur Cluster provisioned on LOCAL_VM', time: '5 hr ago' },
-  { dot: 'success', msg: 'WhatsApp collection reminder sent to 3 parties — ₹2.4L outstanding cleared', time: '8 hr ago' },
-];
+const SAMPLE_ACTIVITY: Array<{ dot: string; msg: string; time: string }> = [];
 
 /* ─────────────────────────────────────────────────────────────────────────── */
 /*  MAIN APP COMPONENT                                                          */
@@ -163,7 +154,7 @@ export default function App() {
   const mainRef = useRef<HTMLElement>(null);
   const [activeTab, setActiveTab] = useState<TabId>('DASHBOARD');
   const [companies, setCompanies] = useState<Company[]>([]);
-  const [records, setRecords] = useState<RecordItem[]>(DEMO_RECORDS);
+  const [records, setRecords] = useState<RecordItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
 
@@ -262,28 +253,31 @@ export default function App() {
   const [newRecordOwner, setNewRecordOwner] = useState<string>('Evergreen Ops');
   const [newRecordPriority, setNewRecordPriority] = useState<string>('NORMAL');
 
-  const adminApiBase = 'http://localhost:4300';
-  const providerKey = (typeof window !== 'undefined' && (localStorage.getItem('evergreen_provider_key') || (import.meta as any).env?.VITE_ADMIN_API_KEY)) || 'evergreen_master_admin_dev_token_secret_key_32bytes';
+  const adminApiBase = (import.meta as any).env?.VITE_ADMIN_API_URL || '/admin-api';
+  const providerKey = typeof window !== 'undefined'
+    ? localStorage.getItem('evergreen_provider_key')
+    : null;
 
   const authFetch = (input: RequestInfo | URL, init?: RequestInit) => {
     const headers = new Headers(init?.headers || {});
-    if (!headers.has('Authorization')) {
+    if (providerKey && !headers.has('Authorization')) {
       headers.set('Authorization', `Bearer ${providerKey}`);
-    }
-    if (!headers.has('X-Provider-Actor')) {
-      headers.set('X-Provider-Actor', 'Provider operator');
     }
     return fetch(input, { ...init, headers });
   };
 
   /* ──── DATA FETCHING ──── */
+  const [dataErrors, setDataErrors] = useState<Record<string, string>>({});
+  const reportDataError = (section: string, message = '') =>
+    setDataErrors(previous => ({ ...previous, [section]: message }));
   const fetchCompanies = async () => {
     try {
       const res = await authFetch(`${adminApiBase}/companies`);
-      if (res.ok) setCompanies(await res.json());
-      else setCompanies(DEMO_TENANTS as unknown as Company[]);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      setCompanies(await res.json());
+      reportDataError('Mills');
     } catch {
-      setCompanies(DEMO_TENANTS as unknown as Company[]);
+      reportDataError('Mills', 'Mill data is unavailable. Previously loaded data may be stale.');
     } finally {
       setLoading(false);
     }
@@ -292,12 +286,11 @@ export default function App() {
   const fetchRecords = async () => {
     try {
       const res = await authFetch(`${adminApiBase}/control/records`);
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) setRecords(data);
-      }
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      setRecords(await res.json());
+      reportDataError('Records');
     } catch {
-      // fallback to DEMO_RECORDS
+      reportDataError('Records', 'Control records are unavailable. Previously loaded data may be stale.');
     }
   };
 
@@ -308,11 +301,13 @@ export default function App() {
         authFetch(`${adminApiBase}/cicd/deployments`),
         authFetch(`${adminApiBase}/cicd/logs?limit=100`),
       ]);
-      if (resPkg.ok) setPackages(await resPkg.json());
-      if (resDep.ok) setDeployments(await resDep.json());
-      if (resLogs.ok) setLogs(await resLogs.json());
+      if (!resPkg.ok || !resDep.ok || !resLogs.ok) throw new Error('CI/CD data unavailable');
+      setPackages(await resPkg.json());
+      setDeployments(await resDep.json());
+      setLogs(await resLogs.json());
+      reportDataError('CI/CD');
     } catch {
-      // ignore
+      reportDataError('CI/CD', 'Release and deployment data are unavailable. Previously loaded data may be stale.');
     }
   };
 
@@ -380,9 +375,11 @@ export default function App() {
         body: JSON.stringify({ actionType }),
       });
       if (res.ok) {
-        showMsg(`✅ Action ${actionType} executed successfully.`);
+        showMsg(`Action ${actionType} request recorded. Tenant execution is not confirmed.`);
         fetchCompanies();
         fetchCicdData();
+      } else {
+        showMsg(`Remote action unavailable (HTTP ${res.status}).`);
       }
     } catch {
       showMsg(`❌ Remote action execution failed.`);
@@ -408,6 +405,8 @@ export default function App() {
         fetchCicdData();
         fetchCompanies();
         setDeployTargetCompany(null);
+      } else {
+        showMsg(`Deployment unavailable (HTTP ${res.status}). No deployment was started.`);
       }
     } catch {
       showMsg(`❌ Failed to start deployment.`);
@@ -418,7 +417,7 @@ export default function App() {
     e.preventDefault();
     try {
       showMsg(`🔨 Building release package ${newPkgVersion}...`, false);
-      const res = await authFetch(`${adminApiBase}/cicd/releases`, {
+      const res = await authFetch(`${adminApiBase}/cicd/build`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -435,6 +434,8 @@ export default function App() {
         setNewPkgName('');
         setNewPkgChangelog('');
         fetchCicdData();
+      } else {
+        showMsg(`Build unavailable (HTTP ${res.status}). No release was created.`);
       }
     } catch {
       showMsg(`❌ Failed to create package.`);
@@ -785,6 +786,9 @@ export default function App() {
 
       {/* ── MAIN VIEWPORT ── */}
       <main id="workspace-main" ref={mainRef} tabIndex={-1} className="admin-main-viewport">
+        {Object.entries(dataErrors).filter(([, message]) => message).map(([section, message]) => (
+          <p key={section} role="alert">{message}</p>
+        ))}
         <div className="workspace-context"><span>Provider workspace</span><span aria-hidden="true">/</span><span>{MODULE_TABS.find(tab => tab.id === activeTab)?.label}</span></div>
         {loading ? (
           <div className="loading-state">

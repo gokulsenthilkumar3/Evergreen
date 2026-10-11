@@ -1,6 +1,6 @@
 # HTTP route declaration register
 
-162 handler declarations, not a successful live HTTP test. Multiple verb decorators on one handler are not separate proof of registered routes. All paths below are controller-relative paths; gateway prefixes depend on deployment. Global tenant policy: JWT/session plus VIEWER read, MODIFIER write, ADMIN delete unless explicit roles. Provider policy: bypass-vulnerable shared-key guard, no provider role hierarchy. DTO names do not prove validation of every field. Runtime RBAC/IDOR/isolation tests remain UNVERIFIED because HTTP suite failed during database setup.
+162 handler declarations, not a successful live HTTP test. Multiple verb decorators on one handler are not separate proof of registered routes. All paths below are controller-relative paths; gateway prefixes depend on deployment. Global tenant policy: JWT/session plus VIEWER read, MODIFIER write, ADMIN delete unless explicit roles. Final provider policy: shared-key guard with no provider role hierarchy; original Origin bypass was corrected externally and is not reproduced in final source. DTO names do not prove validation of every field. Runtime RBAC/IDOR/isolation tests remain UNVERIFIED because HTTP suite failed during database setup.
 
 | Plane | Method | Path | Handler / source | Declared roles | Local guards | Body declaration | Verification |
 | --- | --- | --- | --- | --- | --- | --- | --- |

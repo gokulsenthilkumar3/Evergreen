@@ -62,7 +62,7 @@ describe('ProviderAccessGuard', () => {
     };
     const ctx = createMockContext(req);
     expect(guard.canActivate(ctx)).toBe(true);
-    expect(req.providerActor).toBe('DevOps Lead');
+    expect(req.providerActor).toBe('Provider operator');
   });
 
   it('allows requests with valid x-provider-key header', () => {
@@ -101,5 +101,31 @@ describe('ProviderAccessGuard', () => {
       },
     });
     expect(() => prodGuard.canActivate(ctx)).toThrow(UnauthorizedException);
+  });
+
+  it('rejects every credential when the server key is not configured', () => {
+    delete process.env.ADMIN_API_KEY;
+    const unconfigured = new ProviderAccessGuard();
+    const ctx = createMockContext({
+      method: 'GET',
+      path: '/companies',
+      headers: { authorization: 'Bearer any-token' },
+    });
+    expect(() => unconfigured.canActivate(ctx)).toThrow(UnauthorizedException);
+  });
+
+  it.each(['short', 'evergreen_master_admin_dev_token_secret_key_32bytes', 'provider_master_key_9921_secret'])(
+    'rejects a weak or known default server key: %s', (key) => {
+      process.env.ADMIN_API_KEY = key;
+      expect(() => guard.canActivate(createMockContext({
+        method: 'GET', path: '/companies', headers: { authorization: `Bearer ${key}` },
+      }))).toThrow(UnauthorizedException);
+    },
+  );
+
+  it('rejects an authorization value without the Bearer scheme', () => {
+    expect(() => guard.canActivate(createMockContext({
+      method: 'GET', path: '/companies', headers: { authorization: process.env.ADMIN_API_KEY },
+    }))).toThrow(UnauthorizedException);
   });
 });

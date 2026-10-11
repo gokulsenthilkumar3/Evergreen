@@ -1,83 +1,73 @@
 import { Test } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { randomBytes } from 'crypto';
-import { mkdtempSync } from 'fs';
-import { tmpdir } from 'os';
-import { join, resolve } from 'path';
-import { execFileSync } from 'child_process';
+import { randomBytes } from 'node:crypto';
+import { mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
+import { execFileSync } from 'node:child_process';
 import { AppModule } from '../src/app.module';
-import { EmailService } from '../src/modules/auth/email.service';
 
-// Real HTTP, JWT, role guards, Prisma, and migrations. No production database or mail.
-describe('Release HTTP regression checks', () => {
+// Exercises the actual provider routes, guard and migrated SQLite database.
+describe('Provider HTTP regression checks', () => {
   let app: INestApplication;
-  let adminToken: string;
-  let adminId: number;
-  const password = randomBytes(24).toString('hex');
-  const workspace = resolve(__dirname, '../../..');
-  const headers = () => ({ Authorization: `Bearer ${adminToken}` });
+  const originalEnv = { ...process.env };
+  const key = randomBytes(48).toString('hex');
+  const headers = { Authorization: `Bearer ${key}` };
 
   beforeAll(async () => {
-    const directory = mkdtempSync(join(tmpdir(), 'evergreen-http-'));
+    const directory = mkdtempSync(join(tmpdir(), 'evergreen-provider-http-'));
     process.env.NODE_ENV = 'test';
-    process.env.DATABASE_URL = `file:${join(directory, 'test.db').replace(/\\/g, '/')}`;
-    process.env.JWT_SECRET = randomBytes(48).toString('hex');
-    process.env.BOOTSTRAP_ADMIN_USERNAME = 'release-admin';
-    process.env.BOOTSTRAP_ADMIN_EMAIL = 'release-admin@example.test';
-    process.env.BOOTSTRAP_ADMIN_PASSWORD = password;
-    process.env.SMTP_HOST = '';
-    process.env.DAILY_SUMMARY_EMAIL = '';
-    execFileSync(process.execPath, [resolve(workspace, 'node_modules/prisma/build/index.js'), 'migrate', 'deploy', '--schema', resolve(workspace, 'packages/database/prisma/schema.prisma')], { env: process.env, stdio: 'pipe' });
-    const module = await Test.createTestingModule({ imports: [AppModule] })
-      .overrideProvider(EmailService).useValue({ sendLoginNotification: async () => undefined }).compile();
+    process.env.ADMIN_DATABASE_URL = `file:${join(directory, 'admin.db').replace(/\\/g, '/')}`;
+    process.env.ADMIN_API_KEY = key;
+    const workspace = resolve(__dirname, '../../..');
+    execFileSync(process.execPath, [
+      resolve(workspace, 'node_modules/prisma/build/index.js'),
+      'migrate', 'deploy', '--schema',
+      resolve(workspace, 'packages/admin-database/prisma/schema.prisma'),
+    ], { env: process.env, stdio: 'pipe', timeout: 30000 });
+    const module = await Test.createTestingModule({ imports: [AppModule] }).compile();
     app = module.createNestApplication();
-    app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }));
     await app.init();
-    const login = await request(app.getHttpServer()).post('/auth/login').send({ username: 'release-admin', password }).expect(201);
-    adminToken = login.body.access_token;
-    adminId = login.body.user.id;
   }, 60000);
 
-  afterAll(async () => { if (app) await app.close(); });
-
-  it('rejects anonymous access and malformed login fields', async () => {
-    await request(app.getHttpServer()).get('/users').expect(401);
-    await request(app.getHttpServer()).post('/auth/login').send({ username: 'release-admin', password, totpCode: '12ab34' }).expect(400);
+  afterAll(async () => {
+    if (app) await app.close();
+    process.env = originalEnv;
   });
 
-  it('rejects injected user fields and invalid settings before persistence', async () => {
-    await request(app.getHttpServer()).post('/users').set(headers()).send({ username: 'unsafe', email: 'unsafe@example.test', password, isTotpEnabled: true }).expect(400);
-    await request(app.getHttpServer()).put('/settings').set(headers()).send({ autoBackup: 'false' }).expect(400);
-    await request(app.getHttpServer()).put('/settings').set(headers()).send({ gstPercent: '101' }).expect(400);
-    await request(app.getHttpServer()).put('/settings').set(headers()).send({ updatedBy: 'forged' }).expect(400);
-    await request(app.getHttpServer()).put('/settings').set(headers()).send({ phone: null }).expect(400);
+  it('rejects anonymous, wrong-key and localhost-origin requests', async () => {
+    await request(app.getHttpServer()).get('/companies').expect(401);
+    await request(app.getHttpServer()).get('/companies')
+      .set('Origin', 'http://localhost:5174').set('Host', 'localhost:4300').expect(401);
+    await request(app.getHttpServer()).get('/control/records')
+      .set('Authorization', 'Bearer wrong-key').expect(401);
+    await request(app.getHttpServer()).post('/cicd/build').send({}).expect(401);
   });
 
-  it('protects the last administrator and rejects malformed IDs', async () => {
-    await request(app.getHttpServer()).put(`/users/${adminId}`).set(headers()).send({ role: 'VIEWER' }).expect(400);
-    await request(app.getHttpServer()).delete(`/users/${adminId}`).set(headers()).expect(400);
-    await request(app.getHttpServer()).put('/users/not-an-id').set(headers()).send({ name: 'Name' }).expect(400);
+  it('reads an empty provider database without fabricated tenants or records', async () => {
+    for (const path of ['/companies', '/control/records', '/cicd/releases', '/cicd/deployments', '/cicd/logs']) {
+      const response = await request(app.getHttpServer()).get(path).set(headers).expect(200);
+      expect(response.body).toEqual([]);
+    }
   });
 
-  it('enforces viewer permissions, protects user output and revokes logout sessions', async () => {
-    const created = await request(app.getHttpServer()).post('/users').set(headers()).send({ username: 'viewer', email: 'viewer@example.test', password, role: 'VIEWER' }).expect(201);
-    expect(created.body.createdBy).toBe('release-admin');
-    for (const secret of ['password', 'totpSecret', 'currentChallenge']) expect(created.body).not.toHaveProperty(secret);
-    const login = await request(app.getHttpServer()).post('/auth/login').send({ username: 'viewer', password }).expect(201);
-    const viewer = { Authorization: `Bearer ${login.body.access_token}` };
-    await request(app.getHttpServer()).get('/auth/me').set(viewer).expect(200);
-    await request(app.getHttpServer()).get('/users').set(viewer).expect(403);
-    await request(app.getHttpServer()).put('/settings').set(viewer).send({ companyName: 'Denied' }).expect(403);
-    await request(app.getHttpServer()).post('/commerce/items').set(viewer).send({}).expect(403);
-    await request(app.getHttpServer()).delete('/auth/logout').set(viewer).expect(200);
-    await request(app.getHttpServer()).get('/auth/me').set(viewer).expect(401);
+  it('persists license fields on the clean migration chain', async () => {
+    const created = await request(app.getHttpServer()).post('/companies').set(headers)
+      .send({ name: 'Migration test mill', tier: 'TIER_2_CITY', maxMachines: 7 }).expect(201);
+    expect(created.body.maxMachines).toBe(7);
+    expect(created.body.licenseKey).toMatch(/^EVG-/);
+    const read = await request(app.getHttpServer()).get(`/companies/${created.body.id}`).set(headers).expect(200);
+    expect(read.body.id).toBe(created.body.id);
+    expect(read.body.actions).toEqual([]);
   });
 
-  it('revokes existing sessions when an administrator resets a password', async () => {
-    const user = await request(app.getHttpServer()).post('/users').set(headers()).send({ username: 'reset-user', email: 'reset@example.test', password }).expect(201);
-    const login = await request(app.getHttpServer()).post('/auth/login').send({ username: 'reset-user', password }).expect(201);
-    await request(app.getHttpServer()).put(`/users/${user.body.id}`).set(headers()).send({ password: randomBytes(24).toString('hex') }).expect(200);
-    await request(app.getHttpServer()).get('/auth/me').set('Authorization', `Bearer ${login.body.access_token}`).expect(401);
+  it('fails unavailable build and deployment operations without creating success records', async () => {
+    await request(app.getHttpServer()).post('/cicd/build').set(headers)
+      .send({ version: '1.0.0', name: 'Release', changelog: 'Test' }).expect(503);
+    await request(app.getHttpServer()).post('/cicd/deploy').set(headers)
+      .send({ companyId: 'unknown', packageVersion: '1.0.0' }).expect(503);
+    const response = await request(app.getHttpServer()).get('/cicd/deployments').set(headers).expect(200);
+    expect(response.body).toEqual([]);
   });
 });

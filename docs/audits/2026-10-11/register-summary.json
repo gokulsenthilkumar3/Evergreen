@@ -1,0 +1,11 @@
+{
+  "total": 223,
+  "application": 112,
+  "dependency": 111,
+  "priorities": {
+    "P0": 53,
+    "P1": 105,
+    "P2": 60,
+    "P3": 5
+  }
+}
