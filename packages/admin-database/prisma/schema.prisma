@@ -56,6 +56,8 @@ model RemoteAction {
   details     String?
   createdAt   DateTime @default(now())
   completedAt DateTime?
+
+  @@index([companyId])
 }
 
 model CompanyMetrics {

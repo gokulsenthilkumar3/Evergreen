@@ -1,0 +1,83 @@
+{
+  "checkedAt": "2026-10-11T18:32:26.158Z",
+  "providerForgedOrigin": {
+    "denied": 401
+  },
+  "priorWeightCases": [
+    {
+      "raw": "ST,GS,+100lb",
+      "result": {
+        "raw": "ST,GS,+100lb",
+        "weightKg": 45.36,
+        "isStable": true,
+        "indicatorBrand": "AVERY",
+        "unit": "kg",
+        "timestamp": "2026-10-11T18:32:26.159Z"
+      }
+    },
+    {
+      "raw": "S S 1000 g",
+      "result": {
+        "raw": "S S 1000 g",
+        "weightKg": 1,
+        "isStable": true,
+        "indicatorBrand": "METTLER_TOLEDO",
+        "unit": "kg",
+        "timestamp": "2026-10-11T18:32:26.159Z"
+      }
+    },
+    {
+      "raw": "ST,GS,-100kg",
+      "result": null
+    },
+    {
+      "raw": "ERR42",
+      "result": null
+    }
+  ],
+  "remainingWeightCases": [
+    {
+      "raw": "ST,GS,+100oz",
+      "result": {
+        "raw": "ST,GS,+100oz",
+        "weightKg": 100,
+        "isStable": true,
+        "indicatorBrand": "AVERY",
+        "unit": "kg",
+        "timestamp": "2026-10-11T18:32:26.159Z"
+      }
+    },
+    {
+      "raw": "S S 1000 xyz",
+      "result": {
+        "raw": "S S 1000 xyz",
+        "weightKg": 1000,
+        "isStable": true,
+        "indicatorBrand": "METTLER_TOLEDO",
+        "unit": "kg",
+        "timestamp": "2026-10-11T18:32:26.159Z"
+      }
+    },
+    {
+      "raw": "ST,GS,+100kg GARBAGE",
+      "result": {
+        "raw": "ST,GS,+100kg GARBAGE",
+        "weightKg": 100,
+        "isStable": true,
+        "indicatorBrand": "AVERY",
+        "unit": "kg",
+        "timestamp": "2026-10-11T18:32:26.160Z"
+      }
+    }
+  ],
+  "moistureMalformed": {
+    "raw": "12garbage",
+    "moisturePercent": 12,
+    "isStable": true,
+    "meterBrand": "GENERIC",
+    "timestamp": "2026-10-11T18:32:26.160Z"
+  },
+  "tamperedTotalAccepted": false,
+  "tamperedExcessAndSealAccepted": true,
+  "expiredSlipAccepted": true
+}

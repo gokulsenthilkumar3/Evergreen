@@ -13,49 +13,37 @@
   },
   {
     "file": "apps/admin-api/src/guards/provider-access.guard.ts",
-    "line": 8,
+    "line": 14,
     "kind": "secret_default",
     "classification": "Candidate: manual context required; value redacted"
   },
   {
     "file": "apps/admin-api/src/main.ts",
-    "line": 20,
+    "line": 21,
     "kind": "hardcoded_local_endpoint",
     "classification": "Candidate: manual context required; value redacted"
   },
   {
     "file": "apps/admin-api/src/main.ts",
-    "line": 20,
+    "line": 21,
     "kind": "hardcoded_local_endpoint",
     "classification": "Candidate: manual context required; value redacted"
   },
   {
     "file": "apps/admin-api/src/main.ts",
-    "line": 20,
+    "line": 76,
     "kind": "hardcoded_local_endpoint",
     "classification": "Candidate: manual context required; value redacted"
   },
   {
     "file": "apps/admin-api/src/main.ts",
-    "line": 20,
+    "line": 77,
     "kind": "hardcoded_local_endpoint",
     "classification": "Candidate: manual context required; value redacted"
   },
   {
     "file": "apps/admin-api/src/main.ts",
-    "line": 72,
-    "kind": "hardcoded_local_endpoint",
-    "classification": "Candidate: manual context required; value redacted"
-  },
-  {
-    "file": "apps/admin-api/src/main.ts",
-    "line": 73,
-    "kind": "hardcoded_local_endpoint",
-    "classification": "Candidate: manual context required; value redacted"
-  },
-  {
-    "file": "apps/admin-api/src/main.ts",
-    "line": 451,
+    "line": 455,
     "kind": "hardcoded_local_endpoint",
     "classification": "Candidate: manual context required; value redacted"
   },
@@ -151,31 +139,31 @@
   },
   {
     "file": "apps/admin-web/src/App.tsx",
-    "line": 272,
+    "line": 284,
     "kind": "demo_simulation",
     "classification": "Candidate: manual context required; value redacted"
   },
   {
     "file": "apps/admin-web/src/App.tsx",
-    "line": 274,
+    "line": 286,
     "kind": "demo_simulation",
     "classification": "Candidate: manual context required; value redacted"
   },
   {
     "file": "apps/admin-web/src/App.tsx",
-    "line": 288,
+    "line": 300,
     "kind": "demo_simulation",
     "classification": "Candidate: manual context required; value redacted"
   },
   {
     "file": "apps/admin-web/src/App.tsx",
-    "line": 466,
+    "line": 478,
     "kind": "demo_simulation",
     "classification": "Candidate: manual context required; value redacted"
   },
   {
     "file": "apps/admin-web/src/App.tsx",
-    "line": 1074,
+    "line": 1086,
     "kind": "demo_simulation",
     "classification": "Candidate: manual context required; value redacted"
   },
@@ -465,54 +453,6 @@
     "file": "apps/marketing-web/src/App.tsx",
     "line": 1185,
     "kind": "hardcoded_local_endpoint",
-    "classification": "Candidate: manual context required; value redacted"
-  },
-  {
-    "file": "apps/web/src/App.tsx",
-    "line": 954,
-    "kind": "hardcoded_local_endpoint",
-    "classification": "Candidate: manual context required; value redacted"
-  },
-  {
-    "file": "apps/web/src/App.tsx",
-    "line": 954,
-    "kind": "hardcoded_local_endpoint",
-    "classification": "Candidate: manual context required; value redacted"
-  },
-  {
-    "file": "apps/web/src/App.tsx",
-    "line": 965,
-    "kind": "hardcoded_local_endpoint",
-    "classification": "Candidate: manual context required; value redacted"
-  },
-  {
-    "file": "apps/web/src/App.tsx",
-    "line": 965,
-    "kind": "hardcoded_local_endpoint",
-    "classification": "Candidate: manual context required; value redacted"
-  },
-  {
-    "file": "apps/web/src/App.tsx",
-    "line": 954,
-    "kind": "browser_token",
-    "classification": "Candidate: manual context required; value redacted"
-  },
-  {
-    "file": "apps/web/src/App.tsx",
-    "line": 954,
-    "kind": "browser_token",
-    "classification": "Candidate: manual context required; value redacted"
-  },
-  {
-    "file": "apps/web/src/App.tsx",
-    "line": 965,
-    "kind": "browser_token",
-    "classification": "Candidate: manual context required; value redacted"
-  },
-  {
-    "file": "apps/web/src/App.tsx",
-    "line": 965,
-    "kind": "browser_token",
     "classification": "Candidate: manual context required; value redacted"
   },
   {

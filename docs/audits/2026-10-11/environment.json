@@ -778,5 +778,55 @@
     "name": "POSTGRES_DB",
     "file": "docker-compose.yml",
     "line": 10
+  },
+  {
+    "name": "ADMIN_API_KEY",
+    "file": "apps/admin-api/src/guards/provider-access.guard.ts",
+    "line": 14
+  },
+  {
+    "name": "NODE_ENV",
+    "file": "apps/admin-api/src/guards/provider-access.guard.ts",
+    "line": 17
+  },
+  {
+    "name": "ADMIN_CORS_ORIGIN",
+    "file": "apps/admin-api/src/main.ts",
+    "line": 19
+  },
+  {
+    "name": "ADMIN_CORS_ORIGIN",
+    "file": "apps/admin-api/src/main.ts",
+    "line": 20
+  },
+  {
+    "name": "NODE_ENV",
+    "file": "apps/admin-api/src/main.ts",
+    "line": 70
+  },
+  {
+    "name": "ADMIN_API_PORT",
+    "file": "apps/admin-api/src/main.ts",
+    "line": 448
+  },
+  {
+    "name": "EVERGREEN_API_HOST",
+    "file": "apps/admin-api/src/main.ts",
+    "line": 450
+  },
+  {
+    "name": "NODE_ENV",
+    "file": "apps/admin-api/src/main.ts",
+    "line": 451
+  },
+  {
+    "name": "NODE_ENV",
+    "file": "apps/admin-api/src/main.ts",
+    "line": 454
+  },
+  {
+    "name": "VITE_ADMIN_API_KEY",
+    "file": "apps/admin-web/src/App.tsx",
+    "line": 266
   }
 ]

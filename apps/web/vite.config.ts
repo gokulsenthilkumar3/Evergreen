@@ -1,4 +1,5 @@
-import { defineConfig, type ProxyOptions } from 'vite'
+import { type ProxyOptions } from 'vite'
+import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 
 const publicPort = Number(process.env.EVERGREEN_PUBLIC_PORT || 4000)
@@ -62,6 +63,7 @@ export default defineConfig({
     emptyOutDir: true,
   },
   test: {
+    maxWorkers: 2,
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],

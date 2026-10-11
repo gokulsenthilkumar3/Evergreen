@@ -13,6 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DATABASE_URL: file:./test.db
+      ADMIN_DATABASE_URL: file:./admin-test.db
       JWT_SECRET: ci-only-72dd710bab23369402ce86bd20a8ec597088fc320f4ec45e
       NODE_ENV: test
     steps:
@@ -24,13 +25,13 @@ jobs:
       - run: npm ci
       - name: Verify migrations, types, tests, and production builds
         run: npm run verify
-      - name: Lint API (existing debt is tracked in AUDIT_IMPLEMENTATION_PLAN.md)
-        continue-on-error: true
-        working-directory: apps/api
-        run: npx eslint 'src/**/*.ts'
-      - name: Lint web (existing debt is tracked in AUDIT_IMPLEMENTATION_PLAN.md)
-        continue-on-error: true
+      - name: Lint tenant API
+        run: npm run lint:check -w apps/api
+      - name: Lint provider API
+        run: npm run lint:check -w apps/admin-api
+      - name: Lint tenant web
         run: npm run lint -w apps/web
+      - name: Lint provider web
+        run: npm run lint -w apps/admin-web
       - name: Dependency audit
-        continue-on-error: true
-        run: npm audit --audit-level=high
+        run: npm audit --omit=dev --audit-level=high
