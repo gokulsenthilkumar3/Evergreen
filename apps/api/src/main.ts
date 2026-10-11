@@ -8,7 +8,15 @@ import { NotFoundExceptionFilter } from './filters/not-found-exception.filter';
 import { BusinessActionFilter } from './filters/business-action.filter';
 import { PrismaService } from './services/prisma.service';
 
+import { execSync } from 'child_process';
+
 async function bootstrap() {
+  // Hybrid Migration Strategy 1: Auto-apply on startup (Useful for VMs)
+  if (process.env.AUTO_MIGRATE === 'true') {
+    console.log('🔄 Running automated database migrations...');
+    execSync('npx prisma migrate deploy', { stdio: 'inherit' });
+  }
+
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   // Company logo uploads are limited to 500 KB before base64 encoding.
   app.useBodyParser('json', { limit: '1mb' });

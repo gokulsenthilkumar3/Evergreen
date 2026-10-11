@@ -1,8 +1,13 @@
 import { IsBoolean, IsIn, IsString, Matches, MaxLength, ValidateIf } from 'class-validator';
+import { BUSINESS_MODES, WORKSPACE_MODES, type BusinessMode, type WorkspaceMode } from '@evergreen/types';
 
 const supplied = (_: unknown, value: unknown) => value !== undefined;
 
 export class UpdateSettingsDto {
+  @ValidateIf(supplied) @IsIn(BUSINESS_MODES)
+  businessMode?: BusinessMode;
+  @ValidateIf(supplied) @IsIn(WORKSPACE_MODES)
+  workspaceMode?: WorkspaceMode;
   @ValidateIf(supplied) @IsString() @MaxLength(200)
   companyName?: string;
   @ValidateIf(supplied) @IsString() @MaxLength(2000)

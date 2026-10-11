@@ -3,10 +3,15 @@ import { CommerceService } from './commerce.service';
 import { JwtAuthGuard } from '../../guards/jwt-auth.guard';
 import { Roles } from '../../decorators/roles.decorator';
 
+import { WhatsAppCollectionsService } from './whatsapp-collections.service';
+
 @Controller('commerce')
 @UseGuards(JwtAuthGuard)
 export class CommerceController {
-  constructor(private readonly commerce: CommerceService) {}
+  constructor(
+    private readonly commerce: CommerceService,
+    private readonly whatsapp: WhatsAppCollectionsService,
+  ) {}
   @Get('items') listItems() { return this.commerce.listItems(); }
   @Post('items') createItem(@Body() body: any) { return this.commerce.createItem(body); }
   @Patch('items/:id') updateItem(@Param('id', ParseIntPipe) id: number, @Body() body: any) { return this.commerce.updateItem(id, body); }
@@ -25,6 +30,7 @@ export class CommerceController {
   @Post('customers') customer(@Body() body: any) { return this.commerce.createCustomer(body); }
   @Patch('customers/:id') updateCustomer(@Param('id', ParseIntPipe) id: number, @Body() body: any) { return this.commerce.updateCustomer(id, body); }
   @Get('customers/:id/ledger') ledger(@Param('id', ParseIntPipe) id: number) { return this.commerce.customerLedger(id); }
+  @Post('customers/:id/whatsapp-statement') whatsappStatement(@Param('id', ParseIntPipe) id: number) { return this.whatsapp.generateStatement(id); }
   @Get('orders') orders() { return this.commerce.listOrders(); }
   @Post('orders') order(@Body() body: any, @Req() req: any) { return this.commerce.createOrder({ ...body, createdBy: req.user.username }); }
   @Post('orders/:id/cancel') cancelOrder(@Param('id', ParseIntPipe) id: number, @Body() body: any) { return this.commerce.cancelOrder(id, body); }
@@ -39,4 +45,6 @@ export class CommerceController {
   @Post('invoices/:id/payments/:paymentId/reverse') @Roles('ADMIN') reversePayment(@Param('id', ParseIntPipe) id: number, @Param('paymentId', ParseIntPipe) paymentId: number, @Body() body: any, @Req() req: any) { return this.commerce.reverseInvoicePayment(id, paymentId, { ...body, createdBy: req.user.username }); }
   @Post('invoices/:id/void') @Roles('ADMIN') voidInvoice(@Param('id', ParseIntPipe) id: number, @Body() body: any, @Req() req: any) { return this.commerce.voidInvoice(id, { ...body, createdBy: req.user.username }); }
   @Get('report') report() { return this.commerce.report(); }
+  @Get('un-invoiced-challans') unInvoicedChallans() { return this.commerce.getUninvoicedChallans(); }
 }
+

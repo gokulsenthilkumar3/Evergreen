@@ -1,0 +1,72 @@
+# ==============================================================================
+# Multi-stage Dockerfile for EverGreen Tenant API (Port 4301)
+# ==============================================================================
+
+# Stage 1: Build & Prune
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Install system build dependencies (python, make, g++ for native modules)
+RUN apk add --no-cache python3 make g++
+
+# Copy root manifest and lockfiles
+COPY package.json package-lock.json ./
+COPY packages/database/package.json ./packages/database/
+COPY packages/types/package.json ./packages/types/
+COPY packages/config/package.json ./packages/config/
+COPY packages/pdf/package.json ./packages/pdf/
+COPY packages/email/package.json ./packages/email/
+COPY packages/i18n/package.json ./packages/i18n/
+COPY apps/api/package.json ./apps/api/
+
+# Install dependencies
+RUN npm ci
+
+# Copy source code
+COPY packages/ ./packages/
+COPY apps/api/ ./apps/api/
+COPY tsconfig.json ./
+
+# Generate Prisma Client for Tenant DB
+RUN npm run db:generate --workspace=@evergreen/database
+
+# Build shared packages and NestJS API
+RUN npm run build --workspace=@evergreen/types && \
+    npm run build --workspace=@evergreen/pdf && \
+    npm run build --workspace=@evergreen/database && \
+    npm run build --workspace=api
+
+# Stage 2: Production Minimal Runtime
+FROM node:20-alpine AS runner
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV EVERGREEN_API_PORT=4301
+ENV PORT=4301
+
+# Create non-root user for security
+RUN addgroup -S evergreen && adduser -S evergreen -G evergreen
+
+# Copy runtime node_modules and built artifacts
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/packages/database ./packages/database
+COPY --from=builder /app/packages/types ./packages/types
+COPY --from=builder /app/packages/pdf ./packages/pdf
+COPY --from=builder /app/apps/api/dist ./apps/api/dist
+COPY --from=builder /app/apps/api/package.json ./apps/api/package.json
+
+# Copy entrypoint migration script
+COPY --chown=evergreen:evergreen deploy/docker/tenant-entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+USER evergreen
+
+EXPOSE 4301
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://127.0.0.1:4301/health || exit 1
+
+ENTRYPOINT ["/entrypoint.sh"]

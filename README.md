@@ -2,6 +2,8 @@
 
 **EverGreen One** is the active React/Nest/SQLite application for yarn operations, job work, catalogue sales, a public shop, GST invoices and customer ledgers. Feature consolidation is still in progress; [PARITY_REGISTER.md](PARITY_REGISTER.md) records what is working and what remains unverified.
 
+> 🧠 **AI & Developer Knowledge Base**: For complete system architecture, tab directories, business flow state machines, multi-arrowhead customization, and token-saving agent instructions, see [`docs/AGENT_KNOWLEDGE.md`](docs/AGENT_KNOWLEDGE.md) and [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+
 ## One App, Connected Workspaces
 
 The **Business Workspace** is the single entry point for every part of the business:
@@ -14,7 +16,6 @@ The **Business Workspace** is the single entry point for every part of the busin
 The shared navigation and catalogue mean teams do not need to switch between separate apps to run the workflow from stock to sale to payment.
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
-![License](https://img.shields.io/badge/license-MIT-green.svg)
 ![React](https://img.shields.io/badge/Frontend-React%20%2B%20MUI-61DAFB?logo=react)
 ![NestJS](https://img.shields.io/badge/Backend-NestJS-E0234E?logo=nestjs)
 ![Prisma](https://img.shields.io/badge/Database-Prisma%20%2B%20SQLite-2D3748?logo=prisma)
@@ -76,6 +77,8 @@ Sign in as an **ADMIN** and open **User Management** from the navigation, or vis
 ---
 
 ## ⚙️ Installation & Setup
+
+Current knowledge: [page-level wiki](docs/wiki/README.md), [UI/API/TV architecture](docs/ARCHITECTURE.md), [shareable licensing and pricing proposal](docs/COMMERCIAL_MODEL.md), [easy migration and connector contracts](docs/INTEGRATIONS.md), and [validation evidence](docs/VALIDATION.md). Generate source references with `npm run docs:generate`; verify them with `npm run docs:check`. The commercial proposal does not change the repository's source license.
 
 Start with the maintained [quick start and service directory](QUICK_START.md). Run `npm run setup:check` for read-only configuration diagnostics. The [business-flow guide](docs/BUSINESS_FLOW.md) explains operational handoffs, and the [2030 roadmap](docs/2030_ROADMAP.md) separates delivered features from future work. The [agent system](agent-system/README.md) defines project-specific skills and validation gates for maintaining EverGreen.
 

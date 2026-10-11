@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AdminSyncService } from './services/admin-sync.service';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
@@ -22,9 +23,11 @@ import { MachineModule } from './modules/machines/machine.module';
 import { QualityModule } from './modules/quality/quality.module';
 import { HrModule } from './modules/hr/hr.module';
 import { WorkflowsModule } from './modules/workflows/workflows.module';
+import { AdminOpsModule } from './modules/admin-ops/admin-ops.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
+import { IntegrationsModule } from './modules/integrations/integrations.module';
 
 @Module({
   imports: [
@@ -33,6 +36,7 @@ import { RolesGuard } from './guards/roles.guard';
     }),
     ScheduleModule.forRoot(),
     DatabaseModule,
+    IntegrationsModule,
     CommerceModule,
     JobWorkModule,
     DashboardModule,
@@ -52,12 +56,14 @@ import { RolesGuard } from './guards/roles.guard';
     QualityModule,
     HrModule,
     WorkflowsModule,
+    AdminOpsModule,
   ],
   controllers: [AppController],
   providers: [
     AppService,
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
+    AdminSyncService,
   ],
 })
 export class AppModule {}

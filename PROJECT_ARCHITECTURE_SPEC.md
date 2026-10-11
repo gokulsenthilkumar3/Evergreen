@@ -1,5 +1,7 @@
 # Ever Green Yarn - Project Specification & Architecture
 
+> Historical design proposal. Use [the current UI/API/TV architecture](docs/ARCHITECTURE.md) for implemented boundaries and pending work. React 18, PWA/offline support, Redis sessions and drop-in PostgreSQL conversion below are not current implementation claims.
+
 ## 1. Project Summary
 **Ever Green Yarn Flow SMS (Spinner Management System)** is a comprehensive Enterprise Resource Planning (ERP) solution tailored for the yarn spinning industry. It integrates **Inventory Management** and **Costing Management** into a unified platform to track raw material flow, production efficiency, and precise daily operational costs.
 

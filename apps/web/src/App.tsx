@@ -4,6 +4,7 @@ import { SUCCESS_MESSAGES } from './utils/messages';
 import { ConfirmProvider } from './context/ConfirmContext';
 import {
   Box,
+  Button,
   Drawer,
   AppBar,
   Toolbar,
@@ -65,9 +66,12 @@ import {
   Gavel as ComplianceIcon,
   Payments as PaymentOpsIcon,
   Person as PersonIcon,
+  MenuBook as BookIcon,
 } from '@mui/icons-material';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from './utils/api';
+import { isCompanyPageVisible } from '@evergreen/types';
+import { canonicalPage } from './utils/navigation';
 import getTheme from './theme';
 import type { ThemeName } from './theme';
 import Login from './components/Login';
@@ -120,6 +124,8 @@ const YarnDemandForecasting = lazy(() => import('./pages/yarn/DemandForecasting'
 const YarnSupplierPortal = lazy(() => import('./pages/yarn/SupplierPortal'));
 const YarnComplianceReports = lazy(() => import('./pages/yarn/ComplianceReports'));
 const CommandCenter = lazy(() => import('./pages/CommandCenter'));
+const Integrations = lazy(() => import('./pages/Integrations'));
+const BookEllam = lazy(() => import('./pages/BookEllam'));
 
 const drawerWidth = 260;
 const drawerCollapsedWidth = 72;
@@ -363,22 +369,24 @@ const App: React.FC = () => {
   const getInitialPage = () => {
     const path = window.location.pathname.replace(/^\//, '').trim();
     if (!path || path === 'index.html') return 'dashboard';
-    return path;
+    return canonicalPage(path);
   };
-  const [currentPage, setCurrentPage] = useState<string>(getInitialPage);
+  const [currentPage, setPageState] = useState<string>(getInitialPage);
 
-  const navigateTo = (page: string) => {
-    setCurrentPage(page);
+  const setCurrentPage = (page: string) => {
+    page = canonicalPage(page);
+    setPageState(page);
     const targetPath = page === 'dashboard' ? '/' : `/${page}`;
     if (window.location.pathname !== targetPath) {
       window.history.pushState(null, '', targetPath);
     }
   };
+  const navigateTo = setCurrentPage;
 
   useEffect(() => {
     const handlePopState = () => {
       const path = window.location.pathname.replace(/^\//, '').trim();
-      setCurrentPage(path || 'dashboard');
+      setPageState(canonicalPage(path || 'dashboard'));
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
@@ -513,6 +521,7 @@ const App: React.FC = () => {
       yarnsupplier: 'Supplier Portal',
       yarncompliance: 'Compliance Reports',
       'command-center': 'Operations Command',
+      bookellam: 'Book-Ellam (All Books)',
     };
 
     if (currentPage !== 'dashboard') {
@@ -583,6 +592,7 @@ const App: React.FC = () => {
     {
       label: 'Sales & Accounts',
       items: [
+        { text: 'Book-Ellam (All Books)', icon: <BookIcon />, page: 'bookellam', description: 'Comprehensive audit research tool across Day Book, Inward, Outward, Stock and Party Ledgers' },
         { text: 'Payment Operations', icon: <PaymentOpsIcon />, page: 'paymentops', description: 'Customer receipts, supplier ledger entries, outstanding balances, and payment terms' },
         { text: 'Business Reports', icon: <InsightsIcon />, page: 'reports', description: 'Financial statements, dispatch summaries, consumption reports, and Excel/PDF exports' },
       ]
@@ -612,6 +622,7 @@ const App: React.FC = () => {
     {
       label: 'Admin',
       items: [
+        { text: 'Migration & integrations', icon: <SyncIcon />, page: 'integrations', requiredRole: 'ADMIN', description: 'Import customer and catalogue data with explicit column mapping and audit history' },
         { text: 'User Management', icon: <UsersIcon />, page: 'users', requiredRole: 'ADMIN', description: 'Role-based access permissions for admin, manager, operator, and viewer roles' },
         // B-18: Sessions and Security had the same icon; Sessions now uses VpnKey
         { text: 'Sessions', icon: <SessionsIcon />, page: 'sessions', description: 'Active user login sessions, IP addresses, device types, and remote logout' },
@@ -705,6 +716,89 @@ const App: React.FC = () => {
               <ScreenReaderAnnouncer />
               <Toaster position="top-center" richColors theme={mode === 'dark' ? 'dark' : 'light'} closeButton expand
                 toastOptions={{ className: 'evergreen-toast', style: { fontFamily: 'inherit', borderRadius: '12px' } }} />
+
+              {settings?.status === 'SUSPENDED' && (
+                <Box sx={{
+                  position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                  bgcolor: 'rgba(0,0,0,0.85)', zIndex: 99999, display: 'flex',
+                  flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#fff'
+                }}>
+                  <SecurityIcon sx={{ fontSize: 80, color: 'error.main', mb: 2 }} />
+                  <Typography variant="h3" gutterBottom>Service Suspended</Typography>
+                  <Typography variant="h6" color="text.secondary" sx={{ maxWidth: 600, textAlign: 'center' }}>
+                    Your account has been temporarily suspended due to billing or licensing issues. 
+                    Please contact the Provider Administrator to restore service.
+                  </Typography>
+                </Box>
+              )}
+
+              {settings?.isMaintenance && (
+                <Box sx={{
+                  position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                  bgcolor: 'rgba(15, 23, 42, 0.92)', zIndex: 99998, display: 'flex',
+                  flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#fff'
+                }}>
+                  <SyncIcon sx={{ fontSize: 80, color: 'warning.main', mb: 2 }} />
+                  <Typography variant="h3" gutterBottom>System Under Maintenance</Typography>
+                  <Typography variant="h6" sx={{ maxWidth: 600, textAlign: 'center', color: '#94a3b8' }}>
+                    Scheduled upgrades and database maintenance are currently in progress. 
+                    Normal operations will resume shortly.
+                  </Typography>
+                </Box>
+              )}
+
+              {/* 30-Day Active Grace Quota Notice Banner (Non-blocking) */}
+              {settings?.status === 'GRACE_PERIOD' && (
+                <Box sx={{
+                  bgcolor: '#fffbeb',
+                  borderBottom: '1px solid #fcd34d',
+                  color: '#92400e',
+                  px: 3,
+                  py: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: 1.5,
+                  zIndex: 1100,
+                  position: 'sticky',
+                  top: 0,
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+                }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                      ⏳ 30-Day Active Grace Quota:
+                    </Typography>
+                    <Typography variant="body2">
+                      Your license is pending renewal, but your mill operations are completely uninterrupted.
+                      {settings.graceExpiresAt && ` Grace protection active until ${new Date(settings.graceExpiresAt).toLocaleDateString()}.`}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Button 
+                      size="small" 
+                      variant="contained" 
+                      color="warning" 
+                      component="a" 
+                      href="https://wa.me/919876543210?text=Hello%20EverGreen%20Licensing%20Desk,%20I%20would%20like%20to%20renew%20our%20subscription." 
+                      target="_blank"
+                      sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.75rem', borderRadius: 1.5 }}
+                    >
+                      Connect with Licensing Desk (WhatsApp)
+                    </Button>
+                    <Button 
+                      size="small" 
+                      variant="outlined" 
+                      color="inherit" 
+                      component="a" 
+                      href="tel:+919876543210"
+                      sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.75rem', borderRadius: 1.5 }}
+                    >
+                      Call Support
+                    </Button>
+                  </Box>
+                </Box>
+              )}
               {/* Floating bottom nav pill */}
               {floatingNav && (
                 <Box className="floating-bottom-nav" component="nav" aria-label="Bottom navigation">
@@ -934,6 +1028,7 @@ const App: React.FC = () => {
                   <Box sx={{ overflow: 'auto', flexGrow: 1, py: 2 }}>
                     {navGroups.map((group, gIdx) => {
                       const filteredItems = group.items.filter(item => {
+                        if (!isCompanyPageVisible(item.page, settings)) return false;
                         if (!item.requiredRole) return true;
                         return item.requiredRole === user.role;
                       });
@@ -1108,12 +1203,13 @@ const App: React.FC = () => {
                     }}
                   >
                     <Suspense fallback={<LinearProgress />}>
-                      {currentPage === 'workspace' && <UnifiedWorkspace onNavigate={navigateTo} />}
+                      {currentPage === 'workspace' && <UnifiedWorkspace onNavigate={navigateTo} profile={settings} />}
                       {currentPage === 'jobwork' && <JobWork />}
                       {currentPage === 'operations' && <OperationsDesk />}
                       {currentPage === 'workflows' && <WorkflowDesk />}
                       {currentPage === 'business' && <CommerceDesk />}
                       {currentPage === 'reports' && <CommerceReports />}
+                      {currentPage === 'bookellam' && <BookEllam />}
                       {currentPage === 'paymentops' && <Payments />}
                       {currentPage === 'dashboard' && <Dashboard onNavigate={setCurrentPage} />}
                       {currentPage === 'today' && <TodayDashboard onNavigate={setCurrentPage} />}
@@ -1149,6 +1245,7 @@ const App: React.FC = () => {
                       {currentPage === 'yarnsupplier' && <YarnSupplierPortal />}
                       {currentPage === 'yarncompliance' && <YarnComplianceReports />}
                       {currentPage === 'command-center' && <CommandCenter onNavigate={setCurrentPage} />}
+                      {currentPage === 'integrations' && (user.role === 'ADMIN' ? <Integrations /> : <Typography role="alert">Company administrator access is required.</Typography>)}
 
                       {!allPages.includes(currentPage) && (
                         <Box sx={{ p: 4, textAlign: 'center' }}>

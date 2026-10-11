@@ -33,9 +33,9 @@ interface FleetDockTableHudProps {
 
 export const FleetDockTableHud: React.FC<FleetDockTableHudProps> = ({
   machines = [],
-  dispatchCount = 2,
-  cottonBales = 18,
-  yarnBags = 24,
+  dispatchCount = 0,
+  cottonBales = 0,
+  yarnBags = 0,
   onMachineClick,
   defaultOpen = true,
 }) => {
@@ -82,6 +82,7 @@ export const FleetDockTableHud: React.FC<FleetDockTableHudProps> = ({
         overflow: 'hidden',
       }}
     >
+      <Typography role="note" variant="caption" sx={{ display: 'block', mb: 1 }}>Dock and vehicle rows are illustrative examples. No live fleet connector is configured. Machine rows use the asset register.</Typography>
       {/* Top Accent Glowing Bar */}
       <Box
         sx={{
