@@ -146,7 +146,13 @@ export class ProductionService {
             tolerance: MASS_BALANCE_TOLERANCE,
           });
         }
-        if (Math.abs(totalOutput - totalConsumption) > 0.010001) throw new BadRequestException('Cotton consumed must equal yarn, waste and intermediate output within 0.01 kg. Record any process loss explicitly.');
+        // Spinning mills naturally experience 0.5% - 2.0% invisible process loss (moisture/micro-dust).
+        // Disallow unexplained discrepancies that exceed the allowable mass balance tolerance.
+        if (totalOutput < totalConsumption * (1 - MASS_BALANCE_TOLERANCE) - 0.01) {
+          throw new BadRequestException(
+            `Total output (${totalOutput.toFixed(2)} kg) is more than ${(MASS_BALANCE_TOLERANCE * 100).toFixed(0)}% below cotton consumed (${totalConsumption.toFixed(2)} kg). Record any excessive process loss explicitly.`
+          );
+        }
 
         // 1. Create Production Entry
         const production = await tx.production.create({

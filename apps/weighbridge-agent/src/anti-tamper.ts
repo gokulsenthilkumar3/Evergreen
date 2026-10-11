@@ -90,6 +90,12 @@ export class AntiTamperEngine {
    */
   static verifySlip(slip: SignedWeighbridgeSlip, secretKey: string): boolean {
     const expected = this.signSlip(slip.payload, secretKey);
-    return expected.signature === slip.signature;
+    const signatureMatch = expected.signature === slip.signature;
+    const calculationsMatch =
+      Math.abs(expected.calculations.netWeightKg - (slip.calculations?.netWeightKg || 0)) < 0.01 &&
+      Math.abs(expected.calculations.finalBillableKg - (slip.calculations?.finalBillableKg || 0)) < 0.01 &&
+      Math.abs(expected.calculations.moistureDeductionKg - (slip.calculations?.moistureDeductionKg || 0)) < 0.01;
+
+    return signatureMatch && calculationsMatch;
   }
 }

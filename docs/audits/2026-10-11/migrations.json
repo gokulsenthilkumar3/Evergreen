@@ -1,0 +1,902 @@
+[
+  {
+    "file": "packages/admin-database/prisma/migrations/20261010164337_init/migration.sql",
+    "lines": 50,
+    "destructiveStatements": [
+      {
+        "line": 28,
+        "statement": "CONSTRAINT \"CompanyMetrics_companyId_fkey\" FOREIGN KEY (\"companyId\") REFERENCES \"Company\" (\"id\") ON DELETE CASCADE ON UPDATE CASCADE"
+      }
+    ],
+    "rollback": "No paired down migration discovered; restore rehearsal UNVERIFIED"
+  },
+  {
+    "file": "packages/admin-database/prisma/migrations/20261010165745_multi_cloud/migration.sql",
+    "lines": 30,
+    "destructiveStatements": [
+      {
+        "line": 2,
+        "statement": "ALTER TABLE \"CompanyMetrics\" ADD COLUMN \"additionalMetrics\" TEXT;"
+      },
+      {
+        "line": 5,
+        "statement": "PRAGMA defer_foreign_keys=ON;"
+      },
+      {
+        "line": 6,
+        "statement": "PRAGMA foreign_keys=OFF;"
+      },
+      {
+        "line": 25,
+        "statement": "DROP TABLE \"Company\";"
+      },
+      {
+        "line": 26,
+        "statement": "ALTER TABLE \"new_Company\" RENAME TO \"Company\";"
+      },
+      {
+        "line": 28,
+        "statement": "PRAGMA foreign_keys=ON;"
+      },
+      {
+        "line": 29,
+        "statement": "PRAGMA defer_foreign_keys=OFF;"
+      }
+    ],
+    "rollback": "No paired down migration discovered; restore rehearsal UNVERIFIED"
+  },
+  {
+    "file": "packages/admin-database/prisma/migrations/20261011010000_control_workspace/migration.sql",
+    "lines": 14,
+    "destructiveStatements": [],
+    "rollback": "No paired down migration discovered; restore rehearsal UNVERIFIED"
+  },
+  {
+    "file": "packages/database/prisma/manual-migrations/20260923_shop_visible.sql",
+    "lines": 3,
+    "destructiveStatements": [
+      {
+        "line": 2,
+        "statement": "ALTER TABLE \"CatalogueItem\" ADD COLUMN \"shopVisible\" BOOLEAN NOT NULL DEFAULT false;"
+      }
+    ],
+    "rollback": "No paired down migration discovered; restore rehearsal UNVERIFIED"
+  },
+  {
+    "file": "packages/database/prisma/migrations/20260207214808_init_users/migration.sql",
+    "lines": 17,
+    "destructiveStatements": [],
+    "rollback": "No paired down migration discovered; restore rehearsal UNVERIFIED"
+  },
+  {
+    "file": "packages/database/prisma/migrations/20260208161057_add_waste_inventory/migration.sql",
+    "lines": 127,
+    "destructiveStatements": [
+      {
+        "line": 2,
+        "statement": "ALTER TABLE \"User\" ADD COLUMN \"name\" TEXT;"
+      },
+      {
+        "line": 16,
+        "statement": "CONSTRAINT \"CottonInventory_productionId_fkey\" FOREIGN KEY (\"productionId\") REFERENCES \"Production\" (\"id\") ON DELETE SET NULL ON UPDATE CASCADE"
+      },
+      {
+        "line": 31,
+        "statement": "CONSTRAINT \"YarnInventory_productionId_fkey\" FOREIGN KEY (\"productionId\") REFERENCES \"Production\" (\"id\") ON DELETE SET NULL ON UPDATE CASCADE"
+      },
+      {
+        "line": 49,
+        "statement": "CONSTRAINT \"WasteInventory_productionId_fkey\" FOREIGN KEY (\"productionId\") REFERENCES \"Production\" (\"id\") ON DELETE SET NULL ON UPDATE CASCADE"
+      },
+      {
+        "line": 86,
+        "statement": "CONSTRAINT \"ProductionConsumption_productionId_fkey\" FOREIGN KEY (\"productionId\") REFERENCES \"Production\" (\"id\") ON DELETE CASCADE ON UPDATE CASCADE"
+      },
+      {
+        "line": 98,
+        "statement": "CONSTRAINT \"ProductionOutput_productionId_fkey\" FOREIGN KEY (\"productionId\") REFERENCES \"Production\" (\"id\") ON DELETE CASCADE ON UPDATE CASCADE"
+      },
+      {
+        "line": 122,
+        "statement": "CONSTRAINT \"OutwardItem_outwardId_fkey\" FOREIGN KEY (\"outwardId\") REFERENCES \"Outward\" (\"id\") ON DELETE CASCADE ON UPDATE CASCADE"
+      }
+    ],
+    "rollback": "No paired down migration discovered; restore rehearsal UNVERIFIED"
+  },
+  {
+    "file": "packages/database/prisma/migrations/20260216170258_add_payment_tracking/migration.sql",
+    "lines": 290,
+    "destructiveStatements": [
+      {
+        "line": 2,
+        "statement": "ALTER TABLE \"User\" ADD COLUMN \"createdBy\" TEXT;"
+      },
+      {
+        "line": 3,
+        "statement": "ALTER TABLE \"User\" ADD COLUMN \"updatedBy\" TEXT;"
+      },
+      {
+        "line": 17,
+        "statement": "CONSTRAINT \"Session_userId_fkey\" FOREIGN KEY (\"userId\") REFERENCES \"User\" (\"id\") ON DELETE CASCADE ON UPDATE CASCADE"
+      },
+      {
+        "line": 107,
+        "statement": "CONSTRAINT \"InvoiceItem_invoiceId_fkey\" FOREIGN KEY (\"invoiceId\") REFERENCES \"Invoice\" (\"id\") ON DELETE CASCADE ON UPDATE CASCADE"
+      },
+      {
+        "line": 121,
+        "statement": "CONSTRAINT \"Payment_invoiceId_fkey\" FOREIGN KEY (\"invoiceId\") REFERENCES \"Invoice\" (\"id\") ON DELETE CASCADE ON UPDATE CASCADE"
+      },
+      {
+        "line": 125,
+        "statement": "PRAGMA defer_foreign_keys=ON;"
+      },
+      {
+        "line": 126,
+        "statement": "PRAGMA foreign_keys=OFF;"
+      },
+      {
+        "line": 141,
+        "statement": "CONSTRAINT \"CottonInventory_productionId_fkey\" FOREIGN KEY (\"productionId\") REFERENCES \"Production\" (\"id\") ON DELETE SET NULL ON UPDATE CASCADE"
+      },
+      {
+        "line": 144,
+        "statement": "DROP TABLE \"CottonInventory\";"
+      },
+      {
+        "line": 145,
+        "statement": "ALTER TABLE \"new_CottonInventory\" RENAME TO \"CottonInventory\";"
+      },
+      {
+        "line": 160,
+        "statement": "DROP TABLE \"InwardBatch\";"
+      },
+      {
+        "line": 161,
+        "statement": "ALTER TABLE \"new_InwardBatch\" RENAME TO \"InwardBatch\";"
+      },
+      {
+        "line": 178,
+        "statement": "DROP TABLE \"Outward\";"
+      },
+      {
+        "line": 179,
+        "statement": "ALTER TABLE \"new_Outward\" RENAME TO \"Outward\";"
+      },
+      {
+        "line": 190,
+        "statement": "CONSTRAINT \"OutwardItem_outwardId_fkey\" FOREIGN KEY (\"outwardId\") REFERENCES \"Outward\" (\"id\") ON DELETE CASCADE ON UPDATE CASCADE"
+      },
+      {
+        "line": 193,
+        "statement": "DROP TABLE \"OutwardItem\";"
+      },
+      {
+        "line": 194,
+        "statement": "ALTER TABLE \"new_OutwardItem\" RENAME TO \"OutwardItem\";"
+      },
+      {
+        "line": 212,
+        "statement": "DROP TABLE \"Production\";"
+      },
+      {
+        "line": 213,
+        "statement": "ALTER TABLE \"new_Production\" RENAME TO \"Production\";"
+      },
+      {
+        "line": 223,
+        "statement": "CONSTRAINT \"ProductionConsumption_productionId_fkey\" FOREIGN KEY (\"productionId\") REFERENCES \"Production\" (\"id\") ON DELETE CASCADE ON UPDATE CASCADE"
+      },
+      {
+        "line": 226,
+        "statement": "DROP TABLE \"ProductionConsumption\";"
+      },
+      {
+        "line": 227,
+        "statement": "ALTER TABLE \"new_ProductionConsumption\" RENAME TO \"ProductionConsumption\";"
+      },
+      {
+        "line": 239,
+        "statement": "CONSTRAINT \"ProductionOutput_productionId_fkey\" FOREIGN KEY (\"productionId\") REFERENCES \"Production\" (\"id\") ON DELETE CASCADE ON UPDATE CASCADE"
+      },
+      {
+        "line": 242,
+        "statement": "DROP TABLE \"ProductionOutput\";"
+      },
+      {
+        "line": 243,
+        "statement": "ALTER TABLE \"new_ProductionOutput\" RENAME TO \"ProductionOutput\";"
+      },
+      {
+        "line": 261,
+        "statement": "CONSTRAINT \"WasteInventory_productionId_fkey\" FOREIGN KEY (\"productionId\") REFERENCES \"Production\" (\"id\") ON DELETE SET NULL ON UPDATE CASCADE"
+      },
+      {
+        "line": 264,
+        "statement": "DROP TABLE \"WasteInventory\";"
+      },
+      {
+        "line": 265,
+        "statement": "ALTER TABLE \"new_WasteInventory\" RENAME TO \"WasteInventory\";"
+      },
+      {
+        "line": 280,
+        "statement": "CONSTRAINT \"YarnInventory_productionId_fkey\" FOREIGN KEY (\"productionId\") REFERENCES \"Production\" (\"id\") ON DELETE SET NULL ON UPDATE CASCADE"
+      },
+      {
+        "line": 283,
+        "statement": "DROP TABLE \"YarnInventory\";"
+      },
+      {
+        "line": 284,
+        "statement": "ALTER TABLE \"new_YarnInventory\" RENAME TO \"YarnInventory\";"
+      },
+      {
+        "line": 285,
+        "statement": "PRAGMA foreign_keys=ON;"
+      },
+      {
+        "line": 286,
+        "statement": "PRAGMA defer_foreign_keys=OFF;"
+      }
+    ],
+    "rollback": "No paired down migration discovered; restore rehearsal UNVERIFIED"
+  },
+  {
+    "file": "packages/database/prisma/migrations/20260220194720_add_bale_to_inventory/migration.sql",
+    "lines": 66,
+    "destructiveStatements": [
+      {
+        "line": 2,
+        "statement": "PRAGMA defer_foreign_keys=ON;"
+      },
+      {
+        "line": 3,
+        "statement": "PRAGMA foreign_keys=OFF;"
+      },
+      {
+        "line": 19,
+        "statement": "CONSTRAINT \"CottonInventory_productionId_fkey\" FOREIGN KEY (\"productionId\") REFERENCES \"Production\" (\"id\") ON DELETE SET NULL ON UPDATE CASCADE"
+      },
+      {
+        "line": 22,
+        "statement": "DROP TABLE \"CottonInventory\";"
+      },
+      {
+        "line": 23,
+        "statement": "ALTER TABLE \"new_CottonInventory\" RENAME TO \"CottonInventory\";"
+      },
+      {
+        "line": 34,
+        "statement": "CONSTRAINT \"ProductionConsumption_productionId_fkey\" FOREIGN KEY (\"productionId\") REFERENCES \"Production\" (\"id\") ON DELETE CASCADE ON UPDATE CASCADE"
+      },
+      {
+        "line": 37,
+        "statement": "DROP TABLE \"ProductionConsumption\";"
+      },
+      {
+        "line": 38,
+        "statement": "ALTER TABLE \"new_ProductionConsumption\" RENAME TO \"ProductionConsumption\";"
+      },
+      {
+        "line": 62,
+        "statement": "DROP TABLE \"SystemSettings\";"
+      },
+      {
+        "line": 63,
+        "statement": "ALTER TABLE \"new_SystemSettings\" RENAME TO \"SystemSettings\";"
+      },
+      {
+        "line": 64,
+        "statement": "PRAGMA foreign_keys=ON;"
+      },
+      {
+        "line": 65,
+        "statement": "PRAGMA defer_foreign_keys=OFF;"
+      }
+    ],
+    "rollback": "No paired down migration discovered; restore rehearsal UNVERIFIED"
+  },
+  {
+    "file": "packages/database/prisma/migrations/20260220215456_add_total_intermediate/migration.sql",
+    "lines": 26,
+    "destructiveStatements": [
+      {
+        "line": 2,
+        "statement": "PRAGMA defer_foreign_keys=ON;"
+      },
+      {
+        "line": 3,
+        "statement": "PRAGMA foreign_keys=OFF;"
+      },
+      {
+        "line": 22,
+        "statement": "DROP TABLE \"Production\";"
+      },
+      {
+        "line": 23,
+        "statement": "ALTER TABLE \"new_Production\" RENAME TO \"Production\";"
+      },
+      {
+        "line": 24,
+        "statement": "PRAGMA foreign_keys=ON;"
+      },
+      {
+        "line": 25,
+        "statement": "PRAGMA defer_foreign_keys=OFF;"
+      }
+    ],
+    "rollback": "No paired down migration discovered; restore rehearsal UNVERIFIED"
+  },
+  {
+    "file": "packages/database/prisma/migrations/20260801191243_phase4_advanced_auth/migration.sql",
+    "lines": 40,
+    "destructiveStatements": [
+      {
+        "line": 12,
+        "statement": "CONSTRAINT \"WebAuthnCredential_userId_fkey\" FOREIGN KEY (\"userId\") REFERENCES \"User\" (\"id\") ON DELETE CASCADE ON UPDATE CASCADE"
+      },
+      {
+        "line": 16,
+        "statement": "PRAGMA defer_foreign_keys=ON;"
+      },
+      {
+        "line": 17,
+        "statement": "PRAGMA foreign_keys=OFF;"
+      },
+      {
+        "line": 34,
+        "statement": "DROP TABLE \"User\";"
+      },
+      {
+        "line": 35,
+        "statement": "ALTER TABLE \"new_User\" RENAME TO \"User\";"
+      },
+      {
+        "line": 38,
+        "statement": "PRAGMA foreign_keys=ON;"
+      },
+      {
+        "line": 39,
+        "statement": "PRAGMA defer_foreign_keys=OFF;"
+      }
+    ],
+    "rollback": "No paired down migration discovered; restore rehearsal UNVERIFIED"
+  },
+  {
+    "file": "packages/database/prisma/migrations/20260805180208_add_merge_and_invoice_fields/migration.sql",
+    "lines": 83,
+    "destructiveStatements": [
+      {
+        "line": 2,
+        "statement": "PRAGMA defer_foreign_keys=ON;"
+      },
+      {
+        "line": 3,
+        "statement": "PRAGMA foreign_keys=OFF;"
+      },
+      {
+        "line": 33,
+        "statement": "DROP TABLE \"Invoice\";"
+      },
+      {
+        "line": 34,
+        "statement": "ALTER TABLE \"new_Invoice\" RENAME TO \"Invoice\";"
+      },
+      {
+        "line": 52,
+        "statement": "DROP TABLE \"InwardBatch\";"
+      },
+      {
+        "line": 53,
+        "statement": "ALTER TABLE \"new_InwardBatch\" RENAME TO \"InwardBatch\";"
+      },
+      {
+        "line": 79,
+        "statement": "DROP TABLE \"SystemSettings\";"
+      },
+      {
+        "line": 80,
+        "statement": "ALTER TABLE \"new_SystemSettings\" RENAME TO \"SystemSettings\";"
+      },
+      {
+        "line": 81,
+        "statement": "PRAGMA foreign_keys=ON;"
+      },
+      {
+        "line": 82,
+        "statement": "PRAGMA defer_foreign_keys=OFF;"
+      }
+    ],
+    "rollback": "No paired down migration discovered; restore rehearsal UNVERIFIED"
+  },
+  {
+    "file": "packages/database/prisma/migrations/20261002210000_align_system_settings/migration.sql",
+    "lines": 40,
+    "destructiveStatements": [
+      {
+        "line": 3,
+        "statement": "PRAGMA defer_foreign_keys=ON;"
+      },
+      {
+        "line": 4,
+        "statement": "PRAGMA foreign_keys=OFF;"
+      },
+      {
+        "line": 31,
+        "statement": "DROP TABLE \"SystemSettings\";"
+      },
+      {
+        "line": 32,
+        "statement": "ALTER TABLE \"new_SystemSettings\" RENAME TO \"SystemSettings\";"
+      },
+      {
+        "line": 33,
+        "statement": "PRAGMA foreign_keys=ON;"
+      },
+      {
+        "line": 34,
+        "statement": "PRAGMA defer_foreign_keys=OFF;"
+      },
+      {
+        "line": 37,
+        "statement": "UPDATE \"SystemSettings\""
+      }
+    ],
+    "rollback": "No paired down migration discovered; restore rehearsal UNVERIFIED"
+  },
+  {
+    "file": "packages/database/prisma/migrations/20261002211000_align_commerce_schema/migration.sql",
+    "lines": 347,
+    "destructiveStatements": [
+      {
+        "line": 41,
+        "statement": "CONSTRAINT \"CatalogueItem_brandId_fkey\" FOREIGN KEY (\"brandId\") REFERENCES \"Brand\" (\"id\") ON DELETE SET NULL ON UPDATE CASCADE,"
+      },
+      {
+        "line": 42,
+        "statement": "CONSTRAINT \"CatalogueItem_categoryId_fkey\" FOREIGN KEY (\"categoryId\") REFERENCES \"CatalogueCategory\" (\"id\") ON DELETE SET NULL ON UPDATE CASCADE"
+      },
+      {
+        "line": 65,
+        "statement": "CONSTRAINT \"InwardReceiptLine_receiptId_fkey\" FOREIGN KEY (\"receiptId\") REFERENCES \"InwardReceipt\" (\"id\") ON DELETE CASCADE ON UPDATE CASCADE,"
+      },
+      {
+        "line": 66,
+        "statement": "CONSTRAINT \"InwardReceiptLine_itemId_fkey\" FOREIGN KEY (\"itemId\") REFERENCES \"CatalogueItem\" (\"id\") ON DELETE RESTRICT ON UPDATE CASCADE"
+      },
+      {
+        "line": 96,
+        "statement": "CONSTRAINT \"StockMovement_itemId_fkey\" FOREIGN KEY (\"itemId\") REFERENCES \"CatalogueItem\" (\"id\") ON DELETE RESTRICT ON UPDATE CASCADE"
+      },
+      {
+        "line": 124,
+        "statement": "CONSTRAINT \"CustomerLedgerEntry_customerId_fkey\" FOREIGN KEY (\"customerId\") REFERENCES \"Customer\" (\"id\") ON DELETE CASCADE ON UPDATE CASCADE"
+      },
+      {
+        "line": 151,
+        "statement": "CONSTRAINT \"JobWorkChallan_jobWorkerId_fkey\" FOREIGN KEY (\"jobWorkerId\") REFERENCES \"JobWorker\" (\"id\") ON DELETE RESTRICT ON UPDATE CASCADE"
+      },
+      {
+        "line": 161,
+        "statement": "CONSTRAINT \"JobWorkDispatchLine_challanId_fkey\" FOREIGN KEY (\"challanId\") REFERENCES \"JobWorkChallan\" (\"id\") ON DELETE CASCADE ON UPDATE CASCADE,"
+      },
+      {
+        "line": 162,
+        "statement": "CONSTRAINT \"JobWorkDispatchLine_itemId_fkey\" FOREIGN KEY (\"itemId\") REFERENCES \"CatalogueItem\" (\"id\") ON DELETE RESTRICT ON UPDATE CASCADE"
+      },
+      {
+        "line": 173,
+        "statement": "CONSTRAINT \"JobWorkReceiptLine_challanId_fkey\" FOREIGN KEY (\"challanId\") REFERENCES \"JobWorkChallan\" (\"id\") ON DELETE CASCADE ON UPDATE CASCADE,"
+      },
+      {
+        "line": 174,
+        "statement": "CONSTRAINT \"JobWorkReceiptLine_itemId_fkey\" FOREIGN KEY (\"itemId\") REFERENCES \"CatalogueItem\" (\"id\") ON DELETE RESTRICT ON UPDATE CASCADE"
+      },
+      {
+        "line": 191,
+        "statement": "CONSTRAINT \"SalesOrder_customerId_fkey\" FOREIGN KEY (\"customerId\") REFERENCES \"Customer\" (\"id\") ON DELETE RESTRICT ON UPDATE CASCADE"
+      },
+      {
+        "line": 204,
+        "statement": "CONSTRAINT \"SalesOrderLine_orderId_fkey\" FOREIGN KEY (\"orderId\") REFERENCES \"SalesOrder\" (\"id\") ON DELETE CASCADE ON UPDATE CASCADE,"
+      },
+      {
+        "line": 205,
+        "statement": "CONSTRAINT \"SalesOrderLine_itemId_fkey\" FOREIGN KEY (\"itemId\") REFERENCES \"CatalogueItem\" (\"id\") ON DELETE RESTRICT ON UPDATE CASCADE"
+      },
+      {
+        "line": 209,
+        "statement": "PRAGMA defer_foreign_keys=ON;"
+      },
+      {
+        "line": 210,
+        "statement": "PRAGMA foreign_keys=OFF;"
+      },
+      {
+        "line": 248,
+        "statement": "CONSTRAINT \"Invoice_customerId_fkey\" FOREIGN KEY (\"customerId\") REFERENCES \"Customer\" (\"id\") ON DELETE SET NULL ON UPDATE CASCADE,"
+      },
+      {
+        "line": 249,
+        "statement": "CONSTRAINT \"Invoice_salesOrderId_fkey\" FOREIGN KEY (\"salesOrderId\") REFERENCES \"SalesOrder\" (\"id\") ON DELETE SET NULL ON UPDATE CASCADE"
+      },
+      {
+        "line": 252,
+        "statement": "DROP TABLE \"Invoice\";"
+      },
+      {
+        "line": 253,
+        "statement": "ALTER TABLE \"new_Invoice\" RENAME TO \"Invoice\";"
+      },
+      {
+        "line": 269,
+        "statement": "CONSTRAINT \"InvoiceItem_itemId_fkey\" FOREIGN KEY (\"itemId\") REFERENCES \"CatalogueItem\" (\"id\") ON DELETE SET NULL ON UPDATE CASCADE,"
+      },
+      {
+        "line": 270,
+        "statement": "CONSTRAINT \"InvoiceItem_invoiceId_fkey\" FOREIGN KEY (\"invoiceId\") REFERENCES \"Invoice\" (\"id\") ON DELETE CASCADE ON UPDATE CASCADE"
+      },
+      {
+        "line": 273,
+        "statement": "DROP TABLE \"InvoiceItem\";"
+      },
+      {
+        "line": 274,
+        "statement": "ALTER TABLE \"new_InvoiceItem\" RENAME TO \"InvoiceItem\";"
+      },
+      {
+        "line": 301,
+        "statement": "DROP TABLE \"SystemSettings\";"
+      },
+      {
+        "line": 302,
+        "statement": "ALTER TABLE \"new_SystemSettings\" RENAME TO \"SystemSettings\";"
+      },
+      {
+        "line": 303,
+        "statement": "PRAGMA foreign_keys=ON;"
+      },
+      {
+        "line": 304,
+        "statement": "PRAGMA defer_foreign_keys=OFF;"
+      }
+    ],
+    "rollback": "No paired down migration discovered; restore rehearsal UNVERIFIED"
+  },
+  {
+    "file": "packages/database/prisma/migrations/20261002212000_migrate_legacy_author/migration.sql",
+    "lines": 6,
+    "destructiveStatements": [
+      {
+        "line": 3,
+        "statement": "UPDATE \"User\""
+      }
+    ],
+    "rollback": "No paired down migration discovered; restore rehearsal UNVERIFIED"
+  },
+  {
+    "file": "packages/database/prisma/migrations/20261003000000_phase_3_5_warehouse_machine_qc_hr/migration.sql",
+    "lines": 164,
+    "destructiveStatements": [
+      {
+        "line": 27,
+        "statement": "CONSTRAINT \"WarehouseMovement_locationId_fkey\" FOREIGN KEY (\"locationId\") REFERENCES \"WarehouseLocation\" (\"id\") ON DELETE RESTRICT ON UPDATE CASCADE"
+      },
+      {
+        "line": 62,
+        "statement": "CONSTRAINT \"MachineInspection_machineId_fkey\" FOREIGN KEY (\"machineId\") REFERENCES \"Machine\" (\"id\") ON DELETE CASCADE ON UPDATE CASCADE"
+      },
+      {
+        "line": 131,
+        "statement": "CONSTRAINT \"ShiftAssignment_staffId_fkey\" FOREIGN KEY (\"staffId\") REFERENCES \"Staff\" (\"id\") ON DELETE CASCADE ON UPDATE CASCADE,"
+      },
+      {
+        "line": 132,
+        "statement": "CONSTRAINT \"ShiftAssignment_shiftId_fkey\" FOREIGN KEY (\"shiftId\") REFERENCES \"Shift\" (\"id\") ON DELETE RESTRICT ON UPDATE CASCADE"
+      },
+      {
+        "line": 154,
+        "statement": "CONSTRAINT \"PayrollEntry_staffId_fkey\" FOREIGN KEY (\"staffId\") REFERENCES \"Staff\" (\"id\") ON DELETE CASCADE ON UPDATE CASCADE"
+      }
+    ],
+    "rollback": "No paired down migration discovered; restore rehearsal UNVERIFIED"
+  },
+  {
+    "file": "packages/database/prisma/migrations/20261003140000_invoice_issuer_snapshot/migration.sql",
+    "lines": 4,
+    "destructiveStatements": [
+      {
+        "line": 1,
+        "statement": "ALTER TABLE \"Invoice\" ADD COLUMN \"sellerName\" TEXT;"
+      },
+      {
+        "line": 2,
+        "statement": "ALTER TABLE \"Invoice\" ADD COLUMN \"sellerAddress\" TEXT;"
+      },
+      {
+        "line": 3,
+        "statement": "ALTER TABLE \"Invoice\" ADD COLUMN \"sellerGSTIN\" TEXT;"
+      }
+    ],
+    "rollback": "No paired down migration discovered; restore rehearsal UNVERIFIED"
+  },
+  {
+    "file": "packages/database/prisma/migrations/20261003150000_clear_placeholder_company_settings/migration.sql",
+    "lines": 8,
+    "destructiveStatements": [
+      {
+        "line": 1,
+        "statement": "UPDATE \"SystemSettings\""
+      }
+    ],
+    "rollback": "No paired down migration discovered; restore rehearsal UNVERIFIED"
+  },
+  {
+    "file": "packages/database/prisma/migrations/20261003210000_align_company_defaults/migration.sql",
+    "lines": 34,
+    "destructiveStatements": [
+      {
+        "line": 2,
+        "statement": "PRAGMA defer_foreign_keys=ON;"
+      },
+      {
+        "line": 3,
+        "statement": "PRAGMA foreign_keys=OFF;"
+      },
+      {
+        "line": 30,
+        "statement": "DROP TABLE \"SystemSettings\";"
+      },
+      {
+        "line": 31,
+        "statement": "ALTER TABLE \"new_SystemSettings\" RENAME TO \"SystemSettings\";"
+      },
+      {
+        "line": 32,
+        "statement": "PRAGMA foreign_keys=ON;"
+      },
+      {
+        "line": 33,
+        "statement": "PRAGMA defer_foreign_keys=OFF;"
+      }
+    ],
+    "rollback": "No paired down migration discovered; restore rehearsal UNVERIFIED"
+  },
+  {
+    "file": "packages/database/prisma/migrations/20261006220000_link_dispatch_billing/migration.sql",
+    "lines": 4,
+    "destructiveStatements": [
+      {
+        "line": 2,
+        "statement": "ALTER TABLE \"Outward\" ADD COLUMN \"status\" TEXT NOT NULL DEFAULT 'DISPATCHED';"
+      },
+      {
+        "line": 3,
+        "statement": "ALTER TABLE \"Invoice\" ADD COLUMN \"outwardId\" INTEGER REFERENCES \"Outward\"(\"id\") ON DELETE SET NULL ON UPDATE CASCADE;"
+      }
+    ],
+    "rollback": "No paired down migration discovered; restore rehearsal UNVERIFIED"
+  },
+  {
+    "file": "packages/database/prisma/migrations/20261006233000_operational_flows/migration.sql",
+    "lines": 283,
+    "destructiveStatements": [
+      {
+        "line": 2,
+        "statement": "ALTER TABLE \"QualityInspection\" ADD COLUMN \"holdQuantity\" REAL;"
+      },
+      {
+        "line": 3,
+        "statement": "ALTER TABLE \"QualityInspection\" ADD COLUMN \"lotId\" INTEGER;"
+      },
+      {
+        "line": 27,
+        "statement": "CONSTRAINT \"WorkflowDocument_supplierId_fkey\" FOREIGN KEY (\"supplierId\") REFERENCES \"Supplier\" (\"id\") ON DELETE SET NULL ON UPDATE CASCADE,"
+      },
+      {
+        "line": 28,
+        "statement": "CONSTRAINT \"WorkflowDocument_originId_fkey\" FOREIGN KEY (\"originId\") REFERENCES \"WorkflowDocument\" (\"id\") ON DELETE SET NULL ON UPDATE CASCADE"
+      },
+      {
+        "line": 47,
+        "statement": "CONSTRAINT \"WorkflowLine_documentId_fkey\" FOREIGN KEY (\"documentId\") REFERENCES \"WorkflowDocument\" (\"id\") ON DELETE RESTRICT ON UPDATE CASCADE,"
+      },
+      {
+        "line": 48,
+        "statement": "CONSTRAINT \"WorkflowLine_itemId_fkey\" FOREIGN KEY (\"itemId\") REFERENCES \"CatalogueItem\" (\"id\") ON DELETE RESTRICT ON UPDATE CASCADE"
+      },
+      {
+        "line": 71,
+        "statement": "CONSTRAINT \"StockLot_itemId_fkey\" FOREIGN KEY (\"itemId\") REFERENCES \"CatalogueItem\" (\"id\") ON DELETE RESTRICT ON UPDATE CASCADE"
+      },
+      {
+        "line": 86,
+        "statement": "CONSTRAINT \"StockHold_lotId_fkey\" FOREIGN KEY (\"lotId\") REFERENCES \"StockLot\" (\"id\") ON DELETE RESTRICT ON UPDATE CASCADE"
+      },
+      {
+        "line": 118,
+        "statement": "CONSTRAINT \"JournalLine_entryId_fkey\" FOREIGN KEY (\"entryId\") REFERENCES \"JournalEntry\" (\"id\") ON DELETE RESTRICT ON UPDATE CASCADE"
+      },
+      {
+        "line": 129,
+        "statement": "CONSTRAINT \"StockValuation_movementId_fkey\" FOREIGN KEY (\"movementId\") REFERENCES \"StockMovement\" (\"id\") ON DELETE RESTRICT ON UPDATE CASCADE"
+      },
+      {
+        "line": 142,
+        "statement": "PRAGMA defer_foreign_keys=ON;"
+      },
+      {
+        "line": 143,
+        "statement": "PRAGMA foreign_keys=OFF;"
+      },
+      {
+        "line": 188,
+        "statement": "CONSTRAINT \"Invoice_customerId_fkey\" FOREIGN KEY (\"customerId\") REFERENCES \"Customer\" (\"id\") ON DELETE SET NULL ON UPDATE CASCADE,"
+      },
+      {
+        "line": 189,
+        "statement": "CONSTRAINT \"Invoice_salesOrderId_fkey\" FOREIGN KEY (\"salesOrderId\") REFERENCES \"SalesOrder\" (\"id\") ON DELETE SET NULL ON UPDATE CASCADE,"
+      },
+      {
+        "line": 190,
+        "statement": "CONSTRAINT \"Invoice_outwardId_fkey\" FOREIGN KEY (\"outwardId\") REFERENCES \"Outward\" (\"id\") ON DELETE SET NULL ON UPDATE CASCADE"
+      },
+      {
+        "line": 193,
+        "statement": "DROP TABLE \"Invoice\";"
+      },
+      {
+        "line": 194,
+        "statement": "ALTER TABLE \"new_Invoice\" RENAME TO \"Invoice\";"
+      },
+      {
+        "line": 207,
+        "statement": "CONSTRAINT \"SalesOrderLine_orderId_fkey\" FOREIGN KEY (\"orderId\") REFERENCES \"SalesOrder\" (\"id\") ON DELETE CASCADE ON UPDATE CASCADE,"
+      },
+      {
+        "line": 208,
+        "statement": "CONSTRAINT \"SalesOrderLine_itemId_fkey\" FOREIGN KEY (\"itemId\") REFERENCES \"CatalogueItem\" (\"id\") ON DELETE RESTRICT ON UPDATE CASCADE"
+      },
+      {
+        "line": 211,
+        "statement": "DROP TABLE \"SalesOrderLine\";"
+      },
+      {
+        "line": 212,
+        "statement": "ALTER TABLE \"new_SalesOrderLine\" RENAME TO \"SalesOrderLine\";"
+      },
+      {
+        "line": 228,
+        "statement": "CONSTRAINT \"StockMovement_itemId_fkey\" FOREIGN KEY (\"itemId\") REFERENCES \"CatalogueItem\" (\"id\") ON DELETE RESTRICT ON UPDATE CASCADE,"
+      },
+      {
+        "line": 229,
+        "statement": "CONSTRAINT \"StockMovement_lotId_fkey\" FOREIGN KEY (\"lotId\") REFERENCES \"StockLot\" (\"id\") ON DELETE SET NULL ON UPDATE CASCADE"
+      },
+      {
+        "line": 232,
+        "statement": "DROP TABLE \"StockMovement\";"
+      },
+      {
+        "line": 233,
+        "statement": "ALTER TABLE \"new_StockMovement\" RENAME TO \"StockMovement\";"
+      },
+      {
+        "line": 236,
+        "statement": "PRAGMA foreign_keys=ON;"
+      },
+      {
+        "line": 237,
+        "statement": "PRAGMA defer_foreign_keys=OFF;"
+      }
+    ],
+    "rollback": "No paired down migration discovered; restore rehearsal UNVERIFIED"
+  },
+  {
+    "file": "packages/database/prisma/migrations/20261006234000_fulfilment_costing/migration.sql",
+    "lines": 85,
+    "destructiveStatements": [
+      {
+        "line": 2,
+        "statement": "ALTER TABLE \"WipLot\" ADD COLUMN \"unitCost\" REAL;"
+      },
+      {
+        "line": 5,
+        "statement": "PRAGMA defer_foreign_keys=ON;"
+      },
+      {
+        "line": 6,
+        "statement": "PRAGMA foreign_keys=OFF;"
+      },
+      {
+        "line": 52,
+        "statement": "CONSTRAINT \"Invoice_customerId_fkey\" FOREIGN KEY (\"customerId\") REFERENCES \"Customer\" (\"id\") ON DELETE SET NULL ON UPDATE CASCADE,"
+      },
+      {
+        "line": 53,
+        "statement": "CONSTRAINT \"Invoice_salesOrderId_fkey\" FOREIGN KEY (\"salesOrderId\") REFERENCES \"SalesOrder\" (\"id\") ON DELETE SET NULL ON UPDATE CASCADE,"
+      },
+      {
+        "line": 54,
+        "statement": "CONSTRAINT \"Invoice_outwardId_fkey\" FOREIGN KEY (\"outwardId\") REFERENCES \"Outward\" (\"id\") ON DELETE SET NULL ON UPDATE CASCADE,"
+      },
+      {
+        "line": 55,
+        "statement": "CONSTRAINT \"Invoice_fulfilmentId_fkey\" FOREIGN KEY (\"fulfilmentId\") REFERENCES \"WorkflowDocument\" (\"id\") ON DELETE SET NULL ON UPDATE CASCADE"
+      },
+      {
+        "line": 58,
+        "statement": "DROP TABLE \"Invoice\";"
+      },
+      {
+        "line": 59,
+        "statement": "ALTER TABLE \"new_Invoice\" RENAME TO \"Invoice\";"
+      },
+      {
+        "line": 81,
+        "statement": "DROP TABLE \"Production\";"
+      },
+      {
+        "line": 82,
+        "statement": "ALTER TABLE \"new_Production\" RENAME TO \"Production\";"
+      },
+      {
+        "line": 83,
+        "statement": "PRAGMA foreign_keys=ON;"
+      },
+      {
+        "line": 84,
+        "statement": "PRAGMA defer_foreign_keys=OFF;"
+      }
+    ],
+    "rollback": "No paired down migration discovered; restore rehearsal UNVERIFIED"
+  },
+  {
+    "file": "packages/database/prisma/migrations/20261006235000_cotton_procurement/migration.sql",
+    "lines": 4,
+    "destructiveStatements": [
+      {
+        "line": 2,
+        "statement": "ALTER TABLE \"InwardBatch\" ADD COLUMN \"catalogueItemId\" INTEGER;"
+      },
+      {
+        "line": 3,
+        "statement": "ALTER TABLE \"InwardBatch\" ADD COLUMN \"unitCost\" REAL;"
+      }
+    ],
+    "rollback": "No paired down migration discovered; restore rehearsal UNVERIFIED"
+  },
+  {
+    "file": "packages/database/prisma/migrations/20261010000000_company_workspace/migration.sql",
+    "lines": 4,
+    "destructiveStatements": [
+      {
+        "line": 2,
+        "statement": "ALTER TABLE \"SystemSettings\" ADD COLUMN \"businessMode\" TEXT NOT NULL DEFAULT 'INTEGRATED';"
+      },
+      {
+        "line": 3,
+        "statement": "ALTER TABLE \"SystemSettings\" ADD COLUMN \"workspaceMode\" TEXT NOT NULL DEFAULT 'FULL';"
+      }
+    ],
+    "rollback": "No paired down migration discovered; restore rehearsal UNVERIFIED"
+  },
+  {
+    "file": "packages/database/prisma/migrations/20261010001000_master_imports/migration.sql",
+    "lines": 14,
+    "destructiveStatements": [],
+    "rollback": "No paired down migration discovered; restore rehearsal UNVERIFIED"
+  },
+  {
+    "file": "packages/database/prisma/migrations/20261011000000_weighbridge_receipt/migration.sql",
+    "lines": 4,
+    "destructiveStatements": [
+      {
+        "line": 3,
+        "statement": "ALTER TABLE \"InwardBatch\" ADD COLUMN \"weighbridgeReceipt\" TEXT;"
+      }
+    ],
+    "rollback": "No paired down migration discovered; restore rehearsal UNVERIFIED"
+  }
+]

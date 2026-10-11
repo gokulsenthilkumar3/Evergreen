@@ -6,11 +6,14 @@ Use the repository root for all commands. See [README.md](README.md) for environ
 2. Configure `apps/api/.env` and the root `.env` with the same `DATABASE_URL`. Use a unique JWT secret and bootstrap administrator credentials; there is no shared default login.
 3. Run `npm run setup:check`. This read-only check reports configuration problems without printing credentials or changing your database.
 4. For a new empty database only, follow the database setup in README. Existing operational databases need a verified backup and reviewed migration.
-5. Run `npm run dev`. Wait for the launcher to report ready, then open the web application.
+5. Run `npm run dev:all` (or `npm start`) to launch all 5 surfaces (Customer Web, Admin Web, Marketing Web, APIs, and DBs in 1 step). Alternatively, run `npm run dev` to launch only the staff app and its API.
 
 | Service | Default URL | Availability |
 | --- | --- | --- |
-| Staff application | http://localhost:4000/ | Started by npm run dev |
+| Staff application | http://localhost:4000/ | Started by npm run dev:all / npm run dev |
+| Provider Admin Web | http://localhost:5174/ | Started by npm run dev:all |
+| Public Marketing Web | http://localhost:3300/ | Started by npm run dev:all |
+| Provider Admin API Docs | http://localhost:4300/api/docs | Started by npm run dev:all |
 | Business workspace | http://localhost:4000/workspace | Staff login required |
 | Workflow documentation | http://localhost:4000/tutorial | Staff login required |
 | Health hub | http://localhost:4000/health | HTML in a browser |

@@ -302,10 +302,14 @@ body {
   display: flex;
   gap: 0;
   overflow-x: auto;
-  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-.admin-nav-bar::-webkit-scrollbar { display: none; }
+.admin-nav-bar::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
 
 .nav-tab-btn {
   background: transparent;
@@ -1557,16 +1561,6 @@ textarea.form-input-text {
 .nav-category-btn.active {
   color: var(--adm-cyan);
   border-bottom-color: var(--adm-cyan);
-}
-
-.admin-nav-bar {
-  display: flex;
-  gap: 0.4rem;
-  overflow-x: auto;
-  padding: 0.6rem 2rem;
-  background: rgba(8, 14, 26, 0.95);
-  border-bottom: 1px solid var(--adm-border);
-  scrollbar-width: thin;
 }
 .nav-tab-btn {
   display: inline-flex;

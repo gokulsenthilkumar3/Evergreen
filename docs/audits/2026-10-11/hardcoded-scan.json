@@ -1,0 +1,1094 @@
+[
+  {
+    "file": "apps/admin-api/src/filters/not-found-exception.filter.ts",
+    "line": 164,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/admin-api/src/filters/not-found-exception.filter.ts",
+    "line": 165,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/admin-api/src/guards/provider-access.guard.ts",
+    "line": 8,
+    "kind": "secret_default",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/admin-api/src/main.ts",
+    "line": 20,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/admin-api/src/main.ts",
+    "line": 20,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/admin-api/src/main.ts",
+    "line": 20,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/admin-api/src/main.ts",
+    "line": 20,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/admin-api/src/main.ts",
+    "line": 72,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/admin-api/src/main.ts",
+    "line": 73,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/admin-api/src/main.ts",
+    "line": 451,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/admin-api/src/modules/cicd/cicd.service.ts",
+    "line": 106,
+    "kind": "demo_simulation",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/admin-api/src/modules/cicd/cicd.service.ts",
+    "line": 167,
+    "kind": "demo_simulation",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/admin-api/src/modules/cicd/cicd.service.ts",
+    "line": 194,
+    "kind": "demo_simulation",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/admin-api/src/modules/cicd/cicd.service.ts",
+    "line": 220,
+    "kind": "demo_simulation",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/admin-api/src/modules/cicd/cicd.service.ts",
+    "line": 226,
+    "kind": "demo_simulation",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/admin-api/src/modules/cicd/cicd.service.ts",
+    "line": 232,
+    "kind": "demo_simulation",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/admin-api/src/modules/companies/companies.service.ts",
+    "line": 25,
+    "kind": "secret_default",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/admin-api/test/app.e2e-spec.ts",
+    "line": 25,
+    "kind": "secret_default",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/admin-api/test/app.e2e-spec.ts",
+    "line": 28,
+    "kind": "secret_default",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/admin-web/src/App.tsx",
+    "line": 265,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/admin-web/src/App.tsx",
+    "line": 32,
+    "kind": "secret_default",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/admin-web/src/App.tsx",
+    "line": 8,
+    "kind": "demo_simulation",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/admin-web/src/App.tsx",
+    "line": 9,
+    "kind": "demo_simulation",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/admin-web/src/App.tsx",
+    "line": 148,
+    "kind": "demo_simulation",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/admin-web/src/App.tsx",
+    "line": 166,
+    "kind": "demo_simulation",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/admin-web/src/App.tsx",
+    "line": 272,
+    "kind": "demo_simulation",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/admin-web/src/App.tsx",
+    "line": 274,
+    "kind": "demo_simulation",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/admin-web/src/App.tsx",
+    "line": 288,
+    "kind": "demo_simulation",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/admin-web/src/App.tsx",
+    "line": 466,
+    "kind": "demo_simulation",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/admin-web/src/App.tsx",
+    "line": 1074,
+    "kind": "demo_simulation",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/admin-web/src/control-data.ts",
+    "line": 32,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/admin-web/src/control-data.ts",
+    "line": 13,
+    "kind": "demo_simulation",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/admin-web/src/control-data.ts",
+    "line": 20,
+    "kind": "demo_simulation",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/admin-web/src/control-data.ts",
+    "line": 45,
+    "kind": "demo_simulation",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/admin-web/vite.config.ts",
+    "line": 10,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/api/src/app.service.ts",
+    "line": 440,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/api/src/app.service.ts",
+    "line": 441,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/api/src/app.service.ts",
+    "line": 442,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/api/src/app.service.ts",
+    "line": 446,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/api/src/app.service.ts",
+    "line": 451,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/api/src/app.service.ts",
+    "line": 452,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/api/src/app.service.ts",
+    "line": 453,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/api/src/app.service.ts",
+    "line": 454,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/api/src/app.service.ts",
+    "line": 455,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/api/src/app.service.ts",
+    "line": 456,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/api/src/app.service.ts",
+    "line": 1123,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/api/src/app.service.ts",
+    "line": 1129,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/api/src/app.service.ts",
+    "line": 1316,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/api/src/app.service.ts",
+    "line": 1398,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/api/src/app.service.ts",
+    "line": 1340,
+    "kind": "browser_token",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/api/src/filters/not-found-exception.filter.ts",
+    "line": 164,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/api/src/filters/not-found-exception.filter.ts",
+    "line": 165,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/api/src/guards/provider-admin.guard.ts",
+    "line": 7,
+    "kind": "secret_default",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/api/src/guards/provider-admin.guard.ts",
+    "line": 9,
+    "kind": "secret_default",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/api/src/main.ts",
+    "line": 28,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/api/src/main.ts",
+    "line": 80,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/api/src/main.ts",
+    "line": 81,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/api/src/main.ts",
+    "line": 459,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/api/src/modules/auth/auth.module.ts",
+    "line": 18,
+    "kind": "secret_default",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/api/src/modules/auth/auth.service.ts",
+    "line": 167,
+    "kind": "secret_default",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/api/src/modules/auth/auth.service.ts",
+    "line": 244,
+    "kind": "secret_default",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/api/src/modules/auth/auth.service.ts",
+    "line": 266,
+    "kind": "secret_default",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/api/src/modules/auth/auth.service.ts",
+    "line": 285,
+    "kind": "secret_default",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/api/src/modules/auth/jwt-secret.ts",
+    "line": 4,
+    "kind": "secret_default",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/api/src/modules/auth/jwt-secret.ts",
+    "line": 6,
+    "kind": "secret_default",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/api/src/services/admin-sync.service.ts",
+    "line": 10,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/api/src/services/admin-sync.service.ts",
+    "line": 11,
+    "kind": "demo_simulation",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/api/src/services/audit.service.ts",
+    "line": 20,
+    "kind": "demo_simulation",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/api/src/utils/crypto.ts",
+    "line": 9,
+    "kind": "secret_default",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/api/test/app.e2e-spec.ts",
+    "line": 25,
+    "kind": "secret_default",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/api/test/app.e2e-spec.ts",
+    "line": 28,
+    "kind": "secret_default",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/desktop/main.js",
+    "line": 126,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/desktop/main.js",
+    "line": 133,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/desktop/main.js",
+    "line": 134,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/marketing-web/src/App.tsx",
+    "line": 298,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/marketing-web/src/App.tsx",
+    "line": 302,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/marketing-web/src/App.tsx",
+    "line": 659,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/marketing-web/src/App.tsx",
+    "line": 1185,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/web/src/App.tsx",
+    "line": 954,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/web/src/App.tsx",
+    "line": 954,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/web/src/App.tsx",
+    "line": 965,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/web/src/App.tsx",
+    "line": 965,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/web/src/App.tsx",
+    "line": 954,
+    "kind": "browser_token",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/web/src/App.tsx",
+    "line": 954,
+    "kind": "browser_token",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/web/src/App.tsx",
+    "line": 965,
+    "kind": "browser_token",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/web/src/App.tsx",
+    "line": 965,
+    "kind": "browser_token",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/web/src/components/common/AccessibleDialog.tsx",
+    "line": 38,
+    "kind": "demo_simulation",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/web/src/components/common/AccessibleDialog.tsx",
+    "line": 39,
+    "kind": "demo_simulation",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/web/src/components/common/ErrorBoundary.tsx",
+    "line": 130,
+    "kind": "demo_simulation",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/web/src/components/common/NotFound404.tsx",
+    "line": 27,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/web/src/components/common/NotFound404.tsx",
+    "line": 28,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/web/src/components/common/NotFound404.tsx",
+    "line": 30,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/web/src/components/common/NotFound404.tsx",
+    "line": 31,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/web/src/components/common/NotFound404.tsx",
+    "line": 25,
+    "kind": "browser_token",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/web/src/components/common/ScreenReaderAnnouncer.tsx",
+    "line": 33,
+    "kind": "demo_simulation",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/web/src/components/Login.tsx",
+    "line": 119,
+    "kind": "browser_token",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/web/src/components/Login.tsx",
+    "line": 151,
+    "kind": "browser_token",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/web/src/components/LoginAvatar.tsx",
+    "line": 111,
+    "kind": "demo_simulation",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/web/src/components/LoginAvatar.tsx",
+    "line": 112,
+    "kind": "demo_simulation",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/web/src/components/LoginAvatar.tsx",
+    "line": 113,
+    "kind": "demo_simulation",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/web/src/context/NotificationsContext.tsx",
+    "line": 88,
+    "kind": "demo_simulation",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/web/src/pages/Inventory.tsx",
+    "line": 217,
+    "kind": "demo_simulation",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/web/src/utils/api.ts",
+    "line": 7,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/web/src/utils/api.ts",
+    "line": 13,
+    "kind": "browser_token",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/web/src/utils/codeFormatters.ts",
+    "line": 28,
+    "kind": "demo_simulation",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/web/src/utils/messages.ts",
+    "line": 110,
+    "kind": "secret_default",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/web/vite.config.ts",
+    "line": 9,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/weighbridge-agent/src/index.ts",
+    "line": 16,
+    "kind": "demo_simulation",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "apps/weighbridge-agent/src/index.ts",
+    "line": 71,
+    "kind": "demo_simulation",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/database-studio.js",
+    "line": 218,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/database-studio.js",
+    "line": 219,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/database-studio.js",
+    "line": 1013,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/database-studio.js",
+    "line": 1014,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/database-studio.js",
+    "line": 1015,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/database-studio.js",
+    "line": 1190,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/database-studio.js",
+    "line": 2058,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/database-studio.js",
+    "line": 13,
+    "kind": "secret_default",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/database-studio.js",
+    "line": 1247,
+    "kind": "browser_token",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/dev-all.mjs",
+    "line": 46,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/dev-all.mjs",
+    "line": 57,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/dev-all.mjs",
+    "line": 68,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/dev-all.mjs",
+    "line": 69,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/dev-all.mjs",
+    "line": 80,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/dev-all.mjs",
+    "line": 81,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/dev-all.mjs",
+    "line": 92,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/dev-all.mjs",
+    "line": 387,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/dev-all.mjs",
+    "line": 390,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/dev-all.mjs",
+    "line": 399,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/dev-all.mjs",
+    "line": 401,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/dev-all.mjs",
+    "line": 401,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/dev-all.mjs",
+    "line": 402,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/dev-all.mjs",
+    "line": 402,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/dev-all.mjs",
+    "line": 406,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/dev-all.mjs",
+    "line": 408,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/dev-all.mjs",
+    "line": 409,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/dev-all.mjs",
+    "line": 413,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/dev-evergreen.js",
+    "line": 105,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/dev-evergreen.js",
+    "line": 109,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/dev-evergreen.js",
+    "line": 110,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/seed-admin.mjs",
+    "line": 13,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/seed-admin.mjs",
+    "line": 171,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/seed-admin.mjs",
+    "line": 183,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/seed-admin.mjs",
+    "line": 183,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/seed-admin.mjs",
+    "line": 195,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/seed-admin.mjs",
+    "line": 207,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/seed-admin.mjs",
+    "line": 219,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/seed-admin.mjs",
+    "line": 267,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/seed-admin.mjs",
+    "line": 279,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/seed-admin.mjs",
+    "line": 20,
+    "kind": "secret_default",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/seed-admin.mjs",
+    "line": 42,
+    "kind": "secret_default",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/seed-admin.mjs",
+    "line": 64,
+    "kind": "secret_default",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/seed-admin.mjs",
+    "line": 87,
+    "kind": "secret_default",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/seed-admin.mjs",
+    "line": 11,
+    "kind": "demo_simulation",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/seed-admin.mjs",
+    "line": 118,
+    "kind": "demo_simulation",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/seed-admin.mjs",
+    "line": 226,
+    "kind": "demo_simulation",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/seed-admin.mjs",
+    "line": 274,
+    "kind": "demo_simulation",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/seed-admin.mjs",
+    "line": 298,
+    "kind": "demo_simulation",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/solo-ops.mjs",
+    "line": 30,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/solo-ops.mjs",
+    "line": 87,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/solo-ops.mjs",
+    "line": 101,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/solo-ops.mjs",
+    "line": 72,
+    "kind": "demo_simulation",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "scripts/test_delete_guards.js",
+    "line": 7,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": ".github/workflows/ci.yml",
+    "line": 16,
+    "kind": "secret_default",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "deploy/docker/Dockerfile.admin-api",
+    "line": 55,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "deploy/docker/Dockerfile.admin-web",
+    "line": 29,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "deploy/docker/Dockerfile.marketing",
+    "line": 29,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "deploy/docker/Dockerfile.tenant-api",
+    "line": 70,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "deploy/docker/Dockerfile.tenant-web",
+    "line": 40,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "deploy/linux/deploy-factory-vm.sh",
+    "line": 54,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "deploy/linux/deploy-factory-vm.sh",
+    "line": 83,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "deploy/linux/deploy-factory-vm.sh",
+    "line": 93,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "deploy/linux/deploy-factory-vm.sh",
+    "line": 108,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "deploy/linux/deploy-factory-vm.sh",
+    "line": 108,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": ".env.example",
+    "line": 23,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": ".env.example",
+    "line": 49,
+    "kind": "hardcoded_local_endpoint",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": ".env.example",
+    "line": 14,
+    "kind": "secret_default",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": ".env.example",
+    "line": 31,
+    "kind": "secret_default",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": ".env.example",
+    "line": 38,
+    "kind": "secret_default",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "docker-compose.production.yml",
+    "line": 39,
+    "kind": "secret_default",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "docker-compose.production.yml",
+    "line": 78,
+    "kind": "secret_default",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "docker-compose.production.yml",
+    "line": 79,
+    "kind": "secret_default",
+    "classification": "Candidate: manual context required; value redacted"
+  },
+  {
+    "file": "docker-compose.yml",
+    "line": 9,
+    "kind": "secret_default",
+    "classification": "Candidate: manual context required; value redacted"
+  }
+]

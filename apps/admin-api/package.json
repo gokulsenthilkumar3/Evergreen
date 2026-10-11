@@ -7,7 +7,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "dev": "npm run start:dev",
-    "prebuild": "npm run generate -w @evergreen/database && npm run build -w @evergreen/types && npm run build -w @evergreen/pdf",
+    "prebuild": "npm run generate -w @evergreen/admin-database && npm run build -w @evergreen/types && npm run build -w @evergreen/pdf",
     "prestart": "npm run build -w @evergreen/types",
     "prestart:dev": "npm run build -w @evergreen/types",
     "build": "nest build",

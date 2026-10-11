@@ -949,29 +949,6 @@ const App: React.FC = () => {
                           System Settings
                         </MenuItem>
                         <Divider sx={{ my: 0.5 }} />
-                        <MenuItem
-                          component="a"
-                          href={localStorage.getItem('token') ? `http://localhost:4301/health?token=${encodeURIComponent(localStorage.getItem('token') || '')}` : 'http://localhost:4301/health'}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={handleProfileClose}
-                          sx={{ borderRadius: '8px', py: 1, textDecoration: 'none', color: 'inherit' }}
-                        >
-                          <ListItemIcon><SyncIcon fontSize="small" color="primary" /></ListItemIcon>
-                          🌱 API Health Hub (4301)
-                        </MenuItem>
-                        <MenuItem
-                          component="a"
-                          href={localStorage.getItem('token') ? `http://localhost:5555/?token=${encodeURIComponent(localStorage.getItem('token') || '')}` : 'http://localhost:5555'}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={handleProfileClose}
-                          sx={{ borderRadius: '8px', py: 1, textDecoration: 'none', color: 'inherit' }}
-                        >
-                          <ListItemIcon><WarehouseIcon fontSize="small" color="success" /></ListItemIcon>
-                          🗄️ Database Studio (5555)
-                        </MenuItem>
-                        <Divider sx={{ my: 0.5 }} />
                         <MenuItem onClick={handleLogout} sx={{ color: 'error.main', py: 1.5, m: 0.5, borderRadius: '8px' }}>
                           <ListItemIcon sx={{ color: 'error.main' }}>
                             <LogoutIcon fontSize="small" />

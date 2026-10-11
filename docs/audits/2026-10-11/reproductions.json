@@ -1,0 +1,167 @@
+{
+  "migrationReplay": [
+    {
+      "pkg": "database",
+      "applied": [
+        "20260207214808_init_users",
+        "20260208161057_add_waste_inventory",
+        "20260216170258_add_payment_tracking",
+        "20260220194720_add_bale_to_inventory",
+        "20260220215456_add_total_intermediate",
+        "20260801191243_phase4_advanced_auth",
+        "20260805180208_add_merge_and_invoice_fields",
+        "20261002210000_align_system_settings",
+        "20261002211000_align_commerce_schema",
+        "20261002212000_migrate_legacy_author",
+        "20261003000000_phase_3_5_warehouse_machine_qc_hr",
+        "20261003140000_invoice_issuer_snapshot",
+        "20261003150000_clear_placeholder_company_settings",
+        "20261003210000_align_company_defaults",
+        "20261006220000_link_dispatch_billing",
+        "20261006233000_operational_flows",
+        "20261006234000_fulfilment_costing",
+        "20261006235000_cotton_procurement",
+        "20261010000000_company_workspace",
+        "20261010001000_master_imports",
+        "20261011000000_weighbridge_receipt"
+      ],
+      "failed": null,
+      "missingColumns": [
+        "SystemSettings.plan",
+        "SystemSettings.pricingModel",
+        "SystemSettings.status",
+        "SystemSettings.licenseExpiresAt",
+        "SystemSettings.gracePeriodDays",
+        "SystemSettings.graceExpiresAt",
+        "SystemSettings.maxUsers",
+        "SystemSettings.maxMachines",
+        "SystemSettings.maxDocsPerMonth",
+        "SystemSettings.allowedModules",
+        "SystemSettings.tier",
+        "SystemSettings.state",
+        "SystemSettings.country",
+        "SystemSettings.isMaintenance"
+      ],
+      "foreignKeyCheck": []
+    },
+    {
+      "pkg": "admin-database",
+      "applied": [
+        "20261010164337_init",
+        "20261010165745_multi_cloud",
+        "20261011010000_control_workspace"
+      ],
+      "failed": null,
+      "missingColumns": [
+        "Company.tier",
+        "Company.state",
+        "Company.country",
+        "Company.pricingModel",
+        "Company.licenseKey",
+        "Company.validFrom",
+        "Company.expiresAt",
+        "Company.gracePeriodDays",
+        "Company.graceExpiresAt",
+        "Company.maxUsers",
+        "Company.maxMachines",
+        "Company.maxDocsPerMonth",
+        "Company.allowedModules",
+        "Company.isMaintenance",
+        "Company.lastMigrationStatus",
+        "RemoteAction.id",
+        "RemoteAction.companyId",
+        "RemoteAction.actionType",
+        "RemoteAction.status",
+        "RemoteAction.details",
+        "RemoteAction.createdAt",
+        "RemoteAction.completedAt"
+      ],
+      "foreignKeyCheck": []
+    }
+  ],
+  "reproductions": [
+    {
+      "name": "Provider guard with no bearer and forged localhost Origin",
+      "result": {
+        "allowed": true,
+        "actor": "Provider operator"
+      }
+    },
+    {
+      "name": "Provider guard with external origin and no bearer",
+      "result": {
+        "denied": 401
+      }
+    },
+    {
+      "name": "Weight parser units and invalid frame",
+      "result": [
+        {
+          "frame": "ST,GS,+100lb",
+          "parsed": {
+            "raw": "ST,GS,+100lb",
+            "weightKg": 100,
+            "isStable": true,
+            "indicatorBrand": "AVERY",
+            "unit": "kg",
+            "timestamp": "2026-10-11T12:42:56.463Z"
+          }
+        },
+        {
+          "frame": "S S 1000 g",
+          "parsed": {
+            "raw": "S S 1000 g",
+            "weightKg": 1000,
+            "isStable": true,
+            "indicatorBrand": "METTLER_TOLEDO",
+            "unit": "kg",
+            "timestamp": "2026-10-11T12:42:56.463Z"
+          }
+        },
+        {
+          "frame": "ST,GS,-100kg",
+          "parsed": {
+            "raw": "ST,GS,-100kg",
+            "weightKg": 100,
+            "isStable": true,
+            "indicatorBrand": "AVERY",
+            "unit": "kg",
+            "timestamp": "2026-10-11T12:42:56.463Z"
+          }
+        },
+        {
+          "frame": "ERR42",
+          "parsed": {
+            "raw": "ERR42",
+            "weightKg": 42,
+            "isStable": true,
+            "indicatorBrand": "GENERIC_ASCII",
+            "unit": "kg",
+            "timestamp": "2026-10-11T12:42:56.463Z"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Slip verification ignores altered calculations",
+      "result": {
+        "accepted": true
+      }
+    },
+    {
+      "name": "Moisture contract arithmetic",
+      "result": {
+        "netWeightKg": 900,
+        "moistureDeductionKg": 18,
+        "finalBillableKg": 882
+      }
+    },
+    {
+      "name": "Order amendment tax divergence",
+      "result": {
+        "canonicalTotal": 0.33,
+        "amendmentTotal": 0.32
+      }
+    }
+  ]
+}

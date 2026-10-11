@@ -8,8 +8,9 @@
     "packages/*"
   ],
   "scripts": {
-    "dev:all": "node scripts/dev-all.mjs",
+    "start": "node scripts/dev-all.mjs",
     "start:all": "node scripts/dev-all.mjs",
+    "dev:all": "node scripts/dev-all.mjs",
     "ops": "node scripts/solo-ops.mjs",
     "dev": "node scripts/dev-evergreen.js",
     "setup:check": "node scripts/setup-check.js",
@@ -24,7 +25,6 @@
     "verify": "npm run generate -w @evergreen/database && npm run migrate:check -w @evergreen/database && npm run typecheck && npm test && npm run docs:check && npm run build",
     "desktop": "npm run start -w apps/desktop",
     "dist:desktop": "npm run dist -w apps/desktop",
-    "ops": "node scripts/solo-ops.mjs",
     "dev:marketing": "npm run dev -w marketing-web",
     "audit:roadmap": "node scripts/roadmap-audit.mjs"
   },

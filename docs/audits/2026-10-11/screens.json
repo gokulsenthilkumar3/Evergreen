@@ -1,0 +1,1246 @@
+[
+  {
+    "file": "apps/admin-web/src/AdminModal.tsx",
+    "lines": 42,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/admin-web/src/App.tsx",
+    "lines": 2796,
+    "networkCalls": [
+      "`${adminApiBase}/companies`);\r",
+      "`${adminApiBase}/control/records`);\r",
+      "`${adminApiBase}/cicd/releases`),\r",
+      "`${adminApiBase}/cicd/deployments`),\r",
+      "`${adminApiBase}/cicd/logs?limit=100`),\r",
+      "`${adminApiBase}/companies/${company.id}/license`, {\r",
+      "`${adminApiBase}/companies/${companyId}/actions`, {\r",
+      "`${adminApiBase}/cicd/deploy`, {\r",
+      "`${adminApiBase}/cicd/releases`, {\r",
+      "`${adminApiBase}/companies`, {\r"
+    ],
+    "roleHints": [],
+    "hasTest": true,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/admin-web/src/main.tsx",
+    "lines": 11,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/admin-web/src/WorkspaceIcon.tsx",
+    "lines": 42,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/marketing-web/src/App.tsx",
+    "lines": 1658,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/marketing-web/src/main.tsx",
+    "lines": 11,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/App.tsx",
+    "lines": 1293,
+    "networkCalls": [
+      "`/search?q=${debouncedQuery}`);\r",
+      "'/settings');\r",
+      "'/settings', { language: next }); } catch { toast.error('Language preference will be saved when the connection is restored.'); }\r",
+      "'/auth/logout');\r",
+      "'/inventory/yarn-stock');\r"
+    ],
+    "roleHints": [
+      "isCompanyPageVisible",
+      "user.role"
+    ],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/billing/BarcodeOptions.tsx",
+    "lines": 128,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/billing/Category.tsx",
+    "lines": 85,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/billing/CreditNotes.tsx",
+    "lines": 111,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/billing/DebitNotes.tsx",
+    "lines": 111,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/billing/DeletedView.tsx",
+    "lines": 80,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/billing/DeliveryChallans.tsx",
+    "lines": 111,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/billing/EInvoices.tsx",
+    "lines": 123,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/billing/Expenses.tsx",
+    "lines": 178,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/billing/ExpiryDatesBatches.tsx",
+    "lines": 146,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/billing/Group.tsx",
+    "lines": 93,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/billing/IndirectIncomes.tsx",
+    "lines": 123,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/billing/PackingLists.tsx",
+    "lines": 113,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/billing/Pricelists.tsx",
+    "lines": 127,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/billing/ProductsServices.tsx",
+    "lines": 161,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/billing/ProformaInvoices.tsx",
+    "lines": 107,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/billing/PurchaseOrders.tsx",
+    "lines": 115,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/billing/Quotations.tsx",
+    "lines": 116,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/billing/SalesOrders.tsx",
+    "lines": 116,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/billing/Subscriptions.tsx",
+    "lines": 127,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/BusinessFlowGuide.tsx",
+    "lines": 40,
+    "networkCalls": [],
+    "roleHints": [
+      "isCompanyPageVisible"
+    ],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/command-center/ActivityFeed.tsx",
+    "lines": 311,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/command-center/CampusAssets.tsx",
+    "lines": 121,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/command-center/CampusScene.tsx",
+    "lines": 476,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": true,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/command-center/CampusWorkspace.tsx",
+    "lines": 268,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/command-center/FleetDockTableHud.tsx",
+    "lines": 344,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/command-center/FloorCanvas.tsx",
+    "lines": 439,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/command-center/KpiRibbon.tsx",
+    "lines": 253,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/command-center/ShipmentStepperHud.tsx",
+    "lines": 320,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/command-center/WarRoomView.tsx",
+    "lines": 598,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/common/AccessibleDialog.tsx",
+    "lines": 143,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/common/AdvancedChartTooltip.tsx",
+    "lines": 114,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/common/BarcodeQRModal.tsx",
+    "lines": 322,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/common/BatchCodeBuilder.tsx",
+    "lines": 71,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/common/Breadcrumbs.tsx",
+    "lines": 100,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/common/BulkActions.tsx",
+    "lines": 210,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/common/ChartToolbar.tsx",
+    "lines": 247,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/common/ColumnFilters.tsx",
+    "lines": 226,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/common/ConfirmDialog.tsx",
+    "lines": 83,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": true,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/common/EmailTemplate.tsx",
+    "lines": 179,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/common/EmptyState.tsx",
+    "lines": 112,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/common/EntryWizardHeader.tsx",
+    "lines": 51,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/common/ErrorBoundary.tsx",
+    "lines": 142,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/common/ExportButtons.tsx",
+    "lines": 110,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/common/GlassDatePicker.tsx",
+    "lines": 321,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/common/LoadingSpinner.tsx",
+    "lines": 137,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/common/NotFound404.tsx",
+    "lines": 163,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/common/PaymentStatusChip.tsx",
+    "lines": 65,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/common/ProductionTimingAlert.tsx",
+    "lines": 20,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/common/RequiredLabel.tsx",
+    "lines": 47,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/common/ScreenReaderAnnouncer.tsx",
+    "lines": 90,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/common/StandardIcons.tsx",
+    "lines": 97,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/common/TablePagination.tsx",
+    "lines": 94,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/common/TableSkeleton.tsx",
+    "lines": 61,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/common/ThemeNotificationBanner.tsx",
+    "lines": 153,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/DashboardScene.tsx",
+    "lines": 94,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/insights/EwayBills.tsx",
+    "lines": 117,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/insights/TallySync.tsx",
+    "lines": 109,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/Login.tsx",
+    "lines": 538,
+    "networkCalls": [
+      "'/auth/login', payload);\r",
+      "'/auth/passkey/auth-options', { username });\r",
+      "'/auth/passkey/auth-verify', { username, response: asseResp });\r"
+    ],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/LoginAvatar.tsx",
+    "lines": 238,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/payments/BankReconciliation.tsx",
+    "lines": 122,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/payments/Journals.tsx",
+    "lines": 102,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/payments/PaymentLinks.tsx",
+    "lines": 137,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/payments/Timelines.tsx",
+    "lines": 83,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/ProfileModal.tsx",
+    "lines": 523,
+    "networkCalls": [
+      "'/auth/me')).data,\r",
+      "'/auth/profile', data),\r",
+      "'/auth/change-password', data),\r"
+    ],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/Signup.tsx",
+    "lines": 242,
+    "networkCalls": [
+      "'/auth/signup', {"
+    ],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/components/WeighbridgeReceiptDialog.tsx",
+    "lines": 89,
+    "networkCalls": [
+      "'/inventory/inward/weighbridge-sync', {\r"
+    ],
+    "roleHints": [],
+    "hasTest": true,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/context/ConfirmContext.tsx",
+    "lines": 67,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/context/KeyboardShortcutsContext.tsx",
+    "lines": 98,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/context/NotificationsContext.tsx",
+    "lines": 389,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/main.tsx",
+    "lines": 21,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/Billing.tsx",
+    "lines": 1315,
+    "networkCalls": [
+      "`/billing/invoice/${invoice.id}/payment`, {\r",
+      "`/billing/payment/${paymentId}`);\r",
+      "'/billing/invoices')).data,\r",
+      "'/settings')).data,\r",
+      "'/inventory/yarn-stock')).data,\r",
+      "'/billing/invoice', { ...data, createdBy: username });\r",
+      "`/billing/invoice/${id}`);\r"
+    ],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/BookEllam.tsx",
+    "lines": 505,
+    "networkCalls": [
+      "'/inventory/inward');\r",
+      "'/inventory/outward');\r",
+      "'/commerce/customers');\r",
+      "'/production');\r",
+      "'/inventory/history?range=all');\r",
+      "'/integrations/tally/export', { params: { types: 'Sales,Receipt' }, responseType: 'blob' });\r"
+    ],
+    "roleHints": [],
+    "hasTest": true,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/CatalogueTaxonomy.tsx",
+    "lines": 56,
+    "networkCalls": [
+      "`/commerce/${resource}`)).data });",
+      "`/commerce/${resource}/${editingId}`, { name: name.trim() });",
+      "`/commerce/${resource}`, { name: name.trim() });",
+      "`/commerce/${resource}/${row.id}`);"
+    ],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/CommandCenter.tsx",
+    "lines": 1023,
+    "networkCalls": [
+      "'/dashboard/summary').then((r) => r.data),\r",
+      "'/machines').then((r) => r.data),\r",
+      "'/machines/inspections').then((r) => r.data),\r",
+      "'/inventory/inward').then((r) => r.data),\r",
+      "'/inventory/outward').then((r) => r.data),\r",
+      "'/production').then((r) => r.data),\r",
+      "'/quality/inspections').then((r) => r.data),\r"
+    ],
+    "roleHints": [],
+    "hasTest": true,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/CommerceDesk.tsx",
+    "lines": 225,
+    "networkCalls": [
+      "`/commerce/items/${historyItem!.id}/movements`)).data });\r",
+      "'/commerce/items')).data });\r",
+      "'/commerce/brands')).data });\r",
+      "'/commerce/categories')).data });\r",
+      "'/commerce/customers')).data });\r",
+      "'/commerce/orders')).data });\r",
+      "'/commerce/invoices')).data });\r",
+      "'/settings')).data });\r",
+      "'/inventory/outward')).data });\r",
+      "`/commerce/items/${editingItemId}`, payload); else await api.post('/commerce/items', payload); setItemOpen(false); setEditingItemId(null); setItem(emptyItem());",
+      "`/commerce/customers/${editingCustomerId}`, customer); else await api.post('/commerce/customers', customer); setCustomerOpen(false); setEditingCustomerId(null);",
+      "`/commerce/items/${adjustItem.id}/adjust`, { quantity: Number(adjustQuantity), notes: adjustNotes }); setAdjustItem(null); setAdjustQuantity(''); setAdjustNotes",
+      "'/commerce/orders', { ...order, lines: order.lines.map(line => ({ itemId: line.itemId, quantity: Number(line.quantity), rate: line.rate ? Number(line.rate) : un",
+      "'/commerce/invoices', {\r",
+      "`/commerce/items/${x.id}`); await refresh(['commerce-items']); toast.success('Item archived'); } catch (e: any) { toast.error(e.response?.data?.message || 'Coul",
+      "`/commerce/customers/${x.id}/ledger`)).data); } catch { toast.error('Could not load ledger'); } }}>Ledger</Button></TableCell></TableRow>)}</TableBody></Table><",
+      "`/commerce/orders/${x.id}/cancel`,{notes:'Cancelled from Business Desk'});await refresh(['commerce-orders','commerce-items']);toast.success('Order cancelled and",
+      "`/commerce/invoices/${x.id}/void`,{notes:'Voided from Invoice Studio'});await refresh(['commerce-invoices','commerce-customers','commerce-items']);toast.success",
+      "'/commerce/invoices/' + paymentInvoice.id + '/payments', { amount: Number(paymentAmount), method: paymentMethod, reference: paymentNotes, idempotencyKey: paymen",
+      "'/commerce/invoices/' + paymentInvoice.id + '/payments/' + payment.id + '/reverse', { notes: paymentNotes }); await refresh(['commerce-invoices', 'commerce-cust"
+    ],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/CommerceReports.tsx",
+    "lines": 659,
+    "networkCalls": [
+      "'/commerce/report')).data,\r",
+      "'/commerce/invoices')).data,\r",
+      "'/commerce/customers')).data,\r",
+      "'/commerce/orders')).data,\r"
+    ],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/Costing.tsx",
+    "lines": 548,
+    "networkCalls": [
+      "'/costing/entries', {\r",
+      "'/production/history', {\r",
+      "`/costing/${id}`);\r"
+    ],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/CostingEntry.tsx",
+    "lines": 558,
+    "networkCalls": [
+      "'/production'); // Assuming API returns all recent production\r",
+      "'/costing/entries');\r",
+      "'/settings');\r",
+      "`/costing/${id}`);\r",
+      "`/costing/${existingEB.id}`, payload);\r",
+      "'/costing/eb', payload);\r",
+      "`/costing/${existingEmployee.id}`, payload);\r",
+      "'/costing/employee', payload);\r",
+      "`/costing/${existingPackaging.id}`, payload);\r",
+      "'/costing/packaging', payload);\r",
+      "`/costing/${existingMaintenance.id}`, payload);\r",
+      "'/costing/maintenance', payload);\r",
+      "'/costing/expense', { date, ...expenseData, createdBy: username });\r"
+    ],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/CostingHistory.tsx",
+    "lines": 428,
+    "networkCalls": [
+      "'/costing/dashboard', {\r",
+      "'/costing/history', {\r"
+    ],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/CostingList.tsx",
+    "lines": 157,
+    "networkCalls": [
+      "'/costing/entries');\r"
+    ],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/Dashboard.tsx",
+    "lines": 997,
+    "networkCalls": [
+      "`/dashboard/summary?from=${dateRange.from}&to=${dateRange.to}`);\r",
+      "`/dashboard/charts?from=${dateRange.from}&to=${dateRange.to}`);\r",
+      "'/dashboard/recent-activity');\r",
+      "'/commerce/un-invoiced-challans');\r",
+      "'/settings')).data,\r"
+    ],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/Helpdesk.tsx",
+    "lines": 298,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/Insights.tsx",
+    "lines": 295,
+    "networkCalls": [
+      "'/billing/invoices')).data,",
+      "'/dashboard/summary')).data,",
+      "'/dashboard/charts')).data,"
+    ],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/Integrations.tsx",
+    "lines": 105,
+    "networkCalls": [
+      "'/integrations/imports')).data });\r",
+      "'/integrations/imports/preview', input)).data); }\r",
+      "'/integrations/imports/commit', { ...input, source, requestKey });\r",
+      ")}>Retry</Button>}>Import history could not be loaded.</Alert>}\r"
+    ],
+    "roleHints": [],
+    "hasTest": true,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/Inventory.tsx",
+    "lines": 908,
+    "networkCalls": [
+      "`/inventory/waste/${id}`);\r",
+      ");\r",
+      "'/inventory/waste/export', { ...wasteForm, quantity: parseFloat(wasteForm.quantity), createdBy: username });\r",
+      "'/inventory/waste/recycle', { date: wasteForm.date, quantity: parseFloat(wasteForm.quantity), createdBy: username });\r",
+      ");\r",
+      "'/inventory/history', {\r"
+    ],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/InvoiceGenerator/index.tsx",
+    "lines": 264,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/InwardEntry.tsx",
+    "lines": 717,
+    "networkCalls": [
+      "'/inventory/inward', {\r",
+      "`/inventory/inward/${id}`);\r",
+      "'/inventory/inward', {\r",
+      "'/inventory/inward/merge', {\r"
+    ],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/JobWork.tsx",
+    "lines": 758,
+    "networkCalls": [
+      "'/commerce/items')).data,\r",
+      "'/job-work/workers')).data,\r",
+      "'/job-work')).data,\r",
+      "'/job-work/summary')).data,\r",
+      "'/job-work/workers', { name: workerName.trim() });\r",
+      "'/job-work/dispatch', {\r",
+      "`/job-work/${receipt.id}/receive`, { lines });\r",
+      "`/job-work/${job.id}/cancel`, { notes: 'Outstanding material returned; job cancelled', returnConfirmed: true }); await refresh(); toast.success('Job cancelled; "
+    ],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/Logs.tsx",
+    "lines": 326,
+    "networkCalls": [
+      "'/logs', { params });\r"
+    ],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/MsmeErp.tsx",
+    "lines": 159,
+    "networkCalls": [
+      "'/commerce/report')).data });\r",
+      "'/commerce/items')).data, enabled: tab === 1 });\r",
+      "'/commerce/customers')).data, enabled: tab === 2 });\r",
+      "'/commerce/invoices')).data, enabled: tab === 3 });\r"
+    ],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/OperationsDesk.tsx",
+    "lines": 993,
+    "networkCalls": [
+      "'/commerce/items')).data,\r",
+      "'/commerce/inward-receipts')).data,\r",
+      "'/commerce/costing-sheets')).data,\r",
+      "'/commerce/inward-receipts', {\r",
+      "'/commerce/costing-sheets', {\r",
+      "`/commerce/items/${i.id}/movements`);\r"
+    ],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/OutwardEntry.tsx",
+    "lines": 623,
+    "networkCalls": [
+      "'/inventory/outward', { params });\r",
+      "'/inventory/yarn-stock', { params: { date: productionTimestamp(date, dispatchTime) || date, available: true } });\r",
+      "'/inventory/outward', {\r",
+      "`/inventory/outward/${id}`);\r"
+    ],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/Payments.tsx",
+    "lines": 304,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/ProductionEntry.tsx",
+    "lines": 1077,
+    "networkCalls": [
+      "'/production', {\r",
+      "'/inventory/available-batches', { params: { date } });\r",
+      "'/settings');\r",
+      "'/inventory/yarn-stock', { params: { date } });\r",
+      "'/production', productionData);\r",
+      "`/production/${id}`);\r"
+    ],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/SecuritySettings.tsx",
+    "lines": 465,
+    "networkCalls": [
+      "'/auth/me')).data,\r",
+      "'/auth/totp/generate');\r",
+      "'/auth/totp/verify', { code: totpCode });\r",
+      "'/auth/totp/disable', { code: totpCode });\r",
+      "'/auth/passkey/register-options');\r",
+      "'/auth/passkey/register-verify', attResp);\r",
+      "'/auth/change-password', {\r"
+    ],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/SessionManagement.tsx",
+    "lines": 178,
+    "networkCalls": [
+      "'/sessions');\r",
+      "`/sessions/${id}/revoke`),\r"
+    ],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/Settings.tsx",
+    "lines": 694,
+    "networkCalls": [
+      "'/settings');\r",
+      "'/auth/me')).data,\r",
+      "'/settings', data),\r"
+    ],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/SharedPayments.tsx",
+    "lines": 16,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/ShopPortal.tsx",
+    "lines": 88,
+    "networkCalls": [
+      "'/api/backend/storefront/products');",
+      "'/api/backend/storefront/orders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...buyer, lines: cart.map(line => ({",
+      ");",
+      ")}>{t.retry}</Button></Paper>}"
+    ],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/Store.tsx",
+    "lines": 79,
+    "networkCalls": [
+      "'/commerce/items')).data });\r",
+      "'/commerce/customers')).data });\r",
+      "'/commerce/orders', { customerId, notes, lines: cart.map(line => ({ itemId: line.itemId, quantity: line.quantity })) });\r"
+    ],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/TodayDashboard.tsx",
+    "lines": 431,
+    "networkCalls": [
+      "'/production');\r",
+      "'/costing/entries');\r"
+    ],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/Tutorial.tsx",
+    "lines": 274,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/UnifiedWorkspace.tsx",
+    "lines": 456,
+    "networkCalls": [
+      "'/commerce/report')).data,\r",
+      "'/machines')).data,\r",
+      "'/health?format=json')).data,\r",
+      "); void machines.refetch(); void health.refetch(); }}>Refresh now</Button>\r"
+    ],
+    "roleHints": [
+      "isCompanyPageVisible"
+    ],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/UserManagement.tsx",
+    "lines": 464,
+    "networkCalls": [
+      "'/users');\r",
+      "'/users', newUser),\r",
+      "`/users/${id}`, data),\r",
+      "`/users/${id}`),\r",
+      ")}>Retry</Button>}>\r"
+    ],
+    "roleHints": [
+      "canManageUsers",
+      "user.role"
+    ],
+    "hasTest": true,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/Vyapari.tsx",
+    "lines": 13,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/WorkflowDesk.tsx",
+    "lines": 113,
+    "networkCalls": [
+      "'/workflows')).data });\r",
+      "'/commerce/invoices', { customerId: source?.customerId, fulfilmentId: source?.id, invoiceNo: form.documentNo || undefined, date: payload.date, requestKey, notes",
+      "`/workflows/orders/${form.orderId}/amend`, { discount: Number(form.discount), notes: form.notes });\r",
+      "`/commerce/orders/${form.orderId}/cancel`, { notes: form.notes });\r",
+      "`/workflows/post/${operation.kind}`, payload);\r",
+      "`/workflows/holds/${release.id}/release`, { notes: releaseNotes }); setRelease(null); toast.success('Inspection recorded and stock released'); } catch (e: any) ",
+      "'/workflows/suppliers', supplier); setSupplierOpen(false); setSupplier({ name: '', code: '', gstin: '', address: '' }); } catch (e: any) { toast.error(e.respons",
+      "'/workflows/periods/close', { through: closeDate, notes: closeNotes }); setCloseOpen(false); } catch (e: any) { toast.error(e.response?.data?.message || 'Closur"
+    ],
+    "roleHints": [
+      "user.role"
+    ],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/yarn/ComplianceReports.tsx",
+    "lines": 117,
+    "networkCalls": [
+      "'/commerce/report').then((r) => r.data),\r",
+      "'/hr/payroll', { params: { month } }).then((r) => r.data),\r"
+    ],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/yarn/DemandForecasting.tsx",
+    "lines": 328,
+    "networkCalls": [
+      "'/commerce/orders').then((response) => response.data),\r"
+    ],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/yarn/HRManagement.tsx",
+    "lines": 765,
+    "networkCalls": [
+      "'/hr/staff').then((res) => res.data),\r",
+      "`/hr/payroll?month=${currentMonth}`).then((res) => res.data),\r",
+      "'/hr/staff', {\r",
+      "'/hr/payroll', {\r"
+    ],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/yarn/LiveDashboard.tsx",
+    "lines": 166,
+    "networkCalls": [
+      "'/machines').then((r) => r.data),\r",
+      "'/machines/inspections').then((r) => r.data),\r"
+    ],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/yarn/MachineManagement.tsx",
+    "lines": 674,
+    "networkCalls": [
+      "'/machines').then((r) => r.data),\r",
+      "'/machines/inspections').then((r) => r.data),\r",
+      "'/machines', {\r",
+      "'/machines/inspections', {\r"
+    ],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/yarn/QualityControl.tsx",
+    "lines": 497,
+    "networkCalls": [
+      "'/workflows')).data });\r",
+      "url).then((res) => res.data);\r",
+      "'/quality/inspections', {\r"
+    ],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/yarn/ShiftManagement.tsx",
+    "lines": 191,
+    "networkCalls": [
+      "'/hr/shifts').then((r) => r.data),\r",
+      "'/hr/shifts', form),\r"
+    ],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/yarn/SupplierPortal.tsx",
+    "lines": 145,
+    "networkCalls": [
+      "'/commerce/inward-receipts').then((r) => r.data),\r"
+    ],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/yarn/WarehouseManagement.tsx",
+    "lines": 626,
+    "networkCalls": [
+      "'/warehouse/locations').then((r) => r.data),\r",
+      "'/commerce/items').then(r => r.data) });\r",
+      "'/warehouse/movements').then((r) => r.data),\r",
+      "'/warehouse/locations', {\r",
+      "'/warehouse/movements', {\r"
+    ],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  },
+  {
+    "file": "apps/web/src/pages/YarnERP.tsx",
+    "lines": 239,
+    "networkCalls": [],
+    "roleHints": [],
+    "hasTest": false,
+    "runtime": "UNVERIFIED: no authenticated browser/device journey"
+  }
+]

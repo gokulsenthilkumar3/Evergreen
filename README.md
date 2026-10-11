@@ -116,10 +116,19 @@ Do not run `db push` or the legacy bridge script against an existing operational
 
 ### 5. Start Development Servers
 ```bash
-# Start API and web together
+# 🚀 Start ALL surfaces in 1 step (Customer App, Admin Web, Marketing Web, APIs & Databases):
+npm run dev:all
+# or
+npm start
+
+# Or start only customer staff app & API:
 npm run dev
 ```
-Open `http://localhost:4000/` for staff UI or `http://localhost:4000/shop` for the public shop. Browser API calls use `/api/backend` on the same public port. The launcher compiles and starts an internal API on `127.0.0.1:4301` by default and verifies the public health route before reporting ready. Set `EVERGREEN_PUBLIC_PORT` and `EVERGREEN_API_PORT` if these ports are occupied; it will not stop another service.
+- **Customer Tenant App & ERP**: `http://localhost:4000/` (proxies API via `/api/backend`)
+- **Customer Tenant API**: `http://127.0.0.1:4301/api/docs` & `http://localhost:4000/health`
+- **Provider Admin Control Plane**: `http://localhost:5174/` & `http://localhost:4300/api/docs`
+- **Public Product Marketing Portal**: `http://localhost:3300/`
+- **Isolated SQLite Databases**: `@evergreen/database` (`dev.db`) & `@evergreen/admin-database` (`admin.db`)
 
 Production build: `npm run build -w apps/api` and `npm run build -w apps/web`. These passing builds do not establish feature parity or release readiness; see the parity register and release gates.
 

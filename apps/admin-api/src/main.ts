@@ -15,12 +15,16 @@ async function bootstrap() {
   // Only the loopback web proxy may supply the original client address.
   app.set('trust proxy', 'loopback');
 
-  // Enable CORS with specific configuration
+  // Enable CORS with strict dual-plane isolation: Provider Admin Web ONLY
+  const allowedAdminOrigins = process.env.ADMIN_CORS_ORIGIN
+    ? process.env.ADMIN_CORS_ORIGIN.split(',').map((s) => s.trim())
+    : ['http://localhost:5173', 'http://localhost:5174'];
+
   app.enableCors({
-    origin: ['http://localhost:4000', 'http://localhost:5173', 'http://localhost:5174', 'http://localhost:3300'],
+    origin: allowedAdminOrigins,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Provider-Key', 'X-Provider-Actor'],
   });
 
   app.use(

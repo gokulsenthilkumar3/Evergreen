@@ -263,11 +263,23 @@ export default function App() {
   const [newRecordPriority, setNewRecordPriority] = useState<string>('NORMAL');
 
   const adminApiBase = 'http://localhost:4300';
+  const providerKey = (typeof window !== 'undefined' && (localStorage.getItem('evergreen_provider_key') || (import.meta as any).env?.VITE_ADMIN_API_KEY)) || 'evergreen_master_admin_dev_token_secret_key_32bytes';
+
+  const authFetch = (input: RequestInfo | URL, init?: RequestInit) => {
+    const headers = new Headers(init?.headers || {});
+    if (!headers.has('Authorization')) {
+      headers.set('Authorization', `Bearer ${providerKey}`);
+    }
+    if (!headers.has('X-Provider-Actor')) {
+      headers.set('X-Provider-Actor', 'Provider operator');
+    }
+    return fetch(input, { ...init, headers });
+  };
 
   /* ──── DATA FETCHING ──── */
   const fetchCompanies = async () => {
     try {
-      const res = await fetch(`${adminApiBase}/companies`);
+      const res = await authFetch(`${adminApiBase}/companies`);
       if (res.ok) setCompanies(await res.json());
       else setCompanies(DEMO_TENANTS as unknown as Company[]);
     } catch {
@@ -279,7 +291,7 @@ export default function App() {
 
   const fetchRecords = async () => {
     try {
-      const res = await fetch(`${adminApiBase}/control/records`);
+      const res = await authFetch(`${adminApiBase}/control/records`);
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data) && data.length > 0) setRecords(data);
@@ -292,9 +304,9 @@ export default function App() {
   const fetchCicdData = async () => {
     try {
       const [resPkg, resDep, resLogs] = await Promise.all([
-        fetch(`${adminApiBase}/cicd/releases`),
-        fetch(`${adminApiBase}/cicd/deployments`),
-        fetch(`${adminApiBase}/cicd/logs?limit=100`),
+        authFetch(`${adminApiBase}/cicd/releases`),
+        authFetch(`${adminApiBase}/cicd/deployments`),
+        authFetch(`${adminApiBase}/cicd/logs?limit=100`),
       ]);
       if (resPkg.ok) setPackages(await resPkg.json());
       if (resDep.ok) setDeployments(await resDep.json());
@@ -330,7 +342,7 @@ export default function App() {
         ? nextExpiry.setFullYear(nextExpiry.getFullYear() + 1)
         : nextExpiry.setDate(nextExpiry.getDate() + 30);
 
-      const res = await fetch(`${adminApiBase}/companies/${company.id}/license`, {
+      const res = await authFetch(`${adminApiBase}/companies/${company.id}/license`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -362,7 +374,7 @@ export default function App() {
   const executeRemoteAction = async (companyId: string, actionType: string) => {
     try {
       showMsg(`Executing ${actionType}...`, false);
-      const res = await fetch(`${adminApiBase}/companies/${companyId}/actions`, {
+      const res = await authFetch(`${adminApiBase}/companies/${companyId}/actions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ actionType }),
@@ -381,7 +393,7 @@ export default function App() {
     if (!deployTargetCompany) return;
     try {
       showMsg(`🚀 Triggering ${selectedStrategy} deployment of ${selectedPackageToDeploy} to ${deployTargetCompany.name}...`, false);
-      const res = await fetch(`${adminApiBase}/cicd/deploy`, {
+      const res = await authFetch(`${adminApiBase}/cicd/deploy`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -406,7 +418,7 @@ export default function App() {
     e.preventDefault();
     try {
       showMsg(`🔨 Building release package ${newPkgVersion}...`, false);
-      const res = await fetch(`${adminApiBase}/cicd/releases`, {
+      const res = await authFetch(`${adminApiBase}/cicd/releases`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -433,7 +445,7 @@ export default function App() {
     e.preventDefault();
     try {
       showMsg(`Provisioning tenant ${name}...`, false);
-      const res = await fetch(`${adminApiBase}/companies`, {
+      const res = await authFetch(`${adminApiBase}/companies`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -1,0 +1,3152 @@
+[
+  {
+    "file": "apps/admin-api/cleanup_orphans.js",
+    "lines": 60,
+    "sha256": "1b1e57a662a251cded899b57919132c69897180f2a87b922c2c5d8b94726f395",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-api/eslint.config.mjs",
+    "lines": 36,
+    "sha256": "e94fea27c5d744a435cba627eb7097993c14a66a21f478c3729781bcdf4c8fba",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-api/nest-cli.json",
+    "lines": 9,
+    "sha256": "84dc81177a0db2270bd71242b910f07982c56eec68285694c9cbffc3911912ba",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-api/package.json",
+    "lines": 114,
+    "sha256": "81360641f6a305880151a2ff2e44e8bcdd21dc08320abd6323ca976e5e3806e3",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-api/src/app.controller.ts",
+    "lines": 27,
+    "sha256": "d99c0b8137583a82c8ea3e921235f57a3f61d05d95a2fed94478c6264e944c3a",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-api/src/app.module.ts",
+    "lines": 26,
+    "sha256": "1f41e7e9756391c66420888cfd444fe5711553362a975b198cd49b0894e71d45",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-api/src/app.service.ts",
+    "lines": 43,
+    "sha256": "f97a32683258e14c0b3bf4b84798020a63633cb0d98cb99122568434d49bdf36",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-api/src/decorators/public.decorator.ts",
+    "lines": 5,
+    "sha256": "67d2c26dd0b30f371d271ee05b43630d5f29f525c06d4319bbee1eb99cbb11b9",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-api/src/decorators/roles.decorator.ts",
+    "lines": 5,
+    "sha256": "0f9916ae0a4f28ae1d0277ef11831404fabeb2f3915099ceb95fd83e2875a1f9",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-api/src/filters/business-action.filter.ts",
+    "lines": 20,
+    "sha256": "7ca7ecec52c23d46c7c76b317d4f3e20c657600bf67a4c959bc335b50d6a067c",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-api/src/filters/not-found-exception.filter.ts",
+    "lines": 181,
+    "sha256": "944b2a70a35dd944e429b295f68c4280cd203386beaadd5f39c2db651c37257d",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-api/src/guards/jwt-auth.guard.ts",
+    "lines": 33,
+    "sha256": "e9e46f3d3c97766b2ee46d5243628b1758c726be75c29c28524042e25c80d14a",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-api/src/guards/legacy-billing-read-only.guard.ts",
+    "lines": 11,
+    "sha256": "e2c8392b10f053f2f7084603a36281297981694410d5b6c7d789554208a32ff9",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-api/src/guards/provider-access.guard.ts",
+    "lines": 24,
+    "sha256": "ed203ebc2e2af5a36d7e2f90cf06665834100fee41d7d65508c5c29a2fc10bc9",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-api/src/guards/public-order-rate-limit.guard.ts",
+    "lines": 67,
+    "sha256": "e156df825076538da16069c414abdc0c638136074303c528fee3f5b336987ee9",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-api/src/guards/roles.guard.ts",
+    "lines": 54,
+    "sha256": "77f10f94e26303f246ea144457897dd88cffb47f4bda9ddda347e4fdb45e2047",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-api/src/main.ts",
+    "lines": 458,
+    "sha256": "ec15407d906bda0228ef887c4a0a894752c636403ff0cf844c696364a315a311",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-api/src/modules/cicd/cicd.controller.ts",
+    "lines": 55,
+    "sha256": "80b692b65760e013a26f566e1ac3aecf5fc30366728bf9d95f8d27b504fa37f4",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-api/src/modules/cicd/cicd.module.ts",
+    "lines": 13,
+    "sha256": "95fe74a7cc61d2f02ca6ca70fecc4ec92147ff77f0e3254c5351e99ef21cf98e",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-api/src/modules/cicd/cicd.service.ts",
+    "lines": 316,
+    "sha256": "ad80220c4fab60c5fbca061da4383e1af19b1794ca4579ce68ab593b1e02fe7c",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-api/src/modules/companies/companies.controller.spec.ts",
+    "lines": 28,
+    "sha256": "c178b4e0a1f2c6791b5133af8c544e69f4d5f7e1d9a9387683d3a8a06857dac4",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-api/src/modules/companies/companies.controller.ts",
+    "lines": 65,
+    "sha256": "879cf30c914eaf16f1e682d719e13f35c0e32b2eec18ce3043b627c505f4409a",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-api/src/modules/companies/companies.module.ts",
+    "lines": 11,
+    "sha256": "882e13640f570e2f478b4084cab546487ad65247603a4758556b97d0aa75e798",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-api/src/modules/companies/companies.service.ts",
+    "lines": 193,
+    "sha256": "2933c6f4a9afcc85f429f1404bc17be9b0949eb4d9831fcf495c631cd3236a44",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-api/src/modules/control/control.controller.ts",
+    "lines": 12,
+    "sha256": "84cca3fae2bf9ee2789a4e4ba0b91f2fab983113ab1e3b852236706452df6c6e",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-api/src/modules/control/control.module.ts",
+    "lines": 6,
+    "sha256": "67e240969686a20d019e7955084dd6fba9b2a39740d6a503736983abcc2a72a2",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-api/src/modules/control/control.service.ts",
+    "lines": 71,
+    "sha256": "ce321d4a9f7c1b1e8af95218f3b3788fbf196379ef71186861b53ce295d597fa",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-api/src/modules/database/database.module.ts",
+    "lines": 10,
+    "sha256": "6fd079da225fff17c340993541c95d95822f020e89e0e2139ef3b0e0654bb118",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-api/src/services/prisma.service.ts",
+    "lines": 14,
+    "sha256": "e85a832d333f38cebf5ba410e7cce1ac0a557541b5e1411b6199c7da695f2f5b",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-api/src/types/authenticated-request.ts",
+    "lines": 6,
+    "sha256": "fcd3f21cc551369bb4bc9aa58b8150a3dfb97d3ef74eabc532f16c2dd8ef9fbb",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-api/src/utils/delete-guard.ts",
+    "lines": 219,
+    "sha256": "3c32089f9fa53b1c9d1bacb7d8117b4e4e9d31df2eba5bd614d1e37549d4521e",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-api/src/utils/roles.spec.ts",
+    "lines": 18,
+    "sha256": "2a64ad2805e6ebf38481511187834e6b888ed3156e308bc1a671c16c920b6b21",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-api/src/utils/roles.ts",
+    "lines": 11,
+    "sha256": "cb4cf2d74ec3b76c1dc8ccb6fd2919d07d91ac8ca3f54116627b6f70e1376c15",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-api/src/utils/stock-event-date.ts",
+    "lines": 17,
+    "sha256": "ea11e05a791686a5d43d251b372f663ade882404b47f7fbc7c387722060f948b",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-api/test/app.e2e-spec.ts",
+    "lines": 84,
+    "sha256": "ed3c0dd98d573dd1b0b6e812b92dcc0f6295dd3031a9b3c7c45ac5091f304067",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-api/test/jest-e2e.json",
+    "lines": 15,
+    "sha256": "2563bbff009eaf7258da5cd44ec0affafaf036d05a84a43d02a389fc4c401a42",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-api/tsconfig.build.json",
+    "lines": 5,
+    "sha256": "ef5be6c06c3ac6c3eca6c81885a12d03e33059086b4b275cf39f6e9359965378",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-api/tsconfig.json",
+    "lines": 31,
+    "sha256": "c9d7c04b31f945282be3f9031db85ac0c57384528127c8a7085d5555dd458fdf",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-web/.oxlintrc.json",
+    "lines": 9,
+    "sha256": "3f46d4038fd69c0011da897b887d747e3d66f0bbda8b523a54891fbd473d67ef",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-web/package.json",
+    "lines": 26,
+    "sha256": "49516df8c94ab92d07e4791f8d92a06f6046d02e387d985efaf17578cad70db8",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-web/src/AdminModal.tsx",
+    "lines": 42,
+    "sha256": "79c5597dcf17450357d1fdf47719743076686e53103bc77a466457f11ed29967",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-web/src/App.test.tsx",
+    "lines": 130,
+    "sha256": "6a3e069445627364ed1886984a960ad2eb3da9edd53cba4d7e586c132e1361b2",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-web/src/App.tsx",
+    "lines": 2796,
+    "sha256": "b63902a1d03a3af570f82878b5b5dc289830a44dcaf85beed900bcab4d937b08",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-web/src/control-data.ts",
+    "lines": 84,
+    "sha256": "5e42271c337114a23b06b0e54d901d2e4ef7c1b5dc5999eb528cf73a6698f677",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-web/src/main.tsx",
+    "lines": 11,
+    "sha256": "484f93f3048565a86a47e308f5a12ee27aa12f5291f3b52a4bb5dc03d887dbc7",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-web/src/WorkspaceIcon.tsx",
+    "lines": 42,
+    "sha256": "db858a171e27ca35dc9da8572a3cde1685594a3865df53381c2eb2a2e5b2b5da",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-web/tsconfig.app.json",
+    "lines": 27,
+    "sha256": "bbcd078c923aa26585b32222f966a047948210372f3adbf41617e7553ef73e13",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-web/tsconfig.json",
+    "lines": 8,
+    "sha256": "ad28d132ee48d6e23917cf5827cace785d0fc01a44ca68b0dda51cc8c3fd3f52",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-web/tsconfig.node.json",
+    "lines": 24,
+    "sha256": "a9e6c7f6fd3ec455a6fe1d4fbb83091e774b62fe116008ab6d8c5e1e88af4629",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-web/vite.config.ts",
+    "lines": 13,
+    "sha256": "f7aa803844c73ffce04f14958c2856ac7442462d0eb6b8ed51724ac32c13c2cc",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/admin-web/vitest.config.ts",
+    "lines": 12,
+    "sha256": "649a324b07f3bbc8cb397eea0bf816a66f9f788ed3fddc5e302d6befa5f1b056",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/cleanup_orphans.js",
+    "lines": 60,
+    "sha256": "8418fe9adf5723e77de9e4d4f65b3c632248b3f3449b2b93296f0279d175188f",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/eslint.config.mjs",
+    "lines": 36,
+    "sha256": "e94fea27c5d744a435cba627eb7097993c14a66a21f478c3729781bcdf4c8fba",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/nest-cli.json",
+    "lines": 9,
+    "sha256": "84dc81177a0db2270bd71242b910f07982c56eec68285694c9cbffc3911912ba",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/package.json",
+    "lines": 114,
+    "sha256": "b982a362aa9e7b34ca4acf3272300df42607355a013640728d95a9a2d3c3dcb0",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/app.controller.spec.ts",
+    "lines": 60,
+    "sha256": "fca04108a33cf9d61eccffaa4d61fca846ec55db6141ecc61c57126d0e96534f",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/app.controller.ts",
+    "lines": 84,
+    "sha256": "0c68e68adaffaf20120a7f20b420a630158a71ca91001e0c356673ee566b91a7",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/app.module.ts",
+    "lines": 70,
+    "sha256": "454728be52337be6fe332361925c9c221e6329ba34bda45861826c8f9a176a90",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/app.service.ts",
+    "lines": 1717,
+    "sha256": "ee03f6c911592fe0bf7b11c2f0d21737fb6067393d2045022d3caae5d97c6ec9",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/connected-modules.smoke.spec.ts",
+    "lines": 112,
+    "sha256": "641b0d924796f151f23b7f03e84b77eda4986a022e0fa5b80dfd6083eb3c8470",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/decorators/public.decorator.ts",
+    "lines": 5,
+    "sha256": "bb149c7568f240afbabb885243d83abe7ec86fe6a27777ba4d028b7fb3b463dc",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/decorators/roles.decorator.ts",
+    "lines": 5,
+    "sha256": "8080391fc73ab433dcea7bfa51c3ab08e5bb1cab10572fcbc16481ed755d9fac",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/filters/business-action.filter.ts",
+    "lines": 21,
+    "sha256": "dc6febf7dad458b853c9f296723fde365c7e946463834a410c46cefe8c80c4bb",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/filters/not-found-exception.filter.ts",
+    "lines": 181,
+    "sha256": "944b2a70a35dd944e429b295f68c4280cd203386beaadd5f39c2db651c37257d",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/guards/access-control.spec.ts",
+    "lines": 83,
+    "sha256": "1358c00999ca968e072e1f457e083b6fae9c63236cd43d4f973bb3659910750e",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/guards/jwt-auth.guard.ts",
+    "lines": 33,
+    "sha256": "0f57d3b88f1c8323614a37a2eb51afca3a95f7a648ae950939d04225f6ca7935",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/guards/legacy-billing-read-only.guard.ts",
+    "lines": 11,
+    "sha256": "7178efdfa71d8f89b52dab7fde8bcc72e2e69ccc3f2a1e6a7ae9299c378f1369",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/guards/provider-admin.guard.ts",
+    "lines": 16,
+    "sha256": "ff23f26020ad0c7c1c3425a25d494315a29f9f1ec0edfb908d9c92bfd7ae3615",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/guards/public-order-rate-limit.guard.ts",
+    "lines": 67,
+    "sha256": "e156df825076538da16069c414abdc0c638136074303c528fee3f5b336987ee9",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/guards/roles.guard.ts",
+    "lines": 54,
+    "sha256": "77f10f94e26303f246ea144457897dd88cffb47f4bda9ddda347e4fdb45e2047",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/main.ts",
+    "lines": 466,
+    "sha256": "eeea3a92eef1566fe3837320a5871d5c4ca4a3d2fe1334d4a3e7b260e7e4d876",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/admin-ops/admin-ops.controller.ts",
+    "lines": 23,
+    "sha256": "88c9991cf59af82c78eb16a97e54cd0032e371dcad6d19a7d1189f88a3729373",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/admin-ops/admin-ops.module.ts",
+    "lines": 8,
+    "sha256": "3916ad41d5a1a48e5371d442a44fa3e64701167075b084cc858a6d566bfc72b5",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/auth/auth.controller.ts",
+    "lines": 191,
+    "sha256": "9987576456e0af3290b703d4154282ab7a69060094cc643216e72414768cec60",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/auth/auth.dto.ts",
+    "lines": 56,
+    "sha256": "91536367fcbe662c4f341d225215c970da74323584e744a433b6dee74dbc1b35",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/auth/auth.module.ts",
+    "lines": 29,
+    "sha256": "d7591aea7a92f08319d232ff5f8e8acb171a8a103b0df0ffb602abe5beeaf1dd",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/auth/auth.service.spec.ts",
+    "lines": 64,
+    "sha256": "8246b2838c5ffabf25ddeaa6869a1f349b40f01c0a48e2996c206ef6885c36a9",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/auth/auth.service.ts",
+    "lines": 359,
+    "sha256": "91c5dbc6a0227874c3cae6c425f694885c5a67e219cb2a5b0555ad98cf0681c3",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/auth/email.service.ts",
+    "lines": 53,
+    "sha256": "ffe245ff3e0d1e7c86ee5c768fc23a0502ef9c27bfc97e29fbda206921a3895c",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/auth/jwt-secret.ts",
+    "lines": 18,
+    "sha256": "959087eed7bc3e44799fa8eee3c8a080396f882344526acf932220a54f5a5802",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/auth/jwt.strategy.ts",
+    "lines": 57,
+    "sha256": "a736a1a2de9f17c850c67c39972343507f18324a021b9245f81770340a14cc1a",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/auth/webauthn.service.ts",
+    "lines": 182,
+    "sha256": "c3d05f53718161f93d8fe1d6e48f2bc52d83040a6270efde0e0dbc80ae331fe2",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/billing/billing.controller.ts",
+    "lines": 289,
+    "sha256": "89aade74750a42aed059f42b7215ab320a0ce137518b7f2999275e00fc5a7631",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/billing/billing.module.ts",
+    "lines": 8,
+    "sha256": "853c5ed1ec40baca897a066df68647853a40c50d63f385622c1cc9a7908c32b9",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/commerce/commerce.controller.ts",
+    "lines": 51,
+    "sha256": "ea66792c025d9fd744cc5b980583dfa9e6bd359da2c95e80eaeacd63f53531d9",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/commerce/commerce.module.ts",
+    "lines": 15,
+    "sha256": "d54b1c13ec68ad893d03692a8689b3f519d5049a2840b9ccf6c08c57a585c995",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/commerce/commerce.service.ts",
+    "lines": 424,
+    "sha256": "aba162e12911188a1810d191169d9767de083f394f837e8e8a205bef4ebbd123",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/commerce/invoice-totals-extended.spec.ts",
+    "lines": 274,
+    "sha256": "fc9cf966100afca595955dc68a93fb3629739b155af6a6a216016269b2ead444",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/commerce/invoice-totals.spec.ts",
+    "lines": 77,
+    "sha256": "fb7ec4870175c169329f6f0f6972e3d8adda9fc6e5d62118f87bb6fd4de36b70",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/commerce/invoice-totals.ts",
+    "lines": 33,
+    "sha256": "a058ae033c6bb80f502b6c4d6b035ecc834ff6c279e3f961683a1d533878d35f",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/commerce/invoice-verification.controller.ts",
+    "lines": 11,
+    "sha256": "bac2bc8391e7cb0b958a73e2b11ea8a660b419744830a04d468949b54ba16e65",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/commerce/storefront.controller.ts",
+    "lines": 15,
+    "sha256": "b7d05a5e01114f3d6187050614a98ba5bacbe02f95e4b5013142879a9d8648e7",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/commerce/storefront.service.spec.ts",
+    "lines": 47,
+    "sha256": "13478321adbab5ef89f3d8f606d9e31c054591d494d1d02f31760a4db9aa60fa",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/commerce/storefront.service.ts",
+    "lines": 93,
+    "sha256": "8d36ab1dc2c4132cdec80f1c21692005450f8ff803e7959b7c1e78dae7d0b369",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/commerce/whatsapp-collections.service.ts",
+    "lines": 102,
+    "sha256": "6d754a090aa7c7ebed1826c620c7c3025cddafeaca9853377edf34f473573d0e",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/costing/costing.controller.ts",
+    "lines": 214,
+    "sha256": "41ce742e471a844d4c121507be00661033138f60d30eb1e52cb51a7c178ca156",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/costing/costing.module.ts",
+    "lines": 11,
+    "sha256": "a3b8091363ec19af93627634de8ab9aa4fc1665eab31e7ea54f0af7f4551d8e8",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/costing/costing.service.ts",
+    "lines": 255,
+    "sha256": "c9cdf584b74cc9a922e29f23c6c9690c13f1b0010cefa9b4f8997e8455d55452",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/dashboard/daily-summary.service.ts",
+    "lines": 142,
+    "sha256": "ca959ed8fcac2d650d36c18cff6380735153d712eaaa5f33ebcdb4f872a23dc6",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/dashboard/dashboard.controller.ts",
+    "lines": 313,
+    "sha256": "184b5c60ccb261aa7813aaf19679ba7b984528be77dbd249a1103fbc58bde628",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/dashboard/dashboard.module.ts",
+    "lines": 13,
+    "sha256": "6278f0b3e420b7ace87285d83329385142e929df0652939f7c15e4ea0f0f3b02",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/database/database.module.ts",
+    "lines": 10,
+    "sha256": "6fd079da225fff17c340993541c95d95822f020e89e0e2139ef3b0e0654bb118",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/hr/hr.controller.ts",
+    "lines": 47,
+    "sha256": "88eaa442b9d0b714181ae04221fbf0856b6ab871c8e822ba0e455bde65397739",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/hr/hr.dto.ts",
+    "lines": 92,
+    "sha256": "f876a3c2e191b9f7c140017b194eb01123a74ecbe44fa8c14099716809f0723c",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/hr/hr.module.ts",
+    "lines": 11,
+    "sha256": "8f80f027a455d04ec3fdf7c7b169b4b7ad36958cb8ba3470dffcb29623e62491",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/hr/hr.service.ts",
+    "lines": 65,
+    "sha256": "db6d01b6f8a0b1e1fc1b62cfeafc0a94d7a6b065645d831443eaff3b4a6004c6",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/integrations/integrations.controller.spec.ts",
+    "lines": 16,
+    "sha256": "19feb4ce54664e47c535d62060a9c743eacca3ad8fff3c8d84ed6accb80e472b",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/integrations/integrations.controller.ts",
+    "lines": 15,
+    "sha256": "e1c73024104f1758fe78835ae60d43f254eb7f0fc1f887b6b6625b6ab642526c",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/integrations/integrations.module.ts",
+    "lines": 13,
+    "sha256": "ce34784c051a23ead008c5c99aafa02f61cbd12a71781a76b2505494e3d7d898",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/integrations/integrations.service.spec.ts",
+    "lines": 332,
+    "sha256": "a6fd71f834b79dfbd1bcf8994f781543677fae6e77215335b951c99d7f517767",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/integrations/integrations.service.ts",
+    "lines": 60,
+    "sha256": "8abcff780f06af8f523c9a5638ae79375338dc2213a5c1dd974cf5a48b43039f",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/integrations/tally/tally.controller.spec.ts",
+    "lines": 25,
+    "sha256": "1ec416f67fdd79d68ce3a04a68fae83b1acd98025875b39640e57034c6c40a55",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/integrations/tally/tally.controller.ts",
+    "lines": 54,
+    "sha256": "00f0e4661c0de168be69241f3f6cafe2cb2ead4a1dd0bf79fc7fb2959411554d",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/integrations/tally/tally.module.ts",
+    "lines": 13,
+    "sha256": "17e2b864d7c1f4bb3a4814a41130a84afb3aa76138f7c5b56b691dac688e0294",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/integrations/tally/tally.service.ts",
+    "lines": 234,
+    "sha256": "4f5bb305995af1b9ba98a517ea720dcb497a04f16b539f5dc5a8d44d6232b757",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/inventory/inventory.controller.ts",
+    "lines": 232,
+    "sha256": "257a2e32db9a8fedf75f136e0a259c59eecf7c0adfe39bda0afb15780fbed4a7",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/inventory/inventory.module.ts",
+    "lines": 11,
+    "sha256": "a5b8877efcc29555c496ef0dce0b4d99bb6bdbc8b64af7dbd208a5130629624d",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/inventory/inventory.service.ts",
+    "lines": 1160,
+    "sha256": "5a1d89a9c1d92469879702285878c274fe0830a37263c2b25f9b0d39920638c7",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/inventory/inventory.weighbridge.spec.ts",
+    "lines": 93,
+    "sha256": "14d1cc9e6512c0f81e358996d39350b789ae32be86e4921368a12a19b1417170",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/jobwork/jobwork.controller.ts",
+    "lines": 15,
+    "sha256": "5bc0e0f4b33f86c62a5160bd79e57bc0daab7d800d59b126abcb82d200308f77",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/jobwork/jobwork.module.ts",
+    "lines": 7,
+    "sha256": "624d8caa34fad7a8bf7ae50459e75799cdba9b645ef5ec742c085a4ff69e39e9",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/jobwork/jobwork.service.ts",
+    "lines": 96,
+    "sha256": "b19e3d19893f192dd979f71537ff02dd6ec68e3c51b4b09854ce32fca2309400",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/logs/logs.controller.ts",
+    "lines": 50,
+    "sha256": "95e108cf7ce1ec1f9ecfb383fe3c75fca2865c7ec9862500a9f7c9fa32c49f9f",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/logs/logs.module.ts",
+    "lines": 8,
+    "sha256": "e742c3706de36f903a4f730e1c8d74898e4b7746b30ee02c7f91bf75778dbb16",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/machines/machine.controller.ts",
+    "lines": 61,
+    "sha256": "038db2cd846e5d2e44970bfc1ad7897cf604fddf09c964847079b200b5ad79c3",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/machines/machine.dto.ts",
+    "lines": 66,
+    "sha256": "4b3ea54aba067e90ca106e64e9767b08ac75cd4015158b5b03c7e9de688c65a7",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/machines/machine.module.ts",
+    "lines": 11,
+    "sha256": "16ee84f536d81c8be08b2cb765f8d53a652b878e17788632e7c6fe08b8b47cda",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/machines/machine.service.ts",
+    "lines": 57,
+    "sha256": "439f0b808458b2536414b1f3208ba2aadc6b0c1efb98b659faeff5e6433e4fd3",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/mutation-validation.spec.ts",
+    "lines": 80,
+    "sha256": "21c3ac6e1c88cba71f436e32baa44f17d0926cea14dce581d917a9d9b9ce031b",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/production/production.controller.ts",
+    "lines": 29,
+    "sha256": "cc2e22d4ad7e46fbb7e8c9a11d0e5fdc6c72128724c344209ee8081777f8ad67",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/production/production.module.ts",
+    "lines": 10,
+    "sha256": "9204d57efa65ee74812b8bfc0968ce5b0e047f7b3481e3d5eda74cce695775fc",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/production/production.service.ts",
+    "lines": 531,
+    "sha256": "40ee0fd182d0f318fffa1f7faa8e62959f72f4a5947f86069e1642396a68fb19",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/quality/quality.controller.ts",
+    "lines": 25,
+    "sha256": "4a28bafcfab74c21c6059812d51a1bcbc8456680ca25b597a82ca43675e83f1e",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/quality/quality.dto.ts",
+    "lines": 64,
+    "sha256": "e9d8f4c9f00aa4e86ae4250e392d5bc36df8b70b9c74be74ce19b14c7fd8c1fe",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/quality/quality.module.ts",
+    "lines": 11,
+    "sha256": "7bf07e7ebc6a1df2f1ed1b4f27892daba28d0d7b708ee32ff5efe8d9488bad64",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/quality/quality.service.ts",
+    "lines": 54,
+    "sha256": "3ced4894adbc987dd634fd694ed8eacaa94d25996f0953a92d283a19e7beac30",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/search/search.controller.ts",
+    "lines": 108,
+    "sha256": "59b26870cecce48d15d31c3db12cfa6d75a6c460ffbf42a882f35fdb854e2f4b",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/search/search.module.ts",
+    "lines": 8,
+    "sha256": "d1b872242d4595ee308698dc84d6348bd1d66a59f3eed3f0c53ccec058bb10e7",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/sessions/sessions.controller.ts",
+    "lines": 24,
+    "sha256": "55b0897b2d5650d6dd35a3bc75772a59440a1718f7b563a00051798e2d844a26",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/sessions/sessions.module.ts",
+    "lines": 10,
+    "sha256": "f2f2bc2ce2b781e414d9dc4ac1f115ea7715bc58447185f78387215b74897be6",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/sessions/sessions.service.spec.ts",
+    "lines": 57,
+    "sha256": "9fa7cf62b9296a1abeeb0cd9fa3be7ef64aebd1055351f3025fd769d7106dd62",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/sessions/sessions.service.ts",
+    "lines": 44,
+    "sha256": "b67a01730f55577dd83f92447b6694c8eff478ce7defe242197ca907d2bad02c",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/settings/settings.controller.ts",
+    "lines": 22,
+    "sha256": "9d906d08d443fe1ff67b9228c33934f1cde50c79b812a5a921edcab53f5d2715",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/settings/settings.dto.ts",
+    "lines": 48,
+    "sha256": "2bc70238e6b1ed00c23b4a9286929a3d500dd9a6dea276aa2c12c5429809da85",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/settings/settings.module.ts",
+    "lines": 10,
+    "sha256": "8dc9bfc8d9baf7baece787834ffd58b4f447885d461aacbf6ad1e4334a2f361e",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/settings/settings.service.spec.ts",
+    "lines": 57,
+    "sha256": "72984cf387907a798562b6eac8806648c355f80eab28b416242a96a47a59e3b1",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/settings/settings.service.ts",
+    "lines": 112,
+    "sha256": "30f800772557f90892b9016b399d34f14c3b93fbe3e341d18d0a6379326dc3c1",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/users/users.controller.ts",
+    "lines": 49,
+    "sha256": "61fab745b5fefd4b673ce455d69896ac88bbfc6589d68e752a7c666982cd2b0e",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/users/users.dto.ts",
+    "lines": 22,
+    "sha256": "8c354fb74cc1f589b933338eb6215d24a0f47506ff7b751665488325f609bb2a",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/users/users.module.ts",
+    "lines": 13,
+    "sha256": "36f02e4ee72fb5744210782690b722b5a95a0f1413d93ef6313531ac62997dbc",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/users/users.service.ts",
+    "lines": 85,
+    "sha256": "873c2a5c963e95199296ac6dd48aba2d86c5d78c85693b60d49408fd356e35dd",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/warehouse/warehouse.controller.ts",
+    "lines": 42,
+    "sha256": "cc4fcc0afdb3e258c8b27cf4a8d770435b2f9f7cde296222f05462d45413e491",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/warehouse/warehouse.dto.ts",
+    "lines": 55,
+    "sha256": "fe86a8008c4d93999b5461dbec4032adb97acfe5c6a7c305c8a449014a092dd9",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/warehouse/warehouse.module.ts",
+    "lines": 11,
+    "sha256": "56ae071b373b74389157821280a98387e2593dd99c5ce600d2e6f5e48ed53c2b",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/warehouse/warehouse.service.ts",
+    "lines": 68,
+    "sha256": "c26e3974ad7f84fc8411370310ec057cfa50ab44391008990c5d5754eaeec8ce",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/workflows/workflows.controller.ts",
+    "lines": 19,
+    "sha256": "a28479e252cf22e23bff8388fdadd01406574c46bd027283a3e6158e40f28ddd",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/workflows/workflows.module.ts",
+    "lines": 6,
+    "sha256": "833d44081b9c4adde5feddc27a3375afe95df00fe9f4e740a3a6121f0c691f37",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/modules/workflows/workflows.service.ts",
+    "lines": 593,
+    "sha256": "0145d54a6f5e0f60727db65d4e5d921b808354139a8d7214dbe25f98c0e86a2c",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/services/admin-sync.service.ts",
+    "lines": 101,
+    "sha256": "c30bf5a0b37ab2a139ed059a22013a4bf15e77da89b2b8d3c15dbdca33420e7f",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/services/audit.service.ts",
+    "lines": 87,
+    "sha256": "76b39cb4e91929fc83eb86be5289d536ef30346e73d9ed272b923389edc499fa",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/services/business-ledger.spec.ts",
+    "lines": 53,
+    "sha256": "4cd179f07e83ae9025e5a79475afb2dbb8de357794dcad04051f24506e552d93",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/services/business-ledger.ts",
+    "lines": 324,
+    "sha256": "25aca0fb2252a2e5b468071d2dc2146c0e8b04cebd401d049bd9d18203601431",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/services/prisma.service.ts",
+    "lines": 84,
+    "sha256": "ed7e347a4e5e93fe23fea58fee6c1dd6ffd9e250a908a7907af935da7af76bc9",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/services/stock-bridge.ts",
+    "lines": 128,
+    "sha256": "b79e326654647cfbc12c354ac14fdd4632eee161165a4a21723cfe4bb4e7bdc0",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/types/authenticated-request.ts",
+    "lines": 6,
+    "sha256": "fcd3f21cc551369bb4bc9aa58b8150a3dfb97d3ef74eabc532f16c2dd8ef9fbb",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/utils/crypto.ts",
+    "lines": 56,
+    "sha256": "a3869903af2d37f4b79410d01c2c4e4d119f92afc0887fa3768ba5fddcb62813",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/utils/delete-guard.ts",
+    "lines": 219,
+    "sha256": "3c32089f9fa53b1c9d1bacb7d8117b4e4e9d31df2eba5bd614d1e37549d4521e",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/utils/roles.spec.ts",
+    "lines": 18,
+    "sha256": "2a64ad2805e6ebf38481511187834e6b888ed3156e308bc1a671c16c920b6b21",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/utils/roles.ts",
+    "lines": 11,
+    "sha256": "cb4cf2d74ec3b76c1dc8ccb6fd2919d07d91ac8ca3f54116627b6f70e1376c15",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/src/utils/stock-event-date.ts",
+    "lines": 17,
+    "sha256": "ea11e05a791686a5d43d251b372f663ade882404b47f7fbc7c387722060f948b",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/test/app.e2e-spec.ts",
+    "lines": 84,
+    "sha256": "ed3c0dd98d573dd1b0b6e812b92dcc0f6295dd3031a9b3c7c45ac5091f304067",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/test/jest-e2e.json",
+    "lines": 15,
+    "sha256": "2563bbff009eaf7258da5cd44ec0affafaf036d05a84a43d02a389fc4c401a42",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/test_query.js",
+    "lines": 10,
+    "sha256": "1050db5a6e27f4d67f9bc9fc0d3244b651d29784f7d0b45e0f94ef9f4a5c6759",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/test_query2.js",
+    "lines": 10,
+    "sha256": "b6cb084df44c77fc87185205a9922e27db52b1277bc1714eafd10e8bc0b92651",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/tsconfig.build.json",
+    "lines": 5,
+    "sha256": "ef5be6c06c3ac6c3eca6c81885a12d03e33059086b4b275cf39f6e9359965378",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/api/tsconfig.json",
+    "lines": 31,
+    "sha256": "86d1ec4ab7b207c68f1d22e17f97b6b29938e4e95fa6a62245771885e510ade7",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/desktop/main.js",
+    "lines": 174,
+    "sha256": "5a518bb2e1598cdca0d6ac738e425b362a56066db99e7d6771028adf79c2544c",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/desktop/package.json",
+    "lines": 48,
+    "sha256": "c93d29a43e5d4c35e066e3d66526ca5335502d0a5394c51097d924b18a490d82",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/desktop/preload.js",
+    "lines": 11,
+    "sha256": "c47a42b1c6bc215d1748fe9b7f7336c8fba634015350f5385703f113ad7e7893",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/marketing-web/package.json",
+    "lines": 23,
+    "sha256": "b156ff0bffdd155289b0a5859f23708d7565ba2589d40d61ac1ee373f2866209",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/marketing-web/src/App.tsx",
+    "lines": 1658,
+    "sha256": "418f7af136c9e9c279e693cc3bb6a2d4b5e9cfe73d1c830bee55db3b23764f3c",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/marketing-web/src/main.tsx",
+    "lines": 11,
+    "sha256": "2e4d5adbf78e264117116fdf6f4c09ecbe884acedc80dd335d1b28eaf4f3e906",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/marketing-web/tsconfig.json",
+    "lines": 22,
+    "sha256": "d9f889c0f6a118da4209697b4e01213c7daeeb9d8035f6334414e1ab63c8ae6e",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/marketing-web/vite.config.ts",
+    "lines": 10,
+    "sha256": "f758ed182b1079a91633a3889c92606a0a551a3ab452e085f55e7ae46fc588c6",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/eslint.config.js",
+    "lines": 24,
+    "sha256": "4efe97b16d1200fac0eaf07aa00930a8668b1f96a0be1891ace8c1e712ff0ccb",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/package.json",
+    "lines": 66,
+    "sha256": "70405bc722c1ab20c932488b93fcd2cd44906c3f5e58a73a77a449c8e6ebc94b",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/App.tsx",
+    "lines": 1293,
+    "sha256": "e14efe7866bc17853d0f588ad93bd05cb1b628a13f491e2fa04e5f7e259f7422",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/billing/BarcodeOptions.tsx",
+    "lines": 128,
+    "sha256": "9dfabc8ef352eba4dcdfbdc22f9be3e971f147d5a8b5bff8be32c2daf99e8c31",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/billing/Category.tsx",
+    "lines": 85,
+    "sha256": "6912eed724b6565921966933c5e8270b7286bd397f9d8df8bb23fd204dad30fa",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/billing/CreditNotes.tsx",
+    "lines": 111,
+    "sha256": "6ff697a0f4087c24e3a541d408d8a132fe9b15be9a3870bfae98d13adfe25c69",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/billing/DebitNotes.tsx",
+    "lines": 111,
+    "sha256": "3b4cd16c06d4b15a16689aa876fa29146dbd2ba35dadec467a948ff2ba32cc75",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/billing/DeletedView.tsx",
+    "lines": 80,
+    "sha256": "b8f0f93e05136e88b837aaac3a128d655f181db79f1ee03429fbf5a9fcd97e2e",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/billing/DeliveryChallans.tsx",
+    "lines": 111,
+    "sha256": "979ab6675044a76f56110198fe59139ae2cfd3af1e2107948fcfa00ea5f4ac10",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/billing/EInvoices.tsx",
+    "lines": 123,
+    "sha256": "20361a5b6c343e53d6e851df5ad91f1b60bd2d32823e94e19da070e794448d70",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/billing/Expenses.tsx",
+    "lines": 178,
+    "sha256": "ce02b37a04756710241cc7c4917525c455c648662507dbf6fd59bcc743b0c410",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/billing/ExpiryDatesBatches.tsx",
+    "lines": 146,
+    "sha256": "1015014936ce78facf68bf395329190fa7f18f0e89c07cea123b516658113458",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/billing/Group.tsx",
+    "lines": 93,
+    "sha256": "d117aeb4956d0ec300250aec8ec3148d743d4dd43a4317064dd01de75c7a4154",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/billing/IndirectIncomes.tsx",
+    "lines": 123,
+    "sha256": "ce06042162954451c449270dadea678e10d21b9970ba536cc86a7d996e07b2bd",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/billing/PackingLists.tsx",
+    "lines": 113,
+    "sha256": "81cf0d828df5aa2c3d86b18771c492e85abc55dc1c3680565a3f5aa60caf17ca",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/billing/Pricelists.tsx",
+    "lines": 127,
+    "sha256": "3dcfec8fa464463583b33f6fac8eb72dd68d9d0a4779f47d085511a52f930776",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/billing/ProductsServices.tsx",
+    "lines": 161,
+    "sha256": "20e1c6af9b42e035f11327e0eb627a74d83f515a2ebaa8e3900af09f15152668",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/billing/ProformaInvoices.tsx",
+    "lines": 107,
+    "sha256": "ae955f2cb94959b9868ee26c1b6caa13ed1a6c138eb3ee8f1e4f8a000af3d1ee",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/billing/PurchaseOrders.tsx",
+    "lines": 115,
+    "sha256": "50d8c33fb8ff4757326fe09162f609159111056e7e21156044a74955ff7544d0",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/billing/Quotations.tsx",
+    "lines": 116,
+    "sha256": "24e915a043d4d54b113a72ffc6e0a05d1ecd851600fef9b55ffccaab06472606",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/billing/SalesOrders.tsx",
+    "lines": 116,
+    "sha256": "41e2c139a14a431779346dd2e083bb56cbcea9b3562bb1c380e6f2fb2dece07f",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/billing/Subscriptions.tsx",
+    "lines": 127,
+    "sha256": "14f697be58112754c5964d01746eb3ecdd69b021c295d462f749f57af68b9377",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/BusinessFlowGuide.tsx",
+    "lines": 40,
+    "sha256": "66f0a3d53834e88ca2bc5508432e1d82a35c7a35f653f589b4abeda9a16fb3ab",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/command-center/ActivityFeed.tsx",
+    "lines": 311,
+    "sha256": "4709881d77806cd6de809c178598b32be3e74d7be9b2bbd0e3636e27c01edd2b",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/command-center/CampusAssets.tsx",
+    "lines": 121,
+    "sha256": "c82f6c96891b5e10f586fe8b869fc9ef47607ae80c64b22569e4af302717db2f",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/command-center/CampusScene.test.tsx",
+    "lines": 90,
+    "sha256": "e90c502535f4d7f10a04cdfbb94cd4cbcc24632efda95789e30d6f7101e70f28",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/command-center/CampusScene.tsx",
+    "lines": 476,
+    "sha256": "3db1007c46aa6576c6eaad6e50bfaf754ac371274993f1302ccefb16ebb87e7a",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/command-center/CampusWorkspace.tsx",
+    "lines": 268,
+    "sha256": "e9e97097b3e0f4d369cb9673ffc4b5196c7756514058bea429d3a871a43a32d1",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/command-center/FleetDockTableHud.tsx",
+    "lines": 344,
+    "sha256": "39d1f60aba18ca6922b1a578714ed03902b99dfc100721a2433f67398b87244d",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/command-center/FloorCanvas.tsx",
+    "lines": 439,
+    "sha256": "9d104649f0defdfc132c0fbd799d23869d9124d2936015a6ebc69ea5a23c62be",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/command-center/KpiRibbon.tsx",
+    "lines": 253,
+    "sha256": "0d76eb6f42597b19adf710ff079ca348b9a6d6d79c5f2535e59fc107eb46bfac",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/command-center/ShipmentStepperHud.tsx",
+    "lines": 320,
+    "sha256": "7cc1525a89c551bc14b2c4b0cf601c255b24d417480957769bb97b51426483a5",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/command-center/WarRoomView.tsx",
+    "lines": 598,
+    "sha256": "a1a1c96d0e226f26fde2fbc191da06b3e841af108c54b0c9caf639ad71e88590",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/common/AccessibleDialog.tsx",
+    "lines": 143,
+    "sha256": "d1a494bc187e57c00da2b131bc132601192aaea0e4a2f64ab7beef40dab126b0",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/common/AdvancedChartTooltip.tsx",
+    "lines": 114,
+    "sha256": "8c3c0fd6fd9927ea572abc57f34cb5d33892c1e8688d78d168959d8da5017e9f",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/common/BarcodeQRModal.tsx",
+    "lines": 322,
+    "sha256": "6c708da2ab1a7fc1d463e1a96408a3f9e751d896613ea9c1b4ba18296ce1c3e0",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/common/BatchCodeBuilder.tsx",
+    "lines": 71,
+    "sha256": "e89cf1b7301e46434154113785ade1edfd446cea5e07f3101baff2d380b5cf29",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/common/Breadcrumbs.tsx",
+    "lines": 100,
+    "sha256": "15d128f997c06e4618e8f8a308e16d265a76f0ce0ee07a91356c5d7a6fc2f8ce",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/common/BulkActions.tsx",
+    "lines": 210,
+    "sha256": "7b9eb451a43720b9cc9b28cdcbe2d51731b62d125007f12fe59181b1d3a46267",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/common/ChartToolbar.tsx",
+    "lines": 247,
+    "sha256": "8e18b9e19e0c7a7c131bc7e71de38ae31c0d0f9b746a77ebbfcfe436e34d94bc",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/common/ColumnFilters.tsx",
+    "lines": 226,
+    "sha256": "c982031ae83dafe6b13283f2570ad3c610a786ce54fe8b32048b07d854f6f283",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/common/ConfirmDialog.test.tsx",
+    "lines": 49,
+    "sha256": "399b8747bfea6caf3fcd0cfa63a08c67c3637ef078fee7aee01799aa8c2edb7e",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/common/ConfirmDialog.tsx",
+    "lines": 83,
+    "sha256": "7f07a2d9bbd4c6e490e1f39c7b190cca38864ddc80938a7712335e5318e4db57",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/common/EmailTemplate.tsx",
+    "lines": 179,
+    "sha256": "8c8476d671dd354a31c2883918efde0ac2fc493845bd50a1d4b34747117781c9",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/common/EmptyState.tsx",
+    "lines": 112,
+    "sha256": "df69871c57d485740445ae251a96fa9a6f7538ada208cff97a6cd7724ff07422",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/common/EntryWizardHeader.tsx",
+    "lines": 51,
+    "sha256": "85154a529e506b9f900a92ef951f03bb9c90ca7d4a355d7a1b85be04a67a0f99",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/common/ErrorBoundary.tsx",
+    "lines": 142,
+    "sha256": "0a1bdd34e006a2659272e22bb58c25e092d234f9bfaf9690f22de44475e39f25",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/common/ExportButtons.tsx",
+    "lines": 110,
+    "sha256": "3918f694e7bae8006147b2622632ff56fba0a3767cb04acb2989e16bb0a84e23",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/common/GlassDatePicker.tsx",
+    "lines": 321,
+    "sha256": "a3a777c2701eadeef794e71f953a86a69195232878bcb9e81efdbece4ad56850",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/common/LoadingSpinner.tsx",
+    "lines": 137,
+    "sha256": "195083fe9920667d37546fee8fd71a9f68866703a609b7db075e1b7ce0f57ef3",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/common/NotFound404.tsx",
+    "lines": 163,
+    "sha256": "e79e7d77ae43d8570e7b5118eb652f16e1df5a17e05feab7ac19d295f805fc47",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/common/PaymentStatusChip.tsx",
+    "lines": 65,
+    "sha256": "235c4de168fb0dc01fa96649781a93f6e92cad244e497693b1da72e08c420055",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/common/ProductionTimingAlert.tsx",
+    "lines": 20,
+    "sha256": "ac812e0c5ca6e5f99c53f2450b0c61e828d0feae3d8d3e600f5bc8e0b3d4c21e",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/common/RequiredLabel.tsx",
+    "lines": 47,
+    "sha256": "0771188aa61ecec3dcbaf9f4f0425af509ce7aae4901336e2e37ee17fba70468",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/common/ScreenReaderAnnouncer.tsx",
+    "lines": 90,
+    "sha256": "74fa5033f1a3935531483f4fe65f41643586ae6957cdf425f05a7c3eb068b706",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/common/StandardIcons.tsx",
+    "lines": 97,
+    "sha256": "5f6a1d870d0168d2f4d7874cf6e103a0c14a42069e52445653444f05e44ae9e2",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/common/TablePagination.tsx",
+    "lines": 94,
+    "sha256": "0eec111bba59b92eeabaf9e8b2cdd0940c81d3c7bba6215b6909aa3634c510c8",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/common/TableSkeleton.tsx",
+    "lines": 61,
+    "sha256": "57e6f0e103c5c19e5099309cf1ca7bceffb4c3e5f0faf0175fe85942e92cb8d9",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/common/ThemeNotificationBanner.tsx",
+    "lines": 153,
+    "sha256": "a169a18dcd3a4ea6fbac433772618c5fec7f6784dc34a3551114a68b57675007",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/DashboardScene.tsx",
+    "lines": 94,
+    "sha256": "54064c1f7d35c5bbc035b3958ebcd11502079ed1bbf73d579349a46c030ab900",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/insights/EwayBills.tsx",
+    "lines": 117,
+    "sha256": "e54ab6abb11fe3c050ec7b0279d8c1e48ffb72dbb5947b6f17df9098cfe63da0",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/insights/TallySync.tsx",
+    "lines": 109,
+    "sha256": "213f7e009761e236e249dd0a65dc44b406bf29a2b16fb67f692aed894ca125bf",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/Login.tsx",
+    "lines": 538,
+    "sha256": "dfed4bad21f9c69ff8d3372f8346a8c9ae992c5fceea586823c0489b1b32551f",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/LoginAvatar.tsx",
+    "lines": 238,
+    "sha256": "4558e233e1b5bff0fc2d3d33eaf8d2fee146f69de81c877d63ccc724db9ae753",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/payments/BankReconciliation.tsx",
+    "lines": 122,
+    "sha256": "bc1f1ce70ea7bb4b0c7213f4051f9fae6cdb021ca05c24137b7aaab2908c7bbb",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/payments/Journals.tsx",
+    "lines": 102,
+    "sha256": "6a9817fe5d7da4c7276dd072e47a07a290526f4f96759da7c69c10a48a662335",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/payments/PaymentLinks.tsx",
+    "lines": 137,
+    "sha256": "2a919893b12d921ddd9dc604d6540e7c73f2fab6587335b731d4e0f0ffe078d6",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/payments/Timelines.tsx",
+    "lines": 83,
+    "sha256": "2b26b4b9a3b5b9221a407214b21668559fa1cb57f783b067b3c3d1801f93daf1",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/ProfileModal.tsx",
+    "lines": 523,
+    "sha256": "9f28a103c67f5f2042aeae1bcffff2b081720c90ffdac74aa34eded9e8fd89bd",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/Signup.tsx",
+    "lines": 242,
+    "sha256": "3141ab76537c7bba86ef2f82636332cc8b3d7d51ee3cee2b70ee85629b0abcd8",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/WeighbridgeReceiptDialog.test.tsx",
+    "lines": 45,
+    "sha256": "b62d23f2cd9e20a886b3c5ec992175f058e8e2b9c7b9628c8f13cf10be44c92d",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/components/WeighbridgeReceiptDialog.tsx",
+    "lines": 89,
+    "sha256": "0d3e26e96004a6d903660e39e8b40013ee2a744e7ed00aacda0c9e101653f6b5",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/context/ConfirmContext.tsx",
+    "lines": 67,
+    "sha256": "a8e7eb94fcf9e387c53bf96d74c9952ca53db892b767f99ce8d02076c570816c",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/context/KeyboardShortcutsContext.tsx",
+    "lines": 98,
+    "sha256": "a9f59803fe5cde6af798ac1da9db364fdb66877c109898637f4a053e0bab94de",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/context/NotificationsContext.tsx",
+    "lines": 389,
+    "sha256": "b82239870f742d3f8a55a8a61d2c539f3f6f7a272468d4ea805a2feabcf9925e",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/hooks/useDebounce.ts",
+    "lines": 18,
+    "sha256": "56258cd9b4f7f25cc50b19321214fe1a29bd318e36232de0aabc08a7e334a418",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/hooks/useFullscreen.test.tsx",
+    "lines": 38,
+    "sha256": "b4d0458dd1127d5d3087f7d1c7945b446b6a108b1ee3532f5bed59a42bd141b7",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/hooks/useFullscreen.ts",
+    "lines": 23,
+    "sha256": "9527f4e35d30be14e4d04b915be69f5b6291524456c1a58ad5324f6aa78d7d10",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/hooks/useNotificationSync.ts",
+    "lines": 143,
+    "sha256": "554fb79c8f7a8311a796119b1d981c336511d39f1f0815bdcd516e474fb03c0c",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/hooks/usePersist.ts",
+    "lines": 39,
+    "sha256": "88b13360ffb38b3d17c66c101620512daef13011becb36b17ebaae0d8ddaf157",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/main.tsx",
+    "lines": 21,
+    "sha256": "926346099b1ed4f7ef4f6ca94e9d759c816f135d2fc694c868c2cd4ed714a2a3",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/Billing.tsx",
+    "lines": 1315,
+    "sha256": "5b0c9bfb5ca8ddb04ae9826211e7d76e0a8374b67771a592bac04ec46ba38de3",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/BookEllam.test.tsx",
+    "lines": 44,
+    "sha256": "360ba43bfe4d12130424ac02a1f3f5294fe409c8f246d8e5f72cbee522e35d1a",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/BookEllam.tsx",
+    "lines": 505,
+    "sha256": "4d2e16cd2ef470d972165a0f361a37500a6f53dee08c2e1e3b9bcc6f7bc64bd8",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/CatalogueTaxonomy.tsx",
+    "lines": 56,
+    "sha256": "ab95a6048b4a5939be96502ca3868d8d5faa1d2fe1d509dac6722deec1b2d388",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/CommandCenter.test.tsx",
+    "lines": 56,
+    "sha256": "f3eb1114b1667e1a87531cadbea72b5df363c85a9544a387a4d52fcdb952bd06",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/CommandCenter.tsx",
+    "lines": 1023,
+    "sha256": "d6bd1e4eff69ba395af3767307cce00f3fc5926960dea4a0c81108a4a9901152",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/CommerceDesk.tsx",
+    "lines": 225,
+    "sha256": "383fc9fb9c82dbe8c277eae9a9721965be5ec4e16688f64247543f9463e56947",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/CommerceReports.tsx",
+    "lines": 659,
+    "sha256": "eb4ac4309b3da67efde6c729c1c78238a14314a3a3887dcbc289c81a7670d07a",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/Costing.tsx",
+    "lines": 548,
+    "sha256": "cb99ca6dc4690b65dc72047ad31bd61d702ae7e24535a23c1e7a691e07e04cd8",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/CostingEntry.tsx",
+    "lines": 558,
+    "sha256": "8a6fbbb95518b75dbd6c18c1621f6e674885e45ebe5b9a7da33b766dc37c6749",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/CostingHistory.tsx",
+    "lines": 428,
+    "sha256": "b7c9df5666cdece6adcf70cdb1605dd224dcfff91e66355a803d9fac68c6a589",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/CostingList.tsx",
+    "lines": 157,
+    "sha256": "947bbc829bd8e38b96dd1bf1756dfad975cdd6ac00b969c7632dd3bbcdec78ef",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/Dashboard.tsx",
+    "lines": 997,
+    "sha256": "3c1fe402bf739f82fac57509271054dfddafa14afbb7d4071ef09c572b77e2db",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/Helpdesk.tsx",
+    "lines": 298,
+    "sha256": "3143d3ac8891d0393a664a05878a79225c7741e63e3c005c1da23d8f3ddc2b0c",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/Insights.tsx",
+    "lines": 295,
+    "sha256": "768f04c2711132270b781b1f4ff74e8d1636cc1b39c2f1bf4cb872020e0fcea3",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/Integrations.test.tsx",
+    "lines": 44,
+    "sha256": "7f5312adce855923f4027f10044b10ca005f824e8e23b2e408a9a13bbc14b19d",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/Integrations.tsx",
+    "lines": 105,
+    "sha256": "aa0c7ed5a2fd6fe870f1218030c68cc12f4765a86fcddb77447b63e4f916eb85",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/Inventory.tsx",
+    "lines": 908,
+    "sha256": "79f6405303038321c9738662b6c30641bfd572ec213655e312af74fcc18dbae8",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/InvoiceGenerator/index.tsx",
+    "lines": 264,
+    "sha256": "95761a9c7090923f180f4dc2658bf40094d42d8bfb7af2a50efd55658963a088",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/InvoiceGenerator/store.ts",
+    "lines": 42,
+    "sha256": "a138a13bd685ff31f6046bd54a8c8a7366ebf3fe4199ed6c4108ec5e051a1c13",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/InwardEntry.tsx",
+    "lines": 717,
+    "sha256": "aad28f09cf25931c991890d9fa9f91504fbcc8e7152153de824279343b6a9497",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/JobWork.tsx",
+    "lines": 758,
+    "sha256": "857f5f057543318a9feaea6f3ea95469f4390a9b6228b20fb8d25cda488324f1",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/Logs.tsx",
+    "lines": 326,
+    "sha256": "beb3be742efd1979ac5f98321d9a6bee444684caee399326cb5f6eabc697d9bc",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/MsmeErp.tsx",
+    "lines": 159,
+    "sha256": "dc7825a9ba1e97b31e18a2c513394658573a3439a8aac20e8442457958bc4803",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/OperationsDesk.tsx",
+    "lines": 993,
+    "sha256": "cb8577e3986e5d5b1b256e7021d560ed40270851d2ab2f420854144c17711b8e",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/OutwardEntry.tsx",
+    "lines": 623,
+    "sha256": "3ab1d2c0c5133fb6ac6c025926b3cac2ab6144297cb22d9af439672b6b14f49f",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/Payments.tsx",
+    "lines": 304,
+    "sha256": "54a63586e0f8773c40fdf604c8b1dd4fd874056d3a9e0fbea7052d853ea63239",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/ProductionEntry.tsx",
+    "lines": 1077,
+    "sha256": "fa24592a780e4f29fb5cdf93fbd6dfea43bfe78e2fe655a17b4570edb28efba1",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/SecuritySettings.tsx",
+    "lines": 465,
+    "sha256": "d3830ba4d7022b5c545e4a5a8b8e9c0d644f779f1c0c510c5d3941a736560e1d",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/SessionManagement.tsx",
+    "lines": 178,
+    "sha256": "24728ff1814a8d3b689b54673448d5db99531b4595d949a3e9f28624f02cd206",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/Settings.tsx",
+    "lines": 694,
+    "sha256": "f3e4636c39b095f6c668359e711e1325c7a5e7e580c90a1e89483be43ff24fb1",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/SharedPayments.tsx",
+    "lines": 16,
+    "sha256": "956f1c231246761d456c6a587bb7f43422e72d0d7ffdd71b68f0a01559be6684",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/ShopPortal.tsx",
+    "lines": 88,
+    "sha256": "763f60aca5c5979bdb5ec94f294e844592af0f4cdd413fbc28227c9a4b6b84d7",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/Store.tsx",
+    "lines": 79,
+    "sha256": "f27aff8ab77a51bfd75bdc1905c04bb830358e6c4af695bc476d7c682c00c9e4",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/TodayDashboard.tsx",
+    "lines": 431,
+    "sha256": "182d564060123cb7b4cfd3239a6eeac10e5ed07a66db7d0de97c5bb527cdf7b7",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/Tutorial.tsx",
+    "lines": 274,
+    "sha256": "c3111d3dd58b4586c22a5bced6e9812ad8e4f940a707e14e2cbb1204eac1b4ff",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/UnifiedWorkspace.tsx",
+    "lines": 456,
+    "sha256": "f1605330749671305a866550c50a269fbec088a60573ba5def3c6a8486f02cb0",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/UserManagement.test.tsx",
+    "lines": 81,
+    "sha256": "653028b6c8dc2c906721be6dd1be96a7bf207f537dfcfd77abe9042a044400e4",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/UserManagement.tsx",
+    "lines": 464,
+    "sha256": "696bbb198e08331e72ff43b4c3f6f3f0eeba7b94b600e480c5a708ba69400838",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/Vyapari.tsx",
+    "lines": 13,
+    "sha256": "59f13cb0c2e8f3e6334c9727353a58084a51928f303394fcea7515daf4c2ef19",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/WorkflowDesk.tsx",
+    "lines": 113,
+    "sha256": "87b60a4c56d5b46eca89eef94312733ffa0688d49065650540a7434e145e7217",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/yarn/ComplianceReports.tsx",
+    "lines": 117,
+    "sha256": "6fd40b83ad1eb7c2a160bc3c3e2bdcb80d0a1349b6d434773bd0f25c53a110f8",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/yarn/DemandForecasting.tsx",
+    "lines": 328,
+    "sha256": "0fd9f768ba66181118d2adcf16753705a1c3d7f79a22da0734c515abb451b11a",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/yarn/HRManagement.tsx",
+    "lines": 765,
+    "sha256": "34d6a1f25dc539b10b995a0bc55aebfdda61bb3ee5c67deed189a5846d00d2ee",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/yarn/LiveDashboard.tsx",
+    "lines": 166,
+    "sha256": "6107572200852e14d9a20b72cab392761e0db36104bbb8fee3f79be9fde9bdb6",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/yarn/MachineManagement.tsx",
+    "lines": 674,
+    "sha256": "e66be4dcd6c802b135563e1a9fd1f0ea5b867ca136c1799b9c8389a417565d09",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/yarn/QualityControl.tsx",
+    "lines": 497,
+    "sha256": "f1edbbff886a5083c44120affbae58a1af4174fbf786b3ec6d826e457841d3a3",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/yarn/ShiftManagement.tsx",
+    "lines": 191,
+    "sha256": "ec6c99a74212527f15960ed9e85f8e57eaa1d2d291afa7b59ce478ac37ba9779",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/yarn/SupplierPortal.tsx",
+    "lines": 145,
+    "sha256": "2e342329fe55638925f531e652d0ce342c6db9cc456525ad5b276597174b876a",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/yarn/WarehouseManagement.tsx",
+    "lines": 626,
+    "sha256": "c2e1600dcdf5605b04b582675c1cb747a61fa124548cc35e57831929f6d4dd83",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/pages/YarnERP.tsx",
+    "lines": 239,
+    "sha256": "1abee0c7b26de8796e83b268a72f0471487e9c1b3b717fe2dc0ff116df941bbd",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/r3f-support.d.ts",
+    "lines": 8,
+    "sha256": "ef7b9f0bf10b80028371e319499f03605faf28ecec060f7c43b0312949517eed",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/test/business-mode.test.ts",
+    "lines": 228,
+    "sha256": "048c5f46ede7e30a5d147814368cc3e0fd1739f70f73e1e0dae14c1e1608aeb1",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/test/company-profile.test.ts",
+    "lines": 28,
+    "sha256": "9314286ce952d4d0b41d3b23d2c770484abdbe466e2871d6faa0974010aa51f6",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/test/geo.test.ts",
+    "lines": 127,
+    "sha256": "a055ad1fc761b1ddd082b4e1e027ae38daa041ea1212d42a46f6025388ca93f2",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/test/inventory-wizards.test.tsx",
+    "lines": 216,
+    "sha256": "d19a536fc4cf9553ee8d66394f784e30502bd037d6c6568dc1216a8935714211",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/test/licensing-model.test.ts",
+    "lines": 253,
+    "sha256": "624c6987f06e6208dce04e72c8c8026681d40b43ebf0c014e2f21b6eee023cc9",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/test/migration.test.ts",
+    "lines": 28,
+    "sha256": "2b5e919c5d7d33260d883cc2e4353770a0e3387c6316718f6d88e0689418b47f",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/test/navigation.test.ts",
+    "lines": 8,
+    "sha256": "109f8429a0433fdeac2fcb0116b0dcc255fcd56eca9050c7fc9a3d4077386e1c",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/test/production-calculations.test.ts",
+    "lines": 260,
+    "sha256": "115e00e524161316cc3a50e111713b7eeb0a3460254479bc83e8776ae7771bbd",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/test/production-timing.test.ts",
+    "lines": 32,
+    "sha256": "e7111510a162bbc13a103a2a32773407da54d695849a031260039b9aa87a9451",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/test/setup.ts",
+    "lines": 2,
+    "sha256": "380ea4fdb738a46711fd17c6fb504ef0fd21bfdcf9af1e646ea777b3b8a6720c",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/test/smoke.test.ts",
+    "lines": 112,
+    "sha256": "2928208f47f3fac8dbe8283600d8f968ad01055244566d19b70a7586c6515785",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/test/workspace.test.tsx",
+    "lines": 57,
+    "sha256": "2c5ea7dec4770b98943dd434e72de5dd02337e68014818ca84a9c8ff69980ce5",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/theme.ts",
+    "lines": 331,
+    "sha256": "d9093feb3cfb3d428a21d90a7973c60ca3c9cc8c07e63220e605106fd1778a4b",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/utils/api.ts",
+    "lines": 43,
+    "sha256": "36e330de39b1ba89d0f30744477ac195966b7f4e021245df75af852aab8f57ea",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/utils/codeFormatters.ts",
+    "lines": 127,
+    "sha256": "018d8aac0ff34ee229e34972b2b24afac8170f7f6b9bca7eb8d87e6dae7675cc",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/utils/csvGenerator.ts",
+    "lines": 79,
+    "sha256": "11a0186f7bbc7598e2fc8bede849af297d9d5545ae4314d70c6f1984d3b56fd6",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/utils/dateFilters.ts",
+    "lines": 92,
+    "sha256": "5ab496b3c4f9f50eba5a19ec844379b77866579a05ae32d8eccd44f8c1e6fc8b",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/utils/deleteGuardHandler.ts",
+    "lines": 111,
+    "sha256": "ffa97e3c1f2c1cc9dd299fb34aa088aed92af7866bacf40eca03dc423c7ea421",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/utils/excelGenerator.ts",
+    "lines": 19,
+    "sha256": "3a365c68f256c0d685c6b1722f317bec002fdf8e79f091fa38e4561877a366d3",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/utils/invoiceDocument.ts",
+    "lines": 66,
+    "sha256": "2c84780b8a99de21988684458e18e95e1e238da5a36479fba62a260543677539",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/utils/messages.ts",
+    "lines": 269,
+    "sha256": "8e83b37c4fb44f55d9c81b3a242ae1d5b5a41061d4785fc282d876b58ca3d975",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/utils/navigation.ts",
+    "lines": 10,
+    "sha256": "b9cafcee5ea7b5c8240caf0b7f5dd074cdfd7f4d7cc9d2e875b9e71539b6cae8",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/utils/pdfGenerator.ts",
+    "lines": 59,
+    "sha256": "325016cbdb0c6612b2e9d0795bd22dd9b05b151ecbd7855122362440e3afc34d",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/utils/printStyles.ts",
+    "lines": 151,
+    "sha256": "46d08c9c763be4125f54e681a560141f3ee585ab481ce2e7134e00ff723e9b0e",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/utils/productionTiming.ts",
+    "lines": 17,
+    "sha256": "25467b435d50b974200d1b77e85224d32c28984174e4698ea75ce685bbe9ae51",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/utils/rbac.ts",
+    "lines": 20,
+    "sha256": "03bdfe425b251b3df9c3c259c2d2c2929366a6dfcc9a9f7638145ceff79711cc",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/utils/sfx.ts",
+    "lines": 151,
+    "sha256": "18419c56f30f6f5da132261905756df73e2ee79ca082b9fbcf261c33bf888d6d",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/utils/validators.test.ts",
+    "lines": 112,
+    "sha256": "a855de1ec2379c4775236decca8dd2fd358db8da2fec05d97f2af8ccbfaeae9e",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/utils/validators.ts",
+    "lines": 258,
+    "sha256": "797ce0814c04a4f88fa247312f4d386623e132ac38d22c83eb7057732b4c84a0",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/utils/workflowDocument.ts",
+    "lines": 16,
+    "sha256": "7ef911c12b63f6baa550e5af976158e6540b08a45bfcd19f87a2fe4a4d565eb8",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/src/vite-env.d.ts",
+    "lines": 5,
+    "sha256": "455501dc72282b7ef2fa79f17d57ca00cce0637b968bc0ef6fcea71c5f11d3c4",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/tsconfig.json",
+    "lines": 58,
+    "sha256": "6e7b52888e618be552f1e51a6c0f070d432c2c62a9df362a5323013d124499ca",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/tsconfig.node.json",
+    "lines": 27,
+    "sha256": "c3dd0fb522feba3596713f51b95bd53d781d845d24aedbfa2ac093d8b39c5120",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/web/vite.config.ts",
+    "lines": 75,
+    "sha256": "f7c3313b420cdd2dbaca2b7340b9156e0d45bc1b7890423d1e3e8884e93adc33",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/weighbridge-agent/package.json",
+    "lines": 20,
+    "sha256": "60acb4bc7c492cc6690ed1b5243196f84db23be6089534d51ae917346c97f481",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/weighbridge-agent/src/anti-tamper.ts",
+    "lines": 96,
+    "sha256": "9b16012d3c83a358ad3823c472ed3a221d39fac92528fc9c3512bab92ae0e171",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/weighbridge-agent/src/index.ts",
+    "lines": 73,
+    "sha256": "fec777f38765eea3e929dafb0d3f155434953d21985441d356c02fa24462bb12",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/weighbridge-agent/src/indicator-parsers.ts",
+    "lines": 133,
+    "sha256": "697fba42c0775cfe0a6daebfb020d55b6ebf85d71153e23ce0c8810bf70b3774",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/weighbridge-agent/src/thermal-printer.ts",
+    "lines": 72,
+    "sha256": "36b628abe80ea9f0a6fdd9290e9c5119353631a64ea36f02c85cfba54d0eb60a",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "apps/weighbridge-agent/tsconfig.json",
+    "lines": 15,
+    "sha256": "88d792cb237ee18c235c2ce171a4820d5c9f99ed3c82beac54d02fb33a1e6939",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/admin-database/package.json",
+    "lines": 17,
+    "sha256": "932af34fc9cb17a0943748ba5c273e65be40bbbe2827de908ba8d49024a02573",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/admin-database/prisma/migrations/20261010164337_init/migration.sql",
+    "lines": 50,
+    "sha256": "3d00fa68ae6c427525021792c248d88312f3c061744f95baf3bd59d12b776dce",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/admin-database/prisma/migrations/20261010165745_multi_cloud/migration.sql",
+    "lines": 30,
+    "sha256": "14d08ed2cde2d56ced49ae8969a33b028c7a21b5ba85e89a010b890a363e5484",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/admin-database/prisma/migrations/20261011010000_control_workspace/migration.sql",
+    "lines": 14,
+    "sha256": "8b3450e5ff48021d3021f40c3867ddb83460ae508f3122b22fa5f391d509d7bf",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/admin-database/prisma/schema.prisma",
+    "lines": 112,
+    "sha256": "699acaeed0f49696681b396e5e91c4265ee93fb2ff7c38064dc065e1ca7a26ac",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/config/eslint.base.mjs",
+    "lines": 8,
+    "sha256": "870025bd159a18a4d390286a579bcd45f0df018f73e2df16fa8364195f52c213",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/config/package.json",
+    "lines": 11,
+    "sha256": "dcac1986e5e245ffa2e32ba3d89426eb38269804805cb29eed9f19d7b070cdd8",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/config/tsconfig.base.json",
+    "lines": 10,
+    "sha256": "0ef1178434ea97d0b9a3cb751e1f5341f2f03ca25158d9b706cbf188003f4ef6",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/database/clean-db.js",
+    "lines": 41,
+    "sha256": "36ec49e62daaf7b6a3839425b9b82870bc3885a5a3ba805a4e704722a184cff1",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/database/debug-prisma.js",
+    "lines": 47,
+    "sha256": "0339d48c646793b216684680d21a289fab44b243864da7fbcbc687971c1fe720",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/database/deleteUsers.js",
+    "lines": 50,
+    "sha256": "4a6a6e2b63c6c6c70b606e10b1be3400ee8e9c71b8866f944e98103066cc47f3",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/database/index.ts",
+    "lines": 2,
+    "sha256": "3657e877d6e3c2f7843c8e6ad4f9c7a9e1ee4ae6ba8b30b4cfbd4bef01a9d7ca",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/database/package.json",
+    "lines": 23,
+    "sha256": "c0325583f3fd37f3afaf54202680bff6dd3a633594173bb639e71baba38883a7",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/database/prisma/manual-migrations/20260923_shop_visible.sql",
+    "lines": 3,
+    "sha256": "be7f94fd9fedcf84c1d8056581a85a6537bc961e20b852087a6df4b98baec1af",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/database/prisma/migrations/20260207214808_init_users/migration.sql",
+    "lines": 17,
+    "sha256": "9d1640965a4db043d976a4e4d6201ead8535eec5aa051ff309fbe06bd6883303",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/database/prisma/migrations/20260208161057_add_waste_inventory/migration.sql",
+    "lines": 127,
+    "sha256": "3b9a341a6bee4036454af41a304b91ee55ba871f58aff40d573232459858ae24",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/database/prisma/migrations/20260216170258_add_payment_tracking/migration.sql",
+    "lines": 290,
+    "sha256": "61b410b2180f9ba6398c488283dc1f0dff1456cc4509ff8030b5c390ed253ffb",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/database/prisma/migrations/20260220194720_add_bale_to_inventory/migration.sql",
+    "lines": 66,
+    "sha256": "abe15d3adba18e18280b0c9b77bedb3ec05247df13292b2792dd945ca17713b1",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/database/prisma/migrations/20260220215456_add_total_intermediate/migration.sql",
+    "lines": 26,
+    "sha256": "c21bd8832832ea18affaab99400cb2eb56c8755ff942fa38650bba694a19df69",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/database/prisma/migrations/20260801191243_phase4_advanced_auth/migration.sql",
+    "lines": 40,
+    "sha256": "295241a6974562710ca88da4578befd8cf389fc79c2096fb32fd96fee3d9ffef",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/database/prisma/migrations/20260805180208_add_merge_and_invoice_fields/migration.sql",
+    "lines": 83,
+    "sha256": "4406bf924b26dfa37eddb8e4b53887cd3dfd4f1a7f7af65c0bf7c6974183c19b",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/database/prisma/migrations/20261002210000_align_system_settings/migration.sql",
+    "lines": 40,
+    "sha256": "f8533f994e6cb6d03c84aa1a8bc538aae288ed793f9729e9dfa852e4ca77cdb0",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/database/prisma/migrations/20261002211000_align_commerce_schema/migration.sql",
+    "lines": 347,
+    "sha256": "1db64c03eb737cd962b854dca8851e64b5c8741837254ebefab379106c0b993b",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/database/prisma/migrations/20261002212000_migrate_legacy_author/migration.sql",
+    "lines": 6,
+    "sha256": "a2bd29f240063b4b511dc95909f1b11a08d0d51d55e761c6e57e5236cfe48567",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/database/prisma/migrations/20261003000000_phase_3_5_warehouse_machine_qc_hr/migration.sql",
+    "lines": 164,
+    "sha256": "6613066a3148e5f9212a083159fe99838cb88cc1af3513b4d914c2e208511535",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/database/prisma/migrations/20261003140000_invoice_issuer_snapshot/migration.sql",
+    "lines": 4,
+    "sha256": "65318b22ffeeca63f8c2bfbd596b2c1780c769141dc2348bb9cb5a014e16cebc",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/database/prisma/migrations/20261003150000_clear_placeholder_company_settings/migration.sql",
+    "lines": 8,
+    "sha256": "6b0d88677ea5608015345093faa525b80c5b0a0eb713f17f62f29c9b2db9fa57",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/database/prisma/migrations/20261003210000_align_company_defaults/migration.sql",
+    "lines": 34,
+    "sha256": "492a55abce45cc3ef7985dceabcda790c17fc67f9cbae4611ff1ddc4b6b28431",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/database/prisma/migrations/20261006220000_link_dispatch_billing/migration.sql",
+    "lines": 4,
+    "sha256": "714483a37bbadba1730251878c4ff9fd88ade87267a9b5466065498fc62a261c",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/database/prisma/migrations/20261006233000_operational_flows/migration.sql",
+    "lines": 283,
+    "sha256": "3a7ceabf4a7a255d17baef3c9cd409aad0e441c4240ce8a594eae621772d3271",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/database/prisma/migrations/20261006234000_fulfilment_costing/migration.sql",
+    "lines": 85,
+    "sha256": "c61015c0a05bc34652ba34a027ed596b8555f96677405670f28ec6720721dc27",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/database/prisma/migrations/20261006235000_cotton_procurement/migration.sql",
+    "lines": 4,
+    "sha256": "d93e7c47bbc9a4ee814fa20613fc471d7b95f7d8a9b6ce3fef921cb0faba55db",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/database/prisma/migrations/20261010000000_company_workspace/migration.sql",
+    "lines": 4,
+    "sha256": "2cabf6acb4855a20e857a91037429e926a0afbbe7806dad59b27a132f491d668",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/database/prisma/migrations/20261010001000_master_imports/migration.sql",
+    "lines": 14,
+    "sha256": "56e3453a843f288c752f44947b7ca509a1201037f1dcc1f5c37d973653c7341e",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/database/prisma/migrations/20261011000000_weighbridge_receipt/migration.sql",
+    "lines": 4,
+    "sha256": "3b2a7f2376c67566a8416b61852b29b17ef92212fda0101d46ed0e1b78886573",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/database/prisma/schema.prisma",
+    "lines": 919,
+    "sha256": "366c585ba08ff4a7418b7bb910727c7758da0586ca4df3d8c752a70f896414d4",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/database/scripts/migrate-evergreen-one.js",
+    "lines": 62,
+    "sha256": "9274c94843add5e5535cbe42437834ae59c7799b46db3a43812817ac445eee4f",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/database/tsconfig.json",
+    "lines": 28,
+    "sha256": "387bc402fdeadec49e0d5806e40d3363759db536d27eeeefa5921957b25d6d0b",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/email/package.json",
+    "lines": 2,
+    "sha256": "1949e859ad750f30920ad0f8b7caea3642e46ab9d862faf59cab566927663dab",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/email/src/index.ts",
+    "lines": 18,
+    "sha256": "124781c7b18f63330d30003f9280ffb0b28bcad0d2bd68013791b84319c978ee",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/email/tsconfig.json",
+    "lines": 2,
+    "sha256": "7cffddb014245b2a54e17e477116fa254e76c99172377d174b640e4e87f74256",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/i18n/package.json",
+    "lines": 10,
+    "sha256": "5e02bd0a9413a6caacaba45dc3d5aadc5d2594f015c87a6ed912cc1b1b5fb93e",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/i18n/src/index.ts",
+    "lines": 18,
+    "sha256": "ab4bee9ba9460c609c1ed05fd01a40d37e37370d44974eb624473f27fefdf026",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/i18n/tsconfig.json",
+    "lines": 2,
+    "sha256": "7cffddb014245b2a54e17e477116fa254e76c99172377d174b640e4e87f74256",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/pdf/package.json",
+    "lines": 25,
+    "sha256": "92c90940f979c8db8a279b4704c49a474cba218a892d23e709c4ee3470b0a28c",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/pdf/src/index.ts",
+    "lines": 131,
+    "sha256": "eb28c643d3308a36f8fed6fd8f2ea6338862fcbaff533e9246e7505800a52eb6",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/pdf/tsconfig.json",
+    "lines": 15,
+    "sha256": "9869345c5930f27c946c259478d24d9f43b568a5a60eee8c95211ed3170ba6f2",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/types/company-profile.ts",
+    "lines": 122,
+    "sha256": "b7eabf67ec3cf4f8abb0781627ca24e16bcbae787b09154157d3cf642782da8f",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/types/geo.ts",
+    "lines": 138,
+    "sha256": "09775fb0f8c90ac8aa0bd0c4238204f676713b0e7214b1f1c5915102893a1b5c",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/types/index.ts",
+    "lines": 105,
+    "sha256": "ca34efe1070dc8cea8cd336c848ede4fdc24bde7aee5506754b3a7d0265ec334",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/types/migration.ts",
+    "lines": 86,
+    "sha256": "f3245fd0dc7d70fd32b41bfcd8c4db88ae6603bc31d01c97572311d5f7bbf036",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/types/package.json",
+    "lines": 22,
+    "sha256": "ee991384834cc51769b904f9359d2bcf6cf83b75aaf02088053e901277a6e457",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/types/tsconfig.json",
+    "lines": 16,
+    "sha256": "6e314ec8a52e63d31aafd225f7d04b2cbc603c261e8ba1b1b656a0f2178351ee",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "packages/types/weighbridge.ts",
+    "lines": 45,
+    "sha256": "a83e23b8766974a752845f70f1f274f1dacbf467d4e4fc01aa188298d4c42b37",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "scripts/check-knowledge-links.mjs",
+    "lines": 20,
+    "sha256": "43d763833dad44760958f432986011d8b33e37c69a64a8729c195230eecc0f2c",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "scripts/database-studio.js",
+    "lines": 2063,
+    "sha256": "5caab5a0e37104b170c7e37a19ca9334fac1ac9fc33fbcc53267489379935a94",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "scripts/dev-all.mjs",
+    "lines": 426,
+    "sha256": "b06da951a5366a8c0f939918e6dbb6f617d5c1516f6e9c0843b1f0546ca50537",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "scripts/dev-evergreen.js",
+    "lines": 114,
+    "sha256": "baf33ea7a541eabf317ae02d8a1d5cc897cfe6881f6b01ff53f257cd50e18139",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "scripts/generate-knowledge.mjs",
+    "lines": 143,
+    "sha256": "a32928dbe814e237238f734009efc5e7eacf01616a549ac1852711d4695b6bc5",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "scripts/roadmap-audit.mjs",
+    "lines": 133,
+    "sha256": "a926096d136b58f34a18853ecb53c19a344cb024fa927d5c2c3b4d0c94db6a9a",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "scripts/seed-admin.mjs",
+    "lines": 334,
+    "sha256": "8dcebba654566b85f0e8eafe2225ca5fbf81f4c991d0f574d93ee694e3f185f2",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "scripts/setup-check.js",
+    "lines": 31,
+    "sha256": "cf458ebb31506510006a8157691e85d5d8ace3463cce6c429d6f87e6cfe9cedc",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "scripts/solo-ops.mjs",
+    "lines": 136,
+    "sha256": "da94f94e6e8f3fb9975b8ae7e7f1db3145cab137fef76e40889b28c5252975be",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "scripts/source-parity-inventory.js",
+    "lines": 46,
+    "sha256": "4a9a4f2d4b7fc105d73c76c0bf16cc791acab7891bb184af44591970287cb3b4",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "scripts/test_delete_guards.js",
+    "lines": 216,
+    "sha256": "98d8f198c96b671f0ce6125a974d0bd323fe67c8f84e4b97fc4ec4b19c838ceb",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": ".github/workflows/ci.yml",
+    "lines": 37,
+    "sha256": "4deffc4742ef24ade2dd3eaaece4b8fa853e70d368e4211d5f3cde640238c40f",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "agent-system/catalog.mjs",
+    "lines": 67,
+    "sha256": "ede564600bed2df0e6248b8fd8ddb67dc245fe63166d8d301effa108695aba20",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "agent-system/evals/scenarios.json",
+    "lines": 13,
+    "sha256": "f687e2cb96fa9f65259ea65e843b6a0f783df514b5027fb13aecfb8cd8fa1313",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "agent-system/generate.mjs",
+    "lines": 16,
+    "sha256": "8c196c14eba7d0d50060e9b8a88c403d6d093a2cc6b5edf94a226733a83ab2f9",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "agent-system/memory.schema.json",
+    "lines": 23,
+    "sha256": "61b9209eb1fd2322dc139f2846cbd74a9950ec81b7d870271ffa33725f99256c",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "agent-system/runtime/planner.mjs",
+    "lines": 32,
+    "sha256": "fe96495bd005dd54467c1408245c8f4c45bd69b54cadc894ddbec0d79aea82ce",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "agent-system/runtime/planner.test.mjs",
+    "lines": 43,
+    "sha256": "849771e13051bd2d2de73004706c49727b75d0e1f3cb5601d65196deef2e9a73",
+    "scope": "test",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "agent-system/tools.json",
+    "lines": 13,
+    "sha256": "40cd74aa26258695ae855170c7ecac6ff6524ea0e61a5b435b8dfe7b98bbc1b0",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "agent-system/validate.mjs",
+    "lines": 38,
+    "sha256": "14d561559fdb86a7a55b4fb322fe600648c2411439285a6356805dd9bf10a873",
+    "scope": "source/config",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "deploy/docker/admin-entrypoint.sh",
+    "lines": 13,
+    "sha256": "607d9b170486c0bbb0a168b1f1edd283a091c23ff42460faf8f078e1a9ba7a47",
+    "scope": "deployment/root configuration",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "deploy/docker/Dockerfile.admin-api",
+    "lines": 58,
+    "sha256": "4000b95ddb1872e702e3df31bd71e6dfff7bb1d8975100bc7287473b150b242e",
+    "scope": "deployment/root configuration",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "deploy/docker/Dockerfile.admin-web",
+    "lines": 32,
+    "sha256": "e7c675fe2a2def1440ff43f778dcb321705549981817b50917b307f605623227",
+    "scope": "deployment/root configuration",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "deploy/docker/Dockerfile.marketing",
+    "lines": 32,
+    "sha256": "7708f33899eeb1650ab1e6c23c1a97c2e34a9ea8b3f1884f3d650c51bdf6be22",
+    "scope": "deployment/root configuration",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "deploy/docker/Dockerfile.tenant-api",
+    "lines": 73,
+    "sha256": "7974bdd878b3984e89ad4e3f82264acb89f95ec211d909b86b27334129f7f66a",
+    "scope": "deployment/root configuration",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "deploy/docker/Dockerfile.tenant-web",
+    "lines": 43,
+    "sha256": "5772fc057db43c76ee95039a5d8d7948208ecd46b83c10cf23b67c16d3e32264",
+    "scope": "deployment/root configuration",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "deploy/docker/nginx-admin.conf",
+    "lines": 36,
+    "sha256": "f3a5cc7c7d977cc9eaf7859e9415d9feaccc1cf51cc1bf472ab6fe253ccee354",
+    "scope": "deployment/root configuration",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "deploy/docker/nginx-marketing.conf",
+    "lines": 24,
+    "sha256": "fcc6d2a2013c381f7697aad1a192bd6acbeb627048ce129a177b9131bb56bd06",
+    "scope": "deployment/root configuration",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "deploy/docker/nginx-tenant.conf",
+    "lines": 51,
+    "sha256": "5ba0c7082f0533952fab63e05a4a5a1b61cf8401123b7ca4c43c8626e556ec09",
+    "scope": "deployment/root configuration",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "deploy/docker/tenant-entrypoint.sh",
+    "lines": 14,
+    "sha256": "deec0ec9930ae9e620918b651b03f8a3560926f235f776b266e143d331a16e4a",
+    "scope": "deployment/root configuration",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "deploy/linux/deploy-factory-vm.sh",
+    "lines": 109,
+    "sha256": "57de37668f9b05bec7d0ce215425358e520d018d946e1cd8682f7aa11cb79d34",
+    "scope": "deployment/root configuration",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "deploy/linux/evergreen-admin.service",
+    "lines": 27,
+    "sha256": "b8ddc591ff60211c4757bea885afc76e158be450fdb8425086edf61bdf44c50b",
+    "scope": "deployment/root configuration",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "deploy/linux/evergreen-tenant.service",
+    "lines": 28,
+    "sha256": "394eee34a9f88259908392d9bda4517a5243a8b599bf39eecf5fd1a198c26f7f",
+    "scope": "deployment/root configuration",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": ".env.example",
+    "lines": 54,
+    "sha256": "96e810dc165280e183cc1bce2cb3cae0b2048e21198e481b0c013d8a7b182496",
+    "scope": "deployment/root configuration",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": ".gitignore",
+    "lines": 26,
+    "sha256": "d8d855d41218b05e9022532e6b3ed7320c8530c5c44a578925693cc09da2b8a7",
+    "scope": "deployment/root configuration",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "docker-compose.production.yml",
+    "lines": 112,
+    "sha256": "5e6a26858fd57dced4a22c4e454ac113b6818189cb44b9f0e411c9ef57e7731e",
+    "scope": "deployment/root configuration",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "docker-compose.yml",
+    "lines": 27,
+    "sha256": "aea04e923b7fd840f05c13fae6265a52fe626fd288ef873e504dfa577e0763eb",
+    "scope": "deployment/root configuration",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "package-lock.json",
+    "lines": 20192,
+    "sha256": "0e9bc30b34137f116df030c8489a9dbe3c5b4f2dce2f6b4d3cb2c92617ec21ff",
+    "scope": "deployment/root configuration",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  },
+  {
+    "file": "package.json",
+    "lines": 42,
+    "sha256": "8a3edc3dda65ba2004199c49154c4d2a56f8867d6e60d33e18809b4a33ee5f7a",
+    "scope": "deployment/root configuration",
+    "review": "Static inventory and pattern scan; runtime not implied"
+  }
+]

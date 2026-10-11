@@ -1,0 +1,782 @@
+[
+  {
+    "name": "ADMIN_API_KEY",
+    "file": "apps/admin-api/src/guards/provider-access.guard.ts",
+    "line": 8
+  },
+  {
+    "name": "NODE_ENV",
+    "file": "apps/admin-api/src/guards/provider-access.guard.ts",
+    "line": 12
+  },
+  {
+    "name": "NODE_ENV",
+    "file": "apps/admin-api/src/main.ts",
+    "line": 66
+  },
+  {
+    "name": "ADMIN_API_PORT",
+    "file": "apps/admin-api/src/main.ts",
+    "line": 444
+  },
+  {
+    "name": "EVERGREEN_API_HOST",
+    "file": "apps/admin-api/src/main.ts",
+    "line": 446
+  },
+  {
+    "name": "NODE_ENV",
+    "file": "apps/admin-api/src/main.ts",
+    "line": 447
+  },
+  {
+    "name": "NODE_ENV",
+    "file": "apps/admin-api/src/main.ts",
+    "line": 450
+  },
+  {
+    "name": "EVERGREEN_SETTLE_GAP_MS",
+    "file": "apps/admin-api/src/utils/delete-guard.ts",
+    "line": 8
+  },
+  {
+    "name": "NODE_ENV",
+    "file": "apps/admin-api/test/app.e2e-spec.ts",
+    "line": 23
+  },
+  {
+    "name": "DATABASE_URL",
+    "file": "apps/admin-api/test/app.e2e-spec.ts",
+    "line": 24
+  },
+  {
+    "name": "JWT_SECRET",
+    "file": "apps/admin-api/test/app.e2e-spec.ts",
+    "line": 25
+  },
+  {
+    "name": "BOOTSTRAP_ADMIN_USERNAME",
+    "file": "apps/admin-api/test/app.e2e-spec.ts",
+    "line": 26
+  },
+  {
+    "name": "BOOTSTRAP_ADMIN_EMAIL",
+    "file": "apps/admin-api/test/app.e2e-spec.ts",
+    "line": 27
+  },
+  {
+    "name": "BOOTSTRAP_ADMIN_PASSWORD",
+    "file": "apps/admin-api/test/app.e2e-spec.ts",
+    "line": 28
+  },
+  {
+    "name": "SMTP_HOST",
+    "file": "apps/admin-api/test/app.e2e-spec.ts",
+    "line": 29
+  },
+  {
+    "name": "DAILY_SUMMARY_EMAIL",
+    "file": "apps/admin-api/test/app.e2e-spec.ts",
+    "line": 30
+  },
+  {
+    "name": "EVERGREEN_API_PORT",
+    "file": "apps/api/src/app.service.ts",
+    "line": 84
+  },
+  {
+    "name": "PORT",
+    "file": "apps/api/src/app.service.ts",
+    "line": 84
+  },
+  {
+    "name": "EVERGREEN_PUBLIC_PORT",
+    "file": "apps/api/src/app.service.ts",
+    "line": 85
+  },
+  {
+    "name": "NODE_ENV",
+    "file": "apps/api/src/app.service.ts",
+    "line": 106
+  },
+  {
+    "name": "SMTP_HOST",
+    "file": "apps/api/src/app.service.ts",
+    "line": 405
+  },
+  {
+    "name": "NODE_ENV",
+    "file": "apps/api/src/app.service.ts",
+    "line": 423
+  },
+  {
+    "name": "PROVIDER_API_KEY",
+    "file": "apps/api/src/guards/provider-admin.guard.ts",
+    "line": 9
+  },
+  {
+    "name": "AUTO_MIGRATE",
+    "file": "apps/api/src/main.ts",
+    "line": 15
+  },
+  {
+    "name": "FRONTEND_URL",
+    "file": "apps/api/src/main.ts",
+    "line": 28
+  },
+  {
+    "name": "NODE_ENV",
+    "file": "apps/api/src/main.ts",
+    "line": 74
+  },
+  {
+    "name": "EVERGREEN_API_PORT",
+    "file": "apps/api/src/main.ts",
+    "line": 452
+  },
+  {
+    "name": "PORT",
+    "file": "apps/api/src/main.ts",
+    "line": 452
+  },
+  {
+    "name": "EVERGREEN_API_HOST",
+    "file": "apps/api/src/main.ts",
+    "line": 454
+  },
+  {
+    "name": "NODE_ENV",
+    "file": "apps/api/src/main.ts",
+    "line": 455
+  },
+  {
+    "name": "NODE_ENV",
+    "file": "apps/api/src/main.ts",
+    "line": 458
+  },
+  {
+    "name": "BOOTSTRAP_ADMIN_USERNAME",
+    "file": "apps/api/src/modules/auth/auth.service.ts",
+    "line": 34
+  },
+  {
+    "name": "BOOTSTRAP_ADMIN_PASSWORD",
+    "file": "apps/api/src/modules/auth/auth.service.ts",
+    "line": 35
+  },
+  {
+    "name": "BOOTSTRAP_ADMIN_EMAIL",
+    "file": "apps/api/src/modules/auth/auth.service.ts",
+    "line": 36
+  },
+  {
+    "name": "GEOLOCATION_URL",
+    "file": "apps/api/src/modules/auth/auth.service.ts",
+    "line": 182
+  },
+  {
+    "name": "TOTP_ISSUER",
+    "file": "apps/api/src/modules/auth/auth.service.ts",
+    "line": 246
+  },
+  {
+    "name": "SMTP_HOST",
+    "file": "apps/api/src/modules/auth/email.service.ts",
+    "line": 9
+  },
+  {
+    "name": "SMTP_USER",
+    "file": "apps/api/src/modules/auth/email.service.ts",
+    "line": 11
+  },
+  {
+    "name": "SMTP_PASSWORD",
+    "file": "apps/api/src/modules/auth/email.service.ts",
+    "line": 12
+  },
+  {
+    "name": "SMTP_PORT",
+    "file": "apps/api/src/modules/auth/email.service.ts",
+    "line": 15
+  },
+  {
+    "name": "SMTP_SECURE",
+    "file": "apps/api/src/modules/auth/email.service.ts",
+    "line": 16
+  },
+  {
+    "name": "JWT_SECRET",
+    "file": "apps/api/src/modules/auth/jwt-secret.ts",
+    "line": 4
+  },
+  {
+    "name": "SMTP_HOST",
+    "file": "apps/api/src/modules/dashboard/daily-summary.service.ts",
+    "line": 17
+  },
+  {
+    "name": "SMTP_USER",
+    "file": "apps/api/src/modules/dashboard/daily-summary.service.ts",
+    "line": 22
+  },
+  {
+    "name": "SMTP_PASSWORD",
+    "file": "apps/api/src/modules/dashboard/daily-summary.service.ts",
+    "line": 23
+  },
+  {
+    "name": "SMTP_PORT",
+    "file": "apps/api/src/modules/dashboard/daily-summary.service.ts",
+    "line": 26
+  },
+  {
+    "name": "SMTP_SECURE",
+    "file": "apps/api/src/modules/dashboard/daily-summary.service.ts",
+    "line": 27
+  },
+  {
+    "name": "DAILY_SUMMARY_EMAIL",
+    "file": "apps/api/src/modules/dashboard/daily-summary.service.ts",
+    "line": 38
+  },
+  {
+    "name": "COMPANY_ID",
+    "file": "apps/api/src/services/admin-sync.service.ts",
+    "line": 11
+  },
+  {
+    "name": "ENCRYPTION_SECRET",
+    "file": "apps/api/src/utils/crypto.ts",
+    "line": 9
+  },
+  {
+    "name": "EVERGREEN_SETTLE_GAP_MS",
+    "file": "apps/api/src/utils/delete-guard.ts",
+    "line": 8
+  },
+  {
+    "name": "NODE_ENV",
+    "file": "apps/api/test/app.e2e-spec.ts",
+    "line": 23
+  },
+  {
+    "name": "DATABASE_URL",
+    "file": "apps/api/test/app.e2e-spec.ts",
+    "line": 24
+  },
+  {
+    "name": "JWT_SECRET",
+    "file": "apps/api/test/app.e2e-spec.ts",
+    "line": 25
+  },
+  {
+    "name": "BOOTSTRAP_ADMIN_USERNAME",
+    "file": "apps/api/test/app.e2e-spec.ts",
+    "line": 26
+  },
+  {
+    "name": "BOOTSTRAP_ADMIN_EMAIL",
+    "file": "apps/api/test/app.e2e-spec.ts",
+    "line": 27
+  },
+  {
+    "name": "BOOTSTRAP_ADMIN_PASSWORD",
+    "file": "apps/api/test/app.e2e-spec.ts",
+    "line": 28
+  },
+  {
+    "name": "SMTP_HOST",
+    "file": "apps/api/test/app.e2e-spec.ts",
+    "line": 29
+  },
+  {
+    "name": "DAILY_SUMMARY_EMAIL",
+    "file": "apps/api/test/app.e2e-spec.ts",
+    "line": 30
+  },
+  {
+    "name": "ELECTRON_IS_DEV",
+    "file": "apps/desktop/main.js",
+    "line": 11
+  },
+  {
+    "name": "NODE_ENV",
+    "file": "apps/web/src/components/common/ErrorBoundary.tsx",
+    "line": 35
+  },
+  {
+    "name": "NODE_ENV",
+    "file": "apps/web/src/components/common/ErrorBoundary.tsx",
+    "line": 94
+  },
+  {
+    "name": "VITE_API_URL",
+    "file": "apps/web/src/utils/api.ts",
+    "line": 7
+  },
+  {
+    "name": "EVERGREEN_PUBLIC_PORT",
+    "file": "apps/web/vite.config.ts",
+    "line": 4
+  },
+  {
+    "name": "EVERGREEN_API_PORT",
+    "file": "apps/web/vite.config.ts",
+    "line": 5
+  },
+  {
+    "name": "VITEST",
+    "file": "apps/web/vite.config.ts",
+    "line": 6
+  },
+  {
+    "name": "NODE_ENV",
+    "file": "packages/database/deleteUsers.js",
+    "line": 18
+  },
+  {
+    "name": "DB_STUDIO_PORT",
+    "file": "scripts/database-studio.js",
+    "line": 11
+  },
+  {
+    "name": "JWT_SECRET",
+    "file": "scripts/database-studio.js",
+    "line": 13
+  },
+  {
+    "name": "EVERGREEN_PUBLIC_PORT",
+    "file": "scripts/dev-evergreen.js",
+    "line": 5
+  },
+  {
+    "name": "EVERGREEN_API_PORT",
+    "file": "scripts/dev-evergreen.js",
+    "line": 6
+  },
+  {
+    "name": "EVERGREEN_PUBLIC_PORT",
+    "file": "scripts/setup-check.js",
+    "line": 27
+  },
+  {
+    "name": "EVERGREEN_API_PORT",
+    "file": "scripts/setup-check.js",
+    "line": 27
+  },
+  {
+    "name": "ADMIN_API_PORT",
+    "file": "deploy/docker/admin-entrypoint.sh",
+    "line": 11
+  },
+  {
+    "name": "NODE_ENV",
+    "file": "deploy/docker/Dockerfile.admin-api",
+    "line": 34
+  },
+  {
+    "name": "ADMIN_API_PORT",
+    "file": "deploy/docker/Dockerfile.admin-api",
+    "line": 35
+  },
+  {
+    "name": "PORT",
+    "file": "deploy/docker/Dockerfile.admin-api",
+    "line": 36
+  },
+  {
+    "name": "NODE_ENV",
+    "file": "deploy/docker/Dockerfile.tenant-api",
+    "line": 45
+  },
+  {
+    "name": "EVERGREEN_API_PORT",
+    "file": "deploy/docker/Dockerfile.tenant-api",
+    "line": 46
+  },
+  {
+    "name": "PORT",
+    "file": "deploy/docker/Dockerfile.tenant-api",
+    "line": 47
+  },
+  {
+    "name": "EVERGREEN_API_PORT",
+    "file": "deploy/docker/tenant-entrypoint.sh",
+    "line": 12
+  },
+  {
+    "name": "RED",
+    "file": "deploy/linux/deploy-factory-vm.sh",
+    "line": 10
+  },
+  {
+    "name": "GREEN",
+    "file": "deploy/linux/deploy-factory-vm.sh",
+    "line": 11
+  },
+  {
+    "name": "CYAN",
+    "file": "deploy/linux/deploy-factory-vm.sh",
+    "line": 12
+  },
+  {
+    "name": "NC",
+    "file": "deploy/linux/deploy-factory-vm.sh",
+    "line": 13
+  },
+  {
+    "name": "CYAN",
+    "file": "deploy/linux/deploy-factory-vm.sh",
+    "line": 15
+  },
+  {
+    "name": "NC",
+    "file": "deploy/linux/deploy-factory-vm.sh",
+    "line": 15
+  },
+  {
+    "name": "RED",
+    "file": "deploy/linux/deploy-factory-vm.sh",
+    "line": 19
+  },
+  {
+    "name": "NC",
+    "file": "deploy/linux/deploy-factory-vm.sh",
+    "line": 19
+  },
+  {
+    "name": "TENANT_SLUG",
+    "file": "deploy/linux/deploy-factory-vm.sh",
+    "line": 23
+  },
+  {
+    "name": "INSTALL_DIR",
+    "file": "deploy/linux/deploy-factory-vm.sh",
+    "line": 24
+  },
+  {
+    "name": "DATA_DIR",
+    "file": "deploy/linux/deploy-factory-vm.sh",
+    "line": 25
+  },
+  {
+    "name": "CONFIG_DIR",
+    "file": "deploy/linux/deploy-factory-vm.sh",
+    "line": 26
+  },
+  {
+    "name": "CYAN",
+    "file": "deploy/linux/deploy-factory-vm.sh",
+    "line": 28
+  },
+  {
+    "name": "TENANT_SLUG",
+    "file": "deploy/linux/deploy-factory-vm.sh",
+    "line": 28
+  },
+  {
+    "name": "NC",
+    "file": "deploy/linux/deploy-factory-vm.sh",
+    "line": 28
+  },
+  {
+    "name": "GREEN",
+    "file": "deploy/linux/deploy-factory-vm.sh",
+    "line": 32
+  },
+  {
+    "name": "NC",
+    "file": "deploy/linux/deploy-factory-vm.sh",
+    "line": 32
+  },
+  {
+    "name": "GREEN",
+    "file": "deploy/linux/deploy-factory-vm.sh",
+    "line": 42
+  },
+  {
+    "name": "NC",
+    "file": "deploy/linux/deploy-factory-vm.sh",
+    "line": 42
+  },
+  {
+    "name": "NODE_ENV",
+    "file": "deploy/linux/deploy-factory-vm.sh",
+    "line": 49
+  },
+  {
+    "name": "TENANT_SLUG",
+    "file": "deploy/linux/deploy-factory-vm.sh",
+    "line": 50
+  },
+  {
+    "name": "EVERGREEN_API_PORT",
+    "file": "deploy/linux/deploy-factory-vm.sh",
+    "line": 51
+  },
+  {
+    "name": "PORT",
+    "file": "deploy/linux/deploy-factory-vm.sh",
+    "line": 52
+  },
+  {
+    "name": "DATABASE_URL",
+    "file": "deploy/linux/deploy-factory-vm.sh",
+    "line": 53
+  },
+  {
+    "name": "DATA_DIR",
+    "file": "deploy/linux/deploy-factory-vm.sh",
+    "line": 53
+  },
+  {
+    "name": "ADMIN_API_URL",
+    "file": "deploy/linux/deploy-factory-vm.sh",
+    "line": 54
+  },
+  {
+    "name": "HEARTBEAT_INTERVAL_MS",
+    "file": "deploy/linux/deploy-factory-vm.sh",
+    "line": 55
+  },
+  {
+    "name": "GREEN",
+    "file": "deploy/linux/deploy-factory-vm.sh",
+    "line": 60
+  },
+  {
+    "name": "NC",
+    "file": "deploy/linux/deploy-factory-vm.sh",
+    "line": 60
+  },
+  {
+    "name": "GREEN",
+    "file": "deploy/linux/deploy-factory-vm.sh",
+    "line": 67
+  },
+  {
+    "name": "NC",
+    "file": "deploy/linux/deploy-factory-vm.sh",
+    "line": 67
+  },
+  {
+    "name": "GREEN",
+    "file": "deploy/linux/deploy-factory-vm.sh",
+    "line": 107
+  },
+  {
+    "name": "NC",
+    "file": "deploy/linux/deploy-factory-vm.sh",
+    "line": 107
+  },
+  {
+    "name": "CYAN",
+    "file": "deploy/linux/deploy-factory-vm.sh",
+    "line": 108
+  },
+  {
+    "name": "API",
+    "file": "deploy/linux/deploy-factory-vm.sh",
+    "line": 108
+  },
+  {
+    "name": "NC",
+    "file": "deploy/linux/deploy-factory-vm.sh",
+    "line": 108
+  },
+  {
+    "name": "DATABASE_URL",
+    "file": ".env.example",
+    "line": 7
+  },
+  {
+    "name": "DATABASE_URL",
+    "file": ".env.example",
+    "line": 9
+  },
+  {
+    "name": "JWT_SECRET",
+    "file": ".env.example",
+    "line": 14
+  },
+  {
+    "name": "EVERGREEN_API_PORT",
+    "file": ".env.example",
+    "line": 17
+  },
+  {
+    "name": "EVERGREEN_PUBLIC_PORT",
+    "file": ".env.example",
+    "line": 18
+  },
+  {
+    "name": "EVERGREEN_API_HOST",
+    "file": ".env.example",
+    "line": 20
+  },
+  {
+    "name": "FRONTEND_URL",
+    "file": ".env.example",
+    "line": 23
+  },
+  {
+    "name": "NODE_ENV",
+    "file": ".env.example",
+    "line": 26
+  },
+  {
+    "name": "BOOTSTRAP_ADMIN_USERNAME",
+    "file": ".env.example",
+    "line": 29
+  },
+  {
+    "name": "BOOTSTRAP_ADMIN_EMAIL",
+    "file": ".env.example",
+    "line": 30
+  },
+  {
+    "name": "BOOTSTRAP_ADMIN_PASSWORD",
+    "file": ".env.example",
+    "line": 31
+  },
+  {
+    "name": "SMTP_HOST",
+    "file": ".env.example",
+    "line": 34
+  },
+  {
+    "name": "SMTP_PORT",
+    "file": ".env.example",
+    "line": 35
+  },
+  {
+    "name": "SMTP_SECURE",
+    "file": ".env.example",
+    "line": 36
+  },
+  {
+    "name": "SMTP_USER",
+    "file": ".env.example",
+    "line": 37
+  },
+  {
+    "name": "SMTP_PASSWORD",
+    "file": ".env.example",
+    "line": 38
+  },
+  {
+    "name": "DAILY_SUMMARY_EMAIL",
+    "file": ".env.example",
+    "line": 42
+  },
+  {
+    "name": "REDIS_URL",
+    "file": ".env.example",
+    "line": 45
+  },
+  {
+    "name": "VITE_API_URL",
+    "file": ".env.example",
+    "line": 49
+  },
+  {
+    "name": "GEOLOCATION_URL",
+    "file": ".env.example",
+    "line": 53
+  },
+  {
+    "name": "NODE_ENV",
+    "file": "docker-compose.production.yml",
+    "line": 35
+  },
+  {
+    "name": "EVERGREEN_API_PORT",
+    "file": "docker-compose.production.yml",
+    "line": 36
+  },
+  {
+    "name": "PORT",
+    "file": "docker-compose.production.yml",
+    "line": 37
+  },
+  {
+    "name": "DATABASE_URL",
+    "file": "docker-compose.production.yml",
+    "line": 38
+  },
+  {
+    "name": "JWT_SECRET",
+    "file": "docker-compose.production.yml",
+    "line": 39
+  },
+  {
+    "name": "TENANT_JWT_SECRET",
+    "file": "docker-compose.production.yml",
+    "line": 39
+  },
+  {
+    "name": "ADMIN_API_URL",
+    "file": "docker-compose.production.yml",
+    "line": 40
+  },
+  {
+    "name": "HEARTBEAT_INTERVAL_MS",
+    "file": "docker-compose.production.yml",
+    "line": 41
+  },
+  {
+    "name": "NODE_ENV",
+    "file": "docker-compose.production.yml",
+    "line": 74
+  },
+  {
+    "name": "ADMIN_API_PORT",
+    "file": "docker-compose.production.yml",
+    "line": 75
+  },
+  {
+    "name": "PORT",
+    "file": "docker-compose.production.yml",
+    "line": 76
+  },
+  {
+    "name": "ADMIN_DATABASE_URL",
+    "file": "docker-compose.production.yml",
+    "line": 77
+  },
+  {
+    "name": "ADMIN_API_KEY",
+    "file": "docker-compose.production.yml",
+    "line": 78
+  },
+  {
+    "name": "PROVIDER_ADMIN_API_KEY",
+    "file": "docker-compose.production.yml",
+    "line": 78
+  },
+  {
+    "name": "JWT_SECRET",
+    "file": "docker-compose.production.yml",
+    "line": 79
+  },
+  {
+    "name": "ADMIN_JWT_SECRET",
+    "file": "docker-compose.production.yml",
+    "line": 79
+  },
+  {
+    "name": "POSTGRES_USER",
+    "file": "docker-compose.yml",
+    "line": 8
+  },
+  {
+    "name": "POSTGRES_PASSWORD",
+    "file": "docker-compose.yml",
+    "line": 9
+  },
+  {
+    "name": "POSTGRES_DB",
+    "file": "docker-compose.yml",
+    "line": 10
+  }
+]
