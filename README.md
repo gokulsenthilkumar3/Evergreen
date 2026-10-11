@@ -44,6 +44,18 @@ The shared navigation and catalogue mean teams do not need to switch between sep
 *   **Sales Logging**: Manage customer shipments with vehicle and driver tracking.
 *   **Automatic Deduction**: Sales entries instantly deduct stock from the yarn inventory for precise balance tracking.
 
+### Administration
+
+The separate **Provider Mission Control** app runs at `http://localhost:5174/`. It has a responsive sidebar for its 16 modules, including tenant management, deployments, integrations, and payments. See the [provider admin README](apps/admin-web/README.md) for startup, verification, and current simulation limits.
+
+Sign in as an **ADMIN** and open **User Management** from the navigation, or visit `/users` on the staff application.
+
+- Search users by username, name, email or role. Summary cards show totals for Admins, Modifiers and Viewers; the table scrolls horizontally on smaller screens.
+- Add or edit a user with a username, email and role. New passwords require at least 12 characters and at most 72 UTF-8 bytes. Leave the password blank when editing to keep the current password.
+- **VIEWER** has read access, **MODIFIER** can create and update, and **ADMIN** can manage users and delete records, subject to each module's rules.
+- Your own account cannot be deleted. The last administrator cannot be deleted or demoted. The API also enforces these protections.
+- Failed user-list requests show an error with a Retry action. If a refresh fails, previously loaded records remain visible with a stale-data warning.
+
 ---
 
 ## 🛠️ Tech Stack
@@ -116,10 +128,13 @@ Production build: `npm run build -w apps/api` and `npm run build -w apps/web`. T
 Evergreen/
 ├── apps/
 │   ├── api/          # NestJS Backend
-│   └── web/          # React Frontend
+│   ├── web/          # React staff application and public shop
+│   └── desktop/      # Desktop packaging
 ├── packages/
 │   ├── database/     # Prisma Schema & Migrations
-│   └── common/       # Shared Types & Logic
+│   └── types/        # Shared TypeScript types
+├── agent-system/     # Project maintenance workflows and validation
+├── docs/             # Business flow, roadmap and supporting documentation
 └── package.json      # Monorepo configuration
 ```
 
@@ -127,7 +142,7 @@ Evergreen/
 
 ## 🔒 Security
 - **JWT Auth**: Secure login with persistent sessions.
-- **RBAC**: Access levels for Admin, Author, and Viewer roles.
+- **RBAC**: Access levels for Admin, Modifier, and Viewer roles.
 - **Transaction Safety**: Canonical commerce operations use database transactions. Legacy inward, production and costing write paths still require consolidation before release.
 
 ---

@@ -1,0 +1,82 @@
+/* Foundation only: the provider theme belongs to App.css and layout.css. */
+:root {
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color-scheme: dark;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+html,
+body,
+#root {
+  width: 100%;
+  min-width: 0;
+  min-height: 100%;
+}
+body {
+  margin: 0;
+}
+#root {
+  min-height: 100dvh;
+  text-align: left;
+}
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+button {
+  cursor: pointer;
+}
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible,
+summary:focus-visible {
+  outline: 2px solid #6ee7b7;
+  outline-offset: 4px;
+}
+h1,
+h2,
+h3,
+h4,
+p {
+  margin: 0;
+}
+h1,
+h2,
+h3,
+h4 {
+  color: inherit;
+  line-height: 1.25;
+}
+a {
+  color: #7dd3fc;
+  text-underline-offset: 3px;
+}
+code,
+pre {
+  font-family: "Cascadia Code", Consolas, monospace;
+}
+code {
+  font-size: 0.85em;
+  overflow-wrap: anywhere;
+}
+img,
+svg {
+  vertical-align: middle;
+}
+::selection {
+  background: #235b51;
+  color: #fff;
+}
