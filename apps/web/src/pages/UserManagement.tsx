@@ -23,14 +23,16 @@ import {
     Chip,
     CircularProgress,
     Tooltip,
-    TextField as SearchField,
+    Alert,
+    InputAdornment,
 } from '@mui/material';
 import {
     Add as AddIcon,
     Edit as EditIcon,
     Delete as DeleteIcon,
     Person as PersonIcon,
-    Security as SecurityIcon
+    Security as SecurityIcon,
+    Search as SearchIcon,
 } from '@mui/icons-material';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import api from '../utils/api';
@@ -55,6 +57,10 @@ interface UserManagementProps {
     username?: string;
 }
 
+type UserForm = Pick<User, 'username' | 'name' | 'email' | 'role'> & { password: string };
+
+const roleLabels = { ADMIN: 'Admin', MODIFIER: 'Modifier', VIEWER: 'Viewer' };
+
 const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole, username }) => {
     const queryClient = useQueryClient();
     const [searchTerm, setSearchTerm] = useState('');
@@ -63,7 +69,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole, userna
     const { confirm } = useConfirm();
 
 
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<UserForm>({
         username: '',
         name: '',
         password: '',
@@ -72,8 +78,9 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole, userna
     });
 
     // Fetch Users
-    const { data: users = [], isLoading } = useQuery({
+    const { data: users = [], isLoading, isError, isFetching, refetch } = useQuery<User[]>({
         queryKey: ['users'],
+        enabled: canManageUsers(currentUserRole),
         queryFn: async () => {
             const res = await api.get('/users');
             return res.data;
@@ -81,7 +88,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole, userna
     });
 
     const filteredUsers = users.filter((user: User) => {
-        const term = searchTerm.toLowerCase();
+        const term = searchTerm.trim().toLowerCase();
         return !term ||
             user.username?.toLowerCase().includes(term) ||
             user.name?.toLowerCase().includes(term) ||
@@ -96,26 +103,26 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole, userna
 
     // Create User Mutation
     const createUserMutation = useMutation({
-        mutationFn: (newUser: any) => api.post('/users', newUser),
+        mutationFn: (newUser: UserForm) => api.post('/users', newUser),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['users'] });
             toast.success(SUCCESS_MESSAGES.USER_CREATE);
             handleCloseDialog();
         },
-        onError: (error: any) => {
+        onError: (error: unknown) => {
             toast.error(formatApiError(error, ERROR_MESSAGES.CREATE_FAILED));
         }
     });
 
     // Update User Mutation
     const updateUserMutation = useMutation({
-        mutationFn: ({ id, data }: { id: number; data: any }) => api.put(`/users/${id}`, data),
+        mutationFn: ({ id, data }: { id: number; data: Partial<UserForm> }) => api.put(`/users/${id}`, data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['users'] });
             toast.success(SUCCESS_MESSAGES.USER_UPDATE);
             handleCloseDialog();
         },
-        onError: (error: any) => {
+        onError: (error: unknown) => {
             toast.error(formatApiError(error, ERROR_MESSAGES.UPDATE_FAILED));
         }
     });
@@ -127,7 +134,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole, userna
             queryClient.invalidateQueries({ queryKey: ['users'] });
             toast.success(SUCCESS_MESSAGES.USER_DELETE);
         },
-        onError: (error: any) => {
+        onError: (error: unknown) => {
             toast.error(formatApiError(error, ERROR_MESSAGES.DELETE_FAILED));
         }
     });
@@ -160,18 +167,26 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole, userna
         setEditingUser(null);
     };
 
-    const handleSubmit = () => {
+    const isSaving = createUserMutation.isPending || updateUserMutation.isPending;
+
+    const handleSubmit = (event: React.FormEvent) => {
+        event.preventDefault();
+        if (isSaving) return;
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
             toast.error('Enter a valid email address');
             return;
         }
-        if (!formData.username) {
-            toast.error(ERROR_MESSAGES.REQUIRED_FIELD('Username'));
+        if (!/^[A-Za-z0-9._@-]+$/.test(formData.username) || formData.username.length > 100) {
+            toast.error('Use up to 100 letters, numbers, dots, underscores, @ signs or hyphens for the username');
+            return;
+        }
+        if ((!editingUser || formData.password) && (formData.password.length < 12 || new TextEncoder().encode(formData.password).length > 72)) {
+            toast.error('Password must contain at least 12 characters and at most 72 UTF-8 bytes');
             return;
         }
 
         if (editingUser) {
-            const updateData: any = { ...formData };
+            const updateData: Partial<UserForm> = { ...formData };
             if (!updateData.password) delete updateData.password;
             updateUserMutation.mutate({ id: editingUser.id, data: updateData });
         } else {
@@ -213,47 +228,57 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole, userna
     }
 
     return (
-        <Box sx={{ maxWidth: '100%', width: '100%' }}>
+        <Box sx={{ maxWidth: '100%', width: '100%', minWidth: 0 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: { xs: 'flex-start', md: 'center' }, flexWrap: 'wrap', gap: 2, mb: 4 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <PersonIcon sx={{ fontSize: 32, color: 'primary.main' }} />
                     <Box>
-                        <Typography variant="h4" sx={{ fontWeight: 'bold' }}>User Management</Typography>
+                        <Typography component="h1" variant="h4" sx={{ fontWeight: 'bold', fontSize: { xs: '1.75rem', sm: '2.125rem' } }}>User Management</Typography>
                         <Typography variant="body2" color="text.secondary">
                             Create users, assign roles, and keep permissions tidy.
                         </Typography>
                     </Box>
                 </Box>
-                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                    <SearchField
-                        size="small"
-                        placeholder="Search users..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        sx={{ minWidth: { xs: '100%', sm: 240 } }}
-                    />
-                    <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenDialog()} sx={{ borderRadius: 2, px: 3 }}>
+                    <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenDialog()} sx={{ borderRadius: 2, px: 3, width: { xs: '100%', sm: 'auto' } }}>
                         Add User
                     </Button>
-                </Box>
             </Box>
 
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2, mb: 3 }}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))', md: 'repeat(4, minmax(0, 1fr))' }, gap: 2, mb: 3 }}>
                 {[
                     { label: 'Total Users', value: users.length },
                     { label: 'Admins', value: roleCounts.ADMIN || 0 },
+                    { label: 'Modifiers', value: roleCounts.MODIFIER || 0 },
                     { label: 'Viewers', value: roleCounts.VIEWER || 0 },
                 ].map(card => (
                     <Paper key={card.label} sx={{ p: 2.5 }}>
                         <Typography variant="caption" color="text.secondary">{card.label}</Typography>
-                        <Typography variant="h4" fontWeight={800}>{card.value}</Typography>
+                        <Typography variant="h4" fontWeight={800}>{isLoading || (isError && !users.length) ? '—' : card.value}</Typography>
                     </Paper>
                 ))}
             </Box>
 
-            <Paper sx={{ width: '100%', borderRadius: 2, overflow: 'hidden' }}>
-                <TableContainer>
-                    <Table>
+            {isError && (
+                <Alert severity="error" sx={{ mb: 2 }} action={<Button color="inherit" disabled={isFetching} onClick={() => void refetch()}>Retry</Button>}>
+                    Could not load users.{users.length > 0 ? ' Showing previously loaded users; these may be out of date.' : ' Please try again.'}
+                </Alert>
+            )}
+
+            <Paper sx={{ width: '100%', minWidth: 0, borderRadius: 2, overflow: 'hidden' }}>
+                <Box sx={{ p: 2, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: { sm: 'center' }, justifyContent: 'space-between', gap: 2 }}>
+                    <Typography component="h2" variant="h6">Team members</Typography>
+                    <TextField
+                        size="small"
+                        label="Search users"
+                        placeholder="Name, email or role"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        slotProps={{ input: { startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment> } }}
+                        sx={{ width: { xs: '100%', sm: 300 } }}
+                    />
+                </Box>
+                <TableContainer tabIndex={0} role="region" aria-label="Team members" sx={{ overflowX: 'auto' }}>
+                    <Table aria-label="Users" sx={{ minWidth: 760 }}>
                         <TableHead>
                             <TableRow sx={{ bgcolor: 'action.hover' }}>
                                 <TableCell sx={{ fontWeight: 'bold' }}>ID</TableCell>
@@ -268,27 +293,33 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole, userna
                         <TableBody>
                             {isLoading ? (
                                 <TableRow>
-                                    <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
-                                        <CircularProgress />
+                                    <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
+                                        <CircularProgress size={28} aria-label="Loading users" />
                                     </TableCell>
                                 </TableRow>
+                            ) : isError && !users.length ? (
+                                <TableRow><TableCell colSpan={7} align="center" sx={{ py: 4 }}>User list unavailable.</TableCell></TableRow>
                             ) : filteredUsers.length === 0 ? (
                                 <TableRow>
                                     <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
-                                        <Typography color="text.secondary">No users found.</Typography>
+                                        <Typography color="text.secondary">{searchTerm.trim() ? 'No users match your search.' : 'No users yet. Add a user to get started.'}</Typography>
+                                        {searchTerm.trim() && <Button onClick={() => setSearchTerm('')}>Clear search</Button>}
                                     </TableCell>
                                 </TableRow>
                             ) : (
                                 filteredUsers.map((user: User) => (
                                     <TableRow key={user.id} hover>
                                         <TableCell>#{user.id}</TableCell>
-                                        <TableCell sx={{ fontWeight: 'medium' }}>{user.username}</TableCell>
+                                        <TableCell sx={{ maxWidth: 260, overflowWrap: 'anywhere' }}>
+                                            <Typography variant="body2" fontWeight={600}>{user.username}{user.username === username ? ' (you)' : ''}</Typography>
+                                            <Typography variant="body2" color="text.secondary">{user.email || '—'}</Typography>
+                                        </TableCell>
                                         <TableCell>{user.name || '-'}</TableCell>
                                         <TableCell>
                                             <Chip
                                                 label={user.role}
                                                 size="small"
-                                                color={getRoleColor(user.role) as any}
+                                                color={getRoleColor(user.role)}
                                                 variant="outlined"
                                                 sx={{ fontWeight: 'bold' }}
                                             />
@@ -301,22 +332,30 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole, userna
                                                 </Box>
                                             </Tooltip>
                                         </TableCell>
-                                        <TableCell align="center">
+                                        <TableCell align="center" sx={{ whiteSpace: 'nowrap' }}>
                                             <IconButton
                                                 color="primary"
                                                 size="small"
+                                                aria-label={`Edit ${user.username}`}
+                                                disabled={deleteUserMutation.isPending}
                                                 onClick={() => handleOpenDialog(user)}
                                                 sx={{ mr: 1 }}
                                             >
                                                 <EditIcon fontSize="small" />
                                             </IconButton>
-                                            <IconButton
-                                                color="error"
-                                                size="small"
-                                                onClick={() => handleDelete(user.id)}
-                                            >
-                                                <DeleteIcon fontSize="small" />
-                                            </IconButton>
+                                            <Tooltip title={user.username === username ? 'You cannot delete your own account' : user.role === 'ADMIN' && roleCounts.ADMIN === 1 ? 'The last administrator cannot be deleted' : `Delete ${user.username}`}>
+                                                <span>
+                                                    <IconButton
+                                                        color="error"
+                                                        size="small"
+                                                        aria-label={`Delete ${user.username}`}
+                                                        disabled={deleteUserMutation.isPending || user.username === username || (user.role === 'ADMIN' && roleCounts.ADMIN === 1)}
+                                                        onClick={() => handleDelete(user.id)}
+                                                    >
+                                                        <DeleteIcon fontSize="small" />
+                                                    </IconButton>
+                                                </span>
+                                            </Tooltip>
                                         </TableCell>
                                     </TableRow>
                                 ))
@@ -327,14 +366,18 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole, userna
             </Paper>
 
             {/* Create/Edit Helper Dialog */}
-            <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
-                <DialogTitle sx={{ fontWeight: 'bold' }}>
+            <Dialog open={openDialog} onClose={() => { if (!isSaving) handleCloseDialog(); }} maxWidth="sm" fullWidth aria-labelledby="user-dialog-title">
+                <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}>
+                <DialogTitle id="user-dialog-title" sx={{ fontWeight: 'bold' }}>
                     {editingUser ? 'Edit User' : 'Add New User'}
                 </DialogTitle>
                 <DialogContent>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+                    <Box component="fieldset" disabled={isSaving} sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1, px: 0, pb: 0, m: 0, border: 0, minWidth: 0 }}>
                         <TextField
                             label="Username"
+                            autoFocus
+                            autoComplete="off"
+                            slotProps={{ htmlInput: { maxLength: 100, pattern: '[A-Za-z0-9._@\\-]+' } }}
                             value={formData.username}
                             onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                             fullWidth
@@ -342,18 +385,25 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole, userna
                         />
                         <TextField
                             label="Full Name"
+                            slotProps={{ htmlInput: { maxLength: 200 } }}
                             value={formData.name}
                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                             fullWidth
                         />
                         <TextField
                             label="Email"
+                            type="email"
+                            required
+                            slotProps={{ htmlInput: { maxLength: 254 } }}
                             value={formData.email}
                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                             fullWidth
                         />
                         <TextField
-                            label={editingUser ? "New Password (leave blank to keep current)" : "Password"}
+                            label={editingUser ? 'New Password' : 'Password'}
+                            helperText={editingUser ? 'Leave blank to keep the current password. Otherwise use at least 12 characters (maximum 72 UTF-8 bytes).' : 'Use at least 12 characters (maximum 72 UTF-8 bytes).'}
+                            autoComplete="new-password"
+                            slotProps={{ htmlInput: { minLength: 12, maxLength: 72 } }}
                             type="password"
                             value={formData.password}
                             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
@@ -361,11 +411,14 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole, userna
                             required={!editingUser}
                         />
                         <FormControl fullWidth>
-                            <InputLabel>Role</InputLabel>
+                            <InputLabel id="user-role-label">Role</InputLabel>
                             <Select
+                                labelId="user-role-label"
+                                disabled={isSaving || (editingUser?.role === 'ADMIN' && roleCounts.ADMIN === 1)}
                                 value={formData.role}
                                 label="Role"
-                                onChange={(e) => setFormData({ ...formData, role: e.target.value as any })}
+                                renderValue={(role) => roleLabels[role]}
+                                onChange={(e) => setFormData({ ...formData, role: e.target.value as User['role'] })}
                             >
                                 <MenuItem value="VIEWER">
                                     <Box>
@@ -387,18 +440,20 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUserRole, userna
                                 </MenuItem>
                             </Select>
                         </FormControl>
+                        {editingUser?.role === 'ADMIN' && roleCounts.ADMIN === 1 && <Typography variant="caption" color="text.secondary">The last administrator must keep the Admin role.</Typography>}
                     </Box>
                 </DialogContent>
                 <DialogActions sx={{ p: 3 }}>
-                    <Button onClick={handleCloseDialog} color="inherit">Cancel</Button>
+                    <Button onClick={handleCloseDialog} color="inherit" disabled={isSaving}>Cancel</Button>
                     <Button
-                        onClick={handleSubmit}
+                        type="submit"
                         variant="contained"
-                        disabled={createUserMutation.isPending || updateUserMutation.isPending}
+                        disabled={isSaving}
                     >
-                        {editingUser ? 'Update User' : 'Create User'}
+                        {isSaving ? 'Saving…' : editingUser ? 'Update User' : 'Create User'}
                     </Button>
                 </DialogActions>
+                </Box>
             </Dialog>
 
         </Box>

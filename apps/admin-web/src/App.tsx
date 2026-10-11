@@ -1,5 +1,8 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import './App.css';
+import './layout.css';
+import { WorkspaceIcon } from './WorkspaceIcon';
+import { AdminModal } from './AdminModal';
 import {
   CONNECTORS,
   DEMO_RECORDS,
@@ -156,6 +159,8 @@ const SAMPLE_ACTIVITY = [
 /* ─────────────────────────────────────────────────────────────────────────── */
 export default function App() {
   const [activeCategory, setActiveCategory] = useState<NavCategory>('ALL');
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const mainRef = useRef<HTMLElement>(null);
   const [activeTab, setActiveTab] = useState<TabId>('DASHBOARD');
   const [companies, setCompanies] = useState<Company[]>([]);
   const [records, setRecords] = useState<RecordItem[]>(DEMO_RECORDS);
@@ -181,7 +186,6 @@ export default function App() {
     clusters: true,
     activity: true,
     fraudMonitor: true,
-    arrRunrate: true,
     aiHealth: true,
   });
 
@@ -609,9 +613,7 @@ export default function App() {
       const matchStatus = statusFilter === 'ALL' || c.status === statusFilter;
       const matchSearch =
         !searchQuery ||
-        c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        c.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        c.tier.toLowerCase().includes(searchQuery.toLowerCase());
+        [c.name, c.id, c.tier].some(value => value?.toLowerCase().includes(searchQuery.trim().toLowerCase()));
       return matchCloud && matchStatus && matchSearch;
     }),
     [companies, cloudFilter, statusFilter, searchQuery]
@@ -641,22 +643,22 @@ export default function App() {
 
   /* ──── MODULE TABS CONFIG ──── */
   const MODULE_TABS: { id: TabId; label: string; cat: NavCategory; badge?: string; badgeColor?: string }[] = [
-    { id: 'DASHBOARD', label: '📊 Executive Dashboard', cat: 'CORE', badge: 'LIVE', badgeColor: 'cyan' },
-    { id: 'TENANTS', label: '🏢 Spinning Mills', cat: 'CORE', badge: String(companies.length), badgeColor: '' },
-    { id: 'TASKS', label: '📋 Task Management', cat: 'CORE', badge: String(records.filter(r => r.kind === 'TASK').length), badgeColor: '' },
-    { id: 'DEPLOYMENTS', label: '⚡ Deployments & Rollout', cat: 'CLOUD', badge: String(deployments.length), badgeColor: '' },
-    { id: 'PACKAGES', label: '📦 Release Registry', cat: 'CLOUD', badge: String(packages.length), badgeColor: '' },
-    { id: 'DATABASES', label: '🗄️ Database Studio', cat: 'CLOUD', badge: 'SQLITE', badgeColor: 'emerald' },
-    { id: 'MAINTENANCE', label: '🛠️ Maintenance & SLA', cat: 'CLOUD', badge: String(records.filter(r => r.kind === 'MAINTENANCE').length), badgeColor: '' },
-    { id: 'INTEGRATIONS', label: '🔌 Integrations Matrix', cat: 'CONNECTIVITY', badge: `${CONNECTORS.length} EXT`, badgeColor: 'cyan' },
-    { id: 'APIS', label: '🌐 API Management', cat: 'CONNECTIVITY', badge: '7 EP', badgeColor: '' },
-    { id: 'WEBHOOKS', label: '🪝 Webhooks Engine', cat: 'CONNECTIVITY', badge: 'LIVE', badgeColor: 'emerald' },
-    { id: 'PAYMENTS', label: '💳 Payments & UTR Desk', cat: 'FINANCE', badge: String(records.filter(r => r.kind === 'PAYMENT').length), badgeColor: '' },
-    { id: 'AGREEMENTS', label: '📜 Business Agreements', cat: 'FINANCE', badge: String(records.filter(r => r.kind === 'AGREEMENT').length), badgeColor: '' },
-    { id: 'AI_AGENT', label: '🤖 AI Agent Studio', cat: 'INTELLIGENCE', badge: 'COPILOT', badgeColor: 'purple' },
-    { id: 'CHAT', label: '💬 ChatOps Feed', cat: 'INTELLIGENCE', badge: String(chatMessages.length), badgeColor: '' },
-    { id: 'SCRIPTS', label: '💻 Bash / Ops Terminal', cat: 'INTELLIGENCE', badge: 'CLI', badgeColor: 'cyan' },
-    { id: 'LOGS', label: '🖥️ Live Console Logs', cat: 'INTELLIGENCE', badge: String(logs.length), badgeColor: '' },
+    { id: 'DASHBOARD', label: 'Overview', cat: 'CORE', badge: 'LIVE', badgeColor: 'cyan' },
+    { id: 'TENANTS', label: 'Spinning mills', cat: 'CORE', badge: String(companies.length), badgeColor: '' },
+    { id: 'TASKS', label: 'Tasks', cat: 'CORE', badge: String(records.filter(r => r.kind === 'TASK').length), badgeColor: '' },
+    { id: 'DEPLOYMENTS', label: 'Deployments', cat: 'CLOUD', badge: String(deployments.length), badgeColor: '' },
+    { id: 'PACKAGES', label: 'Release registry', cat: 'CLOUD', badge: String(packages.length), badgeColor: '' },
+    { id: 'DATABASES', label: 'Database studio', cat: 'CLOUD', badge: 'SQLITE', badgeColor: 'emerald' },
+    { id: 'MAINTENANCE', label: 'Maintenance', cat: 'CLOUD', badge: String(records.filter(r => r.kind === 'MAINTENANCE').length), badgeColor: '' },
+    { id: 'INTEGRATIONS', label: 'Integrations', cat: 'CONNECTIVITY', badge: `${CONNECTORS.length} EXT`, badgeColor: 'cyan' },
+    { id: 'APIS', label: 'API management', cat: 'CONNECTIVITY', badge: '7 EP', badgeColor: '' },
+    { id: 'WEBHOOKS', label: 'Webhooks', cat: 'CONNECTIVITY', badge: 'LIVE', badgeColor: 'emerald' },
+    { id: 'PAYMENTS', label: 'Payments', cat: 'FINANCE', badge: String(records.filter(r => r.kind === 'PAYMENT').length), badgeColor: '' },
+    { id: 'AGREEMENTS', label: 'Agreements', cat: 'FINANCE', badge: String(records.filter(r => r.kind === 'AGREEMENT').length), badgeColor: '' },
+    { id: 'AI_AGENT', label: 'AI studio', cat: 'INTELLIGENCE', badge: 'COPILOT', badgeColor: 'purple' },
+    { id: 'CHAT', label: 'ChatOps', cat: 'INTELLIGENCE', badge: String(chatMessages.length), badgeColor: '' },
+    { id: 'SCRIPTS', label: 'Ops terminal', cat: 'INTELLIGENCE', badge: 'CLI', badgeColor: 'cyan' },
+    { id: 'LOGS', label: 'Console logs', cat: 'INTELLIGENCE', badge: String(logs.length), badgeColor: '' },
   ];
 
   const visibleTabs = useMemo(() => {
@@ -669,6 +671,7 @@ export default function App() {
   /* ─────────────────────────────────────────────────────── */
   return (
     <div className="admin-app">
+      <a className="skip-link" href="#workspace-main">Skip to content</a>
 
       {/* ── HEADER ── */}
       <header className="top-command-bar">
@@ -679,9 +682,14 @@ export default function App() {
               EverGreen Mission Control
               <span className="control-plane-badge">PROVIDER PLANE</span>
             </div>
-            <span className="brand-tag">MULTI-TENANT FABRIC & CI/CD ORCHESTRATOR · V1.2.4-LTS</span>
+            <span className="brand-tag">Provider operations · v1.2.4-lts</span>
           </div>
         </div>
+
+        <button className="btn-ghost menu-toggle" aria-expanded={mobileNavOpen} aria-controls="workspace-navigation" onClick={() => setMobileNavOpen(open => !open)}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
+          {mobileNavOpen ? 'Close' : 'Modules'}
+        </button>
 
         <div className="top-bar-stats">
           <div className="top-stat-item">
@@ -722,56 +730,50 @@ export default function App() {
 
       {/* ── ACTION BANNER ── */}
       {actionMessage && (
-        <div className="action-banner">
+        <div className="action-banner" role="status">
           <span>{actionMessage}</span>
-          <button className="btn-modal-close" style={{ width: 28, height: 28 }} onClick={() => setActionMessage(null)}>×</button>
+          <button className="btn-modal-close" aria-label="Close" style={{ width: 28, height: 28 }} onClick={() => setActionMessage(null)}>×</button>
         </div>
       )}
 
-      {/* ── 2-TIER NAVIGATION: CATEGORY PILLS ── */}
-      <div className="nav-category-pills">
-        {([
-          { id: 'ALL', label: 'All Modules (16)' },
-          { id: 'CORE', label: '🏢 Core Ops (3)' },
-          { id: 'CLOUD', label: '☁️ Cloud & Deploy (4)' },
-          { id: 'CONNECTIVITY', label: '🔌 Connectors & APIs (3)' },
-          { id: 'FINANCE', label: '💳 Finance & Legal (2)' },
-          { id: 'INTELLIGENCE', label: '🤖 AI & DevTools (4)' },
-        ] as { id: NavCategory; label: string }[]).map(cat => (
-          <button
-            key={cat.id}
-            className={`nav-category-btn ${activeCategory === cat.id ? 'active' : ''}`}
-            onClick={() => {
-              setActiveCategory(cat.id);
-              if (cat.id !== 'ALL') {
-                const first = MODULE_TABS.find(t => t.cat === cat.id);
-                if (first) setActiveTab(first.id);
-              }
-            }}
-          >
-            {cat.label}
-          </button>
-        ))}
-      </div>
-
-      {/* ── NAV TABS ── */}
-      <nav className="admin-nav-bar">
-        {visibleTabs.map(tab => (
-          <button
-            key={tab.id}
-            className={`nav-tab-btn ${activeTab === tab.id ? 'active' : ''}`}
-            onClick={() => setActiveTab(tab.id)}
-          >
-            {tab.label}
-            {tab.badge && (
-              <span className={`tab-badge ${tab.badgeColor || ''}`}>{tab.badge}</span>
-            )}
-          </button>
-        ))}
-      </nav>
+      <div className="admin-workspace">
+      <aside id="workspace-navigation" className={`admin-sidebar ${mobileNavOpen ? 'is-open' : ''}`}>
+        <div className="sidebar-heading"><strong>Workspace</strong><span>16 modules</span></div>
+        <label className="sidebar-category">
+          Module group
+          <select value={activeCategory} onChange={event => setActiveCategory(event.target.value as NavCategory)}>
+            <option value="ALL">All modules</option>
+            <option value="CORE">Core operations</option>
+            <option value="CLOUD">Cloud & deployment</option>
+            <option value="CONNECTIVITY">Connectivity</option>
+            <option value="FINANCE">Finance & legal</option>
+            <option value="INTELLIGENCE">AI & developer tools</option>
+          </select>
+        </label>
+        <nav className="admin-nav-bar" aria-label="Provider modules">
+          {visibleTabs.map(tab => (
+            <button
+              key={tab.id}
+              className={`nav-tab-btn ${activeTab === tab.id ? 'active' : ''}`}
+              aria-current={activeTab === tab.id ? 'page' : undefined}
+              onClick={() => {
+                setActiveTab(tab.id);
+                setMobileNavOpen(false);
+                requestAnimationFrame(() => mainRef.current?.focus());
+              }}
+            >
+              <WorkspaceIcon name={tab.id} />
+              <span className="nav-label">{tab.label}</span>
+              {tab.badge && <span className={`tab-badge ${tab.badgeColor || ''}`}>{tab.badge}</span>}
+            </button>
+          ))}
+        </nav>
+        <div className="sidebar-footer">EverGreen · Provider workspace</div>
+      </aside>
 
       {/* ── MAIN VIEWPORT ── */}
-      <main className="admin-main-viewport">
+      <main id="workspace-main" ref={mainRef} tabIndex={-1} className="admin-main-viewport">
+        <div className="workspace-context"><span>Provider workspace</span><span aria-hidden="true">/</span><span>{MODULE_TABS.find(tab => tab.id === activeTab)?.label}</span></div>
         {loading ? (
           <div className="loading-state">
             <div className="loading-spinner" />
@@ -786,13 +788,11 @@ export default function App() {
                 ═══════════════════════════════════════════════════════════════ */}
             {activeTab === 'DASHBOARD' && (
               <div className="dashboard-grid">
+                <div className="page-toolbar"><div><h1 className="page-title">Operations overview</h1><p className="page-description">Your mills, cloud infrastructure, and operational activity in one place.</p></div></div>
 
                 {/* DASHBOARD CUSTOMIZATION TOOLBAR */}
-                <div className="dash-customize-bar">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#ffffff' }}>🛠️ Customizable Dashboard Widgets:</span>
-                    <span style={{ fontSize: '0.74rem', color: 'var(--adm-muted)' }}>Toggle operational cards in real-time</span>
-                  </div>
+                <details className="dash-customize-bar">
+                  <summary>Customize overview · choose visible widgets</summary>
                   <div className="dash-widget-toggles">
                     {Object.entries({
                       kpis: 'Topline KPIs',
@@ -801,19 +801,19 @@ export default function App() {
                       clusters: 'Regional Clusters',
                       activity: 'Activity Stream',
                       fraudMonitor: 'TareZero Weighbridge',
-                      arrRunrate: 'ARR Billing',
                       aiHealth: 'AI Copilot Ops',
                     }).map(([key, title]) => (
                       <button
                         key={key}
                         className={`dash-widget-toggle-btn ${widgets[key as keyof typeof widgets] ? 'active' : ''}`}
+                        aria-pressed={widgets[key as keyof typeof widgets]}
                         onClick={() => setWidgets(prev => ({ ...prev, [key]: !prev[key as keyof typeof widgets] }))}
                       >
                         {widgets[key as keyof typeof widgets] ? '✓ ' : '+ '} {title}
                       </button>
                     ))}
                   </div>
-                </div>
+                </details>
 
                 {/* KPI CARDS */}
                 {widgets.kpis && (
@@ -988,7 +988,7 @@ export default function App() {
                         <span className="chart-card-tag" style={{ color: 'var(--adm-amber)', borderColor: 'rgba(245, 158, 11, 0.3)' }}>ACTIVE SURVEILLANCE</span>
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: '0.5rem 0' }}>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem' }}>
+                        <div className="metric-grid">
                           <div style={{ background: 'rgba(255,255,255,0.02)', padding: '0.75rem', borderRadius: 8, border: '1px solid var(--adm-border)' }}>
                             <div style={{ fontSize: '0.7rem', color: 'var(--adm-muted)' }}>CONNECTED INDICATORS</div>
                             <div style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--adm-cyan)' }}>6 RS-232 Bridges</div>
@@ -1019,7 +1019,7 @@ export default function App() {
                         <h3>🤖 AI Operations Copilot Telemetry</h3>
                         <span className="chart-card-tag" style={{ color: '#a855f7', borderColor: 'rgba(168, 85, 247, 0.3)' }}>MULTI-PROVIDER</span>
                       </div>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem', padding: '0.5rem 0' }}>
+                      <div className="metric-grid-two">
                         {[
                           { name: 'Anthropic Claude 3.5 Sonnet', status: 'ONLINE', latency: '42ms', cost: '₹0.12/k tok' },
                           { name: 'OpenAI GPT-4o', status: 'ONLINE', latency: '65ms', cost: '₹0.20/k tok' },
@@ -1093,25 +1093,28 @@ export default function App() {
                 ═══════════════════════════════════════════════════════════════ */}
             {activeTab === 'TENANTS' && (
               <div className="tenants-tab-view">
+                <div className="page-toolbar"><div><h1 className="page-title">Spinning mills</h1><p className="page-description">Manage tenant licenses, capacity, and cloud deployments.</p></div><span className="plan-badge-tag">{filteredCompanies.length} of {companies.length} mills</span></div>
                 {/* TOOLBAR */}
                 <div className="tenants-toolbar-card">
                   <div className="toolbar-search-box">
                     <span className="search-icon">🔍</span>
                     <input
-                      type="text"
+                      aria-label="Search spinning mills"
+                      type="search"
                       className="search-input-field"
                       placeholder="Search spinning mills by name, tenant ID, or cluster..."
                       value={searchQuery}
                       onChange={e => setSearchQuery(e.target.value)}
                     />
                     {searchQuery && (
-                      <button className="search-clear-btn" onClick={() => setSearchQuery('')}>×</button>
+                      <button className="search-clear-btn" aria-label="Clear search" onClick={() => setSearchQuery('')}>×</button>
                     )}
                   </div>
 
                   <div className="toolbar-filters-group">
                     <select
                       className="filter-select-box"
+                      aria-label="Cloud provider"
                       value={cloudFilter}
                       onChange={e => setCloudFilter(e.target.value)}
                     >
@@ -1124,6 +1127,7 @@ export default function App() {
 
                     <select
                       className="filter-select-box"
+                      aria-label="License status"
                       value={statusFilter}
                       onChange={e => setStatusFilter(e.target.value)}
                     >
@@ -1136,7 +1140,7 @@ export default function App() {
                 </div>
 
                 {/* TENANTS TABLE */}
-                <div className="glass-panel tenants-table-container">
+                <div className="glass-panel tenants-table-container" role="region" aria-label="Scrollable records" tabIndex={0}>
                   <table className="tenants-data-table">
                     <thead>
                       <tr>
@@ -1152,6 +1156,9 @@ export default function App() {
                       </tr>
                     </thead>
                     <tbody>
+                      {filteredCompanies.length === 0 && (
+                        <tr><td colSpan={9} className="empty-state"><p>No mills match these filters.</p><button className="btn-ghost" onClick={() => { setSearchQuery(''); setCloudFilter('ALL'); setStatusFilter('ALL'); }}>Clear filters</button></td></tr>
+                      )}
                       {filteredCompanies.map(c => {
                         const isGrace = c.status === 'GRACE_PERIOD';
                         return (
@@ -1251,9 +1258,9 @@ export default function App() {
                 ═══════════════════════════════════════════════════════════════ */}
             {activeTab === 'TASKS' && (
               <div className="tasks-tab-view">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                <div className="page-toolbar">
                   <div>
-                    <h2 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#ffffff' }}>📋 Mission Control Task Orchestrator</h2>
+                    <h1 className="page-title">Tasks</h1>
                     <p style={{ fontSize: '0.82rem', color: 'var(--adm-muted)' }}>Operational backlogs, factory onboarding, contract verifications, and engineer workflows</p>
                   </div>
                   <button
@@ -1267,7 +1274,7 @@ export default function App() {
                   </button>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem' }}>
+                <div className="task-board">
                   {['OPEN', 'IN_PROGRESS', 'BLOCKED', 'DONE'].map(colStatus => {
                     const colTasks = records.filter(r => r.kind === 'TASK' && r.status === colStatus);
                     return (
@@ -1283,7 +1290,7 @@ export default function App() {
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
                           {colTasks.map(t => (
-                            <div
+                            <button type="button" className="task-card"
                               key={t.id}
                               style={{ background: 'var(--adm-card)', border: '1px solid var(--adm-border)', borderRadius: 8, padding: '0.85rem', cursor: 'pointer', transition: 'all 0.15s' }}
                               onClick={() => setActiveRecordModal(t)}
@@ -1304,7 +1311,7 @@ export default function App() {
                                 <span>👤 {t.owner}</span>
                                 <span>{t.companyId || 'Global'}</span>
                               </div>
-                            </div>
+                            </button>
                           ))}
                           {colTasks.length === 0 && (
                             <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--adm-dim)', fontSize: '0.75rem' }}>
@@ -1324,9 +1331,9 @@ export default function App() {
                 ═══════════════════════════════════════════════════════════════ */}
             {activeTab === 'DEPLOYMENTS' && (
               <div className="cicd-tab-view">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                <div className="page-toolbar">
                   <div>
-                    <h2 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#ffffff' }}>⚡ Multi-Cloud Deployments & Orchestration</h2>
+                    <h1 className="page-title">Deployments</h1>
                     <p style={{ fontSize: '0.82rem', color: 'var(--adm-muted)' }}>Rolling, Blue-Green, and Canary rollout executions across GCP, AWS, Azure, and Factory Linux VMs</p>
                   </div>
                   <button
@@ -1339,7 +1346,7 @@ export default function App() {
                   </button>
                 </div>
 
-                <div className="glass-panel tenants-table-container">
+                <div className="glass-panel tenants-table-container" role="region" aria-label="Scrollable records" tabIndex={0}>
                   <table className="tenants-data-table">
                     <thead>
                       <tr>
@@ -1382,9 +1389,9 @@ export default function App() {
                 ═══════════════════════════════════════════════════════════════ */}
             {activeTab === 'PACKAGES' && (
               <div className="packages-tab-view">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                <div className="page-toolbar">
                   <div>
-                    <h2 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#ffffff' }}>📦 Release Package Registry & Artifacts</h2>
+                    <h1 className="page-title">Release registry</h1>
                     <p style={{ fontSize: '0.82rem', color: 'var(--adm-muted)' }}>Immutable multi-cloud binaries, Docker images, and RS-232 weighbridge drivers</p>
                   </div>
                   <button className="btn-provision-trigger" onClick={() => setShowNewPkgModal(true)}>
@@ -1392,7 +1399,7 @@ export default function App() {
                   </button>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '1.25rem' }}>
+                <div className="record-card-grid">
                   {packages.map(p => (
                     <div key={p.id} className="glass-panel" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -1431,9 +1438,9 @@ export default function App() {
                 ═══════════════════════════════════════════════════════════════ */}
             {activeTab === 'DATABASES' && (
               <div className="db-tab-view">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                <div className="page-toolbar">
                   <div>
-                    <h2 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#ffffff' }}>🗄️ Multi-Tenant Database Studio</h2>
+                    <h1 className="page-title">Database studio</h1>
                     <p style={{ fontSize: '0.82rem', color: 'var(--adm-muted)' }}>SQLite Provider control ledger, tenant schemas, WAL mode replication, and atomic vacuum</p>
                   </div>
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -1473,7 +1480,7 @@ export default function App() {
                         <div className="db-metric-fill" style={{ width: '1%', background: 'var(--adm-cyan)' }} />
                       </div>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.6rem', textAlign: 'center' }}>
+                    <div className="metric-grid">
                       <div style={{ background: 'rgba(255,255,255,0.03)', padding: '0.6rem', borderRadius: 6 }}>
                         <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#ffffff' }}>{companies.length}</div>
                         <div style={{ fontSize: '0.68rem', color: 'var(--adm-dim)' }}>Company Rows</div>
@@ -1553,9 +1560,9 @@ export default function App() {
                 ═══════════════════════════════════════════════════════════════ */}
             {activeTab === 'MAINTENANCE' && (
               <div className="maintenance-tab-view">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                <div className="page-toolbar">
                   <div>
-                    <h2 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#ffffff' }}>🛠️ Maintenance Windows & SLA Management</h2>
+                    <h1 className="page-title">Maintenance & SLA</h1>
                     <p style={{ fontSize: '0.82rem', color: 'var(--adm-muted)' }}>Scheduled downtime slots, mill maintenance toggles, and load cell recalibration</p>
                   </div>
                   <button
@@ -1569,7 +1576,7 @@ export default function App() {
                   </button>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '1rem' }}>
+                <div className="record-card-grid">
                   {records.filter(r => r.kind === 'MAINTENANCE').map(m => (
                     <div key={m.id} className="glass-panel" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -1595,9 +1602,9 @@ export default function App() {
                 ═══════════════════════════════════════════════════════════════ */}
             {activeTab === 'INTEGRATIONS' && (
               <div className="integrations-tab-view">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+                <div className="page-toolbar">
                   <div>
-                    <h2 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#ffffff' }}>🔌 Integrations & External Services Hub</h2>
+                    <h1 className="page-title">Integrations</h1>
                     <p style={{ fontSize: '0.82rem', color: 'var(--adm-muted)' }}>
                       Configured & standby services: GitHub, Azure DevOps, GCP, AWS, Azure, Razorpay, PhonePe, Paytm, Stripe, WhatsApp, Slack, Teams, Zoho One, Claude, GPT-4o, Grok, Ollama, TallyPrime
                     </p>
@@ -1607,7 +1614,8 @@ export default function App() {
                       type="text"
                       className="form-input-text"
                       style={{ width: 220, padding: '0.45rem 0.75rem' }}
-                      placeholder="Search 22+ connectors..."
+                      placeholder="Search connectors…"
+                      aria-label="Search connectors"
                       value={connectorSearch}
                       onChange={e => setConnectorSearch(e.target.value)}
                     />
@@ -1693,9 +1701,9 @@ export default function App() {
                 ═══════════════════════════════════════════════════════════════ */}
             {activeTab === 'APIS' && (
               <div className="apis-tab-view">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                <div className="page-toolbar">
                   <div>
-                    <h2 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#ffffff' }}>🌐 API Management & Gateway Endpoints</h2>
+                    <h1 className="page-title">API management</h1>
                     <p style={{ fontSize: '0.82rem', color: 'var(--adm-muted)' }}>Provider control plane routes, rate limits, bearer token validation, and weighbridge telemetry</p>
                   </div>
                   <button
@@ -1706,7 +1714,7 @@ export default function App() {
                   </button>
                 </div>
 
-                <div className="glass-panel tenants-table-container">
+                <div className="glass-panel tenants-table-container" role="region" aria-label="Scrollable records" tabIndex={0}>
                   <table className="tenants-data-table">
                     <thead>
                       <tr>
@@ -1759,9 +1767,9 @@ export default function App() {
                 ═══════════════════════════════════════════════════════════════ */}
             {activeTab === 'WEBHOOKS' && (
               <div className="webhooks-tab-view">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                <div className="page-toolbar">
                   <div>
-                    <h2 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#ffffff' }}>🪝 Webhooks Engine & Delivery Dispatcher</h2>
+                    <h1 className="page-title">Webhooks</h1>
                     <p style={{ fontSize: '0.82rem', color: 'var(--adm-muted)' }}>Razorpay payments, PhonePe callbacks, GitHub CI hooks, and WhatsApp delivery updates</p>
                   </div>
                   <button
@@ -1772,7 +1780,7 @@ export default function App() {
                   </button>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '1.25rem' }}>
+                <div className="record-card-grid">
                   {[
                     { name: 'Razorpay Payment Capture', url: 'https://evergreenos.in/api/webhooks/razorpay', events: 'payment.captured, payment.failed', status: 'ACTIVE' },
                     { name: 'PhonePe Callback Engine', url: 'https://evergreenos.in/api/webhooks/phonepe', events: 'PAYMENT_SUCCESS, ORDER_FAILED', status: 'STANDBY' },
@@ -1809,9 +1817,9 @@ export default function App() {
                 ═══════════════════════════════════════════════════════════════ */}
             {activeTab === 'PAYMENTS' && (
               <div className="payments-tab-view">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                <div className="page-toolbar">
                   <div>
-                    <h2 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#ffffff' }}>💳 Payments & Bank UTR Reconciliation Desk</h2>
+                    <h1 className="page-title">Payments & reconciliation</h1>
                     <p style={{ fontSize: '0.82rem', color: 'var(--adm-muted)' }}>Razorpay, PhonePe, Paytm, and NEFT/RTGS bank transfers with instant quota unblock</p>
                   </div>
                   <button
@@ -1825,7 +1833,7 @@ export default function App() {
                   </button>
                 </div>
 
-                <div className="glass-panel tenants-table-container">
+                <div className="glass-panel tenants-table-container" role="region" aria-label="Scrollable records" tabIndex={0}>
                   <table className="tenants-data-table">
                     <thead>
                       <tr>
@@ -1887,9 +1895,9 @@ export default function App() {
                 ═══════════════════════════════════════════════════════════════ */}
             {activeTab === 'AGREEMENTS' && (
               <div className="agreements-tab-view">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                <div className="page-toolbar">
                   <div>
-                    <h2 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#ffffff' }}>📜 Master Service Agreements (MSA) & Contracts</h2>
+                    <h1 className="page-title">Agreements</h1>
                     <p style={{ fontSize: '0.82rem', color: 'var(--adm-muted)' }}>Signed mill license terms, Tally integration NDAs, TareZero weighbridge SLAs</p>
                   </div>
                   <button
@@ -1903,7 +1911,7 @@ export default function App() {
                   </button>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '1.25rem' }}>
+                <div className="record-card-grid">
                   {records.filter(r => r.kind === 'AGREEMENT').map(a => (
                     <div key={a.id} className="glass-panel" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -1940,9 +1948,9 @@ export default function App() {
                 ═══════════════════════════════════════════════════════════════ */}
             {activeTab === 'AI_AGENT' && (
               <div className="ai-agent-tab-view">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                <div className="page-toolbar">
                   <div>
-                    <h2 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#ffffff' }}>🤖 AI Agent Studio & Textile Copilot</h2>
+                    <h1 className="page-title">AI studio</h1>
                     <p style={{ fontSize: '0.82rem', color: 'var(--adm-muted)' }}>Configurable multi-provider copilot: Anthropic Claude, OpenAI GPT-4o, xAI Grok, and Local Ollama</p>
                   </div>
                   <div style={{ display: 'flex', gap: '0.4rem' }}>
@@ -1981,14 +1989,14 @@ export default function App() {
                         prompt: 'Run diagnostic health audit on GCP Cloud Run and Local Factory VM and generate rollback safety index.',
                       },
                     ].map((item, i) => (
-                      <div
+                      <button type="button"
                         key={i}
                         className="ai-prompt-template-card"
                         onClick={() => setAiPrompt(item.prompt)}
                       >
                         <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#ffffff', marginBottom: '0.2rem' }}>{item.title}</div>
                         <div style={{ fontSize: '0.72rem', color: 'var(--adm-dim)', lineHeight: '1.4' }}>{item.prompt}</div>
-                      </div>
+                      </button>
                     ))}
                   </div>
 
@@ -2000,6 +2008,7 @@ export default function App() {
                       </label>
                       <textarea
                         className="form-input-text"
+                        aria-label="Operational prompt"
                         style={{ minHeight: 90, marginTop: '0.4rem' }}
                         value={aiPrompt}
                         onChange={e => setAiPrompt(e.target.value)}
@@ -2045,9 +2054,9 @@ export default function App() {
                 ═══════════════════════════════════════════════════════════════ */}
             {activeTab === 'CHAT' && (
               <div className="chat-tab-view">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                <div className="page-toolbar">
                   <div>
-                    <h2 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#ffffff' }}>💬 Mission Control ChatOps & Dispatch</h2>
+                    <h1 className="page-title">ChatOps</h1>
                     <p style={{ fontSize: '0.82rem', color: 'var(--adm-muted)' }}>Operational communications, weighbridge hardware triage, and renewal coordination</p>
                   </div>
                 </div>
@@ -2065,13 +2074,13 @@ export default function App() {
                         { id: 'renewals-desk', name: '#renewals-desk', count: 1 },
                         { id: 'tamil-nadu-field-ops', name: '#tamil-field-ops', count: 0 },
                       ].map(ch => (
-                        <div
+                        <button type="button" aria-pressed={chatChannel === ch.id}
                           key={ch.id}
                           className={`chat-channel-item ${chatChannel === ch.id ? 'active' : ''}`}
                           onClick={() => setChatChannel(ch.id)}
                         >
                           {ch.name}
-                        </div>
+                        </button>
                       ))}
                     </div>
                   </div>
@@ -2081,8 +2090,8 @@ export default function App() {
                     <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.85rem', marginBottom: '1rem' }}>
                       {chatMessages.filter(m => m.channel === chatChannel).map(msg => (
                         <div key={msg.id} style={{ background: 'rgba(255,255,255,0.025)', padding: '0.75rem', borderRadius: 8, border: '1px solid var(--adm-border)' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                          <div className="chat-message-header">
+                            <div className="chat-message-author">
                               <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#ffffff' }}>{msg.user}</span>
                               <span style={{ fontSize: '0.65rem', background: 'rgba(56,189,248,0.15)', color: 'var(--adm-cyan)', padding: '0.1rem 0.4rem', borderRadius: 4 }}>
                                 {msg.role}
@@ -2100,11 +2109,12 @@ export default function App() {
                       )}
                     </div>
 
-                    <form onSubmit={handleSendChat} style={{ display: 'flex', gap: '0.65rem' }}>
+                    <form onSubmit={handleSendChat} className="chat-composer">
                       <input
                         type="text"
                         className="form-input-text"
                         placeholder={`Message #${chatChannel}...`}
+                        aria-label={`Message #${chatChannel}`}
                         value={chatInput}
                         onChange={e => setChatInput(e.target.value)}
                       />
@@ -2120,9 +2130,9 @@ export default function App() {
                 ═══════════════════════════════════════════════════════════════ */}
             {activeTab === 'SCRIPTS' && (
               <div className="scripts-tab-view">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                <div className="page-toolbar">
                   <div>
-                    <h2 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#ffffff' }}>💻 Bash & Ops Script Terminal</h2>
+                    <h1 className="page-title">Ops terminal</h1>
                     <p style={{ fontSize: '0.82rem', color: 'var(--adm-muted)' }}>Interactive provider CLI shell, SQLite backup runners, edge port probes, and cluster health diagnostics</p>
                   </div>
                   <div style={{ display: 'flex', gap: '0.4rem' }}>
@@ -2171,7 +2181,7 @@ export default function App() {
                     <span style={{ color: 'var(--adm-emerald)', fontWeight: 800, fontSize: '0.9rem' }}>$</span>
                     <input
                       type="text"
-                      className="terminal-input-field"
+                      className="terminal-input-field" aria-label="Terminal command"
                       placeholder="Type bash or ops command (health, backup, weighbridge, status, help)..."
                       value={terminalInput}
                       onChange={e => setTerminalInput(e.target.value)}
@@ -2196,9 +2206,9 @@ export default function App() {
                 ═══════════════════════════════════════════════════════════════ */}
             {activeTab === 'LOGS' && (
               <div className="logs-tab-view">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                <div className="page-toolbar">
                   <div>
-                    <h2 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#ffffff' }}>🖥️ Live Console Logs & Telemetry Stream</h2>
+                    <h1 className="page-title">Console logs</h1>
                     <p style={{ fontSize: '0.82rem', color: 'var(--adm-muted)' }}>Centralized streaming logs from all spinning mill nodes, deployment agents, and edge bridges</p>
                   </div>
                   <div style={{ display: 'flex', gap: '0.4rem' }}>
@@ -2217,7 +2227,7 @@ export default function App() {
                 <div className="glass-panel" style={{ padding: '1rem', background: '#020610', maxHeight: 600, overflowY: 'auto' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', fontFamily: 'var(--font-mono)', fontSize: '0.78rem' }}>
                     {logs.filter(l => logFilter === 'ALL' || l.level === logFilter).map(l => (
-                      <div key={l.id} style={{ display: 'flex', gap: '0.75rem', lineHeight: '1.6', borderBottom: '1px solid rgba(255,255,255,0.03)', paddingBottom: '0.3rem' }}>
+                      <div key={l.id} className="log-line">
                         <span style={{ color: 'var(--adm-dim)' }}>{new Date(l.timestamp).toLocaleTimeString()}</span>
                         <span style={{ color: l.level === 'SUCCESS' ? 'var(--adm-emerald)' : l.level === 'WARN' ? 'var(--adm-amber)' : l.level === 'ERROR' ? 'var(--adm-rose)' : 'var(--adm-cyan)', fontWeight: 700, width: 60 }}>
                           [{l.level}]
@@ -2238,16 +2248,17 @@ export default function App() {
           </>
         )}
       </main>
+      </div>
 
       {/* ═══════════════════════════════════════════════════════════════════
           MODAL 1: PROVISION NEW MILL TENANT
           ═══════════════════════════════════════════════════════════════════ */}
       {showProvisionModal && (
-        <div className="modal-overlay-backdrop" onClick={() => setShowProvisionModal(false)}>
+        <AdminModal onClose={() => setShowProvisionModal(false)}>
           <div className="modal-dialog-box" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>🏢 Provision New Spinning Mill Tenant</h3>
-              <button className="btn-modal-close" onClick={() => setShowProvisionModal(false)}>×</button>
+              <h3 id="admin-modal-title">🏢 Provision New Spinning Mill Tenant</h3>
+              <button className="btn-modal-close" aria-label="Close" onClick={() => setShowProvisionModal(false)}>×</button>
             </div>
             <form onSubmit={handleProvisionTenant}>
               <div className="modal-body">
@@ -2379,18 +2390,18 @@ export default function App() {
               </div>
             </form>
           </div>
-        </div>
+        </AdminModal>
       )}
 
       {/* ═══════════════════════════════════════════════════════════════════
           MODAL 2: 1-MINUTE INSTANT REACTIVATION
           ═══════════════════════════════════════════════════════════════════ */}
       {reactivateTargetCompany && (
-        <div className="modal-overlay-backdrop" onClick={() => setReactivateTargetCompany(null)}>
+        <AdminModal onClose={() => setReactivateTargetCompany(null)}>
           <div className="modal-dialog-box" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>⚡ 1-Minute Lightning Reactivation Protocol</h3>
-              <button className="btn-modal-close" onClick={() => setReactivateTargetCompany(null)}>×</button>
+              <h3 id="admin-modal-title">⚡ 1-Minute Lightning Reactivation Protocol</h3>
+              <button className="btn-modal-close" aria-label="Close" onClick={() => setReactivateTargetCompany(null)}>×</button>
             </div>
             <div className="modal-body">
               <div className="reactivation-timer-box">
@@ -2450,18 +2461,18 @@ export default function App() {
               </button>
             </div>
           </div>
-        </div>
+        </AdminModal>
       )}
 
       {/* ═══════════════════════════════════════════════════════════════════
           MODAL 3: CLOUD DEPLOYMENT TRIGGER
           ═══════════════════════════════════════════════════════════════════ */}
       {deployTargetCompany && (
-        <div className="modal-overlay-backdrop" onClick={() => setDeployTargetCompany(null)}>
+        <AdminModal onClose={() => setDeployTargetCompany(null)}>
           <div className="modal-dialog-box" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>🚀 Deploy Release to {deployTargetCompany.name}</h3>
-              <button className="btn-modal-close" onClick={() => setDeployTargetCompany(null)}>×</button>
+              <h3 id="admin-modal-title">🚀 Deploy Release to {deployTargetCompany.name}</h3>
+              <button className="btn-modal-close" aria-label="Close" onClick={() => setDeployTargetCompany(null)}>×</button>
             </div>
             <div className="modal-body">
               <div className="form-grid-2col">
@@ -2502,18 +2513,18 @@ export default function App() {
               </button>
             </div>
           </div>
-        </div>
+        </AdminModal>
       )}
 
       {/* ═══════════════════════════════════════════════════════════════════
           MODAL 4: INSTALL SCRIPT INSPECTOR
           ═══════════════════════════════════════════════════════════════════ */}
       {activeModalCompany && (
-        <div className="modal-overlay-backdrop" onClick={() => setActiveModalCompany(null)}>
+        <AdminModal onClose={() => setActiveModalCompany(null)}>
           <div className="modal-dialog-box" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>📋 1-Click Install Script: {activeModalCompany.name}</h3>
-              <button className="btn-modal-close" onClick={() => setActiveModalCompany(null)}>×</button>
+              <h3 id="admin-modal-title">📋 1-Click Install Script: {activeModalCompany.name}</h3>
+              <button className="btn-modal-close" aria-label="Close" onClick={() => setActiveModalCompany(null)}>×</button>
             </div>
             <div className="modal-body">
               <p style={{ fontSize: '0.84rem', color: 'var(--adm-muted)', lineHeight: '1.6' }}>
@@ -2531,18 +2542,18 @@ export default function App() {
               <button className="btn-provision-trigger" onClick={() => setActiveModalCompany(null)}>Done</button>
             </div>
           </div>
-        </div>
+        </AdminModal>
       )}
 
       {/* ═══════════════════════════════════════════════════════════════════
           MODAL 5: NEW PACKAGE BUILD
           ═══════════════════════════════════════════════════════════════════ */}
       {showNewPkgModal && (
-        <div className="modal-overlay-backdrop" onClick={() => setShowNewPkgModal(false)}>
+        <AdminModal onClose={() => setShowNewPkgModal(false)}>
           <div className="modal-dialog-box" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>🔨 Compile & Register Release Package</h3>
-              <button className="btn-modal-close" onClick={() => setShowNewPkgModal(false)}>×</button>
+              <h3 id="admin-modal-title">🔨 Compile & Register Release Package</h3>
+              <button className="btn-modal-close" aria-label="Close" onClick={() => setShowNewPkgModal(false)}>×</button>
             </div>
             <form onSubmit={handleCreatePackage}>
               <div className="modal-body">
@@ -2608,18 +2619,18 @@ export default function App() {
               </div>
             </form>
           </div>
-        </div>
+        </AdminModal>
       )}
 
       {/* ═══════════════════════════════════════════════════════════════════
           MODAL 6: CONNECTOR CREDENTIALS & CONFIG
           ═══════════════════════════════════════════════════════════════════ */}
       {selectedConnector && (
-        <div className="modal-overlay-backdrop" onClick={() => setSelectedConnector(null)}>
+        <AdminModal onClose={() => setSelectedConnector(null)}>
           <div className="modal-dialog-box" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>⚙️ Configure Integration: {selectedConnector.name}</h3>
-              <button className="btn-modal-close" onClick={() => setSelectedConnector(null)}>×</button>
+              <h3 id="admin-modal-title">⚙️ Configure Integration: {selectedConnector.name}</h3>
+              <button className="btn-modal-close" aria-label="Close" onClick={() => setSelectedConnector(null)}>×</button>
             </div>
             <div className="modal-body">
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem', background: 'rgba(255,255,255,0.02)', borderRadius: 8 }}>
@@ -2665,21 +2676,21 @@ export default function App() {
               </button>
             </div>
           </div>
-        </div>
+        </AdminModal>
       )}
 
       {/* ═══════════════════════════════════════════════════════════════════
           MODAL 7: RECORD DETAILS INSPECTOR
           ═══════════════════════════════════════════════════════════════════ */}
       {activeRecordModal && (
-        <div className="modal-overlay-backdrop" onClick={() => setActiveRecordModal(null)}>
+        <AdminModal onClose={() => setActiveRecordModal(null)}>
           <div className="modal-dialog-box" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>📄 Control Record: {activeRecordModal.title}</h3>
-              <button className="btn-modal-close" onClick={() => setActiveRecordModal(null)}>×</button>
+              <h3 id="admin-modal-title">📄 Control Record: {activeRecordModal.title}</h3>
+              <button className="btn-modal-close" aria-label="Close" onClick={() => setActiveRecordModal(null)}>×</button>
             </div>
             <div className="modal-body">
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem' }}>
+              <div className="metric-grid-two">
                 <div><strong className="text-dim">Record ID:</strong> <span className="font-mono text-cyan">{activeRecordModal.id}</span></div>
                 <div><strong className="text-dim">Kind:</strong> <span className="plan-badge-tag">{activeRecordModal.kind}</span></div>
                 <div><strong className="text-dim">Status:</strong> <span className={`status-pill ${activeRecordModal.status.toLowerCase()}`}>{activeRecordModal.status}</span></div>
@@ -2697,18 +2708,18 @@ export default function App() {
               <button className="btn-provision-trigger" onClick={() => setActiveRecordModal(null)}>Close</button>
             </div>
           </div>
-        </div>
+        </AdminModal>
       )}
 
       {/* ═══════════════════════════════════════════════════════════════════
           MODAL 8: CREATE RECORD
           ═══════════════════════════════════════════════════════════════════ */}
       {showNewRecordModal && (
-        <div className="modal-overlay-backdrop" onClick={() => setShowNewRecordModal(false)}>
+        <AdminModal onClose={() => setShowNewRecordModal(false)}>
           <div className="modal-dialog-box" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>➕ Create Mission Control Record ({newRecordKind})</h3>
-              <button className="btn-modal-close" onClick={() => setShowNewRecordModal(false)}>×</button>
+              <h3 id="admin-modal-title">➕ Create Mission Control Record ({newRecordKind})</h3>
+              <button className="btn-modal-close" aria-label="Close" onClick={() => setShowNewRecordModal(false)}>×</button>
             </div>
             <div className="modal-body">
               <div className="form-field-row">
@@ -2776,7 +2787,7 @@ export default function App() {
               </button>
             </div>
           </div>
-        </div>
+        </AdminModal>
       )}
 
     </div>

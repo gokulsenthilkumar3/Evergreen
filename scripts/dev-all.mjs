@@ -91,17 +91,20 @@ function checkPortAvailable(port) {
   });
 }
 
-function probeUrl(url, timeoutMs = 1500) {
-  return new Promise((resolve) => {
-    const req = http.get(url, (res) => {
-      resolve(res.statusCode >= 200 && res.statusCode < 400);
-    });
-    req.on('error', () => resolve(false));
-    req.setTimeout(timeoutMs, () => {
-      req.destroy();
-      resolve(false);
-    });
-  });
+async function probeUrl(url, timeoutMs = 1500) {
+  try {
+    const res = await fetch(url, { signal: AbortSignal.timeout(timeoutMs) });
+    return res.status >= 200 && res.status < 400;
+  } catch {
+    if (url.includes('localhost')) {
+      try {
+        const altUrl = url.replace('localhost', '127.0.0.1');
+        const res2 = await fetch(altUrl, { signal: AbortSignal.timeout(timeoutMs) });
+        return res2.status >= 200 && res2.status < 400;
+      } catch {}
+    }
+    return false;
+  }
 }
 
 async function waitForService(service, maxAttempts = 40) {

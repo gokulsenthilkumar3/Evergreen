@@ -1,32 +1,29 @@
-# React + TypeScript + Vite
+# EverGreen provider admin
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+The provider workspace runs at http://localhost:5174/ and manages the separate provider API on port 4300. This is distinct from the staff application's User Management page on port 4000.
 
-Currently, two official plugins are available:
+From the repository root:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```sh
+npm run dev -w apps/admin-web
+npm run build -w apps/admin-web
+npm run lint -w apps/admin-web
+# Uses the existing web workspace's Vitest / Testing Library toolchain.
+npm run test -w apps/web -- --config ../admin-web/vitest.config.ts
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+The sidebar contains all 16 modules, with a group filter for core operations, cloud, connectivity, finance, and developer tools. On smaller screens, open **Modules** in the header to navigate. **Customize overview** controls dashboard widgets.
+
+## UI structure
+
+- `src/index.css`: full-width foundation, dark native controls, typography inheritance, and keyboard focus indicators.
+- `src/App.css`: module components and theme tokens.
+- `src/layout.css`: shared workspace layout, table and filter styles, responsive grids, and narrow-screen overrides; imported last.
+- `src/WorkspaceIcon.tsx`: consistent navigation icons without an external icon dependency.
+- `src/AdminModal.tsx`: native dialogs with focus containment, Escape dismissal, and background scroll locking.
+
+Tables scroll within their panels. Task boards, card grids, database panels, chat, and AI studio stack as space becomes limited. Dialog headers and actions remain accessible while their content scrolls. System fonts keep the interface usable without a font download.
+
+The UI currently includes sample records and simulated terminal, connector, and AI responses. A visible status is not proof that the external operation ran. This UI update does not change API authorization or implement those integrations.
+
+For visual checks, review each module at desktop, tablet, and phone widths; check long tenant names, empty filters, keyboard navigation, and tall dialogs. Component tests cover all module views, navigation, filter recovery, and dialog dismissal, but do not measure browser layout.
