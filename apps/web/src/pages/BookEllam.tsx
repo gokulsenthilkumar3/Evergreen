@@ -234,27 +234,18 @@ export default function BookEllam() {
     ];
 
     const rows = filteredRecords.map(r => [
-      `"${new Date(r.date).toLocaleDateString()}"`,
-      `"${r.bookType}"`,
-      `"${(r.referenceNo || '').replace(/"/g, '""')}"`,
-      `"${(r.partyName || '').replace(/"/g, '""')}"`,
-      `"${(r.description || '').replace(/"/g, '""')}"`,
+      new Date(r.date).toLocaleDateString(),
+      r.bookType,
+      r.referenceNo || '',
+      r.partyName || '',
+      r.description || '',
       r.inwardKg ?? '',
       r.outwardKg ?? '',
       r.amount ?? '',
-      `"${(r.status || '').replace(/"/g, '""')}"`
+      r.status || ''
     ]);
 
-    const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', `Book-Ellam-Audit-Register-${activeTab}-${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    tableToCSV(headers, rows, `Book-Ellam-Audit-Register-${activeTab}-${new Date().toISOString().split('T')[0]}`);
   };
 
   return (

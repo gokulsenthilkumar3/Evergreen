@@ -4,6 +4,7 @@ import { Prisma, WorkflowDocument } from '@prisma/client';
 import { PrismaService } from '../../services/prisma.service';
 import { assertOpenPeriod, assertOverheadAvailable, freezeOrdersForHold, journal, money } from '../../services/business-ledger';
 import { stockEventDate } from '../../utils/stock-event-date';
+import { calculateInvoiceTotals } from '../commerce/invoice-totals';
 
 type Tx = Prisma.TransactionClient;
 const positive = (value: unknown, label = 'Quantity') => {
@@ -577,16 +578,16 @@ export class WorkflowsService {
   }
   async amendOrder(id: number, body: any, actor: string) {
     return this.prisma.stockTransaction(async tx => {
-      const order = await tx.salesOrder.findUniqueOrThrow({ where: { id }, include: { lines: true, invoices: true } });
+      const order = await tx.salesOrder.findUniqueOrThrow({ where: { id }, include: { lines: true, invoices: true, customer: true } });
       await assertOpenPeriod(tx, order.date);
       if (order.invoices.some(i => i.status !== 'VOID') || order.lines.some(l => l.dispatchedQty > 0) || !['CONFIRMED', 'PARTIALLY_INVOICED'].includes(order.status)) throw new BadRequestException('Amend terms before dispatch/invoicing; later concessions require a credit note');
       if (!body.notes?.trim()) throw new BadRequestException('Record why the contract is changing');
-      const discount = nonnegative(body.discount);
-      if (discount > order.subtotal) throw new BadRequestException('Discount exceeds the order subtotal');
-      const taxable = order.subtotal - discount;
-      const gst = order.lines.reduce((s, l) => s + (l.quantity * l.rate - l.discount) / (order.subtotal || 1) * taxable * l.gstRate / 100, 0);
+      const settings = await tx.systemSettings.findFirst();
+      const sellerState = settings?.sellerState || 'Tamil Nadu';
+      const totals = calculateInvoiceTotals(order.lines, nonnegative(body.discount), sellerState, order.customer.state || sellerState);
+      const discount = totals.discount;
       await tx.activityLog.create({ data: { username: actor, module: 'SALES_ORDER', action: 'AMEND', details: `Order ${id}: discount ${order.discount} → ${discount} · ${body.notes}` } });
-      return tx.salesOrder.update({ where: { id }, data: { discount, total: money(taxable + gst), notes: [order.notes, body.notes].filter(Boolean).join('\n') } });
+      return tx.salesOrder.update({ where: { id }, data: { subtotal: totals.subtotal, discount, total: totals.total, notes: [order.notes, body.notes].filter(Boolean).join('\n') } });
     });
   }
 }

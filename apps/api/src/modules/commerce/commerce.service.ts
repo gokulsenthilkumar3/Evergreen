@@ -102,7 +102,12 @@ export class CommerceService {
     return this.prisma.customer.create({ data: { name: body.name.trim(), phone: body.phone || null, email: body.email || null, gstin: body.gstin || null, state: body.state || 'Tamil Nadu', address: body.address || null } });
   }
   updateCustomer(id: number, body: any) {
-    const data: any = {}; for (const key of ['name', 'phone', 'email', 'gstin', 'state', 'address', 'active']) if (body[key] !== undefined) data[key] = body[key] || null;
+    const data: any = {};
+    for (const key of ['name', 'phone', 'email', 'gstin', 'state', 'address']) if (body[key] !== undefined) data[key] = body[key] || null;
+    if (body.active !== undefined) {
+      if (typeof body.active !== 'boolean') throw new BadRequestException('Customer active status must be a boolean');
+      data.active = body.active;
+    }
     return this.prisma.customer.update({ where: { id }, data });
   }
 

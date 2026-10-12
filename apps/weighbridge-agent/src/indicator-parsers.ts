@@ -36,11 +36,11 @@ export class IndicatorProtocolParser {
     }
 
     // 1. Avery Weigh-Tronix: e.g. "ST,GS,+012450kg", "US,GS,+012450kg", "ST,GS,+027447lb"
-    const averyMatch = clean.match(/(ST|US),GS,([+-]?\d+(?:\.\d+)?)\s*(kg|lb|lbs|t)?/i);
+    const averyMatch = clean.match(/^(ST|US),GS,([+-]?\d+(?:\.\d+)?)\s*(kg|lbs?|t)?$/i);
     if (averyMatch) {
       const isStable = averyMatch[1].toUpperCase() === 'ST';
       let weight = parseFloat(averyMatch[2]);
-      if (isNaN(weight) || weight < 0) return null; // Disallow negative tare error readings
+      if (!Number.isFinite(weight) || weight < 0) return null;
 
       const unitRaw = (averyMatch[3] || 'kg').toLowerCase();
       if (unitRaw === 't') {
@@ -48,6 +48,7 @@ export class IndicatorProtocolParser {
       } else if (unitRaw === 'lb' || unitRaw === 'lbs') {
         weight *= LBS_TO_KG;
       }
+      if (!Number.isFinite(weight * 100)) return null;
 
       return {
         raw: clean,
@@ -60,11 +61,11 @@ export class IndicatorProtocolParser {
     }
 
     // 2. Mettler Toledo SICS: e.g. "S S 12450.0 kg" or "S D 12450.0 kg"
-    const mtMatch = clean.match(/^S\s+(S|D)\s+([+-]?\d+(?:\.\d+)?)\s*(kg|g|t|lb|lbs)?/i);
+    const mtMatch = clean.match(/^S\s+(S|D)\s+([+-]?\d+(?:\.\d+)?)\s*(kg|g|t|lbs?)?$/i);
     if (mtMatch) {
       const isStable = mtMatch[1].toUpperCase() === 'S';
       let weight = parseFloat(mtMatch[2]);
-      if (isNaN(weight) || weight < 0) return null;
+      if (!Number.isFinite(weight) || weight < 0) return null;
 
       const unitRaw = (mtMatch[3] || 'kg').toLowerCase();
       if (unitRaw === 't') {
@@ -74,6 +75,7 @@ export class IndicatorProtocolParser {
       } else if (unitRaw === 'lb' || unitRaw === 'lbs') {
         weight *= LBS_TO_KG;
       }
+      if (!Number.isFinite(weight * 100)) return null;
 
       return {
         raw: clean,
@@ -86,15 +88,16 @@ export class IndicatorProtocolParser {
     }
 
     // 3. Essae-Teraoka DS series: e.g. "WN 012450 kg" or "WN012450"
-    const essaeMatch = clean.match(/^WN\s*([+-]?\d+(?:\.\d+)?)\s*(kg|t)?/i);
+    const essaeMatch = clean.match(/^WN\s*([+-]?\d+(?:\.\d+)?)\s*(kg|t)?$/i);
     if (essaeMatch) {
       let weight = parseFloat(essaeMatch[1]);
-      if (isNaN(weight) || weight < 0) return null;
+      if (!Number.isFinite(weight) || weight < 0) return null;
 
       const unitRaw = (essaeMatch[2] || 'kg').toLowerCase();
       if (unitRaw === 't') {
         weight *= 1000;
       }
+      if (!Number.isFinite(weight * 100)) return null;
 
       return {
         raw: clean,
@@ -106,12 +109,12 @@ export class IndicatorProtocolParser {
       };
     }
 
-    // 4. Generic ASCII decimal extractor (strictly positive number with optional kg/t unit)
+    // 4. Generic ASCII decimal frame (strictly positive number with optional kg unit)
     // Avoid matching random numbers in unformatted strings or error messages
     const genericMatch = clean.match(/^([+]?\d+(?:\.\d+)?)\s*(?:kg)?$/i);
     if (genericMatch) {
       const weight = parseFloat(genericMatch[1]);
-      if (!isNaN(weight) && weight > 0) {
+      if (Number.isFinite(weight * 100) && weight > 0) {
         return {
           raw: clean,
           weightKg: Math.round(weight * 100) / 100,
@@ -137,21 +140,21 @@ export class IndicatorProtocolParser {
     if (/\b(ERR|ERROR|FAULT)\b/i.test(clean)) return null;
 
     // Matches formats like "M: 7.8%", "MOIST=8.2%", "7.8 %MC"
-    const match = clean.match(/(?:M[:=]|MOIST[:=]|MC[:=])?\s*([0-9]{1,2}(?:\.[0-9]{1,2})?)\s*%/i);
+    const match = clean.match(/^(?:(KETT|MCU5?|DELMHORST)\s+)?(?:M[:=]|MOIST[:=]|MC[:=])?\s*([0-9]{1,2}(?:\.[0-9]{1,2})?)\s*%(?:MC)?$/i);
     if (match) {
-      const moisture = parseFloat(match[1]);
+      const moisture = Number(match[2]);
       if (isNaN(moisture) || moisture < 0 || moisture > 50) return null;
       return {
         raw: clean,
         moisturePercent: Math.round(moisture * 100) / 100,
         isStable: true,
-        meterBrand: clean.includes('KETT') ? 'KETT' : clean.includes('MCU') ? 'MCU5' : 'GENERIC',
+        meterBrand: match[1]?.toUpperCase() === 'KETT' ? 'KETT' : /^MCU/i.test(match[1] || '') ? 'MCU5' : match[1]?.toUpperCase() === 'DELMHORST' ? 'DELMHORST' : 'GENERIC',
         timestamp: new Date().toISOString(),
       };
     }
 
     // Direct decimal (between 3.0% and 25.0% cotton moisture range)
-    const directNum = parseFloat(clean);
+    const directNum = /^\d{1,2}(?:\.\d{1,2})?$/.test(clean) ? Number(clean) : NaN;
     if (!isNaN(directNum) && directNum >= 3.0 && directNum <= 25.0) {
       return {
         raw: clean,

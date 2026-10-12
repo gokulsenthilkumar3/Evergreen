@@ -20,6 +20,25 @@ export class InvoiceCalculationError extends Error {
 const money = (value: number) =>
   Math.round((value + Number.EPSILON) * 100) / 100;
 
+// Allocate whole paise by largest remainder, with input order breaking ties.
+// Every discounted paise belongs to exactly one line, including mixed tax rates.
+function allocateDiscount(taxableAmounts: number[], discount: number): number[] {
+  const amounts = taxableAmounts.map(value => BigInt(Math.round(value * 100)));
+  const subtotal = amounts.reduce((sum, value) => sum + value, 0n);
+  const discountPaise = BigInt(Math.round(discount * 100));
+  if (subtotal === 0n || discountPaise === 0n) return amounts.map(() => 0);
+  const shares = amounts.map((value, index) => ({
+    index,
+    paise: (discountPaise * value) / subtotal,
+    remainder: (discountPaise * value) % subtotal,
+  }));
+  const remainder = Number(discountPaise - shares.reduce((sum, share) => sum + share.paise, 0n));
+  const ranked = [...shares].sort((a, b) => a.remainder === b.remainder
+    ? a.index - b.index : a.remainder > b.remainder ? -1 : 1);
+  for (let i = 0; i < remainder; i++) ranked[i].paise += 1n;
+  return shares.map(share => Number(share.paise) / 100);
+}
+
 /** Canonical GST calculation shared by invoices, orders, PDFs and storefront estimates. */
 export function calculateInvoiceTotals(
   lines: TaxLine[],
@@ -81,6 +100,9 @@ export function calculateInvoiceTotals(
   const grossSubtotal = money(
     taxableLines.reduce((sum, line) => sum + line.lineTotal, 0),
   );
+  if (!Number.isFinite(grossSubtotal) || grossSubtotal > 1e12) {
+    throw new InvoiceCalculationError('Invoice subtotal exceeds the supported amount range');
+  }
   const lineDiscounts = money(
     taxableLines.reduce((sum, line) => sum + line.lineDiscount, 0),
   );
@@ -94,11 +116,10 @@ export function calculateInvoiceTotals(
   let cgst = 0;
   let sgst = 0;
   let igst = 0;
-  for (const line of taxableLines) {
+  const allocatedDiscounts = allocateDiscount(taxableLines.map(line => line.taxable), documentDiscountRounded);
+  for (const [index, line] of taxableLines.entries()) {
     // Preserve each line's discount, then allocate only the document discount.
-    const allocatedDocumentDiscount = discountedSubtotal
-      ? (documentDiscountRounded * line.taxable) / discountedSubtotal
-      : 0;
+    const allocatedDocumentDiscount = allocatedDiscounts[index];
     const taxBase = money(line.taxable - allocatedDocumentDiscount);
     const tax = money((taxBase * line.gstRate) / 100);
     if (isSimpleMode ? !interstate : sameState) {

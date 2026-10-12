@@ -53,6 +53,28 @@ describe('IndicatorProtocolParser', () => {
     assert.equal(moist.moisturePercent, 8.4);
     assert.equal(moist.isStable, true);
   });
+
+  for (const frame of ['ST,GS,100oz', 'ST,GS,100kg trailing', 'prefix ST,GS,100kg', 'S S 100xyz', 'S S 100 kg junk', 'WN100oz', 'WN100kg extra', `ST,GS,${'9'.repeat(400)}kg`, `${'9'.repeat(400)}kg`]) {
+    test(`rejects malformed weight frame ${frame.slice(0, 50)}`, () => {
+      assert.equal(IndicatorProtocolParser.parseWeightFrame(frame), null);
+    });
+  }
+
+  for (const frame of ['12garbage', '12.2% trailing', '-8.2%', '100%', '108.2%', 'ERR42 8%', 'prefix M: 8.2%', '8.234%']) {
+    test(`rejects malformed moisture frame ${frame}`, () => {
+      assert.equal(IndicatorProtocolParser.parseMoistureFrame(frame), null);
+    });
+  }
+
+  test('retains full supported frames, unit conversion and unstable status', () => {
+    assert.equal(IndicatorProtocolParser.parseWeightFrame('US,GS,100lbs')?.isStable, false);
+    assert.equal(IndicatorProtocolParser.parseWeightFrame('US,GS,100lbs')?.weightKg, 45.36);
+    assert.equal(IndicatorProtocolParser.parseWeightFrame('S D 1 t')?.weightKg, 1000);
+    assert.equal(IndicatorProtocolParser.parseWeightFrame('WN100kg')?.weightKg, 100);
+    assert.equal(IndicatorProtocolParser.parseMoistureFrame('7.8 %MC')?.moisturePercent, 7.8);
+    assert.equal(IndicatorProtocolParser.parseMoistureFrame('KETT M: 8.4%')?.meterBrand, 'KETT');
+    assert.equal(IndicatorProtocolParser.parseMoistureFrame('12.25')?.moisturePercent, 12.25);
+  });
 });
 
 describe('AntiTamperEngine', () => {
