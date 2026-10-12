@@ -110,13 +110,13 @@ export async function guardLots(tx: Tx, affectedItems?: Set<number>) {
 export async function reconcileFinance(tx: Tx) {
   const expenses = await tx.costingEntry.findMany();
   for (const expense of expenses) {
-    if (!Number.isFinite(expense.totalCost) || expense.totalCost < 0) throw new BadRequestException('Cost entries need valid non-negative amounts');
+    if (!Number.isFinite(expense.totalCost) || expense.totalCost < 0) throw new BadRequestException(`Cost entry #${expense.id} (${expense.category}) has an invalid amount. Correct it in Costing before posting anything else.`);
     await journal(tx, `COST:${expense.id}`, expense.date, expense.title || expense.category, expense.createdBy || 'SYSTEM', [{ account: 'MANUFACTURING_OVERHEAD', debit: expense.totalCost }, { account: 'ACCRUED_EXPENSES', credit: expense.totalCost }]);
   }
   const payroll = await tx.payrollEntry.findMany();
   for (const pay of payroll) {
     const date = pay.createdAt;
-    if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(pay.month)) throw new BadRequestException('Payroll month must use YYYY-MM');
+    if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(pay.month)) throw new BadRequestException(`Payroll entry #${pay.id} has an invalid month; it must use YYYY-MM`);
     await journal(tx, `PAYROLL:${pay.id}`, date, `Payroll ${pay.month}`, pay.createdBy || 'SYSTEM', [{ account: 'MANUFACTURING_OVERHEAD', debit: money(pay.basicPay + pay.overtime) }, { account: 'PAYROLL_PAYABLE', party: `STAFF:${pay.staffId}`, credit: pay.netPay }, { account: 'PAYROLL_DEDUCTIONS', credit: pay.deductions }]);
   }
   const productions = await tx.production.findMany();

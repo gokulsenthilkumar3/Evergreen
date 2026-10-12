@@ -7,8 +7,14 @@ import {
   Delete,
   Param,
   Put,
+  Req,
+  ConflictException,
+  NotFoundException,
 } from '@nestjs/common';
 import { CostingService } from './costing.service';
+import type { AuthenticatedRequest } from '../../types/authenticated-request';
+
+const DUPLICATE_ENTRY = 'An entry already exists for this date. Edit that entry instead.';
 
 export enum DateRange {
   MONTH = 'month',
@@ -105,109 +111,51 @@ export class CostingController {
   }
 
   @Post('eb')
-  async createEBCost(@Body() entry: any) {
-    if (await this.costingService.exists(entry.date, 'EB (Electricity)')) {
-      throw new Error('Entry already exists for this date');
-    }
-    const newEntry = {
-      category: 'EB (Electricity)',
-      details: `${entry.unitsConsumed} kWh @ ₹${entry.ratePerUnit}/unit (${entry.noOfShifts} Shifts)`,
-      ...entry,
-    };
-    return this.costingService.addEntry(newEntry);
+  async createEBCost(@Body() entry: any, @Req() req: AuthenticatedRequest) {
+    if (await this.costingService.exists(entry.date, 'EB (Electricity)')) throw new ConflictException(DUPLICATE_ENTRY);
+    return this.costingService.addEntry({ ...entry, category: 'EB (Electricity)', createdBy: req.user.username });
   }
 
   @Post('employee')
-  async createEmployeeCost(@Body() entry: any) {
-    if (await this.costingService.exists(entry.date, 'Employee')) {
-      throw new Error('Entry already exists for this date');
-    }
-    const newEntry = {
-      category: 'Employee',
-      details: `${entry.workers} Workers (${entry.noOfShifts} Shifts)`,
-      ...entry,
-    };
-    return this.costingService.addEntry(newEntry);
+  async createEmployeeCost(@Body() entry: any, @Req() req: AuthenticatedRequest) {
+    if (await this.costingService.exists(entry.date, 'Employee')) throw new ConflictException(DUPLICATE_ENTRY);
+    return this.costingService.addEntry({ ...entry, category: 'Employee', createdBy: req.user.username });
   }
 
   @Post('packaging')
-  async createPackagingCost(@Body() entry: any) {
-    if (await this.costingService.exists(entry.date, 'Packaging')) {
-      throw new Error('Entry already exists for this date');
-    }
-    const newEntry = {
-      category: 'Packaging',
-      details: `For ${entry.yarnProduced?.toFixed(2)} kg Yarn`,
-      ...entry,
-    };
-    return this.costingService.addEntry(newEntry);
+  async createPackagingCost(@Body() entry: any, @Req() req: AuthenticatedRequest) {
+    if (await this.costingService.exists(entry.date, 'Packaging')) throw new ConflictException(DUPLICATE_ENTRY);
+    return this.costingService.addEntry({ ...entry, category: 'Packaging', createdBy: req.user.username });
   }
 
   @Post('maintenance')
-  async createMaintenanceCost(@Body() entry: any) {
-    if (await this.costingService.exists(entry.date, 'Maintenance')) {
-      throw new Error('Entry already exists for this date');
-    }
-    const newEntry = {
-      category: 'Maintenance',
-      details: entry.description,
-      ...entry,
-    };
-    return this.costingService.addEntry(newEntry);
+  async createMaintenanceCost(@Body() entry: any, @Req() req: AuthenticatedRequest) {
+    if (await this.costingService.exists(entry.date, 'Maintenance')) throw new ConflictException(DUPLICATE_ENTRY);
+    return this.costingService.addEntry({ ...entry, category: 'Maintenance', createdBy: req.user.username });
   }
 
   @Post('expense')
-  async createExpense(@Body() entry: any) {
-    const newEntry = {
-      category: expect(entry.category) || 'Expense',
-      type: entry.type || 'General',
-      details: `${entry.title} (${entry.type})`,
+  async createExpense(@Body() entry: any, @Req() req: AuthenticatedRequest) {
+    return this.costingService.addEntry({
+      type: 'General',
+      details: `${entry.title} (${entry.type || 'General'})`,
       totalCost: entry.amount,
       ...entry,
-    };
-    return this.costingService.addEntry(newEntry);
+      category: entry.category || 'Expense',
+      createdBy: req.user.username,
+    });
   }
 
   @Delete(':id')
   async deleteEntry(@Param('id') id: string) {
-    const success = await this.costingService.deleteEntry(id);
-    if (success) return { success: true };
-    return { success: false, message: 'Not found' };
+    if (!(await this.costingService.deleteEntry(id))) throw new NotFoundException('Cost entry not found');
+    return { success: true };
   }
 
   @Put(':id')
-  async updateEntry(@Param('id') id: string, @Body() entry: any) {
-    // Logic remains: backend rebuilds details
-    // But since we persist specific fields in DB, do we need to rebuild detail string?
-    // Ideally frontend specific fields update -> details update automatically via Model hook or Service logic?
-    // Here controller handles it.
-    // But we need to know previous values?
-    // Assuming entry contains updated specific fields.
-
-    let details = entry.details;
-
-    if (entry.category === 'EB (Electricity)') {
-      details = `${entry.unitsConsumed} kWh @ ₹${entry.ratePerUnit}/unit (${entry.noOfShifts} Shifts)`;
-    } else if (entry.category === 'Employee') {
-      details = `${entry.workers} Workers (${entry.noOfShifts} Shifts)`;
-    } else if (entry.category === 'Packaging') {
-      details = `For ${parseFloat(entry.yarnProduced)?.toFixed(2)} kg Yarn`;
-    } else if (entry.category === 'Maintenance') {
-      details = entry.description;
-    }
-
-    const formatted = {
-      ...entry,
-      details,
-    };
-
-    const updated = await this.costingService.updateEntry(id, formatted);
-    if (updated) return updated;
-    return { success: false, message: 'Not found' };
+  async updateEntry(@Param('id') id: string, @Body() entry: any, @Req() req: AuthenticatedRequest) {
+    const updated = await this.costingService.updateEntry(id, { ...entry, updatedBy: req.user.username });
+    if (!updated) throw new NotFoundException('Cost entry not found');
+    return updated;
   }
-}
-
-// Helper to handle Expense category fallback
-function expect(val: any) {
-  return val;
 }

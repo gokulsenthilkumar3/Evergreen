@@ -10,6 +10,7 @@ export class PrismaService
   implements OnModuleInit, OnModuleDestroy
 {
   private readonly mutationScope = new AsyncLocalStorage<{ items: Set<number>; lots: Set<number>; waste: boolean; all: boolean }>();
+  private startupIssue: string | null = null;
   constructor() {
     super();
     this.$use(async (params, next) => {
@@ -30,13 +31,28 @@ export class PrismaService
     console.log('🔌 Connecting to Prisma database...');
     // DATABASE_URL may contain production credentials; never print it.
     await this.$connect();
-    await this.$transaction(async tx => {
-      await reconcileStock(tx);
-      await reconcileLots(tx);
-      await reconcileFinance(tx);
-      await reconcileValuation(tx);
-    }, { timeout: 60_000 });
+    try {
+      await this.$transaction(async tx => {
+        await reconcileStock(tx);
+        await reconcileLots(tx);
+        await reconcileFinance(tx);
+        await reconcileValuation(tx);
+      }, { timeout: 60_000 });
+    } catch (error) {
+      // A business record that breaks a ledger rule must not take sign-in and
+      // read access down with it. Postings keep failing with this same message
+      // until the record is corrected. Anything else (schema, connectivity) is
+      // still fatal.
+      if (!(error instanceof BadRequestException)) throw error;
+      this.startupIssue = error.message;
+      console.error(`⚠️ Startup reconciliation found a data problem: ${error.message}`);
+    }
     console.log('✅ Prisma connected.');
+  }
+
+  /** Set when startup reconciliation was blocked by a business record; null when the ledgers reconciled. */
+  getStartupIssue(): string | null {
+    return this.startupIssue;
   }
 
   stockTransaction<T>(work: (tx: Prisma.TransactionClient) => Promise<T>): Promise<T> {
