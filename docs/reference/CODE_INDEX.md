@@ -686,10 +686,12 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `ChartTooltipProps` | InterfaceDeclaration | [apps/web/src/components/common/AdvancedChartTooltip.tsx:5](../../apps/web/src/components/common/AdvancedChartTooltip.tsx) |
 | `AdvancedChartTooltip` | Function binding | [apps/web/src/components/common/AdvancedChartTooltip.tsx:18](../../apps/web/src/components/common/AdvancedChartTooltip.tsx) |
 | `BarcodeQRModalProps` | InterfaceDeclaration | [apps/web/src/components/common/BarcodeQRModal.tsx:27](../../apps/web/src/components/common/BarcodeQRModal.tsx) |
-| `SimpleSVGBarcode` | Function binding | [apps/web/src/components/common/BarcodeQRModal.tsx:41](../../apps/web/src/components/common/BarcodeQRModal.tsx) |
-| `BarcodeQRModal` | Function binding | [apps/web/src/components/common/BarcodeQRModal.tsx:97](../../apps/web/src/components/common/BarcodeQRModal.tsx) |
-| `handlePrint` | Function binding | [apps/web/src/components/common/BarcodeQRModal.tsx:109](../../apps/web/src/components/common/BarcodeQRModal.tsx) |
-| `handleCopy` | Function binding | [apps/web/src/components/common/BarcodeQRModal.tsx:198](../../apps/web/src/components/common/BarcodeQRModal.tsx) |
+| `escapeHtml` | Function binding | [apps/web/src/components/common/BarcodeQRModal.tsx:39](../../apps/web/src/components/common/BarcodeQRModal.tsx) |
+| `labelPrintDocument` | FunctionDeclaration | [apps/web/src/components/common/BarcodeQRModal.tsx:46](../../apps/web/src/components/common/BarcodeQRModal.tsx) |
+| `SimpleSVGBarcode` | Function binding | [apps/web/src/components/common/BarcodeQRModal.tsx:130](../../apps/web/src/components/common/BarcodeQRModal.tsx) |
+| `BarcodeQRModal` | Function binding | [apps/web/src/components/common/BarcodeQRModal.tsx:186](../../apps/web/src/components/common/BarcodeQRModal.tsx) |
+| `handlePrint` | Function binding | [apps/web/src/components/common/BarcodeQRModal.tsx:198](../../apps/web/src/components/common/BarcodeQRModal.tsx) |
+| `handleCopy` | Function binding | [apps/web/src/components/common/BarcodeQRModal.tsx:210](../../apps/web/src/components/common/BarcodeQRModal.tsx) |
 | `BatchCodeBuilderProps` | InterfaceDeclaration | [apps/web/src/components/common/BatchCodeBuilder.tsx:7](../../apps/web/src/components/common/BatchCodeBuilder.tsx) |
 | `BatchCodeBuilder` | FunctionDeclaration | [apps/web/src/components/common/BatchCodeBuilder.tsx:14](../../apps/web/src/components/common/BatchCodeBuilder.tsx) |
 | `BreadcrumbItem` | InterfaceDeclaration | [apps/web/src/components/common/Breadcrumbs.tsx:13](../../apps/web/src/components/common/Breadcrumbs.tsx) |

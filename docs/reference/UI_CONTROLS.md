@@ -232,9 +232,9 @@ Generated from every active-source UI file. Labels expressed in code are preserv
 | [apps/web/src/components/command-center/WarRoomView.tsx:536](../../apps/web/src/components/command-center/WarRoomView.tsx) | Button | Open Quality Desk → | `{() => onNavigate?.('yarnquality')}` |
 | [apps/web/src/components/command-center/WarRoomView.tsx:582](../../apps/web/src/components/command-center/WarRoomView.tsx) | Button | Logistics & Challans → | `{() => onNavigate?.('outward')}` |
 | [apps/web/src/components/common/AccessibleDialog.tsx:119](../../apps/web/src/components/common/AccessibleDialog.tsx) | IconButton | Close dialog | `{onClose}` |
-| [apps/web/src/components/common/BarcodeQRModal.tsx:219](../../apps/web/src/components/common/BarcodeQRModal.tsx) | Button | <CloseIcon fontSize="small" /> | `{onClose}` |
-| [apps/web/src/components/common/BarcodeQRModal.tsx:309](../../apps/web/src/components/common/BarcodeQRModal.tsx) | Button | Copy Payload | `{handleCopy}` |
-| [apps/web/src/components/common/BarcodeQRModal.tsx:313](../../apps/web/src/components/common/BarcodeQRModal.tsx) | Button | Print Label (4"×3") | `{handlePrint}` |
+| [apps/web/src/components/common/BarcodeQRModal.tsx:231](../../apps/web/src/components/common/BarcodeQRModal.tsx) | Button | <CloseIcon fontSize="small" /> | `{onClose}` |
+| [apps/web/src/components/common/BarcodeQRModal.tsx:321](../../apps/web/src/components/common/BarcodeQRModal.tsx) | Button | Copy Payload | `{handleCopy}` |
+| [apps/web/src/components/common/BarcodeQRModal.tsx:325](../../apps/web/src/components/common/BarcodeQRModal.tsx) | Button | Print Label (4"×3") | `{handlePrint}` |
 | [apps/web/src/components/common/BatchCodeBuilder.tsx:39](../../apps/web/src/components/common/BatchCodeBuilder.tsx) | ToggleButton | Automatic | `` |
 | [apps/web/src/components/common/BatchCodeBuilder.tsx:40](../../apps/web/src/components/common/BatchCodeBuilder.tsx) | ToggleButton | Build code | `` |
 | [apps/web/src/components/common/BatchCodeBuilder.tsx:41](../../apps/web/src/components/common/BatchCodeBuilder.tsx) | ToggleButton | Manual ID | `` |
