@@ -1,4 +1,4 @@
-import "@testing-library/jest-dom/vitest";
+import * as matchers from "@testing-library/jest-dom/matchers";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   cleanup,
@@ -9,6 +9,16 @@ import {
 } from "@testing-library/react";
 import App from "./App";
 import { DEMO_TENANTS } from "./control-data";
+
+// jest-dom is hoisted to the root node_modules and vitest is installed under apps/admin-web, so the
+// "@testing-library/jest-dom/vitest" entry cannot resolve "vitest"; register the matchers and types here.
+expect.extend(matchers);
+declare module "vitest" {
+  interface Matchers<
+    R extends void | Promise<void> = void | Promise<void>,
+    T = unknown,
+  > extends matchers.TestingLibraryMatchers<unknown, R> {}
+}
 
 beforeEach(() => {
   vi.stubGlobal(
