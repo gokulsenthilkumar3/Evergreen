@@ -8,13 +8,18 @@ import {
   Param,
   Put,
   Req,
-  ConflictException,
   NotFoundException,
 } from '@nestjs/common';
 import { CostingService } from './costing.service';
+import {
+  CreateEbCostDto,
+  CreateEmployeeCostDto,
+  CreateExpenseDto,
+  CreateMaintenanceCostDto,
+  CreatePackagingCostDto,
+  UpdateCostingEntryDto,
+} from './costing.dto';
 import type { AuthenticatedRequest } from '../../types/authenticated-request';
-
-const DUPLICATE_ENTRY = 'An entry already exists for this date. Edit that entry instead.';
 
 export enum DateRange {
   MONTH = 'month',
@@ -111,39 +116,29 @@ export class CostingController {
   }
 
   @Post('eb')
-  async createEBCost(@Body() entry: any, @Req() req: AuthenticatedRequest) {
-    if (await this.costingService.exists(entry.date, 'EB (Electricity)')) throw new ConflictException(DUPLICATE_ENTRY);
+  createEBCost(@Body() entry: CreateEbCostDto, @Req() req: AuthenticatedRequest) {
     return this.costingService.addEntry({ ...entry, category: 'EB (Electricity)', createdBy: req.user.username });
   }
 
   @Post('employee')
-  async createEmployeeCost(@Body() entry: any, @Req() req: AuthenticatedRequest) {
-    if (await this.costingService.exists(entry.date, 'Employee')) throw new ConflictException(DUPLICATE_ENTRY);
+  createEmployeeCost(@Body() entry: CreateEmployeeCostDto, @Req() req: AuthenticatedRequest) {
     return this.costingService.addEntry({ ...entry, category: 'Employee', createdBy: req.user.username });
   }
 
   @Post('packaging')
-  async createPackagingCost(@Body() entry: any, @Req() req: AuthenticatedRequest) {
-    if (await this.costingService.exists(entry.date, 'Packaging')) throw new ConflictException(DUPLICATE_ENTRY);
+  createPackagingCost(@Body() entry: CreatePackagingCostDto, @Req() req: AuthenticatedRequest) {
     return this.costingService.addEntry({ ...entry, category: 'Packaging', createdBy: req.user.username });
   }
 
   @Post('maintenance')
-  async createMaintenanceCost(@Body() entry: any, @Req() req: AuthenticatedRequest) {
-    if (await this.costingService.exists(entry.date, 'Maintenance')) throw new ConflictException(DUPLICATE_ENTRY);
+  createMaintenanceCost(@Body() entry: CreateMaintenanceCostDto, @Req() req: AuthenticatedRequest) {
     return this.costingService.addEntry({ ...entry, category: 'Maintenance', createdBy: req.user.username });
   }
 
   @Post('expense')
-  async createExpense(@Body() entry: any, @Req() req: AuthenticatedRequest) {
-    return this.costingService.addEntry({
-      type: 'General',
-      details: `${entry.title} (${entry.type || 'General'})`,
-      totalCost: entry.amount,
-      ...entry,
-      category: entry.category || 'Expense',
-      createdBy: req.user.username,
-    });
+  createExpense(@Body() entry: CreateExpenseDto, @Req() req: AuthenticatedRequest) {
+    const type = entry.type || 'General';
+    return this.costingService.addEntry({ ...entry, type, details: `${entry.title} (${type})`, category: 'Expense', createdBy: req.user.username });
   }
 
   @Delete(':id')
@@ -153,7 +148,7 @@ export class CostingController {
   }
 
   @Put(':id')
-  async updateEntry(@Param('id') id: string, @Body() entry: any, @Req() req: AuthenticatedRequest) {
+  async updateEntry(@Param('id') id: string, @Body() entry: UpdateCostingEntryDto, @Req() req: AuthenticatedRequest) {
     const updated = await this.costingService.updateEntry(id, { ...entry, updatedBy: req.user.username });
     if (!updated) throw new NotFoundException('Cost entry not found');
     return updated;

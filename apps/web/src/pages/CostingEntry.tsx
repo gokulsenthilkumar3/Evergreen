@@ -12,6 +12,7 @@ import {
 } from '@mui/material';
 import { Save as SaveIcon } from '@mui/icons-material';
 import api from '../utils/api';
+import { ebCostPayload, employeeCostPayload, expensePayload, maintenanceCostPayload, packagingCostPayload } from '../utils/costingPayloads';
 import { useQuery } from '@tanstack/react-query';
 import { useConfirm } from '../context/ConfirmContext';
 import { toast } from 'sonner';
@@ -43,7 +44,7 @@ interface CostingEntryProps {
     initialDate?: string;
 }
 
-const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, initialTab = 0, username, initialDate }) => {
+const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, initialTab = 0, initialDate }) => {
     const [tabValue, setTabValue] = useState(initialTab || 0);
 
     // Sync tab with prop if it changes and matches context
@@ -251,8 +252,7 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
             return;
         }
         try {
-            const totalCost = units * rate * (parseFloat(ebData.noOfShifts) || 1);
-            const payload = { date, category: 'EB (Electricity)', ...ebData, totalCost, createdBy: username };
+            const payload = ebCostPayload(date, ebData);
             if (existingEB) await api.put(`/costing/${existingEB.id}`, payload);
             else await api.post('/costing/eb', payload);
             toast.success(SUCCESS_MESSAGES.COSTING_SAVED);
@@ -275,16 +275,7 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
                 toast.error(ERROR_MESSAGES.REQUIRED_FIELD('Rate'));
                 return;
             }
-            const shifts = parseFloat(employeeData.noOfShifts) || 1;
-            const cost = (workers * rate * shifts) + (parseFloat(employeeData.overtime) || 0);
-            const payload = {
-                date,
-                category: 'Employee',
-                ...employeeData,
-                rate: rate, // Map frontend workerRate to backend 'rate' field
-                totalCost: cost,
-                createdBy: username
-            };
+            const payload = employeeCostPayload(date, employeeData);
             if (existingEmployee) await api.put(`/costing/${existingEmployee.id}`, payload);
             else await api.post('/costing/employee', payload);
             toast.success(SUCCESS_MESSAGES.COSTING_SAVED);
@@ -307,8 +298,7 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
             return;
         }
         try {
-            const cost = yarnKg * rate;
-            const payload = { date, category: 'Packaging', yarnProduced: yarnKg, ratePerKg: rate, totalCost: cost, createdBy: username };
+            const payload = packagingCostPayload(date, yarnKg, rate);
             if (existingPackaging) await api.put(`/costing/${existingPackaging.id}`, payload);
             else await api.post('/costing/packaging', payload);
             toast.success(SUCCESS_MESSAGES.COSTING_SAVED);
@@ -331,7 +321,7 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
             return;
         }
         try {
-            const payload = { date, category: 'Maintenance', description: maintenanceData.description || 'Daily Maintenance', totalCost: cost, ratePerKg: maintenanceData.ratePerKg, createdBy: username };
+            const payload = maintenanceCostPayload(date, maintenanceData);
             if (existingMaintenance) await api.put(`/costing/${existingMaintenance.id}`, payload);
             else await api.post('/costing/maintenance', payload);
             toast.success(SUCCESS_MESSAGES.COSTING_SAVED);
@@ -352,7 +342,7 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
             return;
         }
         try {
-            await api.post('/costing/expense', { date, ...expenseData, createdBy: username });
+            await api.post('/costing/expense', expensePayload(date, expenseData));
             toast.success(SUCCESS_MESSAGES.COSTING_SAVED);
             setExpenseData({ title: '', amount: '', description: '', type: 'Asset' });
             if (onItemSaved) onItemSaved();

@@ -180,33 +180,40 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `WhatsAppStatementResult` | InterfaceDeclaration | [apps/api/src/modules/commerce/whatsapp-collections.service.ts:4](../../apps/api/src/modules/commerce/whatsapp-collections.service.ts) |
 | `WhatsAppCollectionsService` | ClassDeclaration | [apps/api/src/modules/commerce/whatsapp-collections.service.ts:15](../../apps/api/src/modules/commerce/whatsapp-collections.service.ts) |
 | `generateStatement` | MethodDeclaration | [apps/api/src/modules/commerce/whatsapp-collections.service.ts:22](../../apps/api/src/modules/commerce/whatsapp-collections.service.ts) |
-| `CostingController` | ClassDeclaration | [apps/api/src/modules/costing/costing.controller.ts:26](../../apps/api/src/modules/costing/costing.controller.ts) |
-| `getCostingHistory` | MethodDeclaration | [apps/api/src/modules/costing/costing.controller.ts:30](../../apps/api/src/modules/costing/costing.controller.ts) |
-| `getCostEntries` | MethodDeclaration | [apps/api/src/modules/costing/costing.controller.ts:108](../../apps/api/src/modules/costing/costing.controller.ts) |
-| `createEBCost` | MethodDeclaration | [apps/api/src/modules/costing/costing.controller.ts:113](../../apps/api/src/modules/costing/costing.controller.ts) |
-| `createEmployeeCost` | MethodDeclaration | [apps/api/src/modules/costing/costing.controller.ts:119](../../apps/api/src/modules/costing/costing.controller.ts) |
-| `createPackagingCost` | MethodDeclaration | [apps/api/src/modules/costing/costing.controller.ts:125](../../apps/api/src/modules/costing/costing.controller.ts) |
-| `createMaintenanceCost` | MethodDeclaration | [apps/api/src/modules/costing/costing.controller.ts:131](../../apps/api/src/modules/costing/costing.controller.ts) |
-| `createExpense` | MethodDeclaration | [apps/api/src/modules/costing/costing.controller.ts:137](../../apps/api/src/modules/costing/costing.controller.ts) |
-| `deleteEntry` | MethodDeclaration | [apps/api/src/modules/costing/costing.controller.ts:149](../../apps/api/src/modules/costing/costing.controller.ts) |
-| `updateEntry` | MethodDeclaration | [apps/api/src/modules/costing/costing.controller.ts:155](../../apps/api/src/modules/costing/costing.controller.ts) |
+| `CostingController` | ClassDeclaration | [apps/api/src/modules/costing/costing.controller.ts:31](../../apps/api/src/modules/costing/costing.controller.ts) |
+| `getCostingHistory` | MethodDeclaration | [apps/api/src/modules/costing/costing.controller.ts:35](../../apps/api/src/modules/costing/costing.controller.ts) |
+| `getCostEntries` | MethodDeclaration | [apps/api/src/modules/costing/costing.controller.ts:113](../../apps/api/src/modules/costing/costing.controller.ts) |
+| `createEBCost` | MethodDeclaration | [apps/api/src/modules/costing/costing.controller.ts:118](../../apps/api/src/modules/costing/costing.controller.ts) |
+| `createEmployeeCost` | MethodDeclaration | [apps/api/src/modules/costing/costing.controller.ts:123](../../apps/api/src/modules/costing/costing.controller.ts) |
+| `createPackagingCost` | MethodDeclaration | [apps/api/src/modules/costing/costing.controller.ts:128](../../apps/api/src/modules/costing/costing.controller.ts) |
+| `createMaintenanceCost` | MethodDeclaration | [apps/api/src/modules/costing/costing.controller.ts:133](../../apps/api/src/modules/costing/costing.controller.ts) |
+| `createExpense` | MethodDeclaration | [apps/api/src/modules/costing/costing.controller.ts:138](../../apps/api/src/modules/costing/costing.controller.ts) |
+| `deleteEntry` | MethodDeclaration | [apps/api/src/modules/costing/costing.controller.ts:144](../../apps/api/src/modules/costing/costing.controller.ts) |
+| `updateEntry` | MethodDeclaration | [apps/api/src/modules/costing/costing.controller.ts:150](../../apps/api/src/modules/costing/costing.controller.ts) |
+| `CreateEbCostDto` | ClassDeclaration | [apps/api/src/modules/costing/costing.dto.ts:20](../../apps/api/src/modules/costing/costing.dto.ts) |
+| `CreateEmployeeCostDto` | ClassDeclaration | [apps/api/src/modules/costing/costing.dto.ts:38](../../apps/api/src/modules/costing/costing.dto.ts) |
+| `CreatePackagingCostDto` | ClassDeclaration | [apps/api/src/modules/costing/costing.dto.ts:61](../../apps/api/src/modules/costing/costing.dto.ts) |
+| `CreateMaintenanceCostDto` | ClassDeclaration | [apps/api/src/modules/costing/costing.dto.ts:74](../../apps/api/src/modules/costing/costing.dto.ts) |
+| `CreateExpenseDto` | ClassDeclaration | [apps/api/src/modules/costing/costing.dto.ts:92](../../apps/api/src/modules/costing/costing.dto.ts) |
+| `UpdateCostingEntryDto` | ClassDeclaration | [apps/api/src/modules/costing/costing.dto.ts:114](../../apps/api/src/modules/costing/costing.dto.ts) |
 | `CostingModule` | ClassDeclaration | [apps/api/src/modules/costing/costing.module.ts:5](../../apps/api/src/modules/costing/costing.module.ts) |
-| `costNumber` | FunctionDeclaration | [apps/api/src/modules/costing/costing.service.ts:12](../../apps/api/src/modules/costing/costing.service.ts) |
-| `costDate` | FunctionDeclaration | [apps/api/src/modules/costing/costing.service.ts:20](../../apps/api/src/modules/costing/costing.service.ts) |
-| `costText` | FunctionDeclaration | [apps/api/src/modules/costing/costing.service.ts:27](../../apps/api/src/modules/costing/costing.service.ts) |
-| `costFields` | FunctionDeclaration | [apps/api/src/modules/costing/costing.service.ts:33](../../apps/api/src/modules/costing/costing.service.ts) |
-| `costDetails` | FunctionDeclaration | [apps/api/src/modules/costing/costing.service.ts:47](../../apps/api/src/modules/costing/costing.service.ts) |
-| `definedOnly` | FunctionDeclaration | [apps/api/src/modules/costing/costing.service.ts:55](../../apps/api/src/modules/costing/costing.service.ts) |
-| `CostingService` | ClassDeclaration | [apps/api/src/modules/costing/costing.service.ts:59](../../apps/api/src/modules/costing/costing.service.ts) |
-| `addEntry` | MethodDeclaration | [apps/api/src/modules/costing/costing.service.ts:63](../../apps/api/src/modules/costing/costing.service.ts) |
-| `getCostEntries` | MethodDeclaration | [apps/api/src/modules/costing/costing.service.ts:81](../../apps/api/src/modules/costing/costing.service.ts) |
-| `deleteEntry` | MethodDeclaration | [apps/api/src/modules/costing/costing.service.ts:87](../../apps/api/src/modules/costing/costing.service.ts) |
-| `updateEntry` | MethodDeclaration | [apps/api/src/modules/costing/costing.service.ts:103](../../apps/api/src/modules/costing/costing.service.ts) |
-| `exists` | MethodDeclaration | [apps/api/src/modules/costing/costing.service.ts:128](../../apps/api/src/modules/costing/costing.service.ts) |
-| `getTotalCost` | MethodDeclaration | [apps/api/src/modules/costing/costing.service.ts:149](../../apps/api/src/modules/costing/costing.service.ts) |
-| `getCostSummary` | MethodDeclaration | [apps/api/src/modules/costing/costing.service.ts:169](../../apps/api/src/modules/costing/costing.service.ts) |
-| `getHistoryByCategory` | MethodDeclaration | [apps/api/src/modules/costing/costing.service.ts:202](../../apps/api/src/modules/costing/costing.service.ts) |
-| `getDailyCostSummary` | MethodDeclaration | [apps/api/src/modules/costing/costing.service.ts:239](../../apps/api/src/modules/costing/costing.service.ts) |
+| `costNumber` | FunctionDeclaration | [apps/api/src/modules/costing/costing.service.ts:18](../../apps/api/src/modules/costing/costing.service.ts) |
+| `costDate` | FunctionDeclaration | [apps/api/src/modules/costing/costing.service.ts:26](../../apps/api/src/modules/costing/costing.service.ts) |
+| `costText` | FunctionDeclaration | [apps/api/src/modules/costing/costing.service.ts:33](../../apps/api/src/modules/costing/costing.service.ts) |
+| `costFields` | FunctionDeclaration | [apps/api/src/modules/costing/costing.service.ts:39](../../apps/api/src/modules/costing/costing.service.ts) |
+| `costDetails` | FunctionDeclaration | [apps/api/src/modules/costing/costing.service.ts:54](../../apps/api/src/modules/costing/costing.service.ts) |
+| `computedTotal` | FunctionDeclaration | [apps/api/src/modules/costing/costing.service.ts:67](../../apps/api/src/modules/costing/costing.service.ts) |
+| `definedOnly` | FunctionDeclaration | [apps/api/src/modules/costing/costing.service.ts:78](../../apps/api/src/modules/costing/costing.service.ts) |
+| `CostingService` | ClassDeclaration | [apps/api/src/modules/costing/costing.service.ts:82](../../apps/api/src/modules/costing/costing.service.ts) |
+| `addEntry` | MethodDeclaration | [apps/api/src/modules/costing/costing.service.ts:86](../../apps/api/src/modules/costing/costing.service.ts) |
+| `getCostEntries` | MethodDeclaration | [apps/api/src/modules/costing/costing.service.ts:110](../../apps/api/src/modules/costing/costing.service.ts) |
+| `deleteEntry` | MethodDeclaration | [apps/api/src/modules/costing/costing.service.ts:116](../../apps/api/src/modules/costing/costing.service.ts) |
+| `updateEntry` | MethodDeclaration | [apps/api/src/modules/costing/costing.service.ts:132](../../apps/api/src/modules/costing/costing.service.ts) |
+| `existsOn` | MethodDeclaration | [apps/api/src/modules/costing/costing.service.ts:162](../../apps/api/src/modules/costing/costing.service.ts) |
+| `getTotalCost` | MethodDeclaration | [apps/api/src/modules/costing/costing.service.ts:170](../../apps/api/src/modules/costing/costing.service.ts) |
+| `getCostSummary` | MethodDeclaration | [apps/api/src/modules/costing/costing.service.ts:190](../../apps/api/src/modules/costing/costing.service.ts) |
+| `getHistoryByCategory` | MethodDeclaration | [apps/api/src/modules/costing/costing.service.ts:223](../../apps/api/src/modules/costing/costing.service.ts) |
+| `getDailyCostSummary` | MethodDeclaration | [apps/api/src/modules/costing/costing.service.ts:260](../../apps/api/src/modules/costing/costing.service.ts) |
 | `DailySummaryService` | ClassDeclaration | [apps/api/src/modules/dashboard/daily-summary.service.ts:11](../../apps/api/src/modules/dashboard/daily-summary.service.ts) |
 | `sendDailySummary` | MethodDeclaration | [apps/api/src/modules/dashboard/daily-summary.service.ts:36](../../apps/api/src/modules/dashboard/daily-summary.service.ts) |
 | `DashboardController` | ClassDeclaration | [apps/api/src/modules/dashboard/dashboard.controller.ts:6](../../apps/api/src/modules/dashboard/dashboard.controller.ts) |
@@ -892,16 +899,16 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `handleSuccess` | Function binding | [apps/web/src/pages/Costing.tsx:197](../../apps/web/src/pages/Costing.tsx) |
 | `handleItemSaved` | Function binding | [apps/web/src/pages/Costing.tsx:202](../../apps/web/src/pages/Costing.tsx) |
 | `handleDeleteEntry` | Function binding | [apps/web/src/pages/Costing.tsx:206](../../apps/web/src/pages/Costing.tsx) |
-| `TabPanelProps` | InterfaceDeclaration | [apps/web/src/pages/CostingEntry.tsx:22](../../apps/web/src/pages/CostingEntry.tsx) |
-| `TabPanel` | FunctionDeclaration | [apps/web/src/pages/CostingEntry.tsx:28](../../apps/web/src/pages/CostingEntry.tsx) |
-| `CostingEntryProps` | InterfaceDeclaration | [apps/web/src/pages/CostingEntry.tsx:37](../../apps/web/src/pages/CostingEntry.tsx) |
-| `CostingEntry` | Function binding | [apps/web/src/pages/CostingEntry.tsx:46](../../apps/web/src/pages/CostingEntry.tsx) |
-| `handleDelete` | Function binding | [apps/web/src/pages/CostingEntry.tsx:231](../../apps/web/src/pages/CostingEntry.tsx) |
-| `handleEBSubmit` | Function binding | [apps/web/src/pages/CostingEntry.tsx:242](../../apps/web/src/pages/CostingEntry.tsx) |
+| `TabPanelProps` | InterfaceDeclaration | [apps/web/src/pages/CostingEntry.tsx:23](../../apps/web/src/pages/CostingEntry.tsx) |
+| `TabPanel` | FunctionDeclaration | [apps/web/src/pages/CostingEntry.tsx:29](../../apps/web/src/pages/CostingEntry.tsx) |
+| `CostingEntryProps` | InterfaceDeclaration | [apps/web/src/pages/CostingEntry.tsx:38](../../apps/web/src/pages/CostingEntry.tsx) |
+| `CostingEntry` | Function binding | [apps/web/src/pages/CostingEntry.tsx:47](../../apps/web/src/pages/CostingEntry.tsx) |
+| `handleDelete` | Function binding | [apps/web/src/pages/CostingEntry.tsx:232](../../apps/web/src/pages/CostingEntry.tsx) |
+| `handleEBSubmit` | Function binding | [apps/web/src/pages/CostingEntry.tsx:243](../../apps/web/src/pages/CostingEntry.tsx) |
 | `handleEmployeeSubmit` | Function binding | [apps/web/src/pages/CostingEntry.tsx:266](../../apps/web/src/pages/CostingEntry.tsx) |
-| `handlePackagingSubmit` | Function binding | [apps/web/src/pages/CostingEntry.tsx:298](../../apps/web/src/pages/CostingEntry.tsx) |
-| `handleMaintenanceSubmit` | Function binding | [apps/web/src/pages/CostingEntry.tsx:322](../../apps/web/src/pages/CostingEntry.tsx) |
-| `handleExpenseSubmit` | Function binding | [apps/web/src/pages/CostingEntry.tsx:345](../../apps/web/src/pages/CostingEntry.tsx) |
+| `handlePackagingSubmit` | Function binding | [apps/web/src/pages/CostingEntry.tsx:289](../../apps/web/src/pages/CostingEntry.tsx) |
+| `handleMaintenanceSubmit` | Function binding | [apps/web/src/pages/CostingEntry.tsx:312](../../apps/web/src/pages/CostingEntry.tsx) |
+| `handleExpenseSubmit` | Function binding | [apps/web/src/pages/CostingEntry.tsx:335](../../apps/web/src/pages/CostingEntry.tsx) |
 | `CostingKPI` | InterfaceDeclaration | [apps/web/src/pages/CostingHistory.tsx:40](../../apps/web/src/pages/CostingHistory.tsx) |
 | `CostingHistoryEntry` | InterfaceDeclaration | [apps/web/src/pages/CostingHistory.tsx:49](../../apps/web/src/pages/CostingHistory.tsx) |
 | `CostingHistory` | Function binding | [apps/web/src/pages/CostingHistory.tsx:59](../../apps/web/src/pages/CostingHistory.tsx) |
@@ -1143,6 +1150,13 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `buildBatchQRPayload` | FunctionDeclaration | [apps/web/src/utils/codeFormatters.ts:63](../../apps/web/src/utils/codeFormatters.ts) |
 | `buildBagQRPayload` | FunctionDeclaration | [apps/web/src/utils/codeFormatters.ts:85](../../apps/web/src/utils/codeFormatters.ts) |
 | `buildOutwardQRPayload` | FunctionDeclaration | [apps/web/src/utils/codeFormatters.ts:107](../../apps/web/src/utils/codeFormatters.ts) |
+| `toNumber` | Function binding | [apps/web/src/utils/costingPayloads.ts:8](../../apps/web/src/utils/costingPayloads.ts) |
+| `toShifts` | Function binding | [apps/web/src/utils/costingPayloads.ts:9](../../apps/web/src/utils/costingPayloads.ts) |
+| `ebCostPayload` | Function binding | [apps/web/src/utils/costingPayloads.ts:11](../../apps/web/src/utils/costingPayloads.ts) |
+| `employeeCostPayload` | Function binding | [apps/web/src/utils/costingPayloads.ts:18](../../apps/web/src/utils/costingPayloads.ts) |
+| `packagingCostPayload` | Function binding | [apps/web/src/utils/costingPayloads.ts:26](../../apps/web/src/utils/costingPayloads.ts) |
+| `maintenanceCostPayload` | Function binding | [apps/web/src/utils/costingPayloads.ts:32](../../apps/web/src/utils/costingPayloads.ts) |
+| `expensePayload` | Function binding | [apps/web/src/utils/costingPayloads.ts:42](../../apps/web/src/utils/costingPayloads.ts) |
 | `generateCSV` | Function binding | [apps/web/src/utils/csvGenerator.ts:6](../../apps/web/src/utils/csvGenerator.ts) |
 | `tableToCSV` | Function binding | [apps/web/src/utils/csvGenerator.ts:62](../../apps/web/src/utils/csvGenerator.ts) |
 | `DateRange` | InterfaceDeclaration | [apps/web/src/utils/dateFilters.ts:14](../../apps/web/src/utils/dateFilters.ts) |

@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, ConflictException } from '@nestjs/common';
 import { CostingService } from './costing.service';
 import { reconcileFinance } from '../../services/business-ledger';
 
@@ -15,6 +15,7 @@ describe('costing writes', () => {
         update: jest.fn(async ({ data }) => ({ ...unposted, ...data })),
         delete: jest.fn(),
         findUnique: jest.fn().mockResolvedValue(unposted),
+        count: jest.fn().mockResolvedValue(0),
       },
       journalEntry: { findUnique: jest.fn().mockResolvedValue(null) },
     };
@@ -74,6 +75,19 @@ describe('costing writes', () => {
       expect(data.details).toContain('kWh');
     });
 
+    it('works out the total of a computed category itself and ignores one sent by the caller', async () => {
+      await service.updateEntry('7', { totalCost: 999999 });
+      expect(tx.costingEntry.update.mock.calls[0][0].data.totalCost).toBeUndefined();
+      await service.updateEntry('7', { totalCost: 999999, unitsConsumed: 50, noOfShifts: 2 });
+      expect(tx.costingEntry.update.mock.calls[1][0].data.totalCost).toBe(800);
+    });
+
+    it('takes the entered total for categories that have no formula', async () => {
+      tx.costingEntry.findUnique.mockResolvedValue({ id: 8, category: 'Expense', details: 'Laptop (Asset)', totalCost: 0 });
+      await service.updateEntry('8', { totalCost: 45000 });
+      expect(tx.costingEntry.update.mock.calls[0][0].data).toMatchObject({ totalCost: 45000, details: 'Laptop (Asset)' });
+    });
+
     it('refuses to change a posted expense', async () => {
       tx.journalEntry.findUnique.mockResolvedValue({ id: 3 });
       await expect(service.updateEntry('7', { totalCost: 5 })).rejects.toThrow('Posted expenses');
@@ -120,6 +134,41 @@ describe('costing writes', () => {
       expect(tx.costingEntry.create).toHaveBeenCalledWith({
         data: expect.objectContaining({ category: 'Packaging', totalCost: 192.8, yarnProduced: 120.5, rate: 1.6, details: 'For 120.50 kg Yarn', createdBy: 'meena' }),
       });
+    });
+
+    it.each([
+      ['electricity', { category: 'EB (Electricity)', unitsConsumed: 120.5, ratePerUnit: 8, noOfShifts: 2 }, 1928],
+      ['electricity with one shift by default', { category: 'EB (Electricity)', unitsConsumed: 100, ratePerUnit: 7.35 }, 735],
+      ['labour with overtime', { category: 'Employee', workers: 12, rate: 550.5, noOfShifts: 3, overtime: 900 }, 20718],
+      ['labour without overtime', { category: 'Employee', workers: 4, rate: 600 }, 2400],
+      ['packaging rounded to paise', { category: 'Packaging', yarnProduced: 333.33, ratePerKg: 1.6 }, 533.33],
+    ])('computes %s on the server and ignores a total sent by the caller', async (_label, body, expected) => {
+      await service.addEntry({ date: '2026-10-12', totalCost: 1, amount: 2, ...body });
+      expect(tx.costingEntry.create.mock.calls[0][0].data.totalCost).toBe(expected);
+    });
+
+    it.each([
+      ['electricity without a rate', { category: 'EB (Electricity)', unitsConsumed: 10, totalCost: 80 }],
+      ['labour without workers', { category: 'Employee', rate: 600, totalCost: 2400 }],
+      ['packaging without production', { category: 'Packaging', ratePerKg: 1.6, totalCost: 100 }],
+      ['a calculated total beyond the limit', { category: 'EB (Electricity)', unitsConsumed: 1e9, ratePerUnit: 1e9 }],
+    ])('rejects %s instead of trusting an entered total', async (_label, body) => {
+      await expect(service.addEntry({ date: '2026-10-12', ...body })).rejects.toThrow(BadRequestException);
+      expect(tx.costingEntry.create).not.toHaveBeenCalled();
+    });
+
+    it('refuses a second entry for the same day and category, checking inside the transaction', async () => {
+      tx.costingEntry.count.mockResolvedValue(1);
+      await expect(service.addEntry({ date: '2026-10-12', category: 'Maintenance', totalCost: 500 })).rejects.toThrow(ConflictException);
+      expect(prisma.stockTransaction).toHaveBeenCalledTimes(1);
+      expect(tx.costingEntry.count).toHaveBeenCalledWith({ where: { category: 'Maintenance', date: { gte: expect.any(Date), lte: expect.any(Date) } } });
+      expect(tx.costingEntry.create).not.toHaveBeenCalled();
+    });
+
+    it('allows any number of general expenses on one day', async () => {
+      tx.costingEntry.count.mockResolvedValue(5);
+      await expect(service.addEntry({ date: '2026-10-12', category: 'Expense', title: 'Tea', amount: 120 })).resolves.toMatchObject({ totalCost: 120 });
+      expect(tx.costingEntry.count).not.toHaveBeenCalled();
     });
 
     it('falls back to amount for general expenses', async () => {

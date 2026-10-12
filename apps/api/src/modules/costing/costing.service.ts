@@ -1,13 +1,19 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../services/prisma.service';
+import { money } from '../../services/business-ledger';
+import { MAX_COST_VALUE } from './costing.dto';
 
 const POSTED_EXPENSE = 'Posted expenses retain their accounting history. Record an expense correction in Business flows.';
-// Float columns stay exact well past this; anything larger is a typing mistake.
-const MAX_COST_VALUE = 1_000_000_000;
+const DUPLICATE_ENTRY = 'An entry already exists for this date. Edit that entry instead.';
+// One entry per day for these; general expenses may repeat.
+const DAILY_CATEGORIES = ['EB (Electricity)', 'Employee', 'Packaging', 'Maintenance'];
+const COMPUTED_CATEGORIES = ['EB (Electricity)', 'Employee', 'Packaging'];
 
 /**
- * Costing bodies are untyped at the controller, so every number is checked here
- * before it can reach the ledger. Blank means "not supplied"; zero is a value.
+ * The controller validates request shapes; these checks are the last line
+ * before the ledger and also guard direct callers of the service.
+ * Blank means "not supplied"; zero is a value.
  */
 function costNumber(value: unknown, label: string, whole = false): number | undefined {
   if (value === undefined || value === null || value === '') return undefined;
@@ -43,17 +49,34 @@ function costFields(data: any) {
     title: costText(data.title, 'Title'),
   };
 }
+type CostFields = ReturnType<typeof costFields>;
 
-function costDetails(category: string, fields: ReturnType<typeof costFields>, fallback?: string) {
-  if (category === 'EB (Electricity)') return `${fields.unitsConsumed} kWh @ ₹${fields.ratePerUnit}/unit (${fields.noOfShifts} Shifts)`;
-  if (category === 'Employee') return `${fields.workers} Workers (${fields.noOfShifts} Shifts)`;
+function costDetails(category: string, fields: CostFields, fallback?: string) {
+  if (category === 'EB (Electricity)') return `${fields.unitsConsumed} kWh @ ₹${fields.ratePerUnit}/unit (${fields.noOfShifts || 1} Shifts)`;
+  if (category === 'Employee') return `${fields.workers} Workers (${fields.noOfShifts || 1} Shifts)`;
   if (category === 'Packaging') return `For ${fields.yarnProduced?.toFixed(2)} kg Yarn`;
   if (category === 'Maintenance') return fields.description;
   return fallback;
 }
 
+/**
+ * Electricity, labour and packaging totals follow from their inputs, so the
+ * server works them out and never accepts a total from the request for them.
+ * Returns undefined when the category carries an entered amount instead.
+ */
+function computedTotal(category: string, fields: CostFields, overtime = 0): number | undefined {
+  const shifts = fields.noOfShifts || 1;
+  let total: number | undefined;
+  if (category === 'EB (Electricity)' && fields.unitsConsumed !== undefined && fields.ratePerUnit !== undefined) total = fields.unitsConsumed * fields.ratePerUnit * shifts;
+  if (category === 'Employee' && fields.workers !== undefined && fields.rate !== undefined) total = fields.workers * fields.rate * shifts + overtime;
+  if (category === 'Packaging' && fields.yarnProduced !== undefined && fields.rate !== undefined) total = fields.yarnProduced * fields.rate;
+  if (total === undefined) return undefined;
+  if (total > MAX_COST_VALUE) throw new BadRequestException(`The calculated total exceeds ${MAX_COST_VALUE}. Check the quantities and rates.`);
+  return money(total);
+}
+
 function definedOnly<T extends object>(value: T): Partial<T> {
-  return Object.fromEntries(Object.entries(value).filter(([, v]) => v !== undefined)) as Partial<T>;
+  return Object.fromEntries(Object.entries(value).filter(([, v]) => v !== undefined && v !== null)) as Partial<T>;
 }
 
 @Injectable()
@@ -63,19 +86,25 @@ export class CostingService {
   async addEntry(data: any) {
     const date = costDate(data.date);
     if (!date) throw new BadRequestException('Enter a valid expense date');
-    const totalCost = costNumber(data.totalCost, 'Total cost') ?? costNumber(data.amount, 'Amount') ?? 0;
     const fields = costFields(data);
     const category = costText(data.category, 'Category') || 'Expense';
-    return this.prisma.stockTransaction(tx => tx.costingEntry.create({
-      data: {
-        date,
-        category,
-        details: costDetails(category, fields, costText(data.details, 'Details')),
-        totalCost,
-        ...fields,
-        createdBy: data.createdBy,
-      },
-    }));
+    const computed = computedTotal(category, fields, costNumber(data.overtime, 'Overtime'));
+    if (computed === undefined && COMPUTED_CATEGORIES.includes(category)) throw new BadRequestException(`Enter the quantities and rate for this ${category} entry`);
+    const totalCost = computed ?? costNumber(data.totalCost, 'Total cost') ?? costNumber(data.amount, 'Amount') ?? 0;
+    return this.prisma.stockTransaction(async tx => {
+      // Inside the transaction so two simultaneous saves cannot both pass the check.
+      if (DAILY_CATEGORIES.includes(category) && (await this.existsOn(tx, date, category))) throw new ConflictException(DUPLICATE_ENTRY);
+      return tx.costingEntry.create({
+        data: {
+          date,
+          category,
+          details: costDetails(category, fields, costText(data.details, 'Details')),
+          totalCost,
+          ...fields,
+          createdBy: data.createdBy,
+        },
+      });
+    });
   }
 
   async getCostEntries() {
@@ -104,20 +133,24 @@ export class CostingService {
     const numId = Number(id);
     if (!Number.isInteger(numId) || numId <= 0) return null;
     const date = costDate(data.date);
-    const totalCost = costNumber(data.totalCost, 'Total cost');
+    const enteredTotal = costNumber(data.totalCost, 'Total cost');
+    const overtime = costNumber(data.overtime, 'Overtime');
     const fields = costFields(data);
     const details = costText(data.details, 'Details');
+    const inputsChanged = overtime !== undefined || [fields.unitsConsumed, fields.ratePerUnit, fields.noOfShifts, fields.workers, fields.yarnProduced, fields.rate].some(v => v !== undefined);
     return this.prisma.stockTransaction(async tx => {
       const existing = await tx.costingEntry.findUnique({ where: { id: numId } });
       if (!existing) return null;
       if (await tx.journalEntry.findUnique({ where: { sourceKey: `COST:${numId}` } })) throw new BadRequestException(POSTED_EXPENSE);
-      // The stored category decides the wording; a request cannot relabel an entry.
+      // The stored category decides the wording and the arithmetic; a request cannot relabel an entry.
+      const merged = { ...definedOnly(existing), ...definedOnly(fields) } as CostFields;
+      const computed = COMPUTED_CATEGORIES.includes(existing.category);
       return tx.costingEntry.update({
         where: { id: numId },
         data: {
           date,
-          details: costDetails(existing.category, { ...existing, ...definedOnly(fields) } as ReturnType<typeof costFields>, details ?? existing.details ?? undefined),
-          totalCost,
+          details: costDetails(existing.category, merged, details ?? existing.details ?? undefined),
+          totalCost: computed ? (inputsChanged ? computedTotal(existing.category, merged, overtime) : undefined) : enteredTotal,
           ...fields,
           updatedBy: data.updatedBy,
         },
@@ -125,25 +158,13 @@ export class CostingService {
     });
   }
 
-  async exists(date: string, category: string): Promise<boolean> {
-    // date string YYYY-MM-DD
-    // Prisma stores DateTime.
-    // Comparison needs range or extraction.
-    // Simplest: findFirst where category AND date >= start AND date < end of day.
-    const d = new Date(date);
-    const start = new Date(d.setHours(0, 0, 0, 0));
-    const end = new Date(d.setHours(23, 59, 59, 999));
-
-    const count = await this.prisma.costingEntry.count({
-      where: {
-        category,
-        date: {
-          gte: start,
-          lte: end,
-        },
-      },
-    });
-    return count > 0;
+  /** Same calendar day in the server's time zone, matching how entries are listed. */
+  private async existsOn(tx: Prisma.TransactionClient, date: Date, category: string): Promise<boolean> {
+    const start = new Date(date);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(date);
+    end.setHours(23, 59, 59, 999);
+    return (await tx.costingEntry.count({ where: { category, date: { gte: start, lte: end } } })) > 0;
   }
 
   async getTotalCost(from?: string, to?: string): Promise<number> {

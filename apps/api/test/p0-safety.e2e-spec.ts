@@ -85,13 +85,14 @@ describe('P0 safety: public surfaces and the costing kill-switch', () => {
 
   describe('costing', () => {
     const expense = (body: object) => http().post('/costing/expense').set(modifier).send({ date: '2026-10-01', title: 'Probe', type: 'General', ...body });
+    // Zero-amount rows can no longer be created through the API; older databases may still hold them.
+    const legacyZeroEntry = (title: string) => app.get(PrismaService).costingEntry.create({ data: { date: new Date('2026-10-01'), category: 'Expense', title, totalCost: 0, details: `${title} (General)` } });
 
     it('cannot turn an unposted entry negative and take every posting down with it', async () => {
-      const zero = await expense({ amount: 0 }).expect(201);
-      expect(zero.body.totalCost).toBe(0);
+      const zero = await legacyZeroEntry('Legacy zero');
 
       for (const totalCost of [-1, '-0.01', 'abc', '12abc', 1e12, { $gt: 0 }])
-        await http().put(`/costing/${zero.body.id}`).set(modifier).send({ totalCost }).expect(400);
+        await http().put(`/costing/${zero.id}`).set(modifier).send({ totalCost }).expect(400);
 
       // The ledger still accepts postings, and a restart still reconciles cleanly.
       await expense({ amount: 250, title: 'Still posting' }).expect(201);
@@ -103,38 +104,71 @@ describe('P0 safety: public surfaces and the costing kill-switch', () => {
     });
 
     it('posts a corrected amount once and then treats the entry as closed', async () => {
-      const zero = await expense({ amount: 0, title: 'Fix me' }).expect(201);
-      const fixed = await http().put(`/costing/${zero.body.id}`).set(modifier).send({ totalCost: '120.50' }).expect(200);
+      const zero = await legacyZeroEntry('Fix me');
+      const fixed = await http().put(`/costing/${zero.id}`).set(modifier).send({ totalCost: 120.5 }).expect(200);
       expect(fixed.body).toMatchObject({ totalCost: 120.5, updatedBy: 'p0-modifier', category: 'Expense' });
-      const journal = await app.get(PrismaService).journalEntry.findUnique({ where: { sourceKey: `COST:${zero.body.id}` }, include: { lines: true } });
+      const journal = await app.get(PrismaService).journalEntry.findUnique({ where: { sourceKey: `COST:${zero.id}` }, include: { lines: true } });
       expect(journal?.lines.map(line => [line.account, line.debit, line.credit])).toEqual(
         expect.arrayContaining([['MANUFACTURING_OVERHEAD', 120.5, 0], ['ACCRUED_EXPENSES', 0, 120.5]]),
       );
-      await http().put(`/costing/${zero.body.id}`).set(modifier).send({ totalCost: 1 }).expect(400);
-      await http().delete(`/costing/${zero.body.id}`).set(admin).expect(400);
+      await http().put(`/costing/${zero.id}`).set(modifier).send({ totalCost: 1 }).expect(400);
+      await http().delete(`/costing/${zero.id}`).set(admin).expect(400);
     });
 
-    it('records the signed-in user, never a name sent by the caller', async () => {
-      const created = await expense({ amount: 10, title: 'Forged author', createdBy: 'someone-else' }).expect(201);
-      expect(created.body.createdBy).toBe('p0-modifier');
-      const zero = await expense({ amount: 0, title: 'Forged editor' }).expect(201);
-      const updated = await http().put(`/costing/${zero.body.id}`).set(modifier)
-        .send({ title: 'Edited', createdBy: 'someone-else', updatedBy: 'someone-else', category: 'Employee' }).expect(200);
-      expect(updated.body).toMatchObject({ updatedBy: 'p0-modifier', createdBy: 'p0-modifier', category: 'Expense', title: 'Edited' });
+    it('records the signed-in user and rejects a name, category or unknown field sent by the caller', async () => {
+      const created = await expense({ amount: 10, title: 'Honest author' }).expect(201);
+      expect(created.body).toMatchObject({ createdBy: 'p0-modifier', category: 'Expense', totalCost: 10 });
+      for (const forged of [{ createdBy: 'someone-else' }, { category: 'EB (Electricity)' }, { totalCost: 1 }, { id: 1 }])
+        await expense({ amount: 10, ...forged }).expect(400);
+
+      const zero = await legacyZeroEntry('Forged editor');
+      for (const forged of [{ createdBy: 'someone-else' }, { updatedBy: 'someone-else' }, { category: 'Employee' }])
+        await http().put(`/costing/${zero.id}`).set(modifier).send({ title: 'Edited', ...forged }).expect(400);
+      const updated = await http().put(`/costing/${zero.id}`).set(modifier).send({ title: 'Edited' }).expect(200);
+      expect(updated.body).toMatchObject({ updatedBy: 'p0-modifier', category: 'Expense', title: 'Edited' });
     });
 
-    it('rejects negative and malformed amounts on create', async () => {
+    it('rejects zero, negative, text and malformed input on create', async () => {
+      await expense({ amount: 0 }).expect(400);
       await expense({ amount: -5 }).expect(400);
-      await expense({ amount: -5, totalCost: '' }).expect(400);
+      await expense({ amount: '250' }).expect(400);
       await expense({ amount: 10, date: 'soon' }).expect(400);
-      await http().post('/costing/eb').set(modifier).send({ date: '2026-10-02', unitsConsumed: -100, ratePerUnit: 8, noOfShifts: 1, totalCost: 800 }).expect(400);
+      await expense({ amount: 10, title: '' }).expect(400);
+      await http().post('/costing/eb').set(modifier).send({ date: '2026-10-02', unitsConsumed: -100, ratePerUnit: 8 }).expect(400);
+      await http().post('/costing/eb').set(modifier).send({ date: '2026-10-02', unitsConsumed: 100, ratePerUnit: 8, noOfShifts: 1.5 }).expect(400);
+      await http().post('/costing/employee').set(modifier).send({ date: '2026-10-02', workers: 2.5, rate: 600 }).expect(400);
+      await http().post('/costing/packaging').set(modifier).send({ date: '2026-10-02', ratePerKg: 1.6 }).expect(400);
+      await http().post('/costing/maintenance').set(modifier).send({ date: '2026-10-02', totalCost: 0 }).expect(400);
+    });
+
+    it('works out electricity, labour and packaging totals on the server', async () => {
+      // A total supplied by the caller is not an accepted field for these categories.
+      await http().post('/costing/eb').set(modifier).send({ date: '2026-10-04', unitsConsumed: 100, ratePerUnit: 8, totalCost: 1 }).expect(400);
+
+      const eb = await http().post('/costing/eb').set(modifier).send({ date: '2026-10-04', unitsConsumed: 120.5, ratePerUnit: 8, noOfShifts: 2 }).expect(201);
+      expect(eb.body).toMatchObject({ category: 'EB (Electricity)', totalCost: 1928, details: '120.5 kWh @ ₹8/unit (2 Shifts)', createdBy: 'p0-modifier' });
+
+      const labour = await http().post('/costing/employee').set(modifier).send({ date: '2026-10-04', workers: 12, rate: 550.5, noOfShifts: 3, overtime: 900 }).expect(201);
+      expect(labour.body).toMatchObject({ category: 'Employee', totalCost: 20718, workers: 12, rate: 550.5 });
+
+      const packaging = await http().post('/costing/packaging').set(modifier).send({ date: '2026-10-04', yarnProduced: 333.33, ratePerKg: 1.6 }).expect(201);
+      expect(packaging.body).toMatchObject({ category: 'Packaging', totalCost: 533.33, details: 'For 333.33 kg Yarn' });
+
+      const maintenance = await http().post('/costing/maintenance').set(modifier).send({ date: '2026-10-04', totalCost: 5000, ratePerKg: 4 }).expect(201);
+      expect(maintenance.body).toMatchObject({ category: 'Maintenance', totalCost: 5000 });
+
+      const journal = await app.get(PrismaService).journalEntry.findUnique({ where: { sourceKey: `COST:${labour.body.id}` }, include: { lines: true } });
+      expect(journal?.lines.find(line => line.account === 'MANUFACTURING_OVERHEAD')?.debit).toBe(20718);
     });
 
     it('answers a second daily entry with 409 and a missing entry with 404', async () => {
-      const eb = { date: '2026-10-03', unitsConsumed: '100', ratePerUnit: '8', noOfShifts: '1', totalCost: 800 };
+      const eb = { date: '2026-10-03', unitsConsumed: 100, ratePerUnit: 8, noOfShifts: 1 };
       const first = await http().post('/costing/eb').set(modifier).send(eb).expect(201);
       expect(first.body).toMatchObject({ category: 'EB (Electricity)', details: '100 kWh @ ₹8/unit (1 Shifts)', totalCost: 800 });
       await http().post('/costing/eb').set(modifier).send(eb).expect(409);
+      // General expenses may repeat on one day.
+      await expense({ amount: 5, title: 'Tea' }).expect(201);
+      await expense({ amount: 5, title: 'Tea' }).expect(201);
       await http().put('/costing/999999').set(modifier).send({ totalCost: 5 }).expect(404);
       await http().put('/costing/abc').set(modifier).send({ totalCost: 5 }).expect(404);
       await http().delete('/costing/999999').set(admin).expect(404);
