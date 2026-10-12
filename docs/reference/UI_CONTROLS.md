@@ -470,33 +470,33 @@ Generated from every active-source UI file. Labels expressed in code are preserv
 | [apps/web/src/pages/Costing.tsx:462](../../apps/web/src/pages/Costing.tsx) | IconButton | <DeleteIcon fontSize="small" /> | `{() => handleDeleteEntry(entry.id)}` |
 | [apps/web/src/pages/Costing.tsx:491](../../apps/web/src/pages/Costing.tsx) | IconButton | <DeleteIcon fontSize="small" /> | `{() => handleDeleteEntry(entry.id)}` |
 | [apps/web/src/pages/Costing.tsx:528](../../apps/web/src/pages/Costing.tsx) | IconButton | <CloseIcon /> | `{() => setOpenWizard(false)}` |
-| [apps/web/src/pages/CostingEntry.tsx:376](../../apps/web/src/pages/CostingEntry.tsx) | Tabs | <Tab label="EB (Electricity)" /> <Tab label="Employee Costs" /> <Tab label="Packaging" /> <Tab label="Maintenance" /> <Tab label="Expenses" /> | `{(_, newValue) => setTabValue(newValue)}` |
-| [apps/web/src/pages/CostingEntry.tsx:377](../../apps/web/src/pages/CostingEntry.tsx) | Tab | EB (Electricity) | `` |
-| [apps/web/src/pages/CostingEntry.tsx:378](../../apps/web/src/pages/CostingEntry.tsx) | Tab | Employee Costs | `` |
-| [apps/web/src/pages/CostingEntry.tsx:379](../../apps/web/src/pages/CostingEntry.tsx) | Tab | Packaging | `` |
-| [apps/web/src/pages/CostingEntry.tsx:380](../../apps/web/src/pages/CostingEntry.tsx) | Tab | Maintenance | `` |
-| [apps/web/src/pages/CostingEntry.tsx:381](../../apps/web/src/pages/CostingEntry.tsx) | Tab | Expenses | `` |
-| [apps/web/src/pages/CostingEntry.tsx:388](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Units Consumed (kWh) | `{(e) => setEbData({ ...ebData, unitsConsumed: e.target.value })}` |
-| [apps/web/src/pages/CostingEntry.tsx:394](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Rate per Unit (₹) | `{(e) => setEbData({ ...ebData, ratePerUnit: e.target.value })}` |
-| [apps/web/src/pages/CostingEntry.tsx:400](../../apps/web/src/pages/CostingEntry.tsx) | TextField | No of Shifts | `{(e) => setEbData({ ...ebData, noOfShifts: e.target.value })}` |
-| [apps/web/src/pages/CostingEntry.tsx:410](../../apps/web/src/pages/CostingEntry.tsx) | Button | {existingEB ? 'Update' : 'Save'} | `{handleEBSubmit}` |
-| [apps/web/src/pages/CostingEntry.tsx:419](../../apps/web/src/pages/CostingEntry.tsx) | TextField | No of Shifts | `{(e) => setEmployeeData({ ...employeeData, noOfShifts: e.target.value })}` |
-| [apps/web/src/pages/CostingEntry.tsx:429](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Workers | `{(e) => setEmployeeData({ ...employeeData, workers: e.target.value })}` |
-| [apps/web/src/pages/CostingEntry.tsx:430](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Rate (₹/day) | `{(e) => setEmployeeData({ ...employeeData, workerRate: e.target.value })}` |
-| [apps/web/src/pages/CostingEntry.tsx:432](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Overtime Cost (₹) | `{(e) => setEmployeeData({ ...employeeData, overtime: e.target.value })}` |
-| [apps/web/src/pages/CostingEntry.tsx:437](../../apps/web/src/pages/CostingEntry.tsx) | Button | {existingEmployee ? 'Update' : 'Save'} | `{handleEmployeeSubmit}` |
-| [apps/web/src/pages/CostingEntry.tsx:467](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Package Rate (₹/kg) | `{(e) => setPackagingData({ ...packagingData, rate: e.target.value })}` |
-| [apps/web/src/pages/CostingEntry.tsx:480](../../apps/web/src/pages/CostingEntry.tsx) | Button | {existingPackaging ? 'Update' : 'Confirm'} | `{handlePackagingSubmit}` |
-| [apps/web/src/pages/CostingEntry.tsx:516](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Rate (₹/kg) | `{(e) => setMaintenanceData({ ...maintenanceData, ratePerKg: e.target.value })}` |
-| [apps/web/src/pages/CostingEntry.tsx:517](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Description | `{(e) => setMaintenanceData({ ...maintenanceData, description: e.target.value })}` |
-| [apps/web/src/pages/CostingEntry.tsx:519](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Total Cost | `{(e) => setMaintenanceData({ ...maintenanceData, totalCost: e.target.value })}` |
-| [apps/web/src/pages/CostingEntry.tsx:520](../../apps/web/src/pages/CostingEntry.tsx) | Button | Apply Formula | `{() => setMaintenanceData({ ...maintenanceData, totalCost: maintenanceFormulaCost.toFixed(2) })}` |
-| [apps/web/src/pages/CostingEntry.tsx:523](../../apps/web/src/pages/CostingEntry.tsx) | Button | {existingMaintenance ? 'Update' : 'Save'} | `{handleMaintenanceSubmit}` |
-| [apps/web/src/pages/CostingEntry.tsx:531](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Title | `{(e) => setExpenseData({ ...expenseData, title: e.target.value })}` |
-| [apps/web/src/pages/CostingEntry.tsx:532](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Type | `{(e) => setExpenseData({ ...expenseData, type: e.target.value })}` |
-| [apps/web/src/pages/CostingEntry.tsx:536](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Amount | `{(e) => setExpenseData({ ...expenseData, amount: e.target.value })}` |
-| [apps/web/src/pages/CostingEntry.tsx:537](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Description | `{(e) => setExpenseData({ ...expenseData, description: e.target.value })}` |
-| [apps/web/src/pages/CostingEntry.tsx:538](../../apps/web/src/pages/CostingEntry.tsx) | Button | Save Expense | `{handleExpenseSubmit}` |
+| [apps/web/src/pages/CostingEntry.tsx:379](../../apps/web/src/pages/CostingEntry.tsx) | Tabs | <Tab label="EB (Electricity)" /> <Tab label="Employee Costs" /> <Tab label="Packaging" /> <Tab label="Maintenance" /> <Tab label="Expenses" /> | `{(_, newValue) => setTabValue(newValue)}` |
+| [apps/web/src/pages/CostingEntry.tsx:380](../../apps/web/src/pages/CostingEntry.tsx) | Tab | EB (Electricity) | `` |
+| [apps/web/src/pages/CostingEntry.tsx:381](../../apps/web/src/pages/CostingEntry.tsx) | Tab | Employee Costs | `` |
+| [apps/web/src/pages/CostingEntry.tsx:382](../../apps/web/src/pages/CostingEntry.tsx) | Tab | Packaging | `` |
+| [apps/web/src/pages/CostingEntry.tsx:383](../../apps/web/src/pages/CostingEntry.tsx) | Tab | Maintenance | `` |
+| [apps/web/src/pages/CostingEntry.tsx:384](../../apps/web/src/pages/CostingEntry.tsx) | Tab | Expenses | `` |
+| [apps/web/src/pages/CostingEntry.tsx:391](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Units Consumed (kWh) | `{(e) => setEbData({ ...ebData, unitsConsumed: e.target.value })}` |
+| [apps/web/src/pages/CostingEntry.tsx:397](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Rate per Unit (₹) | `{(e) => setEbData({ ...ebData, ratePerUnit: e.target.value })}` |
+| [apps/web/src/pages/CostingEntry.tsx:403](../../apps/web/src/pages/CostingEntry.tsx) | TextField | No of Shifts | `{(e) => setEbData({ ...ebData, noOfShifts: e.target.value })}` |
+| [apps/web/src/pages/CostingEntry.tsx:413](../../apps/web/src/pages/CostingEntry.tsx) | Button | {existingEB ? (existingEB.posted ? 'Posted' : 'Update') : 'Save'} | `{handleEBSubmit}` |
+| [apps/web/src/pages/CostingEntry.tsx:422](../../apps/web/src/pages/CostingEntry.tsx) | TextField | No of Shifts | `{(e) => setEmployeeData({ ...employeeData, noOfShifts: e.target.value })}` |
+| [apps/web/src/pages/CostingEntry.tsx:432](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Workers | `{(e) => setEmployeeData({ ...employeeData, workers: e.target.value })}` |
+| [apps/web/src/pages/CostingEntry.tsx:433](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Rate (₹/day) | `{(e) => setEmployeeData({ ...employeeData, workerRate: e.target.value })}` |
+| [apps/web/src/pages/CostingEntry.tsx:435](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Overtime Cost (₹) | `{(e) => setEmployeeData({ ...employeeData, overtime: e.target.value })}` |
+| [apps/web/src/pages/CostingEntry.tsx:440](../../apps/web/src/pages/CostingEntry.tsx) | Button | {existingEmployee ? (existingEmployee.posted ? 'Posted' : 'Update') : 'Save'} | `{handleEmployeeSubmit}` |
+| [apps/web/src/pages/CostingEntry.tsx:470](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Package Rate (₹/kg) | `{(e) => setPackagingData({ ...packagingData, rate: e.target.value })}` |
+| [apps/web/src/pages/CostingEntry.tsx:483](../../apps/web/src/pages/CostingEntry.tsx) | Button | {existingPackaging ? (existingPackaging.posted ? 'Posted' : 'Update') : 'Confirm'} | `{handlePackagingSubmit}` |
+| [apps/web/src/pages/CostingEntry.tsx:519](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Rate (₹/kg) | `{(e) => setMaintenanceData({ ...maintenanceData, ratePerKg: e.target.value })}` |
+| [apps/web/src/pages/CostingEntry.tsx:520](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Description | `{(e) => setMaintenanceData({ ...maintenanceData, description: e.target.value })}` |
+| [apps/web/src/pages/CostingEntry.tsx:522](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Total Cost | `{(e) => setMaintenanceData({ ...maintenanceData, totalCost: e.target.value })}` |
+| [apps/web/src/pages/CostingEntry.tsx:523](../../apps/web/src/pages/CostingEntry.tsx) | Button | Apply Formula | `{() => setMaintenanceData({ ...maintenanceData, totalCost: maintenanceFormulaCost.toFixed(2) })}` |
+| [apps/web/src/pages/CostingEntry.tsx:526](../../apps/web/src/pages/CostingEntry.tsx) | Button | {existingMaintenance ? (existingMaintenance.posted ? 'Posted' : 'Update') : 'Save'} | `{handleMaintenanceSubmit}` |
+| [apps/web/src/pages/CostingEntry.tsx:534](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Title | `{(e) => setExpenseData({ ...expenseData, title: e.target.value })}` |
+| [apps/web/src/pages/CostingEntry.tsx:535](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Type | `{(e) => setExpenseData({ ...expenseData, type: e.target.value })}` |
+| [apps/web/src/pages/CostingEntry.tsx:539](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Amount | `{(e) => setExpenseData({ ...expenseData, amount: e.target.value })}` |
+| [apps/web/src/pages/CostingEntry.tsx:540](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Description | `{(e) => setExpenseData({ ...expenseData, description: e.target.value })}` |
+| [apps/web/src/pages/CostingEntry.tsx:541](../../apps/web/src/pages/CostingEntry.tsx) | Button | Save Expense | `{handleExpenseSubmit}` |
 | [apps/web/src/pages/CostingHistory.tsx:192](../../apps/web/src/pages/CostingHistory.tsx) | Select | Date Filter | `{handleDateFilterChange}` |
 | [apps/web/src/pages/CostingHistory.tsx:232](../../apps/web/src/pages/CostingHistory.tsx) | Tabs | <Tab label="Dashboard" /> <Tab label="History" /> | `{(_, newValue) => setViewTab(newValue)}` |
 | [apps/web/src/pages/CostingHistory.tsx:233](../../apps/web/src/pages/CostingHistory.tsx) | Tab | Dashboard | `` |

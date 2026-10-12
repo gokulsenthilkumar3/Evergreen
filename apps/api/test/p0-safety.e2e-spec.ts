@@ -205,6 +205,15 @@ describe('P0 safety: public surfaces and the costing kill-switch', () => {
       expect(await prisma.journalEntry.count({ where: { sourceKey: `COST:${first.id}` } })).toBe(1);
     });
 
+    it('marks posted entries in the list so the client can stop offering edits', async () => {
+      const zero = await legacyZeroEntry('Unposted');
+      const paid = await expense({ amount: 30, title: 'Posted' }).expect(201);
+      const list = await http().get('/costing/entries').set(viewer).expect(200);
+      const byId = new Map<number, { posted: boolean }>(list.body.map((entry: { id: number; posted: boolean }) => [entry.id, entry]));
+      expect(byId.get(paid.body.id)?.posted).toBe(true);
+      expect(byId.get(zero.id)?.posted).toBe(false);
+    });
+
     it('keeps viewers out of every costing write', async () => {
       await http().post('/costing/expense').set(viewer).send({ date: '2026-10-01', title: 'No', amount: 1 }).expect(403);
       await http().put('/costing/1').set(viewer).send({ totalCost: 1 }).expect(403);

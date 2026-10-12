@@ -107,10 +107,14 @@ export class CostingService {
     });
   }
 
+  /** `posted` entries are in the accounts and can only be changed by a correction. */
   async getCostEntries() {
-    return this.prisma.costingEntry.findMany({
-      orderBy: { date: 'desc' },
-    });
+    const [entries, journals] = await Promise.all([
+      this.prisma.costingEntry.findMany({ orderBy: { date: 'desc' } }),
+      this.prisma.journalEntry.findMany({ where: { sourceKey: { startsWith: 'COST:' } }, select: { sourceKey: true } }),
+    ]);
+    const posted = new Set(journals.map(journal => journal.sourceKey));
+    return entries.map(entry => ({ ...entry, posted: posted.has(`COST:${entry.id}`) }));
   }
 
   async deleteEntry(id: string) {

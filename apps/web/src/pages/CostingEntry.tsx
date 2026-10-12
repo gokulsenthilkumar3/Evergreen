@@ -228,6 +228,9 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
         }
     }, [existingMaintenance, settings]);
 
+    // A posted entry is in the accounts; the API refuses to change it, so the form does not offer to.
+    const POSTED_NOTE = 'This entry is posted to the accounts and cannot be edited here. To change it, record a correction under Business flows → Correct a posted expense.';
+
     // Handlers
     const handleDelete = async (id: string) => {
         if (!await confirmDialog({ title: 'Delete Cost Entry', message: 'Are you sure you want to remove this cost entry?', severity: 'error', confirmText: 'Delete', cancelText: 'Cancel' })) return;
@@ -384,7 +387,7 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
                 {/* EB Tab */}
                 <TabPanel value={tabValue} index={0}>
                     <Box sx={{ maxWidth: 600, mx: 'auto', display: 'flex', flexDirection: 'column', gap: 2 }}>
-                        {existingEB && <Alert severity="info">Entry exists. You can edit.</Alert>}
+                        {existingEB && <Alert severity="info">{existingEB.posted ? POSTED_NOTE : 'Entry exists. You can edit.'}</Alert>}
                         <TextField
                             label="Units Consumed (kWh)"
                             type="number"
@@ -407,7 +410,7 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
                             <Typography variant="h6" align="center">Total: ₹{ebTotal.toFixed(2)}</Typography>
                         </Paper>
                         <Box sx={{ display: 'flex', gap: 2 }}>
-                            <Button variant="contained" fullWidth startIcon={<SaveIcon />} onClick={handleEBSubmit}>{existingEB ? 'Update' : 'Save'}</Button>
+                            <Button variant="contained" fullWidth startIcon={<SaveIcon />} onClick={handleEBSubmit} disabled={Boolean(existingEB?.posted)}>{existingEB ? (existingEB.posted ? 'Posted' : 'Update') : 'Save'}</Button>
                         </Box>
                     </Box>
                 </TabPanel>
@@ -415,7 +418,7 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
                 {/* Employee Tab */}
                 <TabPanel value={tabValue} index={1}>
                     <Box sx={{ maxWidth: 600, mx: 'auto', display: 'flex', flexDirection: 'column', gap: 2 }}>
-                        {existingEmployee && <Alert severity="info">Entry exists.</Alert>}
+                        {existingEmployee && <Alert severity="info">{existingEmployee.posted ? POSTED_NOTE : 'Entry exists.'}</Alert>}
                         <TextField
                             select
                             label="No of Shifts"
@@ -434,7 +437,7 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
                             <Typography variant="h6" align="center">Total: ₹{employeeTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Typography>
                         </Paper>
                         <Box sx={{ display: 'flex', gap: 2 }}>
-                            <Button variant="contained" fullWidth startIcon={<SaveIcon />} onClick={handleEmployeeSubmit}>{existingEmployee ? 'Update' : 'Save'}</Button>
+                            <Button variant="contained" fullWidth startIcon={<SaveIcon />} onClick={handleEmployeeSubmit} disabled={Boolean(existingEmployee?.posted)}>{existingEmployee ? (existingEmployee.posted ? 'Posted' : 'Update') : 'Save'}</Button>
                         </Box>
                     </Box>
                 </TabPanel>
@@ -442,7 +445,7 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
                 {/* Packaging Tab */}
                 <TabPanel value={tabValue} index={2}>
                     <Box sx={{ maxWidth: 600, mx: 'auto', textAlign: 'center' }}>
-                        {existingPackaging && <Alert severity="info" sx={{ mb: 2 }}>This entry already exists and can be updated.</Alert>}
+                        {existingPackaging && <Alert severity="info" sx={{ mb: 2 }}>{existingPackaging.posted ? POSTED_NOTE : 'This entry already exists and can be updated.'}</Alert>}
                         {yarnProduction <= 0 && (
                             <Alert severity="warning" sx={{ mb: 2, textAlign: 'left' }}>
                                 No production data found for this date. Please ensure production entries are recorded before calculating packaging costs.
@@ -477,7 +480,7 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
                         </Box>
                         <Typography variant="h4" color="primary" sx={{ mb: 3 }}>₹{packageCost.toFixed(2)}</Typography>
                         <Box sx={{ display: 'flex', gap: 2 }}>
-                            <Button variant="contained" fullWidth startIcon={<SaveIcon />} onClick={handlePackagingSubmit}>{existingPackaging ? 'Update' : 'Confirm'}</Button>
+                            <Button variant="contained" fullWidth startIcon={<SaveIcon />} onClick={handlePackagingSubmit} disabled={Boolean(existingPackaging?.posted)}>{existingPackaging ? (existingPackaging.posted ? 'Posted' : 'Update') : 'Confirm'}</Button>
                         </Box>
                     </Box>
                 </TabPanel>
@@ -485,7 +488,7 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
                 {/* Maintenance Tab */}
                 <TabPanel value={tabValue} index={3}>
                     <Box sx={{ maxWidth: 600, mx: 'auto', display: 'flex', flexDirection: 'column', gap: 2 }}>
-                        {existingMaintenance && <Alert severity="info" sx={{ mb: 2 }}>This entry already exists and can be updated.</Alert>}
+                        {existingMaintenance && <Alert severity="info" sx={{ mb: 2 }}>{existingMaintenance.posted ? POSTED_NOTE : 'This entry already exists and can be updated.'}</Alert>}
                         {yarnProduction <= 0 && (
                             <Alert severity="warning" sx={{ mb: 2 }}>
                                 No production data found for this date. formula-based maintenance costs cannot be auto-calculated.
@@ -520,7 +523,7 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
                             <Button variant="outlined" onClick={() => setMaintenanceData({ ...maintenanceData, totalCost: maintenanceFormulaCost.toFixed(2) })}>Apply Formula</Button>
                         </Box>
                         <Box sx={{ display: 'flex', gap: 2 }}>
-                            <Button variant="contained" fullWidth startIcon={<SaveIcon />} onClick={handleMaintenanceSubmit}>{existingMaintenance ? 'Update' : 'Save'}</Button>
+                            <Button variant="contained" fullWidth startIcon={<SaveIcon />} onClick={handleMaintenanceSubmit} disabled={Boolean(existingMaintenance?.posted)}>{existingMaintenance ? (existingMaintenance.posted ? 'Posted' : 'Update') : 'Save'}</Button>
                         </Box>
                     </Box>
                 </TabPanel>
