@@ -1,0 +1,149 @@
+import { Test } from '@nestjs/testing';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
+import request from 'supertest';
+import { randomBytes } from 'crypto';
+import { mkdtempSync } from 'fs';
+import { tmpdir } from 'os';
+import { join, resolve } from 'path';
+import { execFileSync } from 'child_process';
+import { AppModule } from '../src/app.module';
+import { EmailService } from '../src/modules/auth/email.service';
+import { PrismaService } from '../src/services/prisma.service';
+
+// Real HTTP, guards, Prisma and migrations against a throwaway database.
+describe('P0 safety: public surfaces and the costing kill-switch', () => {
+  let app: INestApplication;
+  let admin: { Authorization: string };
+  let modifier: { Authorization: string };
+  let viewer: { Authorization: string };
+  const password = randomBytes(24).toString('hex');
+  const workspace = resolve(__dirname, '../../..');
+  const http = () => request(app.getHttpServer());
+  const signIn = async (username: string) => {
+    const login = await http().post('/auth/login').send({ username, password }).expect(201);
+    return { Authorization: `Bearer ${login.body.access_token}` };
+  };
+
+  beforeAll(async () => {
+    const directory = mkdtempSync(join(tmpdir(), 'evergreen-p0-'));
+    process.env.NODE_ENV = 'test';
+    process.env.DATABASE_URL = `file:${join(directory, 'test.db').replace(/\\/g, '/')}`;
+    process.env.JWT_SECRET = randomBytes(48).toString('hex');
+    process.env.BOOTSTRAP_ADMIN_USERNAME = 'p0-admin';
+    process.env.BOOTSTRAP_ADMIN_EMAIL = 'p0-admin@example.test';
+    process.env.BOOTSTRAP_ADMIN_PASSWORD = password;
+    process.env.SMTP_HOST = '';
+    process.env.DAILY_SUMMARY_EMAIL = '';
+    execFileSync(process.execPath, [resolve(workspace, 'node_modules/prisma/build/index.js'), 'migrate', 'deploy', '--schema', resolve(workspace, 'packages/database/prisma/schema.prisma')], { env: process.env, stdio: 'pipe' });
+    const module = await Test.createTestingModule({ imports: [AppModule] })
+      .overrideProvider(EmailService).useValue({ sendLoginNotification: async () => undefined }).compile();
+    app = module.createNestApplication();
+    app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }));
+    await app.init();
+    admin = await signIn('p0-admin');
+    await http().post('/users').set(admin).send({ username: 'p0-modifier', email: 'p0-modifier@example.test', password, role: 'MODIFIER' }).expect(201);
+    await http().post('/users').set(admin).send({ username: 'p0-viewer', email: 'p0-viewer@example.test', password, role: 'VIEWER' }).expect(201);
+    modifier = await signIn('p0-modifier');
+    viewer = await signIn('p0-viewer');
+  }, 90000);
+
+  afterAll(async () => { if (app) await app.close(); });
+
+  describe('health and status', () => {
+    it.each(['/', '/health'])('GET %s is public and discloses only the probe fields', async path => {
+      const res = await http().get(path).expect(200);
+      expect(Object.keys(res.body).sort()).toEqual(['database', 'service', 'status', 'timestamp']);
+      expect(res.body).toMatchObject({ service: 'evergreen-api', status: 'ok', database: true });
+    });
+
+    it('ignores a token in the query string instead of acting on it', async () => {
+      const token = admin.Authorization.slice(7);
+      const res = await http().get(`/health?token=${token}&ui=1`).set('Accept', 'text/html').expect(200);
+      expect(res.type).toBe('application/json');
+      expect(res.text).not.toContain(token);
+    });
+
+    it('keeps operational detail behind an administrator sign-in', async () => {
+      await http().get('/status').expect(401);
+      await http().get('/status').set(viewer).expect(403);
+      await http().get('/status').set(modifier).expect(403);
+      const res = await http().get('/status').set(admin).expect(200);
+      expect(res.body).toMatchObject({ status: 'ok', startupIssue: null });
+      expect(res.body.processors.length).toBeGreaterThan(0);
+      expect(JSON.stringify(res.body)).not.toMatch(/5555|Database Studio/);
+    });
+
+    it.each([
+      ['get', '/api/status'],
+      ['get', '/api/processors/sync'],
+      ['post', '/api/processors/sync'],
+      ['post', '/api/processors/ping/db-engine'],
+    ] as const)('%s %s no longer exists', async (method, path) => {
+      await http()[method](path).set(admin).expect(404);
+    });
+  });
+
+  describe('costing', () => {
+    const expense = (body: object) => http().post('/costing/expense').set(modifier).send({ date: '2026-10-01', title: 'Probe', type: 'General', ...body });
+
+    it('cannot turn an unposted entry negative and take every posting down with it', async () => {
+      const zero = await expense({ amount: 0 }).expect(201);
+      expect(zero.body.totalCost).toBe(0);
+
+      for (const totalCost of [-1, '-0.01', 'abc', '12abc', 1e12, { $gt: 0 }])
+        await http().put(`/costing/${zero.body.id}`).set(modifier).send({ totalCost }).expect(400);
+
+      // The ledger still accepts postings, and a restart still reconciles cleanly.
+      await expense({ amount: 250, title: 'Still posting' }).expect(201);
+      const prisma = app.get(PrismaService);
+      await expect(prisma.onModuleInit()).resolves.toBeUndefined();
+      expect(prisma.getStartupIssue()).toBeNull();
+      const health = await http().get('/health').expect(200);
+      expect(health.body.status).toBe('ok');
+    });
+
+    it('posts a corrected amount once and then treats the entry as closed', async () => {
+      const zero = await expense({ amount: 0, title: 'Fix me' }).expect(201);
+      const fixed = await http().put(`/costing/${zero.body.id}`).set(modifier).send({ totalCost: '120.50' }).expect(200);
+      expect(fixed.body).toMatchObject({ totalCost: 120.5, updatedBy: 'p0-modifier', category: 'Expense' });
+      const journal = await app.get(PrismaService).journalEntry.findUnique({ where: { sourceKey: `COST:${zero.body.id}` }, include: { lines: true } });
+      expect(journal?.lines.map(line => [line.account, line.debit, line.credit])).toEqual(
+        expect.arrayContaining([['MANUFACTURING_OVERHEAD', 120.5, 0], ['ACCRUED_EXPENSES', 0, 120.5]]),
+      );
+      await http().put(`/costing/${zero.body.id}`).set(modifier).send({ totalCost: 1 }).expect(400);
+      await http().delete(`/costing/${zero.body.id}`).set(admin).expect(400);
+    });
+
+    it('records the signed-in user, never a name sent by the caller', async () => {
+      const created = await expense({ amount: 10, title: 'Forged author', createdBy: 'someone-else' }).expect(201);
+      expect(created.body.createdBy).toBe('p0-modifier');
+      const zero = await expense({ amount: 0, title: 'Forged editor' }).expect(201);
+      const updated = await http().put(`/costing/${zero.body.id}`).set(modifier)
+        .send({ title: 'Edited', createdBy: 'someone-else', updatedBy: 'someone-else', category: 'Employee' }).expect(200);
+      expect(updated.body).toMatchObject({ updatedBy: 'p0-modifier', createdBy: 'p0-modifier', category: 'Expense', title: 'Edited' });
+    });
+
+    it('rejects negative and malformed amounts on create', async () => {
+      await expense({ amount: -5 }).expect(400);
+      await expense({ amount: -5, totalCost: '' }).expect(400);
+      await expense({ amount: 10, date: 'soon' }).expect(400);
+      await http().post('/costing/eb').set(modifier).send({ date: '2026-10-02', unitsConsumed: -100, ratePerUnit: 8, noOfShifts: 1, totalCost: 800 }).expect(400);
+    });
+
+    it('answers a second daily entry with 409 and a missing entry with 404', async () => {
+      const eb = { date: '2026-10-03', unitsConsumed: '100', ratePerUnit: '8', noOfShifts: '1', totalCost: 800 };
+      const first = await http().post('/costing/eb').set(modifier).send(eb).expect(201);
+      expect(first.body).toMatchObject({ category: 'EB (Electricity)', details: '100 kWh @ ₹8/unit (1 Shifts)', totalCost: 800 });
+      await http().post('/costing/eb').set(modifier).send(eb).expect(409);
+      await http().put('/costing/999999').set(modifier).send({ totalCost: 5 }).expect(404);
+      await http().put('/costing/abc').set(modifier).send({ totalCost: 5 }).expect(404);
+      await http().delete('/costing/999999').set(admin).expect(404);
+    });
+
+    it('keeps viewers out of every costing write', async () => {
+      await http().post('/costing/expense').set(viewer).send({ date: '2026-10-01', title: 'No', amount: 1 }).expect(403);
+      await http().put('/costing/1').set(viewer).send({ totalCost: 1 }).expect(403);
+      await http().delete('/costing/1').set(modifier).expect(403);
+    });
+  });
+});
