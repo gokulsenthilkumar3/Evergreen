@@ -55,23 +55,42 @@ describe('PrismaService reconciliation state', () => {
   it('re-checks after a successful posting and clears a startup issue the posting repaired', async () => {
     transaction.mockRejectedValueOnce(badRecord as never);
     await service.onModuleInit();
-    transaction.mockResolvedValueOnce('posted' as never).mockResolvedValueOnce([] as never);
+    // While an issue is recorded a posting is: leading-reconcile probe, the posting, the full re-check.
+    transaction.mockResolvedValueOnce(undefined as never).mockResolvedValueOnce('posted' as never).mockResolvedValueOnce([] as never);
 
     await expect(service.stockTransaction(async () => 'posted')).resolves.toBe('posted');
 
-    expect(transaction).toHaveBeenCalledTimes(3);
+    expect(transaction).toHaveBeenCalledTimes(4);
     expect(service.getStartupIssue()).toBeNull();
+  });
+
+  it('still posts when the leading reconcile is what fails, so the posting can be the repair', async () => {
+    transaction.mockRejectedValueOnce(badRecord as never);
+    await service.onModuleInit();
+    transaction.mockRejectedValueOnce(badRecord as never).mockResolvedValueOnce('repaired' as never).mockResolvedValueOnce([] as never);
+
+    await expect(service.stockTransaction(async () => 'repaired')).resolves.toBe('repaired');
+    expect(service.getStartupIssue()).toBeNull();
+  });
+
+  it('fails the posting when the leading reconcile hits a schema or connectivity error', async () => {
+    transaction.mockRejectedValueOnce(badRecord as never);
+    await service.onModuleInit();
+    transaction.mockRejectedValueOnce(new Error('database is locked') as never);
+
+    await expect(service.stockTransaction(async () => 'posted')).rejects.toThrow('database is locked');
+    expect(transaction).toHaveBeenCalledTimes(2);
   });
 
   it('keeps reporting the startup issue while the full check still fails, without failing the committed posting', async () => {
     transaction.mockRejectedValueOnce(badRecord as never);
     await service.onModuleInit();
-    transaction.mockResolvedValueOnce('posted' as never).mockRejectedValueOnce(new BadRequestException('Still short of lot stock.') as never);
+    transaction.mockResolvedValueOnce(undefined as never).mockResolvedValueOnce('posted' as never).mockRejectedValueOnce(new BadRequestException('Still short of lot stock.') as never);
 
     await expect(service.stockTransaction(async () => 'posted')).resolves.toBe('posted');
     expect(service.getStartupIssue()).toBe('Still short of lot stock.');
 
-    transaction.mockResolvedValueOnce('posted' as never).mockRejectedValueOnce(new Error('database is locked') as never);
+    transaction.mockResolvedValueOnce(undefined as never).mockResolvedValueOnce('posted' as never).mockRejectedValueOnce(new Error('database is locked') as never);
     await expect(service.stockTransaction(async () => 'posted')).resolves.toBe('posted');
     expect(service.getStartupIssue()).toBe('Still short of lot stock.');
   });

@@ -107,6 +107,17 @@ export async function guardLots(tx: Tx, affectedItems?: Set<number>) {
 }
 
 /**
+ * Why a stored payroll row cannot be journaled, or null when it can. The amount
+ * rules are the ones journal() enforces on the three lines the row projects to.
+ */
+export function payrollProblem(pay: { month: string; basicPay: number; overtime: number; deductions: number; netPay: number }): string | null {
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(pay.month)) return 'has an invalid month (it must use YYYY-MM)';
+  if ([pay.basicPay, pay.overtime, pay.deductions, pay.netPay].some(amount => !Number.isFinite(amount) || amount < 0)) return 'has a pay amount that is negative or not a number';
+  if (money(money(pay.basicPay + pay.overtime) - money(pay.netPay) - money(pay.deductions)) !== 0) return 'has pay amounts that do not balance (net pay must equal basic pay plus overtime minus deductions)';
+  return null;
+}
+
+/**
  * Source keys make accounting projection safe to repeat. Historic records retain their dates.
  *
  * Returns the stored cost and payroll rows that cannot be posted. Their write
@@ -127,8 +138,10 @@ export async function reconcileFinance(tx: Tx): Promise<string[]> {
   const payroll = await tx.payrollEntry.findMany();
   for (const pay of payroll) {
     const date = pay.createdAt;
-    if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(pay.month)) {
-      issues.push(`Payroll entry #${pay.id} has an invalid month and is not posted; it must use YYYY-MM.`);
+    const problem = payrollProblem(pay);
+    if (problem) {
+      // A row journaled while it was still valid keeps that entry and is not reported as unposted.
+      if (!(await tx.journalEntry.findUnique({ where: { sourceKey: `PAYROLL:${pay.id}` } }))) issues.push(`Payroll entry #${pay.id} ${problem} and is not posted. Correct or delete it through /hr/payroll/${pay.id}.`);
       continue;
     }
     await journal(tx, `PAYROLL:${pay.id}`, date, `Payroll ${pay.month}`, pay.createdBy || 'SYSTEM', [{ account: 'MANUFACTURING_OVERHEAD', debit: money(pay.basicPay + pay.overtime) }, { account: 'PAYROLL_PAYABLE', party: `STAFF:${pay.staffId}`, credit: pay.netPay }, { account: 'PAYROLL_DEDUCTIONS', credit: pay.deductions }]);

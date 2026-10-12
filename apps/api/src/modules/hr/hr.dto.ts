@@ -89,3 +89,36 @@ export class CreatePayrollEntryDto {
   @Min(0)
   netPay!: number;
 }
+
+/** Correction of a stored payroll row that has not been posted to the accounts. */
+export class UpdatePayrollEntryDto {
+  @IsOptional()
+  @IsString()
+  @Matches(/^\d{4}-(0[1-9]|1[0-2])$/)
+  month?: string;
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Max(31)
+  daysWorked?: number;
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  overtimeHrs?: number;
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  basicPay?: number;
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  overtime?: number;
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  deductions?: number;
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  netPay?: number;
+}
