@@ -1140,6 +1140,7 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `WarehouseMovement` | InterfaceDeclaration | [apps/web/src/pages/yarn/WarehouseManagement.tsx:47](../../apps/web/src/pages/yarn/WarehouseManagement.tsx) |
 | `WarehouseManagement` | Function binding | [apps/web/src/pages/yarn/WarehouseManagement.tsx:75](../../apps/web/src/pages/yarn/WarehouseManagement.tsx) |
 | `IntrinsicElements` | InterfaceDeclaration | [apps/web/src/r3f-support.d.ts:5](../../apps/web/src/r3f-support.d.ts) |
+| `Matchers` | InterfaceDeclaration | [apps/web/src/test/setup.ts:9](../../apps/web/src/test/setup.ts) |
 | `ThemePalette` | InterfaceDeclaration | [apps/web/src/theme.ts:5](../../apps/web/src/theme.ts) |
 | `getTheme` | Function binding | [apps/web/src/theme.ts:63](../../apps/web/src/theme.ts) |
 | `setMutationListener` | Function binding | [apps/web/src/utils/api.ts:4](../../apps/web/src/utils/api.ts) |
@@ -1223,32 +1224,6 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `CompanyProfile` | InterfaceDeclaration | [packages/types/company-profile.ts:7](../../packages/types/company-profile.ts) |
 | `normalizeCompanyProfile` | FunctionDeclaration | [packages/types/company-profile.ts:48](../../packages/types/company-profile.ts) |
 | `isCompanyPageVisible` | FunctionDeclaration | [packages/types/company-profile.ts:66](../../packages/types/company-profile.ts) |
-| `CompanyProfile` | InterfaceDeclaration | [packages/types/dist/company-profile.d.ts:6](../../packages/types/dist/company-profile.d.ts) |
-| `normalizeCompanyProfile` | FunctionDeclaration | [packages/types/dist/company-profile.d.ts:12](../../packages/types/dist/company-profile.d.ts) |
-| `isCompanyPageVisible` | FunctionDeclaration | [packages/types/dist/company-profile.d.ts:19](../../packages/types/dist/company-profile.d.ts) |
-| `GeoCoordinate` | InterfaceDeclaration | [packages/types/dist/geo.d.ts:5](../../packages/types/dist/geo.d.ts) |
-| `GeoFence` | InterfaceDeclaration | [packages/types/dist/geo.d.ts:12](../../packages/types/dist/geo.d.ts) |
-| `GeoVerificationRecord` | InterfaceDeclaration | [packages/types/dist/geo.d.ts:18](../../packages/types/dist/geo.d.ts) |
-| `calculateHaversineDistance` | FunctionDeclaration | [packages/types/dist/geo.d.ts:30](../../packages/types/dist/geo.d.ts) |
-| `isWithinGeoFence` | FunctionDeclaration | [packages/types/dist/geo.d.ts:34](../../packages/types/dist/geo.d.ts) |
-| `verifyGeoLocation` | FunctionDeclaration | [packages/types/dist/geo.d.ts:39](../../packages/types/dist/geo.d.ts) |
-| `ApiError` | InterfaceDeclaration | [packages/types/dist/index.d.ts:9](../../packages/types/dist/index.d.ts) |
-| `SelectOption` | InterfaceDeclaration | [packages/types/dist/index.d.ts:14](../../packages/types/dist/index.d.ts) |
-| `AuthenticatedUser` | InterfaceDeclaration | [packages/types/dist/index.d.ts:18](../../packages/types/dist/index.d.ts) |
-| `SessionRecord` | InterfaceDeclaration | [packages/types/dist/index.d.ts:25](../../packages/types/dist/index.d.ts) |
-| `StockMovement` | InterfaceDeclaration | [packages/types/dist/index.d.ts:36](../../packages/types/dist/index.d.ts) |
-| `InvoiceLine` | InterfaceDeclaration | [packages/types/dist/index.d.ts:47](../../packages/types/dist/index.d.ts) |
-| `InvoiceTotals` | InterfaceDeclaration | [packages/types/dist/index.d.ts:57](../../packages/types/dist/index.d.ts) |
-| `CustomerSummary` | InterfaceDeclaration | [packages/types/dist/index.d.ts:67](../../packages/types/dist/index.d.ts) |
-| `TodayDashboardSummary` | InterfaceDeclaration | [packages/types/dist/index.d.ts:75](../../packages/types/dist/index.d.ts) |
-| `ImportInput` | InterfaceDeclaration | [packages/types/dist/migration.d.ts:7](../../packages/types/dist/migration.d.ts) |
-| `ImportIssue` | InterfaceDeclaration | [packages/types/dist/migration.d.ts:13](../../packages/types/dist/migration.d.ts) |
-| `ImportPreview` | InterfaceDeclaration | [packages/types/dist/migration.d.ts:18](../../packages/types/dist/migration.d.ts) |
-| `parseImportCsv` | FunctionDeclaration | [packages/types/dist/migration.d.ts:24](../../packages/types/dist/migration.d.ts) |
-| `previewImport` | FunctionDeclaration | [packages/types/dist/migration.d.ts:28](../../packages/types/dist/migration.d.ts) |
-| `WeighbridgeMeasurement` | InterfaceDeclaration | [packages/types/dist/weighbridge.d.ts:2](../../packages/types/dist/weighbridge.d.ts) |
-| `WeighbridgeReceipt` | InterfaceDeclaration | [packages/types/dist/weighbridge.d.ts:10](../../packages/types/dist/weighbridge.d.ts) |
-| `calculateWeighbridge` | FunctionDeclaration | [packages/types/dist/weighbridge.d.ts:21](../../packages/types/dist/weighbridge.d.ts) |
 | `GeoCoordinate` | InterfaceDeclaration | [packages/types/geo.ts:6](../../packages/types/geo.ts) |
 | `GeoFence` | InterfaceDeclaration | [packages/types/geo.ts:14](../../packages/types/geo.ts) |
 | `GeoVerificationRecord` | InterfaceDeclaration | [packages/types/geo.ts:21](../../packages/types/geo.ts) |

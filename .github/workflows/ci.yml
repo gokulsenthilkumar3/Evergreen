@@ -23,6 +23,16 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci
+      - name: Require a single installed copy of react and react-dom
+        run: |
+          for pkg in react react-dom; do
+            copies=$(npm ls "$pkg" --all --parseable | sort -u)
+            if [ "$(echo "$copies" | grep -c .)" -ne 1 ]; then
+              echo "::error::Expected exactly one installed copy of $pkg, found:"
+              echo "$copies"
+              exit 1
+            fi
+          done
       - name: Verify migrations, types, tests, and production builds
         run: npm run verify
       - name: Lint tenant API
