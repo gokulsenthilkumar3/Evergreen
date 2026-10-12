@@ -159,10 +159,7 @@ export class NotFoundExceptionFilter implements ExceptionFilter {
     <div class="url-chip">${safeMethod} ${escapeHtml(safePath)}</div>
     <p>The requested endpoint does not exist on this server. No internal system details or credentials were exposed.</p>
     <div class="actions">
-      <a href="/health" class="btn btn-primary">🌱 API Health Hub</a>
-      <a href="/api/docs" class="btn btn-ghost">📑 API Documentation</a>
-      <a href="http://localhost:4000" class="btn btn-ghost">🌐 Web App UI</a>
-      <a href="http://localhost:5555" class="btn btn-ghost">🗄️ Database Studio</a>
+      <a href="/health" class="btn btn-primary">🌱 API health</a>
     </div>
   </div>
 </body>

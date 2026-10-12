@@ -12,21 +12,21 @@ Sign in to the company installation. VIEWER reads records, MODIFIER performs ord
 
 ## Tabs
 
-- Company Info ([apps/web/src/pages/Settings.tsx:254](../../../apps/web/src/pages/Settings.tsx))
-- System Settings ([apps/web/src/pages/Settings.tsx:255](../../../apps/web/src/pages/Settings.tsx))
-- Rates & Defaults ([apps/web/src/pages/Settings.tsx:256](../../../apps/web/src/pages/Settings.tsx))
-- Appearance ([apps/web/src/pages/Settings.tsx:257](../../../apps/web/src/pages/Settings.tsx))
-- Audit Logs ([apps/web/src/pages/Settings.tsx:258](../../../apps/web/src/pages/Settings.tsx))
+- Company Info ([apps/web/src/pages/Settings.tsx:258](../../../apps/web/src/pages/Settings.tsx))
+- System Settings ([apps/web/src/pages/Settings.tsx:259](../../../apps/web/src/pages/Settings.tsx))
+- Rates & Defaults ([apps/web/src/pages/Settings.tsx:260](../../../apps/web/src/pages/Settings.tsx))
+- Appearance ([apps/web/src/pages/Settings.tsx:261](../../../apps/web/src/pages/Settings.tsx))
+- Audit Logs ([apps/web/src/pages/Settings.tsx:262](../../../apps/web/src/pages/Settings.tsx))
 
 ## Actions
 
 | Control / label | Handler | Source |
 | --- | --- | --- |
-| Upload Logo <input type="file" hidden accept="image/*" onChange={(e) => { const file = e.target.files?.[0]; if (file) { if (file.size > 500 * 1024) { // 500KB limit toast.error(ERROR_MESSAGES.FILE_TOO_LARGE('500KB')); return; } const reader = new FileReader(); reader.onloadend = () => { setCompanySe | `delegated / form submit` | [apps/web/src/pages/Settings.tsx:290](../../../apps/web/src/pages/Settings.tsx) |
-| Remove | `{() => setCompanySettings({ ...companySettings, logo: '' })}` | [apps/web/src/pages/Settings.tsx:319](../../../apps/web/src/pages/Settings.tsx) |
-| Save Company Info | `{handleSaveCompanySettings}` | [apps/web/src/pages/Settings.tsx:380](../../../apps/web/src/pages/Settings.tsx) |
-| Save System Settings | `{handleSaveSystemSettings}` | [apps/web/src/pages/Settings.tsx:482](../../../apps/web/src/pages/Settings.tsx) |
-| Save Operational Rates | `{handleSaveRates}` | [apps/web/src/pages/Settings.tsx:547](../../../apps/web/src/pages/Settings.tsx) |
+| Upload Logo <input type="file" hidden accept="image/*" onChange={(e) => { const file = e.target.files?.[0]; if (file) { if (file.size > 500 * 1024) { // 500KB limit toast.error(ERROR_MESSAGES.FILE_TOO_LARGE('500KB')); return; } const reader = new FileReader(); reader.onloadend = () => { setCompanySe | `delegated / form submit` | [apps/web/src/pages/Settings.tsx:294](../../../apps/web/src/pages/Settings.tsx) |
+| Remove | `{() => setCompanySettings({ ...companySettings, logo: '' })}` | [apps/web/src/pages/Settings.tsx:323](../../../apps/web/src/pages/Settings.tsx) |
+| Save Company Info | `{handleSaveCompanySettings}` | [apps/web/src/pages/Settings.tsx:384](../../../apps/web/src/pages/Settings.tsx) |
+| Save System Settings | `{handleSaveSystemSettings}` | [apps/web/src/pages/Settings.tsx:486](../../../apps/web/src/pages/Settings.tsx) |
+| Save Operational Rates | `{handleSaveRates}` | [apps/web/src/pages/Settings.tsx:551](../../../apps/web/src/pages/Settings.tsx) |
 
 ## API calls
 
@@ -34,9 +34,9 @@ Paths are relative to the client API base (`/api/backend` by default in the brow
 
 | Method | Path expression | Source |
 | --- | --- | --- |
-| GET | `/settings` | [apps/web/src/pages/Settings.tsx:81](../../../apps/web/src/pages/Settings.tsx) |
-| GET | `/auth/me` | [apps/web/src/pages/Settings.tsx:88](../../../apps/web/src/pages/Settings.tsx) |
-| PUT | `/settings` | [apps/web/src/pages/Settings.tsx:152](../../../apps/web/src/pages/Settings.tsx) |
+| GET | `/settings` | [apps/web/src/pages/Settings.tsx:85](../../../apps/web/src/pages/Settings.tsx) |
+| GET | `/auth/me` | [apps/web/src/pages/Settings.tsx:92](../../../apps/web/src/pages/Settings.tsx) |
+| PUT | `/settings` | [apps/web/src/pages/Settings.tsx:156](../../../apps/web/src/pages/Settings.tsx) |
 
 ## Composed behavior
 
@@ -45,6 +45,7 @@ Paths are relative to the client API base (`/api/backend` by default in the brow
 - [validators.ts](../../../apps/web/src/utils/validators.ts)
 - [theme.ts](../../../apps/web/src/theme.ts)
 - [Logs.tsx](../../../apps/web/src/pages/Logs.tsx)
+- [navigation.ts](../../../apps/web/src/utils/navigation.ts)
 
 ## Verify the workflow
 

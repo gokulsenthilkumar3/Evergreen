@@ -445,7 +445,6 @@ const UnifiedWorkspace: React.FC<UnifiedWorkspaceProps> = ({ onNavigate, profile
       </Paper>
       <Stack direction="row" spacing={2} useFlexGap sx={{ mt: 2, flexWrap: 'wrap' }}>
         <Button onClick={() => onNavigate('tutorial')}>Workflow documentation</Button>
-        <Button href="/health" target="_blank" rel="noopener">Health hub</Button>
         <Button href="/api/docs" target="_blank" rel="noopener">API explorer (development)</Button>
       </Stack>
     </Box>

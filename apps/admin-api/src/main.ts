@@ -72,16 +72,9 @@ async function bootstrap() {
       .setTitle('EverGreen One API')
       .setDescription(`EverGreen One operational API & Developer Explorer.
 
-<div style="display: flex; gap: 10px; margin: 16px 0; flex-wrap: wrap;">
-  <a href="http://localhost:4000/" target="_blank" style="display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:#f8fafc; padding:8px 16px; border-radius:8px; text-decoration:none; font-weight:600; font-size:0.85rem;">🌐 Web App (4000)</a>
-  <a href="http://localhost:5555/" target="_blank" style="display:inline-flex; align-items:center; gap:6px; background:linear-gradient(135deg, rgba(16,185,129,0.2), rgba(5,150,105,0.2)); border:1px solid #10b981; color:#34d399; padding:8px 16px; border-radius:8px; text-decoration:none; font-weight:600; font-size:0.85rem;">🗄️ Database Studio (5555)</a>
-  <a href="/health" target="_blank" style="display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:#f8fafc; padding:8px 16px; border-radius:8px; text-decoration:none; font-weight:600; font-size:0.85rem;">🌱 API Health Hub (/health)</a>
-  <a href="/api/docs-json" target="_blank" style="display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:#f8fafc; padding:8px 16px; border-radius:8px; text-decoration:none; font-weight:600; font-size:0.85rem;">📋 OpenAPI JSON Spec</a>
-</div>
-
 **Business Workflow:** Issuer Settings → Receive Raw Cotton → Production & Waste → Review Inventory → Commerce Orders & Invoices → Ledger & Payments.
 
-Authorize with a staff bearer token (**author** / **author123**) for protected endpoints. Try it out executes real operations against SQLite (\`packages/database/prisma/dev.db\`).`)
+Authorize with your own staff bearer token for protected endpoints. Try it out executes real operations against the configured database.`)
       .setVersion('1.0.0')
       .addServer('/api/backend', 'Public web proxy (recommended: port 4000)')
       .addServer('/', 'Direct API connection (port 4301)')
@@ -90,7 +83,7 @@ Authorize with a staff bearer token (**author** / **author123**) for protected e
         scheme: 'bearer',
         bearerFormat: 'JWT',
         name: 'Authorization',
-        description: 'Enter your EverGreen JWT bearer token (e.g. from author login)',
+        description: 'Enter your EverGreen JWT bearer token',
         in: 'header',
       })
       .addTag('Health & Processors', 'System health checks, live processor status, telemetry & synchronization')

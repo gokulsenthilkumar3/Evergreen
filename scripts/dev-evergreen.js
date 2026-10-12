@@ -85,7 +85,11 @@ async function main() {
         const response = await fetch(url, { signal: AbortSignal.timeout(1500) });
         if (response.ok) {
           const health = await response.json();
-          if (health.service === 'evergreen-api' && health.status === 'ok') return true;
+          if (health.service === 'evergreen-api') {
+            // "degraded" with the database up means a business record needs correcting; the app must stay reachable to fix it.
+            if (health.status !== 'ok') console.warn(`${label} is up but reports a data problem. Sign in as an administrator and open /api/backend/status for details.`);
+            return true;
+          }
           console.error(`${label} reached a service other than EverGreen.`);
           stop(1);
           return false;

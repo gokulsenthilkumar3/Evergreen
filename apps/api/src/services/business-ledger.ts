@@ -106,17 +106,31 @@ export async function guardLots(tx: Tx, affectedItems?: Set<number>) {
   }
 }
 
-/** Source keys make accounting projection safe to repeat. Historic records retain their dates. */
-export async function reconcileFinance(tx: Tx) {
+/**
+ * Source keys make accounting projection safe to repeat. Historic records retain their dates.
+ *
+ * Returns the stored cost and payroll rows that cannot be posted. Their write
+ * paths validate input, so such a row can only come from older data or a direct
+ * database edit; it is left out of the journal and reported instead of thrown,
+ * because throwing here would block every posting, including its own repair.
+ */
+export async function reconcileFinance(tx: Tx): Promise<string[]> {
+  const issues: string[] = [];
   const expenses = await tx.costingEntry.findMany();
   for (const expense of expenses) {
-    if (!Number.isFinite(expense.totalCost) || expense.totalCost < 0) throw new BadRequestException('Cost entries need valid non-negative amounts');
+    if (!Number.isFinite(expense.totalCost) || expense.totalCost < 0) {
+      issues.push(`Cost entry #${expense.id} (${expense.category}) has an invalid amount and is not posted. Correct or delete it in Costing.`);
+      continue;
+    }
     await journal(tx, `COST:${expense.id}`, expense.date, expense.title || expense.category, expense.createdBy || 'SYSTEM', [{ account: 'MANUFACTURING_OVERHEAD', debit: expense.totalCost }, { account: 'ACCRUED_EXPENSES', credit: expense.totalCost }]);
   }
   const payroll = await tx.payrollEntry.findMany();
   for (const pay of payroll) {
     const date = pay.createdAt;
-    if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(pay.month)) throw new BadRequestException('Payroll month must use YYYY-MM');
+    if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(pay.month)) {
+      issues.push(`Payroll entry #${pay.id} has an invalid month and is not posted; it must use YYYY-MM.`);
+      continue;
+    }
     await journal(tx, `PAYROLL:${pay.id}`, date, `Payroll ${pay.month}`, pay.createdBy || 'SYSTEM', [{ account: 'MANUFACTURING_OVERHEAD', debit: money(pay.basicPay + pay.overtime) }, { account: 'PAYROLL_PAYABLE', party: `STAFF:${pay.staffId}`, credit: pay.netPay }, { account: 'PAYROLL_DEDUCTIONS', credit: pay.deductions }]);
   }
   const productions = await tx.production.findMany();
@@ -148,6 +162,7 @@ export async function reconcileFinance(tx: Tx) {
       ]);
     }
   }
+  return issues;
 }
 
 /** Perpetual moving average; absent purchase costs stay visibly unvalued. */

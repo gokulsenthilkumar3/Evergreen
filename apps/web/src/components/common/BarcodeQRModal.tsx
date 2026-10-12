@@ -35,6 +35,95 @@ export interface BarcodeQRModalProps {
   millName?: string;
 }
 
+/** The print window is written as raw HTML, so text placed outside React's own output must be escaped. */
+export const escapeHtml = (value: unknown): string =>
+  String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch] as string);
+
+/**
+ * Full HTML for the print window. `labelHtml` must be markup React already rendered
+ * (and therefore escaped); `type` and `code` are plain text and are escaped here.
+ */
+export function labelPrintDocument(type: string, code: string, labelHtml: string): string {
+  return `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>${escapeHtml(type)} Label - ${escapeHtml(code)}</title>
+          <style>
+            @page {
+              size: 4in 3in;
+              margin: 0.15in;
+            }
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+              color: #111827;
+              margin: 0;
+              padding: 10px;
+              background: #fff;
+            }
+            .label-card {
+              border: 2px solid #000;
+              padding: 12px;
+              border-radius: 6px;
+              box-sizing: border-box;
+            }
+            .header {
+              display: flex;
+              justify-content: space-between;
+              border-bottom: 2px solid #000;
+              padding-bottom: 6px;
+              margin-bottom: 8px;
+            }
+            .title {
+              font-size: 16px;
+              font-weight: 800;
+              text-transform: uppercase;
+            }
+            .code {
+              font-size: 18px;
+              font-weight: 900;
+              font-family: monospace;
+              letter-spacing: 1px;
+            }
+            .content {
+              display: flex;
+              gap: 12px;
+              align-items: center;
+            }
+            .meta-table {
+              width: 100%;
+              font-size: 12px;
+              border-collapse: collapse;
+            }
+            .meta-table td {
+              padding: 3px 0;
+            }
+            .meta-label {
+              font-weight: bold;
+              color: #4b5563;
+              width: 40%;
+            }
+            .barcode-footer {
+              text-align: center;
+              margin-top: 8px;
+              border-top: 1px dashed #666;
+              padding-top: 6px;
+            }
+          </style>
+        </head>
+        <body>
+          ${labelHtml}
+          <script>
+            window.onload = function() {
+              window.print();
+              setTimeout(function() { window.close(); }, 500);
+            };
+          </script>
+        </body>
+      </html>
+    `;
+}
+
 /**
  * Procedural SVG 1D Barcode Generator (Code128-style visualization)
  */
@@ -114,84 +203,7 @@ export const BarcodeQRModal: React.FC<BarcodeQRModalProps> = ({
       return;
     }
 
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>${type} Label - ${code}</title>
-          <style>
-            @page {
-              size: 4in 3in;
-              margin: 0.15in;
-            }
-            body {
-              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-              color: #111827;
-              margin: 0;
-              padding: 10px;
-              background: #fff;
-            }
-            .label-card {
-              border: 2px solid #000;
-              padding: 12px;
-              border-radius: 6px;
-              box-sizing: border-box;
-            }
-            .header {
-              display: flex;
-              justify-content: space-between;
-              border-bottom: 2px solid #000;
-              padding-bottom: 6px;
-              margin-bottom: 8px;
-            }
-            .title {
-              font-size: 16px;
-              font-weight: 800;
-              text-transform: uppercase;
-            }
-            .code {
-              font-size: 18px;
-              font-weight: 900;
-              font-family: monospace;
-              letter-spacing: 1px;
-            }
-            .content {
-              display: flex;
-              gap: 12px;
-              align-items: center;
-            }
-            .meta-table {
-              width: 100%;
-              font-size: 12px;
-              border-collapse: collapse;
-            }
-            .meta-table td {
-              padding: 3px 0;
-            }
-            .meta-label {
-              font-weight: bold;
-              color: #4b5563;
-              width: 40%;
-            }
-            .barcode-footer {
-              text-align: center;
-              margin-top: 8px;
-              border-top: 1px dashed #666;
-              padding-top: 6px;
-            }
-          </style>
-        </head>
-        <body>
-          ${printAreaRef.current.innerHTML}
-          <script>
-            window.onload = function() {
-              window.print();
-              setTimeout(function() { window.close(); }, 500);
-            };
-          </script>
-        </body>
-      </html>
-    `);
+    printWindow.document.write(labelPrintDocument(type, code, printAreaRef.current.innerHTML));
     printWindow.document.close();
   };
 

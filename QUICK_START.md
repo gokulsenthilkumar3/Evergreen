@@ -16,12 +16,12 @@ Use the repository root for all commands. See [README.md](README.md) for environ
 | Provider Admin API Docs | http://localhost:4300/api/docs | Started by npm run dev:all |
 | Business workspace | http://localhost:4000/workspace | Staff login required |
 | Workflow documentation | http://localhost:4000/tutorial | Staff login required |
-| Health hub | http://localhost:4000/health | HTML in a browser |
-| Health telemetry | http://localhost:4000/health?format=json | JSON |
+| Health probe | http://localhost:4000/health | Public; returns only service, status and time |
+| Operational status | http://localhost:4000/api/backend/status | Administrator sign-in required |
 | API explorer | http://localhost:4000/api/docs | Development only |
-| Database Studio | http://localhost:5555/ | Start separately with npm run db:studio |
+| Prisma Studio | http://127.0.0.1:5555/ | Development only; start separately with npm run db:studio |
 
-Database Studio binds to loopback and allows direct database editing. Use it as a local administrator tool, not as the normal business workflow. The internal API defaults to 127.0.0.1:4301. Browser requests use /api/backend. Set EVERGREEN_PUBLIC_PORT and EVERGREEN_API_PORT before launching to override ports.
+Prisma Studio binds to this machine only and edits the database directly, bypassing every business rule. Use it for development, never on a customer installation. The internal API defaults to 127.0.0.1:4301. Browser requests use /api/backend. Set EVERGREEN_PUBLIC_PORT and EVERGREEN_API_PORT before launching to override ports.
 
 ## Run the business flow
 

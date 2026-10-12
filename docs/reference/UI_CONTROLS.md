@@ -6,14 +6,14 @@ Generated from every active-source UI file. Labels expressed in code are preserv
 | --- | --- | --- | --- |
 | [apps/web/src/App.tsx:260](../../apps/web/src/App.tsx) | TextField | <TextField id="global-search-input" placeholder="Search invoices, stock, customers (Ctrl+K)..." fullWidth size="small" autoComplete="off" value={query} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleSearch(e.target.value)} onKeyDown={handleKeyDown} InputProps={{ startAdornment: ( <InputAdornment position="start"> {loading ? <SyncIcon fontSize="small" className="spin-icon" /> : <Search | `{(e: React.ChangeEvent<HTMLInputElement>) => handleSearch(e.target.value)}` |
 | [apps/web/src/App.tsx:278](../../apps/web/src/App.tsx) | IconButton | Clear search | `{() => { setQuery(''); setResults([]); }}` |
-| [apps/web/src/App.tsx:778](../../apps/web/src/App.tsx) | Button | Connect with Licensing Desk (WhatsApp) | `` |
-| [apps/web/src/App.tsx:789](../../apps/web/src/App.tsx) | Button | Call Support | `` |
-| [apps/web/src/App.tsx:815](../../apps/web/src/App.tsx) | IconButton | {item.icon} | `{() => setCurrentPage(item.page)}` |
-| [apps/web/src/App.tsx:852](../../apps/web/src/App.tsx) | IconButton | open drawer | `{handleDrawerToggle}` |
-| [apps/web/src/App.tsx:883](../../apps/web/src/App.tsx) | IconButton | Toggle language | `{toggleLanguage}` |
-| [apps/web/src/App.tsx:889](../../apps/web/src/App.tsx) | IconButton | <SyncIcon className={isSyncing ? 'spin-icon' : ''} /> | `{handleSync}` |
-| [apps/web/src/App.tsx:898](../../apps/web/src/App.tsx) | IconButton | {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />} | `{toggleTheme}` |
-| [apps/web/src/App.tsx:904](../../apps/web/src/App.tsx) | IconButton | <Avatar alt={user.name \|\| user.username} sx={{ bgcolor: 'primary.main', width: 36, height: 36, fontSize: '0.9rem', fontWeight: 'bold', border: '2px solid rgba(255,255,255,0.1)' }} > {(user.name \|\| user.username)?.charAt(0).toUpperCase()} </Avatar> | `{handleProfileClick}` |
+| [apps/web/src/App.tsx:781](../../apps/web/src/App.tsx) | Button | Connect with Licensing Desk (WhatsApp) | `` |
+| [apps/web/src/App.tsx:792](../../apps/web/src/App.tsx) | Button | Call Support | `` |
+| [apps/web/src/App.tsx:818](../../apps/web/src/App.tsx) | IconButton | {item.icon} | `{() => setCurrentPage(item.page)}` |
+| [apps/web/src/App.tsx:855](../../apps/web/src/App.tsx) | IconButton | open drawer | `{handleDrawerToggle}` |
+| [apps/web/src/App.tsx:886](../../apps/web/src/App.tsx) | IconButton | Toggle language | `{toggleLanguage}` |
+| [apps/web/src/App.tsx:892](../../apps/web/src/App.tsx) | IconButton | <SyncIcon className={isSyncing ? 'spin-icon' : ''} /> | `{handleSync}` |
+| [apps/web/src/App.tsx:901](../../apps/web/src/App.tsx) | IconButton | {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />} | `{toggleTheme}` |
+| [apps/web/src/App.tsx:907](../../apps/web/src/App.tsx) | IconButton | <Avatar alt={user.name \|\| user.username} sx={{ bgcolor: 'primary.main', width: 36, height: 36, fontSize: '0.9rem', fontWeight: 'bold', border: '2px solid rgba(255,255,255,0.1)' }} > {(user.name \|\| user.username)?.charAt(0).toUpperCase()} </Avatar> | `{handleProfileClick}` |
 | [apps/web/src/components/BusinessFlowGuide.tsx:25](../../apps/web/src/components/BusinessFlowGuide.tsx) | TextField | Search workflow guide | `{event => setSearch(event.target.value)}` |
 | [apps/web/src/components/BusinessFlowGuide.tsx:34](../../apps/web/src/components/BusinessFlowGuide.tsx) | Button | {step.action} | `{() => onNavigate(step.page)}` |
 | [apps/web/src/components/Login.tsx:325](../../apps/web/src/components/Login.tsx) | TextField | Username | `{(e) => { setUsername(e.target.value); if (error) setError(null); handleTyping(); }}` |
@@ -232,9 +232,9 @@ Generated from every active-source UI file. Labels expressed in code are preserv
 | [apps/web/src/components/command-center/WarRoomView.tsx:536](../../apps/web/src/components/command-center/WarRoomView.tsx) | Button | Open Quality Desk → | `{() => onNavigate?.('yarnquality')}` |
 | [apps/web/src/components/command-center/WarRoomView.tsx:582](../../apps/web/src/components/command-center/WarRoomView.tsx) | Button | Logistics & Challans → | `{() => onNavigate?.('outward')}` |
 | [apps/web/src/components/common/AccessibleDialog.tsx:119](../../apps/web/src/components/common/AccessibleDialog.tsx) | IconButton | Close dialog | `{onClose}` |
-| [apps/web/src/components/common/BarcodeQRModal.tsx:219](../../apps/web/src/components/common/BarcodeQRModal.tsx) | Button | <CloseIcon fontSize="small" /> | `{onClose}` |
-| [apps/web/src/components/common/BarcodeQRModal.tsx:309](../../apps/web/src/components/common/BarcodeQRModal.tsx) | Button | Copy Payload | `{handleCopy}` |
-| [apps/web/src/components/common/BarcodeQRModal.tsx:313](../../apps/web/src/components/common/BarcodeQRModal.tsx) | Button | Print Label (4"×3") | `{handlePrint}` |
+| [apps/web/src/components/common/BarcodeQRModal.tsx:231](../../apps/web/src/components/common/BarcodeQRModal.tsx) | Button | <CloseIcon fontSize="small" /> | `{onClose}` |
+| [apps/web/src/components/common/BarcodeQRModal.tsx:321](../../apps/web/src/components/common/BarcodeQRModal.tsx) | Button | Copy Payload | `{handleCopy}` |
+| [apps/web/src/components/common/BarcodeQRModal.tsx:325](../../apps/web/src/components/common/BarcodeQRModal.tsx) | Button | Print Label (4"×3") | `{handlePrint}` |
 | [apps/web/src/components/common/BatchCodeBuilder.tsx:39](../../apps/web/src/components/common/BatchCodeBuilder.tsx) | ToggleButton | Automatic | `` |
 | [apps/web/src/components/common/BatchCodeBuilder.tsx:40](../../apps/web/src/components/common/BatchCodeBuilder.tsx) | ToggleButton | Build code | `` |
 | [apps/web/src/components/common/BatchCodeBuilder.tsx:41](../../apps/web/src/components/common/BatchCodeBuilder.tsx) | ToggleButton | Manual ID | `` |
@@ -265,9 +265,7 @@ Generated from every active-source UI file. Labels expressed in code are preserv
 | [apps/web/src/components/common/ErrorBoundary.tsx:121](../../apps/web/src/components/common/ErrorBoundary.tsx) | Button | Go to Dashboard | `{() => window.location.href = '/'}` |
 | [apps/web/src/components/common/ExportButtons.tsx:87](../../apps/web/src/components/common/ExportButtons.tsx) | Button | {btn.label} | `{btn.onClick}` |
 | [apps/web/src/components/common/GlassDatePicker.tsx:203](../../apps/web/src/components/common/GlassDatePicker.tsx) | IconButton | {icon} | `{fn}` |
-| [apps/web/src/components/common/NotFound404.tsx:123](../../apps/web/src/components/common/NotFound404.tsx) | Button | Back to Dashboard | `{() => onNavigate('dashboard')}` |
-| [apps/web/src/components/common/NotFound404.tsx:138](../../apps/web/src/components/common/NotFound404.tsx) | Button | API Health Hub | `` |
-| [apps/web/src/components/common/NotFound404.tsx:147](../../apps/web/src/components/common/NotFound404.tsx) | Button | Database Studio | `` |
+| [apps/web/src/components/common/NotFound404.tsx:107](../../apps/web/src/components/common/NotFound404.tsx) | Button | Back to Dashboard | `{() => onNavigate('dashboard')}` |
 | [apps/web/src/components/common/ProductionTimingAlert.tsx:17](../../apps/web/src/components/common/ProductionTimingAlert.tsx) | Button | Edit start time | `{onEdit}` |
 | [apps/web/src/components/common/TablePagination.tsx:65](../../apps/web/src/components/common/TablePagination.tsx) | Select | Per Page | `{handlePageSizeChange}` |
 | [apps/web/src/components/common/ThemeNotificationBanner.tsx:122](../../apps/web/src/components/common/ThemeNotificationBanner.tsx) | Button | {actionLabel} | `{onAction}` |
@@ -472,33 +470,33 @@ Generated from every active-source UI file. Labels expressed in code are preserv
 | [apps/web/src/pages/Costing.tsx:462](../../apps/web/src/pages/Costing.tsx) | IconButton | <DeleteIcon fontSize="small" /> | `{() => handleDeleteEntry(entry.id)}` |
 | [apps/web/src/pages/Costing.tsx:491](../../apps/web/src/pages/Costing.tsx) | IconButton | <DeleteIcon fontSize="small" /> | `{() => handleDeleteEntry(entry.id)}` |
 | [apps/web/src/pages/Costing.tsx:528](../../apps/web/src/pages/Costing.tsx) | IconButton | <CloseIcon /> | `{() => setOpenWizard(false)}` |
-| [apps/web/src/pages/CostingEntry.tsx:386](../../apps/web/src/pages/CostingEntry.tsx) | Tabs | <Tab label="EB (Electricity)" /> <Tab label="Employee Costs" /> <Tab label="Packaging" /> <Tab label="Maintenance" /> <Tab label="Expenses" /> | `{(_, newValue) => setTabValue(newValue)}` |
-| [apps/web/src/pages/CostingEntry.tsx:387](../../apps/web/src/pages/CostingEntry.tsx) | Tab | EB (Electricity) | `` |
-| [apps/web/src/pages/CostingEntry.tsx:388](../../apps/web/src/pages/CostingEntry.tsx) | Tab | Employee Costs | `` |
-| [apps/web/src/pages/CostingEntry.tsx:389](../../apps/web/src/pages/CostingEntry.tsx) | Tab | Packaging | `` |
-| [apps/web/src/pages/CostingEntry.tsx:390](../../apps/web/src/pages/CostingEntry.tsx) | Tab | Maintenance | `` |
-| [apps/web/src/pages/CostingEntry.tsx:391](../../apps/web/src/pages/CostingEntry.tsx) | Tab | Expenses | `` |
-| [apps/web/src/pages/CostingEntry.tsx:398](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Units Consumed (kWh) | `{(e) => setEbData({ ...ebData, unitsConsumed: e.target.value })}` |
-| [apps/web/src/pages/CostingEntry.tsx:404](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Rate per Unit (₹) | `{(e) => setEbData({ ...ebData, ratePerUnit: e.target.value })}` |
-| [apps/web/src/pages/CostingEntry.tsx:410](../../apps/web/src/pages/CostingEntry.tsx) | TextField | No of Shifts | `{(e) => setEbData({ ...ebData, noOfShifts: e.target.value })}` |
-| [apps/web/src/pages/CostingEntry.tsx:420](../../apps/web/src/pages/CostingEntry.tsx) | Button | {existingEB ? 'Update' : 'Save'} | `{handleEBSubmit}` |
-| [apps/web/src/pages/CostingEntry.tsx:429](../../apps/web/src/pages/CostingEntry.tsx) | TextField | No of Shifts | `{(e) => setEmployeeData({ ...employeeData, noOfShifts: e.target.value })}` |
-| [apps/web/src/pages/CostingEntry.tsx:439](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Workers | `{(e) => setEmployeeData({ ...employeeData, workers: e.target.value })}` |
-| [apps/web/src/pages/CostingEntry.tsx:440](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Rate (₹/day) | `{(e) => setEmployeeData({ ...employeeData, workerRate: e.target.value })}` |
-| [apps/web/src/pages/CostingEntry.tsx:442](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Overtime Cost (₹) | `{(e) => setEmployeeData({ ...employeeData, overtime: e.target.value })}` |
-| [apps/web/src/pages/CostingEntry.tsx:447](../../apps/web/src/pages/CostingEntry.tsx) | Button | {existingEmployee ? 'Update' : 'Save'} | `{handleEmployeeSubmit}` |
-| [apps/web/src/pages/CostingEntry.tsx:477](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Package Rate (₹/kg) | `{(e) => setPackagingData({ ...packagingData, rate: e.target.value })}` |
-| [apps/web/src/pages/CostingEntry.tsx:490](../../apps/web/src/pages/CostingEntry.tsx) | Button | {existingPackaging ? 'Update' : 'Confirm'} | `{handlePackagingSubmit}` |
-| [apps/web/src/pages/CostingEntry.tsx:526](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Rate (₹/kg) | `{(e) => setMaintenanceData({ ...maintenanceData, ratePerKg: e.target.value })}` |
-| [apps/web/src/pages/CostingEntry.tsx:527](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Description | `{(e) => setMaintenanceData({ ...maintenanceData, description: e.target.value })}` |
-| [apps/web/src/pages/CostingEntry.tsx:529](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Total Cost | `{(e) => setMaintenanceData({ ...maintenanceData, totalCost: e.target.value })}` |
-| [apps/web/src/pages/CostingEntry.tsx:530](../../apps/web/src/pages/CostingEntry.tsx) | Button | Apply Formula | `{() => setMaintenanceData({ ...maintenanceData, totalCost: maintenanceFormulaCost.toFixed(2) })}` |
-| [apps/web/src/pages/CostingEntry.tsx:533](../../apps/web/src/pages/CostingEntry.tsx) | Button | {existingMaintenance ? 'Update' : 'Save'} | `{handleMaintenanceSubmit}` |
-| [apps/web/src/pages/CostingEntry.tsx:541](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Title | `{(e) => setExpenseData({ ...expenseData, title: e.target.value })}` |
-| [apps/web/src/pages/CostingEntry.tsx:542](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Type | `{(e) => setExpenseData({ ...expenseData, type: e.target.value })}` |
-| [apps/web/src/pages/CostingEntry.tsx:546](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Amount | `{(e) => setExpenseData({ ...expenseData, amount: e.target.value })}` |
-| [apps/web/src/pages/CostingEntry.tsx:547](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Description | `{(e) => setExpenseData({ ...expenseData, description: e.target.value })}` |
-| [apps/web/src/pages/CostingEntry.tsx:548](../../apps/web/src/pages/CostingEntry.tsx) | Button | Save Expense | `{handleExpenseSubmit}` |
+| [apps/web/src/pages/CostingEntry.tsx:379](../../apps/web/src/pages/CostingEntry.tsx) | Tabs | <Tab label="EB (Electricity)" /> <Tab label="Employee Costs" /> <Tab label="Packaging" /> <Tab label="Maintenance" /> <Tab label="Expenses" /> | `{(_, newValue) => setTabValue(newValue)}` |
+| [apps/web/src/pages/CostingEntry.tsx:380](../../apps/web/src/pages/CostingEntry.tsx) | Tab | EB (Electricity) | `` |
+| [apps/web/src/pages/CostingEntry.tsx:381](../../apps/web/src/pages/CostingEntry.tsx) | Tab | Employee Costs | `` |
+| [apps/web/src/pages/CostingEntry.tsx:382](../../apps/web/src/pages/CostingEntry.tsx) | Tab | Packaging | `` |
+| [apps/web/src/pages/CostingEntry.tsx:383](../../apps/web/src/pages/CostingEntry.tsx) | Tab | Maintenance | `` |
+| [apps/web/src/pages/CostingEntry.tsx:384](../../apps/web/src/pages/CostingEntry.tsx) | Tab | Expenses | `` |
+| [apps/web/src/pages/CostingEntry.tsx:391](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Units Consumed (kWh) | `{(e) => setEbData({ ...ebData, unitsConsumed: e.target.value })}` |
+| [apps/web/src/pages/CostingEntry.tsx:397](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Rate per Unit (₹) | `{(e) => setEbData({ ...ebData, ratePerUnit: e.target.value })}` |
+| [apps/web/src/pages/CostingEntry.tsx:403](../../apps/web/src/pages/CostingEntry.tsx) | TextField | No of Shifts | `{(e) => setEbData({ ...ebData, noOfShifts: e.target.value })}` |
+| [apps/web/src/pages/CostingEntry.tsx:413](../../apps/web/src/pages/CostingEntry.tsx) | Button | {existingEB ? (existingEB.posted ? 'Posted' : 'Update') : 'Save'} | `{handleEBSubmit}` |
+| [apps/web/src/pages/CostingEntry.tsx:422](../../apps/web/src/pages/CostingEntry.tsx) | TextField | No of Shifts | `{(e) => setEmployeeData({ ...employeeData, noOfShifts: e.target.value })}` |
+| [apps/web/src/pages/CostingEntry.tsx:432](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Workers | `{(e) => setEmployeeData({ ...employeeData, workers: e.target.value })}` |
+| [apps/web/src/pages/CostingEntry.tsx:433](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Rate (₹/day) | `{(e) => setEmployeeData({ ...employeeData, workerRate: e.target.value })}` |
+| [apps/web/src/pages/CostingEntry.tsx:435](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Overtime Cost (₹) | `{(e) => setEmployeeData({ ...employeeData, overtime: e.target.value })}` |
+| [apps/web/src/pages/CostingEntry.tsx:440](../../apps/web/src/pages/CostingEntry.tsx) | Button | {existingEmployee ? (existingEmployee.posted ? 'Posted' : 'Update') : 'Save'} | `{handleEmployeeSubmit}` |
+| [apps/web/src/pages/CostingEntry.tsx:470](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Package Rate (₹/kg) | `{(e) => setPackagingData({ ...packagingData, rate: e.target.value })}` |
+| [apps/web/src/pages/CostingEntry.tsx:483](../../apps/web/src/pages/CostingEntry.tsx) | Button | {existingPackaging ? (existingPackaging.posted ? 'Posted' : 'Update') : 'Confirm'} | `{handlePackagingSubmit}` |
+| [apps/web/src/pages/CostingEntry.tsx:519](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Rate (₹/kg) | `{(e) => setMaintenanceData({ ...maintenanceData, ratePerKg: e.target.value })}` |
+| [apps/web/src/pages/CostingEntry.tsx:520](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Description | `{(e) => setMaintenanceData({ ...maintenanceData, description: e.target.value })}` |
+| [apps/web/src/pages/CostingEntry.tsx:522](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Total Cost | `{(e) => setMaintenanceData({ ...maintenanceData, totalCost: e.target.value })}` |
+| [apps/web/src/pages/CostingEntry.tsx:523](../../apps/web/src/pages/CostingEntry.tsx) | Button | Apply Formula | `{() => setMaintenanceData({ ...maintenanceData, totalCost: maintenanceFormulaCost.toFixed(2) })}` |
+| [apps/web/src/pages/CostingEntry.tsx:526](../../apps/web/src/pages/CostingEntry.tsx) | Button | {existingMaintenance ? (existingMaintenance.posted ? 'Posted' : 'Update') : 'Save'} | `{handleMaintenanceSubmit}` |
+| [apps/web/src/pages/CostingEntry.tsx:534](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Title | `{(e) => setExpenseData({ ...expenseData, title: e.target.value })}` |
+| [apps/web/src/pages/CostingEntry.tsx:535](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Type | `{(e) => setExpenseData({ ...expenseData, type: e.target.value })}` |
+| [apps/web/src/pages/CostingEntry.tsx:539](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Amount | `{(e) => setExpenseData({ ...expenseData, amount: e.target.value })}` |
+| [apps/web/src/pages/CostingEntry.tsx:540](../../apps/web/src/pages/CostingEntry.tsx) | TextField | Description | `{(e) => setExpenseData({ ...expenseData, description: e.target.value })}` |
+| [apps/web/src/pages/CostingEntry.tsx:541](../../apps/web/src/pages/CostingEntry.tsx) | Button | Save Expense | `{handleExpenseSubmit}` |
 | [apps/web/src/pages/CostingHistory.tsx:192](../../apps/web/src/pages/CostingHistory.tsx) | Select | Date Filter | `{handleDateFilterChange}` |
 | [apps/web/src/pages/CostingHistory.tsx:232](../../apps/web/src/pages/CostingHistory.tsx) | Tabs | <Tab label="Dashboard" /> <Tab label="History" /> | `{(_, newValue) => setViewTab(newValue)}` |
 | [apps/web/src/pages/CostingHistory.tsx:233](../../apps/web/src/pages/CostingHistory.tsx) | Tab | Dashboard | `` |
@@ -740,30 +738,30 @@ Generated from every active-source UI file. Labels expressed in code are preserv
 | [apps/web/src/pages/SecuritySettings.tsx:450](../../apps/web/src/pages/SecuritySettings.tsx) | Button | Register New Passkey on this Device | `{handleRegisterPasskey}` |
 | [apps/web/src/pages/SessionManagement.tsx:92](../../apps/web/src/pages/SessionManagement.tsx) | TextField | <TextField fullWidth size="small" placeholder="Search by user, IP, location, or device..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} /> | `{(e) => setSearchTerm(e.target.value)}` |
 | [apps/web/src/pages/SessionManagement.tsx:154](../../apps/web/src/pages/SessionManagement.tsx) | Button | Revoke | `{() => { if (window.confirm('Are you sure you want to revoke this session?')) { revokeSessionMutation.mutate(session.id); } }}` |
-| [apps/web/src/pages/Settings.tsx:253](../../apps/web/src/pages/Settings.tsx) | Tabs | <Tab label="Company Info" /> <Tab label="System Settings" /> <Tab label="Rates & Defaults" /> <Tab label="Appearance" /> <Tab label="Audit Logs" /> | `{(_, newValue) => setTabValue(newValue)}` |
-| [apps/web/src/pages/Settings.tsx:254](../../apps/web/src/pages/Settings.tsx) | Tab | Company Info | `` |
-| [apps/web/src/pages/Settings.tsx:255](../../apps/web/src/pages/Settings.tsx) | Tab | System Settings | `` |
-| [apps/web/src/pages/Settings.tsx:256](../../apps/web/src/pages/Settings.tsx) | Tab | Rates & Defaults | `` |
-| [apps/web/src/pages/Settings.tsx:257](../../apps/web/src/pages/Settings.tsx) | Tab | Appearance | `` |
-| [apps/web/src/pages/Settings.tsx:258](../../apps/web/src/pages/Settings.tsx) | Tab | Audit Logs | `` |
-| [apps/web/src/pages/Settings.tsx:290](../../apps/web/src/pages/Settings.tsx) | Button | Upload Logo <input type="file" hidden accept="image/*" onChange={(e) => { const file = e.target.files?.[0]; if (file) { if (file.size > 500 * 1024) { // 500KB limit toast.error(ERROR_MESSAGES.FILE_TOO_LARGE('500KB')); return; } const reader = new FileReader(); reader.onloadend = () => { setCompanySettings({ ...companySettings, logo: reader.result as string }); }; reader.readAsDataURL(file); } }} / | `` |
-| [apps/web/src/pages/Settings.tsx:319](../../apps/web/src/pages/Settings.tsx) | Button | Remove | `{() => setCompanySettings({ ...companySettings, logo: '' })}` |
-| [apps/web/src/pages/Settings.tsx:336](../../apps/web/src/pages/Settings.tsx) | TextField | Company Name | `{(e) => setCompanySettings({ ...companySettings, companyName: e.target.value })}` |
-| [apps/web/src/pages/Settings.tsx:342](../../apps/web/src/pages/Settings.tsx) | TextField | Business activities | `{event => setCompanySettings({ ...companySettings, businessMode: event.target.value as BusinessMode })}` |
-| [apps/web/src/pages/Settings.tsx:347](../../apps/web/src/pages/Settings.tsx) | TextField | Workspace complexity | `{event => setCompanySettings({ ...companySettings, workspaceMode: event.target.value as WorkspaceMode })}` |
-| [apps/web/src/pages/Settings.tsx:353](../../apps/web/src/pages/Settings.tsx) | TextField | Address | `{(e) => setCompanySettings({ ...companySettings, address: e.target.value })}` |
-| [apps/web/src/pages/Settings.tsx:361](../../apps/web/src/pages/Settings.tsx) | TextField | GSTIN | `{(e) => setCompanySettings({ ...companySettings, gstin: e.target.value })}` |
-| [apps/web/src/pages/Settings.tsx:367](../../apps/web/src/pages/Settings.tsx) | TextField | Phone | `{(e) => setCompanySettings({ ...companySettings, phone: e.target.value })}` |
-| [apps/web/src/pages/Settings.tsx:373](../../apps/web/src/pages/Settings.tsx) | TextField | Email | `{(e) => setCompanySettings({ ...companySettings, email: e.target.value })}` |
-| [apps/web/src/pages/Settings.tsx:380](../../apps/web/src/pages/Settings.tsx) | Button | Save Company Info | `{handleSaveCompanySettings}` |
-| [apps/web/src/pages/Settings.tsx:438](../../apps/web/src/pages/Settings.tsx) | TextField | Low Stock Threshold (kg) | `{(e) => setSystemSettings({ ...systemSettings, lowStockThreshold: e.target.value })}` |
-| [apps/web/src/pages/Settings.tsx:467](../../apps/web/src/pages/Settings.tsx) | TextField | Default Invoice Theme | `{(e) => setSystemSettings({ ...systemSettings, defaultInvoiceTheme: e.target.value })}` |
-| [apps/web/src/pages/Settings.tsx:482](../../apps/web/src/pages/Settings.tsx) | Button | Save System Settings | `{handleSaveSystemSettings}` |
-| [apps/web/src/pages/Settings.tsx:501](../../apps/web/src/pages/Settings.tsx) | TextField | EB Rate per Unit (₹ / kWh) | `{(e) => setRateSettings({ ...rateSettings, ebRate: e.target.value })}` |
-| [apps/web/src/pages/Settings.tsx:513](../../apps/web/src/pages/Settings.tsx) | TextField | Packaging Rate (₹ / kg yarn) | `{(e) => setRateSettings({ ...rateSettings, packageRate: e.target.value })}` |
-| [apps/web/src/pages/Settings.tsx:525](../../apps/web/src/pages/Settings.tsx) | TextField | Maintenance Rate (₹ / kg yarn) | `{(e) => setRateSettings({ ...rateSettings, maintenanceRate: e.target.value })}` |
-| [apps/web/src/pages/Settings.tsx:537](../../apps/web/src/pages/Settings.tsx) | TextField | Supported Yarn Counts | `{(e) => setRateSettings({ ...rateSettings, supportedCounts: e.target.value })}` |
-| [apps/web/src/pages/Settings.tsx:547](../../apps/web/src/pages/Settings.tsx) | Button | Save Operational Rates | `{handleSaveRates}` |
+| [apps/web/src/pages/Settings.tsx:257](../../apps/web/src/pages/Settings.tsx) | Tabs | <Tab label="Company Info" /> <Tab label="System Settings" /> <Tab label="Rates & Defaults" /> <Tab label="Appearance" /> <Tab label="Audit Logs" /> | `{(_, newValue) => setTabValue(newValue)}` |
+| [apps/web/src/pages/Settings.tsx:258](../../apps/web/src/pages/Settings.tsx) | Tab | Company Info | `` |
+| [apps/web/src/pages/Settings.tsx:259](../../apps/web/src/pages/Settings.tsx) | Tab | System Settings | `` |
+| [apps/web/src/pages/Settings.tsx:260](../../apps/web/src/pages/Settings.tsx) | Tab | Rates & Defaults | `` |
+| [apps/web/src/pages/Settings.tsx:261](../../apps/web/src/pages/Settings.tsx) | Tab | Appearance | `` |
+| [apps/web/src/pages/Settings.tsx:262](../../apps/web/src/pages/Settings.tsx) | Tab | Audit Logs | `` |
+| [apps/web/src/pages/Settings.tsx:294](../../apps/web/src/pages/Settings.tsx) | Button | Upload Logo <input type="file" hidden accept="image/*" onChange={(e) => { const file = e.target.files?.[0]; if (file) { if (file.size > 500 * 1024) { // 500KB limit toast.error(ERROR_MESSAGES.FILE_TOO_LARGE('500KB')); return; } const reader = new FileReader(); reader.onloadend = () => { setCompanySettings({ ...companySettings, logo: reader.result as string }); }; reader.readAsDataURL(file); } }} / | `` |
+| [apps/web/src/pages/Settings.tsx:323](../../apps/web/src/pages/Settings.tsx) | Button | Remove | `{() => setCompanySettings({ ...companySettings, logo: '' })}` |
+| [apps/web/src/pages/Settings.tsx:340](../../apps/web/src/pages/Settings.tsx) | TextField | Company Name | `{(e) => setCompanySettings({ ...companySettings, companyName: e.target.value })}` |
+| [apps/web/src/pages/Settings.tsx:346](../../apps/web/src/pages/Settings.tsx) | TextField | Business activities | `{event => setCompanySettings({ ...companySettings, businessMode: event.target.value as BusinessMode })}` |
+| [apps/web/src/pages/Settings.tsx:351](../../apps/web/src/pages/Settings.tsx) | TextField | Workspace complexity | `{event => setCompanySettings({ ...companySettings, workspaceMode: event.target.value as WorkspaceMode })}` |
+| [apps/web/src/pages/Settings.tsx:357](../../apps/web/src/pages/Settings.tsx) | TextField | Address | `{(e) => setCompanySettings({ ...companySettings, address: e.target.value })}` |
+| [apps/web/src/pages/Settings.tsx:365](../../apps/web/src/pages/Settings.tsx) | TextField | GSTIN | `{(e) => setCompanySettings({ ...companySettings, gstin: e.target.value })}` |
+| [apps/web/src/pages/Settings.tsx:371](../../apps/web/src/pages/Settings.tsx) | TextField | Phone | `{(e) => setCompanySettings({ ...companySettings, phone: e.target.value })}` |
+| [apps/web/src/pages/Settings.tsx:377](../../apps/web/src/pages/Settings.tsx) | TextField | Email | `{(e) => setCompanySettings({ ...companySettings, email: e.target.value })}` |
+| [apps/web/src/pages/Settings.tsx:384](../../apps/web/src/pages/Settings.tsx) | Button | Save Company Info | `{handleSaveCompanySettings}` |
+| [apps/web/src/pages/Settings.tsx:442](../../apps/web/src/pages/Settings.tsx) | TextField | Low Stock Threshold (kg) | `{(e) => setSystemSettings({ ...systemSettings, lowStockThreshold: e.target.value })}` |
+| [apps/web/src/pages/Settings.tsx:471](../../apps/web/src/pages/Settings.tsx) | TextField | Default Invoice Theme | `{(e) => setSystemSettings({ ...systemSettings, defaultInvoiceTheme: e.target.value })}` |
+| [apps/web/src/pages/Settings.tsx:486](../../apps/web/src/pages/Settings.tsx) | Button | Save System Settings | `{handleSaveSystemSettings}` |
+| [apps/web/src/pages/Settings.tsx:505](../../apps/web/src/pages/Settings.tsx) | TextField | EB Rate per Unit (₹ / kWh) | `{(e) => setRateSettings({ ...rateSettings, ebRate: e.target.value })}` |
+| [apps/web/src/pages/Settings.tsx:517](../../apps/web/src/pages/Settings.tsx) | TextField | Packaging Rate (₹ / kg yarn) | `{(e) => setRateSettings({ ...rateSettings, packageRate: e.target.value })}` |
+| [apps/web/src/pages/Settings.tsx:529](../../apps/web/src/pages/Settings.tsx) | TextField | Maintenance Rate (₹ / kg yarn) | `{(e) => setRateSettings({ ...rateSettings, maintenanceRate: e.target.value })}` |
+| [apps/web/src/pages/Settings.tsx:541](../../apps/web/src/pages/Settings.tsx) | TextField | Supported Yarn Counts | `{(e) => setRateSettings({ ...rateSettings, supportedCounts: e.target.value })}` |
+| [apps/web/src/pages/Settings.tsx:551](../../apps/web/src/pages/Settings.tsx) | Button | Save Operational Rates | `{handleSaveRates}` |
 | [apps/web/src/pages/SharedPayments.tsx:14](../../apps/web/src/pages/SharedPayments.tsx) | Button | Download drafts | `{download}` |
 | [apps/web/src/pages/ShopPortal.tsx:70](../../apps/web/src/pages/ShopPortal.tsx) | Button | {language === 'en' ? 'தமிழ்' : 'English'} | `{switchLanguage}` |
 | [apps/web/src/pages/ShopPortal.tsx:70](../../apps/web/src/pages/ShopPortal.tsx) | Button | {t.staff} | `` |
@@ -820,8 +818,7 @@ Generated from every active-source UI file. Labels expressed in code are preserv
 | [apps/web/src/pages/UnifiedWorkspace.tsx:428](../../apps/web/src/pages/UnifiedWorkspace.tsx) | Button | Quality Lab | `{() => onNavigate('yarnquality')}` |
 | [apps/web/src/pages/UnifiedWorkspace.tsx:436](../../apps/web/src/pages/UnifiedWorkspace.tsx) | Button | Financials | `{() => onNavigate('reports')}` |
 | [apps/web/src/pages/UnifiedWorkspace.tsx:447](../../apps/web/src/pages/UnifiedWorkspace.tsx) | Button | Workflow documentation | `{() => onNavigate('tutorial')}` |
-| [apps/web/src/pages/UnifiedWorkspace.tsx:448](../../apps/web/src/pages/UnifiedWorkspace.tsx) | Button | Health hub | `` |
-| [apps/web/src/pages/UnifiedWorkspace.tsx:449](../../apps/web/src/pages/UnifiedWorkspace.tsx) | Button | API explorer (development) | `` |
+| [apps/web/src/pages/UnifiedWorkspace.tsx:448](../../apps/web/src/pages/UnifiedWorkspace.tsx) | Button | API explorer (development) | `` |
 | [apps/web/src/pages/UserManagement.tsx:242](../../apps/web/src/pages/UserManagement.tsx) | Button | Add User | `{() => handleOpenDialog()}` |
 | [apps/web/src/pages/UserManagement.tsx:262](../../apps/web/src/pages/UserManagement.tsx) | Button | Retry | `{() => void refetch()}` |
 | [apps/web/src/pages/UserManagement.tsx:270](../../apps/web/src/pages/UserManagement.tsx) | TextField | Search users | `{(e) => setSearchTerm(e.target.value)}` |

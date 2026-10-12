@@ -28,8 +28,7 @@ No literal Tab controls in this file. Check composed components and dynamic navi
 | Quality Lab | `{() => onNavigate('yarnquality')}` | [apps/web/src/pages/UnifiedWorkspace.tsx:428](../../../apps/web/src/pages/UnifiedWorkspace.tsx) |
 | Financials | `{() => onNavigate('reports')}` | [apps/web/src/pages/UnifiedWorkspace.tsx:436](../../../apps/web/src/pages/UnifiedWorkspace.tsx) |
 | Workflow documentation | `{() => onNavigate('tutorial')}` | [apps/web/src/pages/UnifiedWorkspace.tsx:447](../../../apps/web/src/pages/UnifiedWorkspace.tsx) |
-| Health hub | `delegated / form submit` | [apps/web/src/pages/UnifiedWorkspace.tsx:448](../../../apps/web/src/pages/UnifiedWorkspace.tsx) |
-| API explorer (development) | `delegated / form submit` | [apps/web/src/pages/UnifiedWorkspace.tsx:449](../../../apps/web/src/pages/UnifiedWorkspace.tsx) |
+| API explorer (development) | `delegated / form submit` | [apps/web/src/pages/UnifiedWorkspace.tsx:448](../../../apps/web/src/pages/UnifiedWorkspace.tsx) |
 
 ## API calls
 
