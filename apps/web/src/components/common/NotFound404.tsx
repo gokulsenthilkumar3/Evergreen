@@ -1,14 +1,6 @@
 import React from 'react';
 import { Box, Typography, Button, Paper, Chip } from '@mui/material';
-import {
-  Home as HomeIcon,
-  Inventory as InventoryIcon,
-  PrecisionManufacturing as ProductionIcon,
-  AccountBalanceWallet as CostIcon,
-  ReceiptLong as BillingIcon,
-  HealthAndSafety as HealthIcon,
-  Storage as DbIcon,
-} from '@mui/icons-material';
+import { Home as HomeIcon } from '@mui/icons-material';
 
 interface NotFoundProps {
   pageName: string;
@@ -21,14 +13,6 @@ export const NotFound404: React.FC<NotFoundProps> = ({ pageName, onNavigate }) =
     .split('?')[0]
     .replace(/[^\w\-/]/g, '')
     .slice(0, 50);
-
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-  const dbStudioUrl = token
-    ? `http://localhost:5555/?token=${encodeURIComponent(token)}`
-    : 'http://localhost:5555';
-  const healthHubUrl = token
-    ? `http://localhost:4301/health?token=${encodeURIComponent(token)}`
-    : 'http://localhost:4301/health';
 
   return (
     <Box
@@ -134,24 +118,6 @@ export const NotFound404: React.FC<NotFoundProps> = ({ pageName, onNavigate }) =
             }}
           >
             Back to Dashboard
-          </Button>
-          <Button
-            variant="outlined"
-            href={healthHubUrl}
-            target="_blank"
-            startIcon={<HealthIcon />}
-            sx={{ borderRadius: '12px', px: 2.5, fontWeight: 600 }}
-          >
-            API Health Hub
-          </Button>
-          <Button
-            variant="outlined"
-            href={dbStudioUrl}
-            target="_blank"
-            startIcon={<DbIcon />}
-            sx={{ borderRadius: '12px', px: 2.5, fontWeight: 600 }}
-          >
-            Database Studio
           </Button>
         </Box>
       </Paper>

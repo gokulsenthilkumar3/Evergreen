@@ -4,14 +4,9 @@ Generated from Nest controller decorators. Default global policy: authenticated 
 
 | Method | Route | Policy | Handler signature | Source |
 | --- | --- | --- | --- | --- |
-| GET | `/` | Public (inspect local guards) | `index(@Req() req: Request, @Res() res: Response)` | [apps/api/src/app.controller.ts:10](../../apps/api/src/app.controller.ts) |
-| GET | `/health` | Public (inspect local guards) | `health(@Req() req: Request, @Res() res: Response)` | [apps/api/src/app.controller.ts:25](../../apps/api/src/app.controller.ts) |
-| GET | `/status` | Public (inspect local guards) | `status(@Req() req: Request, @Res() res: Response)` | [apps/api/src/app.controller.ts:44](../../apps/api/src/app.controller.ts) |
-| GET | `/api/status` | Public (inspect local guards) | `apiStatus()` | [apps/api/src/app.controller.ts:56](../../apps/api/src/app.controller.ts) |
-| GET | `/api/processors/sync` | Public (inspect local guards) | `syncProcessors()` | [apps/api/src/app.controller.ts:62](../../apps/api/src/app.controller.ts) |
-| POST | `/api/processors/sync` | Public (inspect local guards) | `syncProcessors()` | [apps/api/src/app.controller.ts:62](../../apps/api/src/app.controller.ts) |
-| GET | `/api/processors/ping/:id` | Public (inspect local guards) | `pingProcessor()` | [apps/api/src/app.controller.ts:69](../../apps/api/src/app.controller.ts) |
-| POST | `/api/processors/ping/:id` | Public (inspect local guards) | `pingProcessor()` | [apps/api/src/app.controller.ts:69](../../apps/api/src/app.controller.ts) |
+| GET | `/` | Public (inspect local guards) | `index(@Res({ passthrough: true }) res: Response)` | [apps/api/src/app.controller.ts:11](../../apps/api/src/app.controller.ts) |
+| GET | `/health` | Public (inspect local guards) | `health(@Res({ passthrough: true }) res: Response)` | [apps/api/src/app.controller.ts:18](../../apps/api/src/app.controller.ts) |
+| GET | `/status` | ADMIN | `status()` | [apps/api/src/app.controller.ts:25](../../apps/api/src/app.controller.ts) |
 | POST | `/admin-ops/migrate` | MODIFIER | `runMigration()` | [apps/api/src/modules/admin-ops/admin-ops.controller.ts:8](../../apps/api/src/modules/admin-ops/admin-ops.controller.ts) |
 | POST | `/auth/signup` | VIEWER | `signup()` | [apps/api/src/modules/auth/auth.controller.ts:32](../../apps/api/src/modules/auth/auth.controller.ts) |
 | POST | `/auth/login` | Public (inspect local guards) | `login(@Body() loginDto: LoginDto, @Req() req: Request)` | [apps/api/src/modules/auth/auth.controller.ts:38](../../apps/api/src/modules/auth/auth.controller.ts) |
@@ -70,15 +65,15 @@ Generated from Nest controller decorators. Default global policy: authenticated 
 | GET | `/commerce/invoices/verify/:key` | Public (inspect local guards) | `verify(@Param('key') key: string)` | [apps/api/src/modules/commerce/invoice-verification.controller.ts:8](../../apps/api/src/modules/commerce/invoice-verification.controller.ts) |
 | GET | `/storefront/products` | Public (inspect local guards) | `products()` | [apps/api/src/modules/commerce/storefront.controller.ts:9](../../apps/api/src/modules/commerce/storefront.controller.ts) |
 | POST | `/storefront/orders` | Public (inspect local guards) | `order(@Body() body: any)` | [apps/api/src/modules/commerce/storefront.controller.ts:11](../../apps/api/src/modules/commerce/storefront.controller.ts) |
-| GET | `/costing/history` | VIEWER | `getCostingHistory(@Query('range') range: DateRange = DateRange.MONTH)` | [apps/api/src/modules/costing/costing.controller.ts:24](../../apps/api/src/modules/costing/costing.controller.ts) |
-| GET | `/costing/entries` | VIEWER | `getCostEntries()` | [apps/api/src/modules/costing/costing.controller.ts:102](../../apps/api/src/modules/costing/costing.controller.ts) |
-| POST | `/costing/eb` | MODIFIER | `createEBCost(@Body() entry: any)` | [apps/api/src/modules/costing/costing.controller.ts:107](../../apps/api/src/modules/costing/costing.controller.ts) |
-| POST | `/costing/employee` | MODIFIER | `createEmployeeCost(@Body() entry: any)` | [apps/api/src/modules/costing/costing.controller.ts:120](../../apps/api/src/modules/costing/costing.controller.ts) |
-| POST | `/costing/packaging` | MODIFIER | `createPackagingCost(@Body() entry: any)` | [apps/api/src/modules/costing/costing.controller.ts:133](../../apps/api/src/modules/costing/costing.controller.ts) |
-| POST | `/costing/maintenance` | MODIFIER | `createMaintenanceCost(@Body() entry: any)` | [apps/api/src/modules/costing/costing.controller.ts:146](../../apps/api/src/modules/costing/costing.controller.ts) |
-| POST | `/costing/expense` | MODIFIER | `createExpense(@Body() entry: any)` | [apps/api/src/modules/costing/costing.controller.ts:159](../../apps/api/src/modules/costing/costing.controller.ts) |
-| DELETE | `/costing/:id` | ADMIN | `deleteEntry(@Param('id') id: string)` | [apps/api/src/modules/costing/costing.controller.ts:171](../../apps/api/src/modules/costing/costing.controller.ts) |
-| PUT | `/costing/:id` | MODIFIER | `updateEntry(@Param('id') id: string, @Body() entry: any)` | [apps/api/src/modules/costing/costing.controller.ts:178](../../apps/api/src/modules/costing/costing.controller.ts) |
+| GET | `/costing/history` | VIEWER | `getCostingHistory(@Query('range') range: DateRange = DateRange.MONTH)` | [apps/api/src/modules/costing/costing.controller.ts:30](../../apps/api/src/modules/costing/costing.controller.ts) |
+| GET | `/costing/entries` | VIEWER | `getCostEntries()` | [apps/api/src/modules/costing/costing.controller.ts:108](../../apps/api/src/modules/costing/costing.controller.ts) |
+| POST | `/costing/eb` | MODIFIER | `createEBCost(@Body() entry: any, @Req() req: AuthenticatedRequest)` | [apps/api/src/modules/costing/costing.controller.ts:113](../../apps/api/src/modules/costing/costing.controller.ts) |
+| POST | `/costing/employee` | MODIFIER | `createEmployeeCost(@Body() entry: any, @Req() req: AuthenticatedRequest)` | [apps/api/src/modules/costing/costing.controller.ts:119](../../apps/api/src/modules/costing/costing.controller.ts) |
+| POST | `/costing/packaging` | MODIFIER | `createPackagingCost(@Body() entry: any, @Req() req: AuthenticatedRequest)` | [apps/api/src/modules/costing/costing.controller.ts:125](../../apps/api/src/modules/costing/costing.controller.ts) |
+| POST | `/costing/maintenance` | MODIFIER | `createMaintenanceCost(@Body() entry: any, @Req() req: AuthenticatedRequest)` | [apps/api/src/modules/costing/costing.controller.ts:131](../../apps/api/src/modules/costing/costing.controller.ts) |
+| POST | `/costing/expense` | MODIFIER | `createExpense(@Body() entry: any, @Req() req: AuthenticatedRequest)` | [apps/api/src/modules/costing/costing.controller.ts:137](../../apps/api/src/modules/costing/costing.controller.ts) |
+| DELETE | `/costing/:id` | ADMIN | `deleteEntry(@Param('id') id: string)` | [apps/api/src/modules/costing/costing.controller.ts:149](../../apps/api/src/modules/costing/costing.controller.ts) |
+| PUT | `/costing/:id` | MODIFIER | `updateEntry(@Param('id') id: string, @Body() entry: any, @Req() req: AuthenticatedRequest)` | [apps/api/src/modules/costing/costing.controller.ts:155](../../apps/api/src/modules/costing/costing.controller.ts) |
 | GET | `/dashboard/summary` | VIEWER | `getSummary(@Query('from') from?: string, @Query('to') to?: string)` | [apps/api/src/modules/dashboard/dashboard.controller.ts:14](../../apps/api/src/modules/dashboard/dashboard.controller.ts) |
 | GET | `/dashboard/charts` | VIEWER | `getCharts(@Query('from') from?: string, @Query('to') to?: string)` | [apps/api/src/modules/dashboard/dashboard.controller.ts:93](../../apps/api/src/modules/dashboard/dashboard.controller.ts) |
 | GET | `/dashboard/recent-activity` | VIEWER | `getRecentActivity()` | [apps/api/src/modules/dashboard/dashboard.controller.ts:214](../../apps/api/src/modules/dashboard/dashboard.controller.ts) |

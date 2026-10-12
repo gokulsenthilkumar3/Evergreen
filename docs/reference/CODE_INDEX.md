@@ -4,22 +4,20 @@ Generated declarations and methods from active API, web and shared source. Neste
 
 | Symbol | Kind | Source |
 | --- | --- | --- |
-| `AppController` | ClassDeclaration | [apps/api/src/app.controller.ts:6](../../apps/api/src/app.controller.ts) |
-| `index` | MethodDeclaration | [apps/api/src/app.controller.ts:10](../../apps/api/src/app.controller.ts) |
-| `health` | MethodDeclaration | [apps/api/src/app.controller.ts:25](../../apps/api/src/app.controller.ts) |
-| `status` | MethodDeclaration | [apps/api/src/app.controller.ts:44](../../apps/api/src/app.controller.ts) |
-| `apiStatus` | MethodDeclaration | [apps/api/src/app.controller.ts:56](../../apps/api/src/app.controller.ts) |
-| `syncProcessors` | MethodDeclaration | [apps/api/src/app.controller.ts:62](../../apps/api/src/app.controller.ts) |
-| `pingProcessor` | MethodDeclaration | [apps/api/src/app.controller.ts:69](../../apps/api/src/app.controller.ts) |
+| `AppController` | ClassDeclaration | [apps/api/src/app.controller.ts:7](../../apps/api/src/app.controller.ts) |
+| `index` | MethodDeclaration | [apps/api/src/app.controller.ts:11](../../apps/api/src/app.controller.ts) |
+| `health` | MethodDeclaration | [apps/api/src/app.controller.ts:18](../../apps/api/src/app.controller.ts) |
+| `status` | MethodDeclaration | [apps/api/src/app.controller.ts:25](../../apps/api/src/app.controller.ts) |
+| `probe` | MethodDeclaration | [apps/api/src/app.controller.ts:31](../../apps/api/src/app.controller.ts) |
 | `AppModule` | ClassDeclaration | [apps/api/src/app.module.ts:32](../../apps/api/src/app.module.ts) |
 | `ProcessorInfo` | InterfaceDeclaration | [apps/api/src/app.service.ts:4](../../apps/api/src/app.service.ts) |
-| `SystemHealthData` | InterfaceDeclaration | [apps/api/src/app.service.ts:16](../../apps/api/src/app.service.ts) |
-| `AppService` | ClassDeclaration | [apps/api/src/app.service.ts:53](../../apps/api/src/app.service.ts) |
-| `getHello` | MethodDeclaration | [apps/api/src/app.service.ts:59](../../apps/api/src/app.service.ts) |
-| `formatUptime` | MethodDeclaration | [apps/api/src/app.service.ts:63](../../apps/api/src/app.service.ts) |
-| `getHealthData` | MethodDeclaration | [apps/api/src/app.service.ts:76](../../apps/api/src/app.service.ts) |
-| `syncAllProcessors` | MethodDeclaration | [apps/api/src/app.service.ts:462](../../apps/api/src/app.service.ts) |
-| `renderHealthDashboardHtml` | MethodDeclaration | [apps/api/src/app.service.ts:466](../../apps/api/src/app.service.ts) |
+| `PublicHealth` | InterfaceDeclaration | [apps/api/src/app.service.ts:16](../../apps/api/src/app.service.ts) |
+| `SystemHealthData` | InterfaceDeclaration | [apps/api/src/app.service.ts:23](../../apps/api/src/app.service.ts) |
+| `AppService` | ClassDeclaration | [apps/api/src/app.service.ts:61](../../apps/api/src/app.service.ts) |
+| `getHello` | MethodDeclaration | [apps/api/src/app.service.ts:67](../../apps/api/src/app.service.ts) |
+| `formatUptime` | MethodDeclaration | [apps/api/src/app.service.ts:71](../../apps/api/src/app.service.ts) |
+| `getPublicHealth` | MethodDeclaration | [apps/api/src/app.service.ts:88](../../apps/api/src/app.service.ts) |
+| `getHealthData` | MethodDeclaration | [apps/api/src/app.service.ts:104](../../apps/api/src/app.service.ts) |
 | `Public` | Function binding | [apps/api/src/decorators/public.decorator.ts:4](../../apps/api/src/decorators/public.decorator.ts) |
 | `Roles` | Function binding | [apps/api/src/decorators/roles.decorator.ts:4](../../apps/api/src/decorators/roles.decorator.ts) |
 | `BusinessActionFilter` | ClassDeclaration | [apps/api/src/filters/business-action.filter.ts:6](../../apps/api/src/filters/business-action.filter.ts) |
@@ -182,28 +180,33 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `WhatsAppStatementResult` | InterfaceDeclaration | [apps/api/src/modules/commerce/whatsapp-collections.service.ts:4](../../apps/api/src/modules/commerce/whatsapp-collections.service.ts) |
 | `WhatsAppCollectionsService` | ClassDeclaration | [apps/api/src/modules/commerce/whatsapp-collections.service.ts:15](../../apps/api/src/modules/commerce/whatsapp-collections.service.ts) |
 | `generateStatement` | MethodDeclaration | [apps/api/src/modules/commerce/whatsapp-collections.service.ts:22](../../apps/api/src/modules/commerce/whatsapp-collections.service.ts) |
-| `CostingController` | ClassDeclaration | [apps/api/src/modules/costing/costing.controller.ts:20](../../apps/api/src/modules/costing/costing.controller.ts) |
-| `getCostingHistory` | MethodDeclaration | [apps/api/src/modules/costing/costing.controller.ts:24](../../apps/api/src/modules/costing/costing.controller.ts) |
-| `getCostEntries` | MethodDeclaration | [apps/api/src/modules/costing/costing.controller.ts:102](../../apps/api/src/modules/costing/costing.controller.ts) |
-| `createEBCost` | MethodDeclaration | [apps/api/src/modules/costing/costing.controller.ts:107](../../apps/api/src/modules/costing/costing.controller.ts) |
-| `createEmployeeCost` | MethodDeclaration | [apps/api/src/modules/costing/costing.controller.ts:120](../../apps/api/src/modules/costing/costing.controller.ts) |
-| `createPackagingCost` | MethodDeclaration | [apps/api/src/modules/costing/costing.controller.ts:133](../../apps/api/src/modules/costing/costing.controller.ts) |
-| `createMaintenanceCost` | MethodDeclaration | [apps/api/src/modules/costing/costing.controller.ts:146](../../apps/api/src/modules/costing/costing.controller.ts) |
-| `createExpense` | MethodDeclaration | [apps/api/src/modules/costing/costing.controller.ts:159](../../apps/api/src/modules/costing/costing.controller.ts) |
-| `deleteEntry` | MethodDeclaration | [apps/api/src/modules/costing/costing.controller.ts:171](../../apps/api/src/modules/costing/costing.controller.ts) |
-| `updateEntry` | MethodDeclaration | [apps/api/src/modules/costing/costing.controller.ts:178](../../apps/api/src/modules/costing/costing.controller.ts) |
-| `expect` | FunctionDeclaration | [apps/api/src/modules/costing/costing.controller.ts:211](../../apps/api/src/modules/costing/costing.controller.ts) |
+| `CostingController` | ClassDeclaration | [apps/api/src/modules/costing/costing.controller.ts:26](../../apps/api/src/modules/costing/costing.controller.ts) |
+| `getCostingHistory` | MethodDeclaration | [apps/api/src/modules/costing/costing.controller.ts:30](../../apps/api/src/modules/costing/costing.controller.ts) |
+| `getCostEntries` | MethodDeclaration | [apps/api/src/modules/costing/costing.controller.ts:108](../../apps/api/src/modules/costing/costing.controller.ts) |
+| `createEBCost` | MethodDeclaration | [apps/api/src/modules/costing/costing.controller.ts:113](../../apps/api/src/modules/costing/costing.controller.ts) |
+| `createEmployeeCost` | MethodDeclaration | [apps/api/src/modules/costing/costing.controller.ts:119](../../apps/api/src/modules/costing/costing.controller.ts) |
+| `createPackagingCost` | MethodDeclaration | [apps/api/src/modules/costing/costing.controller.ts:125](../../apps/api/src/modules/costing/costing.controller.ts) |
+| `createMaintenanceCost` | MethodDeclaration | [apps/api/src/modules/costing/costing.controller.ts:131](../../apps/api/src/modules/costing/costing.controller.ts) |
+| `createExpense` | MethodDeclaration | [apps/api/src/modules/costing/costing.controller.ts:137](../../apps/api/src/modules/costing/costing.controller.ts) |
+| `deleteEntry` | MethodDeclaration | [apps/api/src/modules/costing/costing.controller.ts:149](../../apps/api/src/modules/costing/costing.controller.ts) |
+| `updateEntry` | MethodDeclaration | [apps/api/src/modules/costing/costing.controller.ts:155](../../apps/api/src/modules/costing/costing.controller.ts) |
 | `CostingModule` | ClassDeclaration | [apps/api/src/modules/costing/costing.module.ts:5](../../apps/api/src/modules/costing/costing.module.ts) |
-| `CostingService` | ClassDeclaration | [apps/api/src/modules/costing/costing.service.ts:4](../../apps/api/src/modules/costing/costing.service.ts) |
-| `addEntry` | MethodDeclaration | [apps/api/src/modules/costing/costing.service.ts:8](../../apps/api/src/modules/costing/costing.service.ts) |
-| `getCostEntries` | MethodDeclaration | [apps/api/src/modules/costing/costing.service.ts:45](../../apps/api/src/modules/costing/costing.service.ts) |
-| `deleteEntry` | MethodDeclaration | [apps/api/src/modules/costing/costing.service.ts:51](../../apps/api/src/modules/costing/costing.service.ts) |
-| `updateEntry` | MethodDeclaration | [apps/api/src/modules/costing/costing.service.ts:70](../../apps/api/src/modules/costing/costing.service.ts) |
-| `exists` | MethodDeclaration | [apps/api/src/modules/costing/costing.service.ts:107](../../apps/api/src/modules/costing/costing.service.ts) |
-| `getTotalCost` | MethodDeclaration | [apps/api/src/modules/costing/costing.service.ts:128](../../apps/api/src/modules/costing/costing.service.ts) |
-| `getCostSummary` | MethodDeclaration | [apps/api/src/modules/costing/costing.service.ts:148](../../apps/api/src/modules/costing/costing.service.ts) |
-| `getHistoryByCategory` | MethodDeclaration | [apps/api/src/modules/costing/costing.service.ts:181](../../apps/api/src/modules/costing/costing.service.ts) |
-| `getDailyCostSummary` | MethodDeclaration | [apps/api/src/modules/costing/costing.service.ts:218](../../apps/api/src/modules/costing/costing.service.ts) |
+| `costNumber` | FunctionDeclaration | [apps/api/src/modules/costing/costing.service.ts:12](../../apps/api/src/modules/costing/costing.service.ts) |
+| `costDate` | FunctionDeclaration | [apps/api/src/modules/costing/costing.service.ts:20](../../apps/api/src/modules/costing/costing.service.ts) |
+| `costText` | FunctionDeclaration | [apps/api/src/modules/costing/costing.service.ts:27](../../apps/api/src/modules/costing/costing.service.ts) |
+| `costFields` | FunctionDeclaration | [apps/api/src/modules/costing/costing.service.ts:33](../../apps/api/src/modules/costing/costing.service.ts) |
+| `costDetails` | FunctionDeclaration | [apps/api/src/modules/costing/costing.service.ts:47](../../apps/api/src/modules/costing/costing.service.ts) |
+| `definedOnly` | FunctionDeclaration | [apps/api/src/modules/costing/costing.service.ts:55](../../apps/api/src/modules/costing/costing.service.ts) |
+| `CostingService` | ClassDeclaration | [apps/api/src/modules/costing/costing.service.ts:59](../../apps/api/src/modules/costing/costing.service.ts) |
+| `addEntry` | MethodDeclaration | [apps/api/src/modules/costing/costing.service.ts:63](../../apps/api/src/modules/costing/costing.service.ts) |
+| `getCostEntries` | MethodDeclaration | [apps/api/src/modules/costing/costing.service.ts:81](../../apps/api/src/modules/costing/costing.service.ts) |
+| `deleteEntry` | MethodDeclaration | [apps/api/src/modules/costing/costing.service.ts:87](../../apps/api/src/modules/costing/costing.service.ts) |
+| `updateEntry` | MethodDeclaration | [apps/api/src/modules/costing/costing.service.ts:103](../../apps/api/src/modules/costing/costing.service.ts) |
+| `exists` | MethodDeclaration | [apps/api/src/modules/costing/costing.service.ts:128](../../apps/api/src/modules/costing/costing.service.ts) |
+| `getTotalCost` | MethodDeclaration | [apps/api/src/modules/costing/costing.service.ts:149](../../apps/api/src/modules/costing/costing.service.ts) |
+| `getCostSummary` | MethodDeclaration | [apps/api/src/modules/costing/costing.service.ts:169](../../apps/api/src/modules/costing/costing.service.ts) |
+| `getHistoryByCategory` | MethodDeclaration | [apps/api/src/modules/costing/costing.service.ts:202](../../apps/api/src/modules/costing/costing.service.ts) |
+| `getDailyCostSummary` | MethodDeclaration | [apps/api/src/modules/costing/costing.service.ts:239](../../apps/api/src/modules/costing/costing.service.ts) |
 | `DailySummaryService` | ClassDeclaration | [apps/api/src/modules/dashboard/daily-summary.service.ts:11](../../apps/api/src/modules/dashboard/daily-summary.service.ts) |
 | `sendDailySummary` | MethodDeclaration | [apps/api/src/modules/dashboard/daily-summary.service.ts:36](../../apps/api/src/modules/dashboard/daily-summary.service.ts) |
 | `DashboardController` | ClassDeclaration | [apps/api/src/modules/dashboard/dashboard.controller.ts:6](../../apps/api/src/modules/dashboard/dashboard.controller.ts) |
@@ -331,8 +334,8 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `ProductionModule` | ClassDeclaration | [apps/api/src/modules/production/production.module.ts:5](../../apps/api/src/modules/production/production.module.ts) |
 | `ProductionService` | ClassDeclaration | [apps/api/src/modules/production/production.service.ts:14](../../apps/api/src/modules/production/production.service.ts) |
 | `create` | MethodDeclaration | [apps/api/src/modules/production/production.service.ts:18](../../apps/api/src/modules/production/production.service.ts) |
-| `findAll` | MethodDeclaration | [apps/api/src/modules/production/production.service.ts:339](../../apps/api/src/modules/production/production.service.ts) |
-| `delete` | MethodDeclaration | [apps/api/src/modules/production/production.service.ts:350](../../apps/api/src/modules/production/production.service.ts) |
+| `findAll` | MethodDeclaration | [apps/api/src/modules/production/production.service.ts:345](../../apps/api/src/modules/production/production.service.ts) |
+| `delete` | MethodDeclaration | [apps/api/src/modules/production/production.service.ts:356](../../apps/api/src/modules/production/production.service.ts) |
 | `QualityController` | ClassDeclaration | [apps/api/src/modules/quality/quality.controller.ts:6](../../apps/api/src/modules/quality/quality.controller.ts) |
 | `listInspections` | MethodDeclaration | [apps/api/src/modules/quality/quality.controller.ts:10](../../apps/api/src/modules/quality/quality.controller.ts) |
 | `createInspection` | MethodDeclaration | [apps/api/src/modules/quality/quality.controller.ts:19](../../apps/api/src/modules/quality/quality.controller.ts) |
@@ -446,10 +449,11 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `reconcileFinance` | FunctionDeclaration | [apps/api/src/services/business-ledger.ts:110](../../apps/api/src/services/business-ledger.ts) |
 | `reconcileValuation` | FunctionDeclaration | [apps/api/src/services/business-ledger.ts:154](../../apps/api/src/services/business-ledger.ts) |
 | `PrismaService` | ClassDeclaration | [apps/api/src/services/prisma.service.ts:7](../../apps/api/src/services/prisma.service.ts) |
-| `onModuleInit` | MethodDeclaration | [apps/api/src/services/prisma.service.ts:29](../../apps/api/src/services/prisma.service.ts) |
-| `stockTransaction` | MethodDeclaration | [apps/api/src/services/prisma.service.ts:42](../../apps/api/src/services/prisma.service.ts) |
-| `closedSnapshot` | MethodDeclaration | [apps/api/src/services/prisma.service.ts:65](../../apps/api/src/services/prisma.service.ts) |
-| `onModuleDestroy` | MethodDeclaration | [apps/api/src/services/prisma.service.ts:79](../../apps/api/src/services/prisma.service.ts) |
+| `onModuleInit` | MethodDeclaration | [apps/api/src/services/prisma.service.ts:30](../../apps/api/src/services/prisma.service.ts) |
+| `getStartupIssue` | MethodDeclaration | [apps/api/src/services/prisma.service.ts:54](../../apps/api/src/services/prisma.service.ts) |
+| `stockTransaction` | MethodDeclaration | [apps/api/src/services/prisma.service.ts:58](../../apps/api/src/services/prisma.service.ts) |
+| `closedSnapshot` | MethodDeclaration | [apps/api/src/services/prisma.service.ts:81](../../apps/api/src/services/prisma.service.ts) |
+| `onModuleDestroy` | MethodDeclaration | [apps/api/src/services/prisma.service.ts:95](../../apps/api/src/services/prisma.service.ts) |
 | `reconcileStock` | FunctionDeclaration | [apps/api/src/services/stock-bridge.ts:8](../../apps/api/src/services/stock-bridge.ts) |
 | `guardManagedStock` | FunctionDeclaration | [apps/api/src/services/stock-bridge.ts:101](../../apps/api/src/services/stock-bridge.ts) |
 | `getKey` | FunctionDeclaration | [apps/api/src/utils/crypto.ts:8](../../apps/api/src/utils/crypto.ts) |
@@ -747,8 +751,8 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `LoadingSpinnerProps` | InterfaceDeclaration | [apps/web/src/components/common/LoadingSpinner.tsx:4](../../apps/web/src/components/common/LoadingSpinner.tsx) |
 | `LoadingSpinner` | Function binding | [apps/web/src/components/common/LoadingSpinner.tsx:14](../../apps/web/src/components/common/LoadingSpinner.tsx) |
 | `FullPageLoader` | Function binding | [apps/web/src/components/common/LoadingSpinner.tsx:81](../../apps/web/src/components/common/LoadingSpinner.tsx) |
-| `NotFoundProps` | InterfaceDeclaration | [apps/web/src/components/common/NotFound404.tsx:13](../../apps/web/src/components/common/NotFound404.tsx) |
-| `NotFound404` | Function binding | [apps/web/src/components/common/NotFound404.tsx:18](../../apps/web/src/components/common/NotFound404.tsx) |
+| `NotFoundProps` | InterfaceDeclaration | [apps/web/src/components/common/NotFound404.tsx:5](../../apps/web/src/components/common/NotFound404.tsx) |
+| `NotFound404` | Function binding | [apps/web/src/components/common/NotFound404.tsx:10](../../apps/web/src/components/common/NotFound404.tsx) |
 | `StatusChipProps` | InterfaceDeclaration | [apps/web/src/components/common/PaymentStatusChip.tsx:11](../../apps/web/src/components/common/PaymentStatusChip.tsx) |
 | `PaymentStatusChip` | Function binding | [apps/web/src/components/common/PaymentStatusChip.tsx:22](../../apps/web/src/components/common/PaymentStatusChip.tsx) |
 | `ProductionTimingAlert` | FunctionDeclaration | [apps/web/src/components/common/ProductionTimingAlert.tsx:6](../../apps/web/src/components/common/ProductionTimingAlert.tsx) |
@@ -1076,14 +1080,14 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `UnifiedWorkspaceProps` | InterfaceDeclaration | [apps/web/src/pages/UnifiedWorkspace.tsx:102](../../apps/web/src/pages/UnifiedWorkspace.tsx) |
 | `UnifiedWorkspace` | Function binding | [apps/web/src/pages/UnifiedWorkspace.tsx:107](../../apps/web/src/pages/UnifiedWorkspace.tsx) |
 | `money` | Function binding | [apps/web/src/pages/UnifiedWorkspace.tsx:126](../../apps/web/src/pages/UnifiedWorkspace.tsx) |
-| `User` | InterfaceDeclaration | [apps/web/src/pages/UserManagement.tsx:42](../../apps/web/src/pages/UserManagement.tsx) |
-| `UserManagementProps` | InterfaceDeclaration | [apps/web/src/pages/UserManagement.tsx:53](../../apps/web/src/pages/UserManagement.tsx) |
-| `UserManagement` | Function binding | [apps/web/src/pages/UserManagement.tsx:58](../../apps/web/src/pages/UserManagement.tsx) |
-| `handleOpenDialog` | Function binding | [apps/web/src/pages/UserManagement.tsx:135](../../apps/web/src/pages/UserManagement.tsx) |
-| `handleCloseDialog` | Function binding | [apps/web/src/pages/UserManagement.tsx:158](../../apps/web/src/pages/UserManagement.tsx) |
-| `handleSubmit` | Function binding | [apps/web/src/pages/UserManagement.tsx:163](../../apps/web/src/pages/UserManagement.tsx) |
-| `handleDelete` | Function binding | [apps/web/src/pages/UserManagement.tsx:186](../../apps/web/src/pages/UserManagement.tsx) |
-| `getRoleColor` | Function binding | [apps/web/src/pages/UserManagement.tsx:192](../../apps/web/src/pages/UserManagement.tsx) |
+| `User` | InterfaceDeclaration | [apps/web/src/pages/UserManagement.tsx:44](../../apps/web/src/pages/UserManagement.tsx) |
+| `UserManagementProps` | InterfaceDeclaration | [apps/web/src/pages/UserManagement.tsx:55](../../apps/web/src/pages/UserManagement.tsx) |
+| `UserManagement` | Function binding | [apps/web/src/pages/UserManagement.tsx:64](../../apps/web/src/pages/UserManagement.tsx) |
+| `handleOpenDialog` | Function binding | [apps/web/src/pages/UserManagement.tsx:142](../../apps/web/src/pages/UserManagement.tsx) |
+| `handleCloseDialog` | Function binding | [apps/web/src/pages/UserManagement.tsx:165](../../apps/web/src/pages/UserManagement.tsx) |
+| `handleSubmit` | Function binding | [apps/web/src/pages/UserManagement.tsx:172](../../apps/web/src/pages/UserManagement.tsx) |
+| `handleDelete` | Function binding | [apps/web/src/pages/UserManagement.tsx:201](../../apps/web/src/pages/UserManagement.tsx) |
+| `getRoleColor` | Function binding | [apps/web/src/pages/UserManagement.tsx:207](../../apps/web/src/pages/UserManagement.tsx) |
 | `Vyapari` | Function binding | [apps/web/src/pages/Vyapari.tsx:8](../../apps/web/src/pages/Vyapari.tsx) |
 | `field` | Function binding | [apps/web/src/pages/WorkflowDesk.tsx:12](../../apps/web/src/pages/WorkflowDesk.tsx) |
 | `titleCase` | Function binding | [apps/web/src/pages/WorkflowDesk.tsx:45](../../apps/web/src/pages/WorkflowDesk.tsx) |
@@ -1145,7 +1149,7 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `DeleteGuardErrorPayload` | InterfaceDeclaration | [apps/web/src/utils/deleteGuardHandler.ts:19](../../apps/web/src/utils/deleteGuardHandler.ts) |
 | `navigateToTab` | FunctionDeclaration | [apps/web/src/utils/deleteGuardHandler.ts:34](../../apps/web/src/utils/deleteGuardHandler.ts) |
 | `handleDeleteGuardError` | FunctionDeclaration | [apps/web/src/utils/deleteGuardHandler.ts:45](../../apps/web/src/utils/deleteGuardHandler.ts) |
-| `generateExcel` | Function binding | [apps/web/src/utils/excelGenerator.ts:9](../../apps/web/src/utils/excelGenerator.ts) |
+| `generateExcel` | Function binding | [apps/web/src/utils/excelGenerator.ts:4](../../apps/web/src/utils/excelGenerator.ts) |
 | `downloadInvoicePdf` | FunctionDeclaration | [apps/web/src/utils/invoiceDocument.ts:13](../../apps/web/src/utils/invoiceDocument.ts) |
 | `date` | Function binding | [apps/web/src/utils/invoiceDocument.ts:16](../../apps/web/src/utils/invoiceDocument.ts) |
 | `didParseCell` | MethodDeclaration | [apps/web/src/utils/invoiceDocument.ts:54](../../apps/web/src/utils/invoiceDocument.ts) |
