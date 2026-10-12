@@ -331,8 +331,8 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `ProductionModule` | ClassDeclaration | [apps/api/src/modules/production/production.module.ts:5](../../apps/api/src/modules/production/production.module.ts) |
 | `ProductionService` | ClassDeclaration | [apps/api/src/modules/production/production.service.ts:14](../../apps/api/src/modules/production/production.service.ts) |
 | `create` | MethodDeclaration | [apps/api/src/modules/production/production.service.ts:18](../../apps/api/src/modules/production/production.service.ts) |
-| `findAll` | MethodDeclaration | [apps/api/src/modules/production/production.service.ts:339](../../apps/api/src/modules/production/production.service.ts) |
-| `delete` | MethodDeclaration | [apps/api/src/modules/production/production.service.ts:350](../../apps/api/src/modules/production/production.service.ts) |
+| `findAll` | MethodDeclaration | [apps/api/src/modules/production/production.service.ts:345](../../apps/api/src/modules/production/production.service.ts) |
+| `delete` | MethodDeclaration | [apps/api/src/modules/production/production.service.ts:356](../../apps/api/src/modules/production/production.service.ts) |
 | `QualityController` | ClassDeclaration | [apps/api/src/modules/quality/quality.controller.ts:6](../../apps/api/src/modules/quality/quality.controller.ts) |
 | `listInspections` | MethodDeclaration | [apps/api/src/modules/quality/quality.controller.ts:10](../../apps/api/src/modules/quality/quality.controller.ts) |
 | `createInspection` | MethodDeclaration | [apps/api/src/modules/quality/quality.controller.ts:19](../../apps/api/src/modules/quality/quality.controller.ts) |
@@ -1076,14 +1076,14 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `UnifiedWorkspaceProps` | InterfaceDeclaration | [apps/web/src/pages/UnifiedWorkspace.tsx:102](../../apps/web/src/pages/UnifiedWorkspace.tsx) |
 | `UnifiedWorkspace` | Function binding | [apps/web/src/pages/UnifiedWorkspace.tsx:107](../../apps/web/src/pages/UnifiedWorkspace.tsx) |
 | `money` | Function binding | [apps/web/src/pages/UnifiedWorkspace.tsx:126](../../apps/web/src/pages/UnifiedWorkspace.tsx) |
-| `User` | InterfaceDeclaration | [apps/web/src/pages/UserManagement.tsx:42](../../apps/web/src/pages/UserManagement.tsx) |
-| `UserManagementProps` | InterfaceDeclaration | [apps/web/src/pages/UserManagement.tsx:53](../../apps/web/src/pages/UserManagement.tsx) |
-| `UserManagement` | Function binding | [apps/web/src/pages/UserManagement.tsx:58](../../apps/web/src/pages/UserManagement.tsx) |
-| `handleOpenDialog` | Function binding | [apps/web/src/pages/UserManagement.tsx:135](../../apps/web/src/pages/UserManagement.tsx) |
-| `handleCloseDialog` | Function binding | [apps/web/src/pages/UserManagement.tsx:158](../../apps/web/src/pages/UserManagement.tsx) |
-| `handleSubmit` | Function binding | [apps/web/src/pages/UserManagement.tsx:163](../../apps/web/src/pages/UserManagement.tsx) |
-| `handleDelete` | Function binding | [apps/web/src/pages/UserManagement.tsx:186](../../apps/web/src/pages/UserManagement.tsx) |
-| `getRoleColor` | Function binding | [apps/web/src/pages/UserManagement.tsx:192](../../apps/web/src/pages/UserManagement.tsx) |
+| `User` | InterfaceDeclaration | [apps/web/src/pages/UserManagement.tsx:44](../../apps/web/src/pages/UserManagement.tsx) |
+| `UserManagementProps` | InterfaceDeclaration | [apps/web/src/pages/UserManagement.tsx:55](../../apps/web/src/pages/UserManagement.tsx) |
+| `UserManagement` | Function binding | [apps/web/src/pages/UserManagement.tsx:64](../../apps/web/src/pages/UserManagement.tsx) |
+| `handleOpenDialog` | Function binding | [apps/web/src/pages/UserManagement.tsx:142](../../apps/web/src/pages/UserManagement.tsx) |
+| `handleCloseDialog` | Function binding | [apps/web/src/pages/UserManagement.tsx:165](../../apps/web/src/pages/UserManagement.tsx) |
+| `handleSubmit` | Function binding | [apps/web/src/pages/UserManagement.tsx:172](../../apps/web/src/pages/UserManagement.tsx) |
+| `handleDelete` | Function binding | [apps/web/src/pages/UserManagement.tsx:201](../../apps/web/src/pages/UserManagement.tsx) |
+| `getRoleColor` | Function binding | [apps/web/src/pages/UserManagement.tsx:207](../../apps/web/src/pages/UserManagement.tsx) |
 | `Vyapari` | Function binding | [apps/web/src/pages/Vyapari.tsx:8](../../apps/web/src/pages/Vyapari.tsx) |
 | `field` | Function binding | [apps/web/src/pages/WorkflowDesk.tsx:12](../../apps/web/src/pages/WorkflowDesk.tsx) |
 | `titleCase` | Function binding | [apps/web/src/pages/WorkflowDesk.tsx:45](../../apps/web/src/pages/WorkflowDesk.tsx) |
@@ -1125,6 +1125,7 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `WarehouseMovement` | InterfaceDeclaration | [apps/web/src/pages/yarn/WarehouseManagement.tsx:47](../../apps/web/src/pages/yarn/WarehouseManagement.tsx) |
 | `WarehouseManagement` | Function binding | [apps/web/src/pages/yarn/WarehouseManagement.tsx:75](../../apps/web/src/pages/yarn/WarehouseManagement.tsx) |
 | `IntrinsicElements` | InterfaceDeclaration | [apps/web/src/r3f-support.d.ts:5](../../apps/web/src/r3f-support.d.ts) |
+| `Matchers` | InterfaceDeclaration | [apps/web/src/test/setup.ts:9](../../apps/web/src/test/setup.ts) |
 | `ThemePalette` | InterfaceDeclaration | [apps/web/src/theme.ts:5](../../apps/web/src/theme.ts) |
 | `getTheme` | Function binding | [apps/web/src/theme.ts:63](../../apps/web/src/theme.ts) |
 | `setMutationListener` | Function binding | [apps/web/src/utils/api.ts:4](../../apps/web/src/utils/api.ts) |
@@ -1145,7 +1146,7 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `DeleteGuardErrorPayload` | InterfaceDeclaration | [apps/web/src/utils/deleteGuardHandler.ts:19](../../apps/web/src/utils/deleteGuardHandler.ts) |
 | `navigateToTab` | FunctionDeclaration | [apps/web/src/utils/deleteGuardHandler.ts:34](../../apps/web/src/utils/deleteGuardHandler.ts) |
 | `handleDeleteGuardError` | FunctionDeclaration | [apps/web/src/utils/deleteGuardHandler.ts:45](../../apps/web/src/utils/deleteGuardHandler.ts) |
-| `generateExcel` | Function binding | [apps/web/src/utils/excelGenerator.ts:9](../../apps/web/src/utils/excelGenerator.ts) |
+| `generateExcel` | Function binding | [apps/web/src/utils/excelGenerator.ts:4](../../apps/web/src/utils/excelGenerator.ts) |
 | `downloadInvoicePdf` | FunctionDeclaration | [apps/web/src/utils/invoiceDocument.ts:13](../../apps/web/src/utils/invoiceDocument.ts) |
 | `date` | Function binding | [apps/web/src/utils/invoiceDocument.ts:16](../../apps/web/src/utils/invoiceDocument.ts) |
 | `didParseCell` | MethodDeclaration | [apps/web/src/utils/invoiceDocument.ts:54](../../apps/web/src/utils/invoiceDocument.ts) |

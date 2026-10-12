@@ -18,11 +18,13 @@ No literal Tab controls in this file. Check composed components and dynamic navi
 
 | Control / label | Handler | Source |
 | --- | --- | --- |
-| Add User | `{() => handleOpenDialog()}` | [apps/web/src/pages/UserManagement.tsx:235](../../../apps/web/src/pages/UserManagement.tsx) |
-| <EditIcon fontSize="small" /> | `{() => handleOpenDialog(user)}` | [apps/web/src/pages/UserManagement.tsx:305](../../../apps/web/src/pages/UserManagement.tsx) |
-| <DeleteIcon fontSize="small" /> | `{() => handleDelete(user.id)}` | [apps/web/src/pages/UserManagement.tsx:313](../../../apps/web/src/pages/UserManagement.tsx) |
-| Cancel | `{handleCloseDialog}` | [apps/web/src/pages/UserManagement.tsx:393](../../../apps/web/src/pages/UserManagement.tsx) |
-| {editingUser ? 'Update User' : 'Create User'} | `{handleSubmit}` | [apps/web/src/pages/UserManagement.tsx:394](../../../apps/web/src/pages/UserManagement.tsx) |
+| Add User | `{() => handleOpenDialog()}` | [apps/web/src/pages/UserManagement.tsx:242](../../../apps/web/src/pages/UserManagement.tsx) |
+| Retry | `{() => void refetch()}` | [apps/web/src/pages/UserManagement.tsx:262](../../../apps/web/src/pages/UserManagement.tsx) |
+| Clear search | `{() => setSearchTerm('')}` | [apps/web/src/pages/UserManagement.tsx:306](../../../apps/web/src/pages/UserManagement.tsx) |
+| {`Edit ${user.username}`} | `{() => handleOpenDialog(user)}` | [apps/web/src/pages/UserManagement.tsx:336](../../../apps/web/src/pages/UserManagement.tsx) |
+| {`Delete ${user.username}`} | `{() => handleDelete(user.id)}` | [apps/web/src/pages/UserManagement.tsx:348](../../../apps/web/src/pages/UserManagement.tsx) |
+| Cancel | `{handleCloseDialog}` | [apps/web/src/pages/UserManagement.tsx:447](../../../apps/web/src/pages/UserManagement.tsx) |
+| {isSaving ? 'Saving…' : editingUser ? 'Update User' : 'Create User'} | `delegated / form submit` | [apps/web/src/pages/UserManagement.tsx:448](../../../apps/web/src/pages/UserManagement.tsx) |
 
 ## API calls
 
@@ -30,10 +32,10 @@ Paths are relative to the client API base (`/api/backend` by default in the brow
 
 | Method | Path expression | Source |
 | --- | --- | --- |
-| GET | `/users` | [apps/web/src/pages/UserManagement.tsx:78](../../../apps/web/src/pages/UserManagement.tsx) |
-| POST | `/users` | [apps/web/src/pages/UserManagement.tsx:99](../../../apps/web/src/pages/UserManagement.tsx) |
-| PUT | `'/users/${id}'` | [apps/web/src/pages/UserManagement.tsx:112](../../../apps/web/src/pages/UserManagement.tsx) |
-| DELETE | `'/users/${id}'` | [apps/web/src/pages/UserManagement.tsx:125](../../../apps/web/src/pages/UserManagement.tsx) |
+| GET | `/users` | [apps/web/src/pages/UserManagement.tsx:85](../../../apps/web/src/pages/UserManagement.tsx) |
+| POST | `/users` | [apps/web/src/pages/UserManagement.tsx:106](../../../apps/web/src/pages/UserManagement.tsx) |
+| PUT | `'/users/${id}'` | [apps/web/src/pages/UserManagement.tsx:119](../../../apps/web/src/pages/UserManagement.tsx) |
+| DELETE | `'/users/${id}'` | [apps/web/src/pages/UserManagement.tsx:132](../../../apps/web/src/pages/UserManagement.tsx) |
 
 ## Composed behavior
 

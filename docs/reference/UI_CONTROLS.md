@@ -822,16 +822,19 @@ Generated from every active-source UI file. Labels expressed in code are preserv
 | [apps/web/src/pages/UnifiedWorkspace.tsx:447](../../apps/web/src/pages/UnifiedWorkspace.tsx) | Button | Workflow documentation | `{() => onNavigate('tutorial')}` |
 | [apps/web/src/pages/UnifiedWorkspace.tsx:448](../../apps/web/src/pages/UnifiedWorkspace.tsx) | Button | Health hub | `` |
 | [apps/web/src/pages/UnifiedWorkspace.tsx:449](../../apps/web/src/pages/UnifiedWorkspace.tsx) | Button | API explorer (development) | `` |
-| [apps/web/src/pages/UserManagement.tsx:235](../../apps/web/src/pages/UserManagement.tsx) | Button | Add User | `{() => handleOpenDialog()}` |
-| [apps/web/src/pages/UserManagement.tsx:305](../../apps/web/src/pages/UserManagement.tsx) | IconButton | <EditIcon fontSize="small" /> | `{() => handleOpenDialog(user)}` |
-| [apps/web/src/pages/UserManagement.tsx:313](../../apps/web/src/pages/UserManagement.tsx) | IconButton | <DeleteIcon fontSize="small" /> | `{() => handleDelete(user.id)}` |
-| [apps/web/src/pages/UserManagement.tsx:336](../../apps/web/src/pages/UserManagement.tsx) | TextField | Username | `{(e) => setFormData({ ...formData, username: e.target.value })}` |
-| [apps/web/src/pages/UserManagement.tsx:343](../../apps/web/src/pages/UserManagement.tsx) | TextField | Full Name | `{(e) => setFormData({ ...formData, name: e.target.value })}` |
-| [apps/web/src/pages/UserManagement.tsx:349](../../apps/web/src/pages/UserManagement.tsx) | TextField | Email | `{(e) => setFormData({ ...formData, email: e.target.value })}` |
-| [apps/web/src/pages/UserManagement.tsx:355](../../apps/web/src/pages/UserManagement.tsx) | TextField | {editingUser ? "New Password (leave blank to keep current)" : "Password"} | `{(e) => setFormData({ ...formData, password: e.target.value })}` |
-| [apps/web/src/pages/UserManagement.tsx:365](../../apps/web/src/pages/UserManagement.tsx) | Select | Role | `{(e) => setFormData({ ...formData, role: e.target.value as any })}` |
-| [apps/web/src/pages/UserManagement.tsx:393](../../apps/web/src/pages/UserManagement.tsx) | Button | Cancel | `{handleCloseDialog}` |
-| [apps/web/src/pages/UserManagement.tsx:394](../../apps/web/src/pages/UserManagement.tsx) | Button | {editingUser ? 'Update User' : 'Create User'} | `{handleSubmit}` |
+| [apps/web/src/pages/UserManagement.tsx:242](../../apps/web/src/pages/UserManagement.tsx) | Button | Add User | `{() => handleOpenDialog()}` |
+| [apps/web/src/pages/UserManagement.tsx:262](../../apps/web/src/pages/UserManagement.tsx) | Button | Retry | `{() => void refetch()}` |
+| [apps/web/src/pages/UserManagement.tsx:270](../../apps/web/src/pages/UserManagement.tsx) | TextField | Search users | `{(e) => setSearchTerm(e.target.value)}` |
+| [apps/web/src/pages/UserManagement.tsx:306](../../apps/web/src/pages/UserManagement.tsx) | Button | Clear search | `{() => setSearchTerm('')}` |
+| [apps/web/src/pages/UserManagement.tsx:336](../../apps/web/src/pages/UserManagement.tsx) | IconButton | {`Edit ${user.username}`} | `{() => handleOpenDialog(user)}` |
+| [apps/web/src/pages/UserManagement.tsx:348](../../apps/web/src/pages/UserManagement.tsx) | IconButton | {`Delete ${user.username}`} | `{() => handleDelete(user.id)}` |
+| [apps/web/src/pages/UserManagement.tsx:376](../../apps/web/src/pages/UserManagement.tsx) | TextField | Username | `{(e) => setFormData({ ...formData, username: e.target.value })}` |
+| [apps/web/src/pages/UserManagement.tsx:386](../../apps/web/src/pages/UserManagement.tsx) | TextField | Full Name | `{(e) => setFormData({ ...formData, name: e.target.value })}` |
+| [apps/web/src/pages/UserManagement.tsx:393](../../apps/web/src/pages/UserManagement.tsx) | TextField | Email | `{(e) => setFormData({ ...formData, email: e.target.value })}` |
+| [apps/web/src/pages/UserManagement.tsx:402](../../apps/web/src/pages/UserManagement.tsx) | TextField | {editingUser ? 'New Password' : 'Password'} | `{(e) => setFormData({ ...formData, password: e.target.value })}` |
+| [apps/web/src/pages/UserManagement.tsx:415](../../apps/web/src/pages/UserManagement.tsx) | Select | Role | `{(e) => setFormData({ ...formData, role: e.target.value as User['role'] })}` |
+| [apps/web/src/pages/UserManagement.tsx:447](../../apps/web/src/pages/UserManagement.tsx) | Button | Cancel | `{handleCloseDialog}` |
+| [apps/web/src/pages/UserManagement.tsx:448](../../apps/web/src/pages/UserManagement.tsx) | Button | {isSaving ? 'Saving…' : editingUser ? 'Update User' : 'Create User'} | `` |
 | [apps/web/src/pages/WorkflowDesk.tsx:96](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Supplier / job worker | `{() => setSupplierOpen(true)}` |
 | [apps/web/src/pages/WorkflowDesk.tsx:99](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | {op.title} | `{() => open(op)}` |
 | [apps/web/src/pages/WorkflowDesk.tsx:100](../../apps/web/src/pages/WorkflowDesk.tsx) | Tabs | <Tab label="Document trail" /> <Tab label="Lots, holds & WIP" /> <Tab label="Accounts & closure" /> | `{(_, v) => setTab(v)}` |
