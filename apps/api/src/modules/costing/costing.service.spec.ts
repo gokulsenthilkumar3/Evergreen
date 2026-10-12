@@ -199,9 +199,40 @@ describe('costing writes', () => {
   });
 });
 
-describe('ledger projection of cost entries', () => {
-  it('names the offending record when a stored amount is invalid', async () => {
-    const tx: any = { costingEntry: { findMany: jest.fn().mockResolvedValue([{ id: 12, category: 'Expense', totalCost: -1, date: new Date() }]) } };
-    await expect(reconcileFinance(tx)).rejects.toThrow('Cost entry #12 (Expense) has an invalid amount');
+describe('ledger projection of cost and payroll entries', () => {
+  const date = new Date('2026-10-12T00:00:00Z');
+  const tx = (costs: object[], payroll: object[] = []): any => ({
+    costingEntry: { findMany: jest.fn().mockResolvedValue(costs) },
+    payrollEntry: { findMany: jest.fn().mockResolvedValue(payroll) },
+    production: { findMany: jest.fn().mockResolvedValue([]) },
+    invoice: { findMany: jest.fn().mockResolvedValue([]) },
+    journalEntry: { findUnique: jest.fn().mockResolvedValue(null), create: jest.fn() },
+  });
+
+  it('reports invalid stored amounts by record instead of blocking the ledger, and still posts the valid rows', async () => {
+    const ledger = tx([
+      { id: 12, category: 'Expense', totalCost: -1, date },
+      { id: 13, category: 'Expense', totalCost: NaN, date },
+      { id: 14, category: 'Expense', title: 'Laptop', totalCost: 45000, date },
+    ]);
+    const issues = await reconcileFinance(ledger);
+    expect(issues).toEqual([
+      expect.stringContaining('Cost entry #12 (Expense) has an invalid amount'),
+      expect.stringContaining('Cost entry #13 (Expense) has an invalid amount'),
+    ]);
+    expect(ledger.journalEntry.create).toHaveBeenCalledTimes(1);
+    expect(ledger.journalEntry.create).toHaveBeenCalledWith({ data: expect.objectContaining({ sourceKey: 'COST:14' }) });
+  });
+
+  it('reports a payroll row with an invalid month and posts the others', async () => {
+    const pay = { staffId: 1, basicPay: 1000, overtime: 0, netPay: 900, deductions: 100, createdAt: date };
+    const ledger = tx([], [{ id: 5, month: '2026-13', ...pay }, { id: 6, month: '2026-10', ...pay }]);
+    await expect(reconcileFinance(ledger)).resolves.toEqual([expect.stringContaining('Payroll entry #5 has an invalid month')]);
+    expect(ledger.journalEntry.create).toHaveBeenCalledTimes(1);
+    expect(ledger.journalEntry.create).toHaveBeenCalledWith({ data: expect.objectContaining({ sourceKey: 'PAYROLL:6' }) });
+  });
+
+  it('reports nothing when every row is valid', async () => {
+    await expect(reconcileFinance(tx([{ id: 1, category: 'Expense', totalCost: 0, date }]))).resolves.toEqual([]);
   });
 });

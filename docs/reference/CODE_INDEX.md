@@ -13,11 +13,11 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `ProcessorInfo` | InterfaceDeclaration | [apps/api/src/app.service.ts:4](../../apps/api/src/app.service.ts) |
 | `PublicHealth` | InterfaceDeclaration | [apps/api/src/app.service.ts:16](../../apps/api/src/app.service.ts) |
 | `SystemHealthData` | InterfaceDeclaration | [apps/api/src/app.service.ts:23](../../apps/api/src/app.service.ts) |
-| `AppService` | ClassDeclaration | [apps/api/src/app.service.ts:61](../../apps/api/src/app.service.ts) |
-| `getHello` | MethodDeclaration | [apps/api/src/app.service.ts:67](../../apps/api/src/app.service.ts) |
-| `formatUptime` | MethodDeclaration | [apps/api/src/app.service.ts:71](../../apps/api/src/app.service.ts) |
-| `getPublicHealth` | MethodDeclaration | [apps/api/src/app.service.ts:88](../../apps/api/src/app.service.ts) |
-| `getHealthData` | MethodDeclaration | [apps/api/src/app.service.ts:104](../../apps/api/src/app.service.ts) |
+| `AppService` | ClassDeclaration | [apps/api/src/app.service.ts:63](../../apps/api/src/app.service.ts) |
+| `getHello` | MethodDeclaration | [apps/api/src/app.service.ts:69](../../apps/api/src/app.service.ts) |
+| `formatUptime` | MethodDeclaration | [apps/api/src/app.service.ts:73](../../apps/api/src/app.service.ts) |
+| `getPublicHealth` | MethodDeclaration | [apps/api/src/app.service.ts:90](../../apps/api/src/app.service.ts) |
+| `getHealthData` | MethodDeclaration | [apps/api/src/app.service.ts:106](../../apps/api/src/app.service.ts) |
 | `Public` | Function binding | [apps/api/src/decorators/public.decorator.ts:4](../../apps/api/src/decorators/public.decorator.ts) |
 | `Roles` | Function binding | [apps/api/src/decorators/roles.decorator.ts:4](../../apps/api/src/decorators/roles.decorator.ts) |
 | `BusinessActionFilter` | ClassDeclaration | [apps/api/src/filters/business-action.filter.ts:6](../../apps/api/src/filters/business-action.filter.ts) |
@@ -453,14 +453,16 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `journal` | FunctionDeclaration | [apps/api/src/services/business-ledger.ts:42](../../apps/api/src/services/business-ledger.ts) |
 | `reconcileLots` | FunctionDeclaration | [apps/api/src/services/business-ledger.ts:54](../../apps/api/src/services/business-ledger.ts) |
 | `guardLots` | FunctionDeclaration | [apps/api/src/services/business-ledger.ts:82](../../apps/api/src/services/business-ledger.ts) |
-| `reconcileFinance` | FunctionDeclaration | [apps/api/src/services/business-ledger.ts:110](../../apps/api/src/services/business-ledger.ts) |
-| `reconcileValuation` | FunctionDeclaration | [apps/api/src/services/business-ledger.ts:154](../../apps/api/src/services/business-ledger.ts) |
+| `reconcileFinance` | FunctionDeclaration | [apps/api/src/services/business-ledger.ts:117](../../apps/api/src/services/business-ledger.ts) |
+| `reconcileValuation` | FunctionDeclaration | [apps/api/src/services/business-ledger.ts:169](../../apps/api/src/services/business-ledger.ts) |
 | `PrismaService` | ClassDeclaration | [apps/api/src/services/prisma.service.ts:7](../../apps/api/src/services/prisma.service.ts) |
-| `onModuleInit` | MethodDeclaration | [apps/api/src/services/prisma.service.ts:30](../../apps/api/src/services/prisma.service.ts) |
-| `getStartupIssue` | MethodDeclaration | [apps/api/src/services/prisma.service.ts:54](../../apps/api/src/services/prisma.service.ts) |
-| `stockTransaction` | MethodDeclaration | [apps/api/src/services/prisma.service.ts:58](../../apps/api/src/services/prisma.service.ts) |
-| `closedSnapshot` | MethodDeclaration | [apps/api/src/services/prisma.service.ts:81](../../apps/api/src/services/prisma.service.ts) |
-| `onModuleDestroy` | MethodDeclaration | [apps/api/src/services/prisma.service.ts:95](../../apps/api/src/services/prisma.service.ts) |
+| `onModuleInit` | MethodDeclaration | [apps/api/src/services/prisma.service.ts:31](../../apps/api/src/services/prisma.service.ts) |
+| `reconcileEverything` | MethodDeclaration | [apps/api/src/services/prisma.service.ts:45](../../apps/api/src/services/prisma.service.ts) |
+| `getStartupIssue` | MethodDeclaration | [apps/api/src/services/prisma.service.ts:64](../../apps/api/src/services/prisma.service.ts) |
+| `getDataIssues` | MethodDeclaration | [apps/api/src/services/prisma.service.ts:69](../../apps/api/src/services/prisma.service.ts) |
+| `stockTransaction` | MethodDeclaration | [apps/api/src/services/prisma.service.ts:73](../../apps/api/src/services/prisma.service.ts) |
+| `closedSnapshot` | MethodDeclaration | [apps/api/src/services/prisma.service.ts:104](../../apps/api/src/services/prisma.service.ts) |
+| `onModuleDestroy` | MethodDeclaration | [apps/api/src/services/prisma.service.ts:118](../../apps/api/src/services/prisma.service.ts) |
 | `reconcileStock` | FunctionDeclaration | [apps/api/src/services/stock-bridge.ts:8](../../apps/api/src/services/stock-bridge.ts) |
 | `guardManagedStock` | FunctionDeclaration | [apps/api/src/services/stock-bridge.ts:101](../../apps/api/src/services/stock-bridge.ts) |
 | `getKey` | FunctionDeclaration | [apps/api/src/utils/crypto.ts:8](../../apps/api/src/utils/crypto.ts) |
@@ -493,19 +495,19 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `highlightMatch` | Function binding | [apps/web/src/App.tsx:247](../../apps/web/src/App.tsx) |
 | `App` | Function binding | [apps/web/src/App.tsx:355](../../apps/web/src/App.tsx) |
 | `getInitialPage` | Function binding | [apps/web/src/App.tsx:369](../../apps/web/src/App.tsx) |
-| `setCurrentPage` | Function binding | [apps/web/src/App.tsx:376](../../apps/web/src/App.tsx) |
-| `handlePopState` | Function binding | [apps/web/src/App.tsx:387](../../apps/web/src/App.tsx) |
-| `handleNavigate` | Function binding | [apps/web/src/App.tsx:431](../../apps/web/src/App.tsx) |
-| `toggleTheme` | Function binding | [apps/web/src/App.tsx:441](../../apps/web/src/App.tsx) |
-| `toggleLanguage` | Function binding | [apps/web/src/App.tsx:445](../../apps/web/src/App.tsx) |
-| `handleProfileClick` | Function binding | [apps/web/src/App.tsx:452](../../apps/web/src/App.tsx) |
-| `handleProfileClose` | Function binding | [apps/web/src/App.tsx:456](../../apps/web/src/App.tsx) |
-| `handleLogout` | Function binding | [apps/web/src/App.tsx:460](../../apps/web/src/App.tsx) |
-| `handleLogin` | Function binding | [apps/web/src/App.tsx:476](../../apps/web/src/App.tsx) |
-| `handleDrawerToggle` | Function binding | [apps/web/src/App.tsx:482](../../apps/web/src/App.tsx) |
-| `getBreadcrumbItems` | Function binding | [apps/web/src/App.tsx:487](../../apps/web/src/App.tsx) |
-| `handleSync` | Function binding | [apps/web/src/App.tsx:534](../../apps/web/src/App.tsx) |
-| `labelFor` | Function binding | [apps/web/src/App.tsx:668](../../apps/web/src/App.tsx) |
+| `setCurrentPage` | Function binding | [apps/web/src/App.tsx:377](../../apps/web/src/App.tsx) |
+| `handlePopState` | Function binding | [apps/web/src/App.tsx:389](../../apps/web/src/App.tsx) |
+| `handleNavigate` | Function binding | [apps/web/src/App.tsx:434](../../apps/web/src/App.tsx) |
+| `toggleTheme` | Function binding | [apps/web/src/App.tsx:444](../../apps/web/src/App.tsx) |
+| `toggleLanguage` | Function binding | [apps/web/src/App.tsx:448](../../apps/web/src/App.tsx) |
+| `handleProfileClick` | Function binding | [apps/web/src/App.tsx:455](../../apps/web/src/App.tsx) |
+| `handleProfileClose` | Function binding | [apps/web/src/App.tsx:459](../../apps/web/src/App.tsx) |
+| `handleLogout` | Function binding | [apps/web/src/App.tsx:463](../../apps/web/src/App.tsx) |
+| `handleLogin` | Function binding | [apps/web/src/App.tsx:479](../../apps/web/src/App.tsx) |
+| `handleDrawerToggle` | Function binding | [apps/web/src/App.tsx:485](../../apps/web/src/App.tsx) |
+| `getBreadcrumbItems` | Function binding | [apps/web/src/App.tsx:490](../../apps/web/src/App.tsx) |
+| `handleSync` | Function binding | [apps/web/src/App.tsx:537](../../apps/web/src/App.tsx) |
+| `labelFor` | Function binding | [apps/web/src/App.tsx:671](../../apps/web/src/App.tsx) |
 | `BusinessFlowGuide` | FunctionDeclaration | [apps/web/src/components/BusinessFlowGuide.tsx:16](../../apps/web/src/components/BusinessFlowGuide.tsx) |
 | `YarnCore` | Function binding | [apps/web/src/components/DashboardScene.tsx:7](../../apps/web/src/components/DashboardScene.tsx) |
 | `DashboardScene` | Function binding | [apps/web/src/components/DashboardScene.tsx:50](../../apps/web/src/components/DashboardScene.tsx) |
@@ -1059,13 +1061,13 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `handleRegisterPasskey` | Function binding | [apps/web/src/pages/SecuritySettings.tsx:108](../../apps/web/src/pages/SecuritySettings.tsx) |
 | `handleChangePassword` | Function binding | [apps/web/src/pages/SecuritySettings.tsx:123](../../apps/web/src/pages/SecuritySettings.tsx) |
 | `SessionManagement` | FunctionDeclaration | [apps/web/src/pages/SessionManagement.tsx:23](../../apps/web/src/pages/SessionManagement.tsx) |
-| `TabPanelProps` | InterfaceDeclaration | [apps/web/src/pages/Settings.tsx:34](../../apps/web/src/pages/Settings.tsx) |
-| `TabPanel` | FunctionDeclaration | [apps/web/src/pages/Settings.tsx:40](../../apps/web/src/pages/Settings.tsx) |
-| `SettingsProps` | InterfaceDeclaration | [apps/web/src/pages/Settings.tsx:49](../../apps/web/src/pages/Settings.tsx) |
-| `Settings` | Function binding | [apps/web/src/pages/Settings.tsx:65](../../apps/web/src/pages/Settings.tsx) |
-| `handleSaveCompanySettings` | Function binding | [apps/web/src/pages/Settings.tsx:162](../../apps/web/src/pages/Settings.tsx) |
-| `handleSaveRates` | Function binding | [apps/web/src/pages/Settings.tsx:185](../../apps/web/src/pages/Settings.tsx) |
-| `handleSaveSystemSettings` | Function binding | [apps/web/src/pages/Settings.tsx:212](../../apps/web/src/pages/Settings.tsx) |
+| `TabPanelProps` | InterfaceDeclaration | [apps/web/src/pages/Settings.tsx:35](../../apps/web/src/pages/Settings.tsx) |
+| `TabPanel` | FunctionDeclaration | [apps/web/src/pages/Settings.tsx:41](../../apps/web/src/pages/Settings.tsx) |
+| `SettingsProps` | InterfaceDeclaration | [apps/web/src/pages/Settings.tsx:50](../../apps/web/src/pages/Settings.tsx) |
+| `Settings` | Function binding | [apps/web/src/pages/Settings.tsx:68](../../apps/web/src/pages/Settings.tsx) |
+| `handleSaveCompanySettings` | Function binding | [apps/web/src/pages/Settings.tsx:166](../../apps/web/src/pages/Settings.tsx) |
+| `handleSaveRates` | Function binding | [apps/web/src/pages/Settings.tsx:189](../../apps/web/src/pages/Settings.tsx) |
+| `handleSaveSystemSettings` | Function binding | [apps/web/src/pages/Settings.tsx:216](../../apps/web/src/pages/Settings.tsx) |
 | `SharedPayments` | FunctionDeclaration | [apps/web/src/pages/SharedPayments.tsx:6](../../apps/web/src/pages/SharedPayments.tsx) |
 | `download` | Function binding | [apps/web/src/pages/SharedPayments.tsx:10](../../apps/web/src/pages/SharedPayments.tsx) |
 | `money` | Function binding | [apps/web/src/pages/ShopPortal.tsx:13](../../apps/web/src/pages/ShopPortal.tsx) |
@@ -1173,6 +1175,7 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `formatSuccessMessage` | Function binding | [apps/web/src/utils/messages.ts:249](../../apps/web/src/utils/messages.ts) |
 | `getCrudMessages` | Function binding | [apps/web/src/utils/messages.ts:260](../../apps/web/src/utils/messages.ts) |
 | `canonicalPage` | FunctionDeclaration | [apps/web/src/utils/navigation.ts:2](../../apps/web/src/utils/navigation.ts) |
+| `settingsTabFor` | FunctionDeclaration | [apps/web/src/utils/navigation.ts:17](../../apps/web/src/utils/navigation.ts) |
 | `generatePDF` | Function binding | [apps/web/src/utils/pdfGenerator.ts:12](../../apps/web/src/utils/pdfGenerator.ts) |
 | `localTimeValue` | FunctionDeclaration | [apps/web/src/utils/productionTiming.ts:1](../../apps/web/src/utils/productionTiming.ts) |
 | `productionTimestamp` | FunctionDeclaration | [apps/web/src/utils/productionTiming.ts:5](../../apps/web/src/utils/productionTiming.ts) |

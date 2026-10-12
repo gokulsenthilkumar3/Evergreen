@@ -6,14 +6,14 @@ Generated from every active-source UI file. Labels expressed in code are preserv
 | --- | --- | --- | --- |
 | [apps/web/src/App.tsx:260](../../apps/web/src/App.tsx) | TextField | <TextField id="global-search-input" placeholder="Search invoices, stock, customers (Ctrl+K)..." fullWidth size="small" autoComplete="off" value={query} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleSearch(e.target.value)} onKeyDown={handleKeyDown} InputProps={{ startAdornment: ( <InputAdornment position="start"> {loading ? <SyncIcon fontSize="small" className="spin-icon" /> : <Search | `{(e: React.ChangeEvent<HTMLInputElement>) => handleSearch(e.target.value)}` |
 | [apps/web/src/App.tsx:278](../../apps/web/src/App.tsx) | IconButton | Clear search | `{() => { setQuery(''); setResults([]); }}` |
-| [apps/web/src/App.tsx:778](../../apps/web/src/App.tsx) | Button | Connect with Licensing Desk (WhatsApp) | `` |
-| [apps/web/src/App.tsx:789](../../apps/web/src/App.tsx) | Button | Call Support | `` |
-| [apps/web/src/App.tsx:815](../../apps/web/src/App.tsx) | IconButton | {item.icon} | `{() => setCurrentPage(item.page)}` |
-| [apps/web/src/App.tsx:852](../../apps/web/src/App.tsx) | IconButton | open drawer | `{handleDrawerToggle}` |
-| [apps/web/src/App.tsx:883](../../apps/web/src/App.tsx) | IconButton | Toggle language | `{toggleLanguage}` |
-| [apps/web/src/App.tsx:889](../../apps/web/src/App.tsx) | IconButton | <SyncIcon className={isSyncing ? 'spin-icon' : ''} /> | `{handleSync}` |
-| [apps/web/src/App.tsx:898](../../apps/web/src/App.tsx) | IconButton | {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />} | `{toggleTheme}` |
-| [apps/web/src/App.tsx:904](../../apps/web/src/App.tsx) | IconButton | <Avatar alt={user.name \|\| user.username} sx={{ bgcolor: 'primary.main', width: 36, height: 36, fontSize: '0.9rem', fontWeight: 'bold', border: '2px solid rgba(255,255,255,0.1)' }} > {(user.name \|\| user.username)?.charAt(0).toUpperCase()} </Avatar> | `{handleProfileClick}` |
+| [apps/web/src/App.tsx:781](../../apps/web/src/App.tsx) | Button | Connect with Licensing Desk (WhatsApp) | `` |
+| [apps/web/src/App.tsx:792](../../apps/web/src/App.tsx) | Button | Call Support | `` |
+| [apps/web/src/App.tsx:818](../../apps/web/src/App.tsx) | IconButton | {item.icon} | `{() => setCurrentPage(item.page)}` |
+| [apps/web/src/App.tsx:855](../../apps/web/src/App.tsx) | IconButton | open drawer | `{handleDrawerToggle}` |
+| [apps/web/src/App.tsx:886](../../apps/web/src/App.tsx) | IconButton | Toggle language | `{toggleLanguage}` |
+| [apps/web/src/App.tsx:892](../../apps/web/src/App.tsx) | IconButton | <SyncIcon className={isSyncing ? 'spin-icon' : ''} /> | `{handleSync}` |
+| [apps/web/src/App.tsx:901](../../apps/web/src/App.tsx) | IconButton | {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />} | `{toggleTheme}` |
+| [apps/web/src/App.tsx:907](../../apps/web/src/App.tsx) | IconButton | <Avatar alt={user.name \|\| user.username} sx={{ bgcolor: 'primary.main', width: 36, height: 36, fontSize: '0.9rem', fontWeight: 'bold', border: '2px solid rgba(255,255,255,0.1)' }} > {(user.name \|\| user.username)?.charAt(0).toUpperCase()} </Avatar> | `{handleProfileClick}` |
 | [apps/web/src/components/BusinessFlowGuide.tsx:25](../../apps/web/src/components/BusinessFlowGuide.tsx) | TextField | Search workflow guide | `{event => setSearch(event.target.value)}` |
 | [apps/web/src/components/BusinessFlowGuide.tsx:34](../../apps/web/src/components/BusinessFlowGuide.tsx) | Button | {step.action} | `{() => onNavigate(step.page)}` |
 | [apps/web/src/components/Login.tsx:325](../../apps/web/src/components/Login.tsx) | TextField | Username | `{(e) => { setUsername(e.target.value); if (error) setError(null); handleTyping(); }}` |
@@ -738,30 +738,30 @@ Generated from every active-source UI file. Labels expressed in code are preserv
 | [apps/web/src/pages/SecuritySettings.tsx:450](../../apps/web/src/pages/SecuritySettings.tsx) | Button | Register New Passkey on this Device | `{handleRegisterPasskey}` |
 | [apps/web/src/pages/SessionManagement.tsx:92](../../apps/web/src/pages/SessionManagement.tsx) | TextField | <TextField fullWidth size="small" placeholder="Search by user, IP, location, or device..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} /> | `{(e) => setSearchTerm(e.target.value)}` |
 | [apps/web/src/pages/SessionManagement.tsx:154](../../apps/web/src/pages/SessionManagement.tsx) | Button | Revoke | `{() => { if (window.confirm('Are you sure you want to revoke this session?')) { revokeSessionMutation.mutate(session.id); } }}` |
-| [apps/web/src/pages/Settings.tsx:253](../../apps/web/src/pages/Settings.tsx) | Tabs | <Tab label="Company Info" /> <Tab label="System Settings" /> <Tab label="Rates & Defaults" /> <Tab label="Appearance" /> <Tab label="Audit Logs" /> | `{(_, newValue) => setTabValue(newValue)}` |
-| [apps/web/src/pages/Settings.tsx:254](../../apps/web/src/pages/Settings.tsx) | Tab | Company Info | `` |
-| [apps/web/src/pages/Settings.tsx:255](../../apps/web/src/pages/Settings.tsx) | Tab | System Settings | `` |
-| [apps/web/src/pages/Settings.tsx:256](../../apps/web/src/pages/Settings.tsx) | Tab | Rates & Defaults | `` |
-| [apps/web/src/pages/Settings.tsx:257](../../apps/web/src/pages/Settings.tsx) | Tab | Appearance | `` |
-| [apps/web/src/pages/Settings.tsx:258](../../apps/web/src/pages/Settings.tsx) | Tab | Audit Logs | `` |
-| [apps/web/src/pages/Settings.tsx:290](../../apps/web/src/pages/Settings.tsx) | Button | Upload Logo <input type="file" hidden accept="image/*" onChange={(e) => { const file = e.target.files?.[0]; if (file) { if (file.size > 500 * 1024) { // 500KB limit toast.error(ERROR_MESSAGES.FILE_TOO_LARGE('500KB')); return; } const reader = new FileReader(); reader.onloadend = () => { setCompanySettings({ ...companySettings, logo: reader.result as string }); }; reader.readAsDataURL(file); } }} / | `` |
-| [apps/web/src/pages/Settings.tsx:319](../../apps/web/src/pages/Settings.tsx) | Button | Remove | `{() => setCompanySettings({ ...companySettings, logo: '' })}` |
-| [apps/web/src/pages/Settings.tsx:336](../../apps/web/src/pages/Settings.tsx) | TextField | Company Name | `{(e) => setCompanySettings({ ...companySettings, companyName: e.target.value })}` |
-| [apps/web/src/pages/Settings.tsx:342](../../apps/web/src/pages/Settings.tsx) | TextField | Business activities | `{event => setCompanySettings({ ...companySettings, businessMode: event.target.value as BusinessMode })}` |
-| [apps/web/src/pages/Settings.tsx:347](../../apps/web/src/pages/Settings.tsx) | TextField | Workspace complexity | `{event => setCompanySettings({ ...companySettings, workspaceMode: event.target.value as WorkspaceMode })}` |
-| [apps/web/src/pages/Settings.tsx:353](../../apps/web/src/pages/Settings.tsx) | TextField | Address | `{(e) => setCompanySettings({ ...companySettings, address: e.target.value })}` |
-| [apps/web/src/pages/Settings.tsx:361](../../apps/web/src/pages/Settings.tsx) | TextField | GSTIN | `{(e) => setCompanySettings({ ...companySettings, gstin: e.target.value })}` |
-| [apps/web/src/pages/Settings.tsx:367](../../apps/web/src/pages/Settings.tsx) | TextField | Phone | `{(e) => setCompanySettings({ ...companySettings, phone: e.target.value })}` |
-| [apps/web/src/pages/Settings.tsx:373](../../apps/web/src/pages/Settings.tsx) | TextField | Email | `{(e) => setCompanySettings({ ...companySettings, email: e.target.value })}` |
-| [apps/web/src/pages/Settings.tsx:380](../../apps/web/src/pages/Settings.tsx) | Button | Save Company Info | `{handleSaveCompanySettings}` |
-| [apps/web/src/pages/Settings.tsx:438](../../apps/web/src/pages/Settings.tsx) | TextField | Low Stock Threshold (kg) | `{(e) => setSystemSettings({ ...systemSettings, lowStockThreshold: e.target.value })}` |
-| [apps/web/src/pages/Settings.tsx:467](../../apps/web/src/pages/Settings.tsx) | TextField | Default Invoice Theme | `{(e) => setSystemSettings({ ...systemSettings, defaultInvoiceTheme: e.target.value })}` |
-| [apps/web/src/pages/Settings.tsx:482](../../apps/web/src/pages/Settings.tsx) | Button | Save System Settings | `{handleSaveSystemSettings}` |
-| [apps/web/src/pages/Settings.tsx:501](../../apps/web/src/pages/Settings.tsx) | TextField | EB Rate per Unit (₹ / kWh) | `{(e) => setRateSettings({ ...rateSettings, ebRate: e.target.value })}` |
-| [apps/web/src/pages/Settings.tsx:513](../../apps/web/src/pages/Settings.tsx) | TextField | Packaging Rate (₹ / kg yarn) | `{(e) => setRateSettings({ ...rateSettings, packageRate: e.target.value })}` |
-| [apps/web/src/pages/Settings.tsx:525](../../apps/web/src/pages/Settings.tsx) | TextField | Maintenance Rate (₹ / kg yarn) | `{(e) => setRateSettings({ ...rateSettings, maintenanceRate: e.target.value })}` |
-| [apps/web/src/pages/Settings.tsx:537](../../apps/web/src/pages/Settings.tsx) | TextField | Supported Yarn Counts | `{(e) => setRateSettings({ ...rateSettings, supportedCounts: e.target.value })}` |
-| [apps/web/src/pages/Settings.tsx:547](../../apps/web/src/pages/Settings.tsx) | Button | Save Operational Rates | `{handleSaveRates}` |
+| [apps/web/src/pages/Settings.tsx:257](../../apps/web/src/pages/Settings.tsx) | Tabs | <Tab label="Company Info" /> <Tab label="System Settings" /> <Tab label="Rates & Defaults" /> <Tab label="Appearance" /> <Tab label="Audit Logs" /> | `{(_, newValue) => setTabValue(newValue)}` |
+| [apps/web/src/pages/Settings.tsx:258](../../apps/web/src/pages/Settings.tsx) | Tab | Company Info | `` |
+| [apps/web/src/pages/Settings.tsx:259](../../apps/web/src/pages/Settings.tsx) | Tab | System Settings | `` |
+| [apps/web/src/pages/Settings.tsx:260](../../apps/web/src/pages/Settings.tsx) | Tab | Rates & Defaults | `` |
+| [apps/web/src/pages/Settings.tsx:261](../../apps/web/src/pages/Settings.tsx) | Tab | Appearance | `` |
+| [apps/web/src/pages/Settings.tsx:262](../../apps/web/src/pages/Settings.tsx) | Tab | Audit Logs | `` |
+| [apps/web/src/pages/Settings.tsx:294](../../apps/web/src/pages/Settings.tsx) | Button | Upload Logo <input type="file" hidden accept="image/*" onChange={(e) => { const file = e.target.files?.[0]; if (file) { if (file.size > 500 * 1024) { // 500KB limit toast.error(ERROR_MESSAGES.FILE_TOO_LARGE('500KB')); return; } const reader = new FileReader(); reader.onloadend = () => { setCompanySettings({ ...companySettings, logo: reader.result as string }); }; reader.readAsDataURL(file); } }} / | `` |
+| [apps/web/src/pages/Settings.tsx:323](../../apps/web/src/pages/Settings.tsx) | Button | Remove | `{() => setCompanySettings({ ...companySettings, logo: '' })}` |
+| [apps/web/src/pages/Settings.tsx:340](../../apps/web/src/pages/Settings.tsx) | TextField | Company Name | `{(e) => setCompanySettings({ ...companySettings, companyName: e.target.value })}` |
+| [apps/web/src/pages/Settings.tsx:346](../../apps/web/src/pages/Settings.tsx) | TextField | Business activities | `{event => setCompanySettings({ ...companySettings, businessMode: event.target.value as BusinessMode })}` |
+| [apps/web/src/pages/Settings.tsx:351](../../apps/web/src/pages/Settings.tsx) | TextField | Workspace complexity | `{event => setCompanySettings({ ...companySettings, workspaceMode: event.target.value as WorkspaceMode })}` |
+| [apps/web/src/pages/Settings.tsx:357](../../apps/web/src/pages/Settings.tsx) | TextField | Address | `{(e) => setCompanySettings({ ...companySettings, address: e.target.value })}` |
+| [apps/web/src/pages/Settings.tsx:365](../../apps/web/src/pages/Settings.tsx) | TextField | GSTIN | `{(e) => setCompanySettings({ ...companySettings, gstin: e.target.value })}` |
+| [apps/web/src/pages/Settings.tsx:371](../../apps/web/src/pages/Settings.tsx) | TextField | Phone | `{(e) => setCompanySettings({ ...companySettings, phone: e.target.value })}` |
+| [apps/web/src/pages/Settings.tsx:377](../../apps/web/src/pages/Settings.tsx) | TextField | Email | `{(e) => setCompanySettings({ ...companySettings, email: e.target.value })}` |
+| [apps/web/src/pages/Settings.tsx:384](../../apps/web/src/pages/Settings.tsx) | Button | Save Company Info | `{handleSaveCompanySettings}` |
+| [apps/web/src/pages/Settings.tsx:442](../../apps/web/src/pages/Settings.tsx) | TextField | Low Stock Threshold (kg) | `{(e) => setSystemSettings({ ...systemSettings, lowStockThreshold: e.target.value })}` |
+| [apps/web/src/pages/Settings.tsx:471](../../apps/web/src/pages/Settings.tsx) | TextField | Default Invoice Theme | `{(e) => setSystemSettings({ ...systemSettings, defaultInvoiceTheme: e.target.value })}` |
+| [apps/web/src/pages/Settings.tsx:486](../../apps/web/src/pages/Settings.tsx) | Button | Save System Settings | `{handleSaveSystemSettings}` |
+| [apps/web/src/pages/Settings.tsx:505](../../apps/web/src/pages/Settings.tsx) | TextField | EB Rate per Unit (₹ / kWh) | `{(e) => setRateSettings({ ...rateSettings, ebRate: e.target.value })}` |
+| [apps/web/src/pages/Settings.tsx:517](../../apps/web/src/pages/Settings.tsx) | TextField | Packaging Rate (₹ / kg yarn) | `{(e) => setRateSettings({ ...rateSettings, packageRate: e.target.value })}` |
+| [apps/web/src/pages/Settings.tsx:529](../../apps/web/src/pages/Settings.tsx) | TextField | Maintenance Rate (₹ / kg yarn) | `{(e) => setRateSettings({ ...rateSettings, maintenanceRate: e.target.value })}` |
+| [apps/web/src/pages/Settings.tsx:541](../../apps/web/src/pages/Settings.tsx) | TextField | Supported Yarn Counts | `{(e) => setRateSettings({ ...rateSettings, supportedCounts: e.target.value })}` |
+| [apps/web/src/pages/Settings.tsx:551](../../apps/web/src/pages/Settings.tsx) | Button | Save Operational Rates | `{handleSaveRates}` |
 | [apps/web/src/pages/SharedPayments.tsx:14](../../apps/web/src/pages/SharedPayments.tsx) | Button | Download drafts | `{download}` |
 | [apps/web/src/pages/ShopPortal.tsx:70](../../apps/web/src/pages/ShopPortal.tsx) | Button | {language === 'en' ? 'தமிழ்' : 'English'} | `{switchLanguage}` |
 | [apps/web/src/pages/ShopPortal.tsx:70](../../apps/web/src/pages/ShopPortal.tsx) | Button | {t.staff} | `` |

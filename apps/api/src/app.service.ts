@@ -25,6 +25,8 @@ export interface SystemHealthData {
   status: 'ok' | 'degraded';
   /** Why startup reconciliation was blocked, or null when the ledgers reconciled. */
   startupIssue: string | null;
+  /** Stored records left out of the journal until they are corrected. */
+  dataIssues: string[];
   timestamp: string;
   uptimeSeconds: number;
   uptimeFormatted: string;
@@ -94,7 +96,7 @@ export class AppService {
     }
     return {
       service: 'evergreen-api',
-      status: database && !this.prisma.getStartupIssue() ? 'ok' : 'degraded',
+      status: database && !this.prisma.getStartupIssue() && !this.prisma.getDataIssues().length ? 'ok' : 'degraded',
       database,
       timestamp: new Date().toISOString(),
     };
@@ -124,6 +126,7 @@ export class AppService {
     }
 
     const startupIssue = this.prisma.getStartupIssue();
+    const dataIssues = this.prisma.getDataIssues();
     let countReadFailed = false;
     // Counts establish connectivity, not business-flow validation.
     // Collect counts across modules in parallel
@@ -421,8 +424,9 @@ export class AppService {
     }
     return {
       service: 'evergreen-api',
-      status: dbStatus === 'CONNECTED' && !countReadFailed && cottonMatches && yarnMatches && !startupIssue ? 'ok' : 'degraded',
+      status: dbStatus === 'CONNECTED' && !countReadFailed && cottonMatches && yarnMatches && !startupIssue && !dataIssues.length ? 'ok' : 'degraded',
       startupIssue,
+      dataIssues,
       timestamp: new Date().toISOString(),
       uptimeSeconds: uptimeSec,
       uptimeFormatted: this.formatUptime(uptimeSec),

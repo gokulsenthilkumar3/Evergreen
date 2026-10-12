@@ -71,7 +71,7 @@ import {
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from './utils/api';
 import { isCompanyPageVisible } from '@evergreen/types';
-import { canonicalPage } from './utils/navigation';
+import { canonicalPage, settingsTabFor } from './utils/navigation';
 import getTheme from './theme';
 import type { ThemeName } from './theme';
 import Login from './components/Login';
@@ -372,8 +372,10 @@ const App: React.FC = () => {
     return canonicalPage(path);
   };
   const [currentPage, setPageState] = useState<string>(getInitialPage);
+  const [settingsTab, setSettingsTab] = useState<number>(() => settingsTabFor(window.location.pathname.replace(/^\//, '').trim()));
 
   const setCurrentPage = (page: string) => {
+    setSettingsTab(settingsTabFor(page));
     page = canonicalPage(page);
     setPageState(page);
     const targetPath = page === 'dashboard' ? '/' : `/${page}`;
@@ -386,6 +388,7 @@ const App: React.FC = () => {
   useEffect(() => {
     const handlePopState = () => {
       const path = window.location.pathname.replace(/^\//, '').trim();
+      setSettingsTab(settingsTabFor(path));
       setPageState(canonicalPage(path || 'dashboard'));
     };
     window.addEventListener('popstate', handlePopState);
@@ -1204,6 +1207,8 @@ const App: React.FC = () => {
                       {currentPage === 'security' && <SecuritySettings />}
                       {currentPage === 'settings' && (
                         <Settings
+                          key={settingsTab}
+                          initialTab={settingsTab}
                           username={user.username}
                           themeName={themeName}
                           onThemeChange={setThemeName}

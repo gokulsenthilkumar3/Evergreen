@@ -63,12 +63,13 @@ describe('AppController health routes', () => {
 });
 
 describe('AppService public health', () => {
-  const prisma = { $queryRawUnsafe: jest.fn(), getStartupIssue: jest.fn() };
+  const prisma = { $queryRawUnsafe: jest.fn(), getStartupIssue: jest.fn(), getDataIssues: jest.fn() };
   const service = new AppService(prisma as unknown as PrismaService);
 
   beforeEach(() => {
     prisma.$queryRawUnsafe.mockResolvedValue([{ 1: 1 }]);
     prisma.getStartupIssue.mockReturnValue(null);
+    prisma.getDataIssues.mockReturnValue([]);
   });
 
   it('discloses nothing beyond service name, status and time', async () => {
@@ -81,6 +82,13 @@ describe('AppService public health', () => {
     prisma.getStartupIssue.mockReturnValue('Cost entry #12 (Expense) has an invalid amount.');
     const health = await service.getPublicHealth();
     expect(health.status).toBe('degraded');
+    expect(JSON.stringify(health)).not.toContain('Cost entry');
+  });
+
+  it('reports degraded without detail when a stored record is waiting to be corrected', async () => {
+    prisma.getDataIssues.mockReturnValue(['Cost entry #12 (Expense) has an invalid amount and is not posted.']);
+    const health = await service.getPublicHealth();
+    expect(health).toMatchObject({ status: 'degraded', database: true });
     expect(JSON.stringify(health)).not.toContain('Cost entry');
   });
 

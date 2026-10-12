@@ -68,7 +68,7 @@ describe('P0 safety: public surfaces and the costing kill-switch', () => {
       await http().get('/status').set(viewer).expect(403);
       await http().get('/status').set(modifier).expect(403);
       const res = await http().get('/status').set(admin).expect(200);
-      expect(res.body).toMatchObject({ status: 'ok', startupIssue: null });
+      expect(res.body).toMatchObject({ status: 'ok', startupIssue: null, dataIssues: [] });
       expect(res.body.processors.length).toBeGreaterThan(0);
       expect(JSON.stringify(res.body)).not.toMatch(/5555|Database Studio/);
     });
@@ -172,6 +172,37 @@ describe('P0 safety: public surfaces and the costing kill-switch', () => {
       await http().put('/costing/999999').set(modifier).send({ totalCost: 5 }).expect(404);
       await http().put('/costing/abc').set(modifier).send({ totalCost: 5 }).expect(404);
       await http().delete('/costing/999999').set(admin).expect(404);
+    });
+
+    it('stays usable with several invalid stored rows and lets each be repaired in turn', async () => {
+      const prisma = app.get(PrismaService);
+      const bad = (title: string) => prisma.costingEntry.create({ data: { date: new Date('2026-10-05'), category: 'Expense', title, totalCost: -50, details: title } });
+      const [first, second] = [await bad('Corrupt A'), await bad('Corrupt B')];
+
+      // A restart still succeeds; the probe says degraded and only administrators see why.
+      await expect(prisma.onModuleInit()).resolves.toBeUndefined();
+      expect(prisma.getStartupIssue()).toBeNull();
+      const probe = await http().get('/health').expect(200);
+      expect(probe.body).toEqual(expect.objectContaining({ status: 'degraded', database: true }));
+      expect(JSON.stringify(probe.body)).not.toContain('Cost entry');
+      const before = await http().get('/status').set(admin).expect(200);
+      expect(before.body.dataIssues).toEqual([expect.stringContaining(`Cost entry #${first.id}`), expect.stringContaining(`Cost entry #${second.id}`)]);
+
+      // Unrelated postings are not blocked, and neither invalid row reached the journal.
+      await expense({ amount: 75, title: 'Posting while degraded' }).expect(201);
+      expect(await prisma.journalEntry.count({ where: { sourceKey: { in: [`COST:${first.id}`, `COST:${second.id}`] } } })).toBe(0);
+
+      // Repair one while the other is still invalid, then remove the other.
+      await http().put(`/costing/${first.id}`).set(modifier).send({ totalCost: 50 }).expect(200);
+      const between = await http().get('/status').set(admin).expect(200);
+      expect(between.body.dataIssues).toEqual([expect.stringContaining(`Cost entry #${second.id}`)]);
+      await http().delete(`/costing/${second.id}`).set(admin).expect(200);
+
+      const after = await http().get('/status').set(admin).expect(200);
+      expect(after.body).toMatchObject({ status: 'ok', dataIssues: [], startupIssue: null });
+      const healthy = await http().get('/health').expect(200);
+      expect(healthy.body.status).toBe('ok');
+      expect(await prisma.journalEntry.count({ where: { sourceKey: `COST:${first.id}` } })).toBe(1);
     });
 
     it('keeps viewers out of every costing write', async () => {

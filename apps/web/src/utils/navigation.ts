@@ -9,3 +9,11 @@ export function canonicalPage(page: string): string {
   };
   return Object.hasOwn(aliases, page) ? aliases[page] : page;
 }
+
+/** Position of the Audit Logs tab in Settings. */
+export const SETTINGS_AUDIT_TAB = 4;
+
+/** Which Settings tab a requested page should open on; `logs` means the audit log, not Company Info. */
+export function settingsTabFor(page: string): number {
+  return page === 'logs' ? SETTINGS_AUDIT_TAB : 0;
+}

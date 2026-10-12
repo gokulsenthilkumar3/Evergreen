@@ -30,6 +30,7 @@ import { validateRate, validateGST } from '../utils/validators';
 import type { ThemeName } from '../theme';
 
 import Logs from './Logs';
+import { SETTINGS_AUDIT_TAB } from '../utils/navigation';
 
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -52,6 +53,8 @@ interface SettingsProps {
     onThemeChange?: (name: ThemeName) => void;
     floatingNav?: boolean;
     onFloatingNavChange?: (val: boolean) => void;
+    /** Tab to open on; the audit-log link uses this. */
+    initialTab?: number;
 }
 
 const THEME_OPTIONS: { name: ThemeName; label: string; color: string; dark?: string }[] = [
@@ -68,8 +71,9 @@ const Settings: React.FC<SettingsProps> = ({
     onThemeChange,
     floatingNav = false,
     onFloatingNavChange,
+    initialTab = 0,
 }) => {
-    const [tabValue, setTabValue] = useState(0);
+    const [tabValue, setTabValue] = useState(initialTab);
 
 
     const queryClient = useQueryClient();
@@ -679,7 +683,7 @@ const Settings: React.FC<SettingsProps> = ({
                 </TabPanel>
 
                 {/* Audit Logs Tab */}
-                <TabPanel value={tabValue} index={4}>
+                <TabPanel value={tabValue} index={SETTINGS_AUDIT_TAB}>
                     <Logs />
                 </TabPanel>
             </Paper>
