@@ -4,7 +4,7 @@ React, Material UI and TanStack Query power the staff application and public sho
 
 - [Setup and service directory](../../QUICK_START.md)
 - [Business flow and verification](../../docs/BUSINESS_FLOW.md)
-- [2030 development direction](../../docs/2030_ROADMAP.md)
+- [Backlog and long-term direction](../../docs/IMPLEMENTATION_BACKLOG.md)
 
 Business Workspace (`/workspace`) provides live commerce summaries, a machine register count, API health, manual refresh and optional 30-second polling. Failed requests remain visible instead of becoming zero balances. Its searchable business guide is shared with Tutorial (`/tutorial`), and its navigation updates browser history.
 

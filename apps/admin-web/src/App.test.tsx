@@ -2,9 +2,11 @@ import * as matchers from "@testing-library/jest-dom/matchers";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   cleanup,
+  act,
   fireEvent,
   render,
   screen,
+  waitFor,
   within,
 } from "@testing-library/react";
 import App from "./App";
@@ -53,6 +55,51 @@ async function openApp() {
 }
 
 describe("Provider admin workspace", () => {
+  it("prevents duplicate renewals and reports only the saved provider settings", async () => {
+    let complete!: (response: Response) => void;
+    const pending = new Promise<Response>((resolve) => { complete = resolve; });
+    vi.mocked(fetch).mockImplementation(async (input) => {
+      const url = String(input);
+      if (url.endsWith("/license")) return pending;
+      return { ok: true, json: async () => url.endsWith("/companies") ? DEMO_TENANTS : [] } as Response;
+    });
+    await openApp();
+    fireEvent.click(await screen.findByRole("button", { name: /^⚡ Reactivate/ }));
+    const dialog = screen.getByRole("dialog", { name: "Renew license" });
+    fireEvent.change(within(dialog).getByLabelText(/Bank payment UTR/), { target: { value: " TEST-123 " } });
+    fireEvent.change(within(dialog).getByLabelText("Renewal duration"), { target: { value: "30_DAYS" } });
+    const save = within(dialog).getByRole("button", { name: "Save license renewal" });
+    fireEvent.click(save);
+    fireEvent.click(save);
+    expect(save).toBeDisabled();
+    expect(within(dialog).getByRole("button", { name: "Cancel" })).toBeDisabled();
+    fireEvent(dialog, new Event("cancel", { bubbles: false, cancelable: true }));
+    expect(dialog).toBeInTheDocument();
+    const requests = vi.mocked(fetch).mock.calls.filter(([url]) => String(url).endsWith("/license"));
+    expect(requests).toHaveLength(1);
+    const payload = JSON.parse(String(requests[0][1]?.body));
+    expect(payload).toMatchObject({ status: "ACTIVE", graceExpiresAt: null, details: "Operator renewal request; payment reference: TEST-123" });
+    expect(Date.parse(payload.expiresAt) - Date.now()).toBeGreaterThan(29 * 86400000);
+    await act(async () => { complete({ ok: true } as Response); });
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    expect(screen.getByText(/Tenant synchronization is not yet confirmed/)).toBeInTheDocument();
+  });
+
+  it("keeps a failed renewal open with its inputs available for correction", async () => {
+    vi.mocked(fetch).mockImplementation(async (input) => ({
+      ok: !String(input).endsWith("/license"), status: 400,
+      json: async () => String(input).endsWith("/companies") ? DEMO_TENANTS : [],
+    } as Response));
+    await openApp();
+    fireEvent.click(await screen.findByRole("button", { name: /^⚡ Reactivate/ }));
+    const dialog = screen.getByRole("dialog", { name: "Renew license" });
+    fireEvent.change(within(dialog).getByLabelText(/Bank payment UTR/), { target: { value: "PAY-456" } });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Save license renewal" }));
+    expect(await screen.findByText(/Reactivation failed with HTTP 400/)).toBeInTheDocument();
+    expect(within(dialog).getByRole("button", { name: "Save license renewal" })).toBeEnabled();
+    expect(within(dialog).getByLabelText(/Bank payment UTR/)).toHaveValue("PAY-456");
+  });
+
   it("reports unavailable data without substituting demo mills", async () => {
     vi.mocked(fetch).mockResolvedValue({ ok: false, status: 503 } as Response);
     await openApp();
@@ -119,6 +166,45 @@ describe("Provider admin workspace", () => {
     ).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Clear filters" }));
     expect(screen.getByText(DEMO_TENANTS[0].name)).toBeInTheDocument();
+  });
+
+  it("prints only provider API results in the ops terminal and never claims unrun operations", async () => {
+    vi.mocked(fetch).mockImplementation(async (input) => {
+      const url = String(input);
+      if (url.endsWith("/health")) {
+        return { ok: true, json: async () => ({ service: "evergreen-admin-api", status: "ok", timestamp: "2026-10-15T00:00:00.000Z", database: { status: "CONNECTED", tenantsManaged: 3 } }) } as Response;
+      }
+      return { ok: true, json: async () => url.endsWith("/companies") ? DEMO_TENANTS : [] } as Response;
+    });
+    const nav = await openApp();
+    fireEvent.click(nav.getByRole("button", { name: /^Ops terminal/ }));
+    const input = screen.getByRole("textbox", { name: "Terminal command" });
+    const run = async (command: string) => {
+      fireEvent.change(input, { target: { value: command } });
+      await act(async () => { fireEvent.keyDown(input, { key: "Enter" }); });
+    };
+
+    await run("health");
+    expect(await screen.findByText("Database: CONNECTED, 3 companies")).toBeInTheDocument();
+    await run("backup");
+    expect(await screen.findByText(/no backup endpoint, so no snapshot was taken/)).toBeInTheDocument();
+    await run("weighbridge");
+    expect(await screen.findByText(/No reading was taken/)).toBeInTheDocument();
+    await run("rm -rf /");
+    expect(await screen.findByText(/Unknown command "rm -rf \/". Nothing was run/)).toBeInTheDocument();
+    expect(screen.queryByText(/successfully|100% operational|STREAM ACTIVE/)).not.toBeInTheDocument();
+  });
+
+  it("reports a failed provider API check instead of inventing a status", async () => {
+    vi.mocked(fetch).mockImplementation(async (input) => {
+      const url = String(input);
+      if (url.endsWith("/health")) return { ok: false, status: 503, json: async () => ({}) } as Response;
+      return { ok: true, json: async () => url.endsWith("/companies") ? DEMO_TENANTS : [] } as Response;
+    });
+    const nav = await openApp();
+    fireEvent.click(nav.getByRole("button", { name: /^Ops terminal/ }));
+    await act(async () => { fireEvent.click(screen.getByRole("button", { name: /health$/ })); });
+    expect(await screen.findByText(/Failed: the provider API did not answer \(HTTP 503\)/)).toBeInTheDocument();
   });
 
   it("opens a named dialog and handles native Escape cancellation without a mutation", async () => {

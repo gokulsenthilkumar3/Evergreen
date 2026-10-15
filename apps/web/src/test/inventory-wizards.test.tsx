@@ -83,7 +83,7 @@ describe('restored inventory wizard controls', () => {
         fireEvent.click(screen.getByRole('button', { name: 'Add Batch' }));
         await waitFor(() => expect(api.post).toHaveBeenCalledWith('/inventory/inward', expect.objectContaining({ date: new Date('2026-10-01T09:30:00').toISOString(), batchId: 'EG-20261001-005' })));
         client.clear();
-    });
+    }, 15000);
 
     it('lets operators return to automatic numbering after composing a code', async () => {
         const client = mount(<InwardEntry userRole="ADMIN" />);

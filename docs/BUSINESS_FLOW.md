@@ -1,29 +1,77 @@
-# Business flow and acceptance checks
+# Business flow
 
-The active workflow is receive → produce → review stock → sell → invoice → collect. Business Workspace and Tutorial share a searchable guide with direct navigation to the relevant screens.
+This page describes how material and money move through EverGreen, which screen owns each handoff, and how to check the flow end to end. For code ownership, see [architecture](ARCHITECTURE.md).
 
-| Handoff | Owner screen | Check before continuing |
+## Material and money flow
+
+```mermaid
+flowchart LR
+  Receipt[Cotton or yarn receipt] --> Stock[Stock by item and lot]
+  Stock --> Production[Production or job work]
+  Production --> Output[Yarn, waste and work in progress]
+  Output --> Release[Quality and dispatch checks]
+  Release --> Dispatch[Dispatch]
+  Dispatch --> Invoice[Invoice]
+  Invoice --> Payment[Payment and customer ledger]
+```
+
+1. **Receive.** Record the supplier, lot, material and physical quantity. For weighed receipts, gross minus tare must equal net. Moisture and settlement follow the supplier's actual contract, not a fixed constant (see [cotton moisture research](COTTON_MOISTURE_RESEARCH.md)).
+2. **Produce.** Record the lots consumed, yarn produced, recoverable waste and unfinished material. Input must equal output plus waste plus recorded loss. Correcting posted production must keep stock and journals consistent.
+3. **Review and dispatch.** Check ownership, reservations, quality holds and available stock before releasing goods. A partial dispatch keeps its order and lot references. A second click or a retry must not deduct the same stock twice.
+4. **Invoice.** Use the saved customer and issuer details and the line snapshot. Quantities, rates, discounts, rounding and tax must match the saved document. A PDF is not a statutory e-invoice or e-Way Bill.
+5. **Collect.** Apply each payment to the right invoice, keep the remaining balance, and keep the customer ledger in step. Reversals and closed accounting periods follow explicit rules.
+
+## Who owns each handoff
+
+| Handoff | Screen | Check before moving on |
 | --- | --- | --- |
-| Company setup | Settings | Saved issuer identity and address are correct |
-| Material receipt | Inward / Batch | Supplier record, physical weight and receipt agree |
-| Material conversion | Production / Job Work | Input, output, waste and external returns reconcile |
-| Dispatch readiness | Inventory / Outwards | Physical stock and committed quantities have been reviewed |
-| Customer sale | Business Desk | Saved customer, catalogue item, quantity, price and tax are correct |
-| Collection | Business Desk / Reports | Payment belongs to the correct invoice; remaining balance agrees |
+| Company setup | Settings | Legal name, address and GSTIN are saved; invoices are blocked until they are |
+| Material receipt | Inward / Batch, Operations Desk | Supplier, physical weight and receipt agree |
+| Conversion | Production, Job Work | Input, output, waste and job-work returns reconcile |
+| Dispatch readiness | Inventory, Outwards | Physical and committed stock have been reviewed |
+| Sale | Business Desk | Customer, item, quantity, price and tax are correct |
+| Collection | Business Desk, Reports | Payment is on the correct invoice and the balance agrees |
 
-## Boundaries
+Commerce owns the catalogue stock ledger, orders, invoices and invoice-linked payments. Legacy mill inventory and production are bridged into that ledger by `stock-bridge.ts`, but are not yet proven to share every movement. Reconcile both, and never post a movement twice to make up for a gap. Bank reconciliation, statutory filing and live machine telemetry are not built.
 
-Commerce owns its catalogue ledger, orders, invoices and invoice-linked payments. Legacy mill inventory and production are not yet proven to share every stock movement with commerce. Reconcile both ledgers; do not post the same movement twice to compensate for uncertainty. Bank reconciliation, provider-backed statutory filing and live machine telemetry are not established capabilities. The parity register remains the release authority.
+## Business and workspace modes
 
-## Verify using a disposable test database
+| Business mode | Intended activity |
+| --- | --- |
+| `WAREHOUSE` | Receiving, storage, dispatch and related sales |
+| `MILL` | Production plus related stock and costing |
+| `PROCESSING` | Processing and job work |
+| `INTEGRATED` | All of the above |
 
-1. Save issuer settings and a customer/catalogue item. Confirm missing required details block invoice issuance.
-2. Receive material and verify its recorded balance. Record production and compare input, output and waste.
-3. Review available stock before dispatch. Confirm the relevant ledger changes once for a valid sale.
-4. Issue an invoice and download its saved document. Confirm quantities and totals agree with the record.
-5. Record a partial payment; confirm the remaining balance. Record the remainder and confirm the invoice and customer ledger agree.
-6. Return to Workspace and refresh. Compare invoice value, receivables and open orders with Reports.
-7. Simulate an API failure. Confirm the workspace warns about stale data and never invents an operational status or zero balance.
-8. Check phone-width navigation, keyboard access to guide accordions, search with no results and browser Back after opening a workflow step.
+`GUIDED` and `FULL` set how much navigation is shown. The codes come from `packages/types/company-profile.ts`. They are preferences: server roles and command validation are separate, and there are no `TRADER` or `WAREHOUSE_ONLY` modes.
 
-This checklist documents required acceptance work; it does not claim these operational checks have all passed.
+## BookEllam vocabulary
+
+BookEllam ("all the books") groups the traditional mill registers so operators can find records in familiar terms.
+
+| Book | Common term | Purpose |
+| --- | --- | --- |
+| Day book | Naal Kurippu | Daily transactions in order |
+| Inward book | Varavu Puthagam | Receipts, supplier references and weights |
+| Outward book | Vilpanai Puthagam | Dispatches and delivery references |
+| Stock / lot book | Sarakku Puthagam | Quantities and lot history |
+| Party ledger | Peredu / Khata | Customer and supplier debits and credits |
+| Machine log | Yanthira Puthagam | Maintenance and inspection records |
+| Waste register | Kasaadu Puthagam | Recoverable waste movements |
+
+The [BookEllam page reference](wiki/pages/BookEllam.md) lists which registers are implemented. Several are still incomplete or mis-mapped (register UI-008, UI-009).
+
+## End-to-end check
+
+Run this on a disposable database, never on customer data.
+
+1. Save issuer settings, a customer and a catalogue item. Confirm that missing issuer details block invoicing.
+2. Receive material and check its balance. Record production and compare input with output and waste.
+3. Review available stock, then dispatch. Confirm the ledger changes once for a valid sale.
+4. Issue an invoice and download it. Confirm quantities and totals match the saved record.
+5. Record a partial payment and check the balance. Record the rest and confirm the invoice and customer ledger agree.
+6. Refresh Business Workspace. Compare invoice value, receivables and open orders with Reports.
+7. Simulate an API failure. The workspace must warn that data may be stale, and never show a made-up status or a zero balance.
+8. Check phone-width navigation, keyboard access to the guide, search with no results, and the browser Back button.
+
+Business Workspace (`/workspace`) and the Tutorial (`/tutorial`) show the same searchable "From material to payment" guide, with links to each screen. This checklist is the acceptance test the pilot still has to pass. It has not all been run.

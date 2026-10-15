@@ -12,15 +12,15 @@
 
 | Area | Observed context | Source |
 | --- | --- | --- |
-| Domain | Yarn/textile operations, job work, commerce, invoicing, customer payments | ../README.md, ../PARITY_REGISTER.md |
+| Domain | Yarn/textile operations, job work, commerce, invoicing, customer payments | ../README.md, ../docs/PROJECT_AUDIT.md |
 | Web | React 19, TypeScript, Material UI, TanStack Query, Vite | ../apps/web/package.json |
 | API | NestJS, JWT/session and role controls, Prisma | ../apps/api/package.json, ../apps/api/src/modules/auth |
-| Data | SQLite; legacy mill paths coexist with commerce StockMovement | ../packages/database/prisma/schema.prisma, ../PARITY_REGISTER.md |
+| Data | SQLite; legacy mill paths coexist with commerce StockMovement | ../packages/database/prisma/schema.prisma, ../docs/PROJECT_AUDIT.md |
 | Desktop | Electron packaging, bundled backend and web assets | ../apps/desktop/package.json |
 | Shared packages | Types, PDF, i18n, email and config | ../packages |
-| Localization | English/Tamil foundation; action-level QA pending | ../PARITY_REGISTER.md |
+| Localization | English/Tamil foundation; action-level QA pending | ../docs/PROJECT_AUDIT.md |
 | Services | Public web 4000, internal API 4301, optional Studio 5555 | ../QUICK_START.md |
-| Existing uncertainty | Parity register includes older prototype assessments; code has newer connected modules | ../PARITY_REGISTER.md, ../apps/api/src/modules |
+| Existing uncertainty | The 6 October parity register is historical; code has newer connected modules | ../docs/PROJECT_AUDIT.md, ../apps/api/src/modules |
 
 When evidence conflicts, inspect the actual endpoint and record the discrepancy. Never silently upgrade a parity row to accepted.
 

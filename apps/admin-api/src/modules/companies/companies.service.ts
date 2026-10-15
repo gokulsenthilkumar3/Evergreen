@@ -1,32 +1,44 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { PrismaService } from '../../services/prisma.service';
 import * as crypto from 'crypto';
+import type { Prisma } from '@prisma/admin-client';
+import {
+  CreateCompanyDto,
+  MAX_COUNTER,
+  SyncCompanyDto,
+  UpdateLicenseDto,
+} from './companies.dto';
+
+function withoutEnrollmentKey<T extends { apiKey: string }>(
+  company: T,
+): Omit<T, 'apiKey'> {
+  const { apiKey: _apiKey, ...visible } = company;
+  void _apiKey;
+  return visible;
+}
 
 @Injectable()
 export class CompaniesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async createCompany(data: { 
-    name: string; 
-    plan?: string; 
-    businessMode?: string; 
-    workspaceMode?: string; 
-    cloudProvider?: string; 
-    appVersion?: string; 
-    deploymentUrl?: string;
-    tier?: string;
-    state?: string;
-    country?: string;
-    maxUsers?: number;
-    maxMachines?: number;
-    maxDocsPerMonth?: number;
-    allowedModules?: string;
-  }) {
+  async createCompany(data: CreateCompanyDto) {
     const apiKey = crypto.randomBytes(32).toString('hex');
     const licenseKey = `EVG-${(data.tier || 'T2').substring(0, 2).toUpperCase()}-${crypto.randomBytes(8).toString('hex').toUpperCase()}`;
     return this.prisma.company.create({
       data: {
-        ...data,
+        name: data.name,
+        plan: data.plan,
+        pricingModel: data.pricingModel,
+        businessMode: data.businessMode,
+        workspaceMode: data.workspaceMode,
+        appVersion: data.appVersion,
+        deploymentUrl: data.deploymentUrl,
+        gracePeriodDays: data.gracePeriodDays,
         cloudProvider: data.cloudProvider || 'LOCAL_VM',
         apiKey,
         licenseKey,
@@ -35,26 +47,28 @@ export class CompaniesService {
         country: data.country || 'IN',
         maxUsers: data.maxUsers !== undefined ? data.maxUsers : 1,
         maxMachines: data.maxMachines !== undefined ? data.maxMachines : 5,
-        maxDocsPerMonth: data.maxDocsPerMonth !== undefined ? data.maxDocsPerMonth : 500,
+        maxDocsPerMonth:
+          data.maxDocsPerMonth !== undefined ? data.maxDocsPerMonth : 500,
         allowedModules: data.allowedModules || 'CORE,INVENTORY,COMMERCE',
       },
     });
   }
 
   async getCompanies() {
-    return this.prisma.company.findMany({
+    const companies = await this.prisma.company.findMany({
       orderBy: { createdAt: 'desc' },
       include: {
         metrics: {
           orderBy: { date: 'desc' },
-          take: 1
+          take: 1,
         },
         actions: {
           orderBy: { createdAt: 'desc' },
-          take: 5
-        }
-      }
+          take: 5,
+        },
+      },
     });
+    return companies.map(withoutEnrollmentKey);
   }
 
   async getCompany(id: string) {
@@ -63,130 +77,201 @@ export class CompaniesService {
       include: {
         metrics: {
           orderBy: { date: 'desc' },
-          take: 30
+          take: 30,
         },
         actions: {
           orderBy: { createdAt: 'desc' },
-          take: 10
-        }
-      }
+          take: 10,
+        },
+      },
     });
     if (!company) throw new NotFoundException('Company not found');
-    return company;
+    return withoutEnrollmentKey(company);
   }
 
-  async updateLicense(id: string, data: {
-    plan?: string;
-    status?: string;
-    tier?: string;
-    state?: string;
-    country?: string;
-    maxUsers?: number;
-    maxMachines?: number;
-    maxDocsPerMonth?: number;
-    allowedModules?: string;
-    expiresAt?: Date | string;
-    isMaintenance?: boolean;
-  }) {
-    const company = await this.prisma.company.findUnique({ where: { id } });
-    if (!company) throw new NotFoundException('Company not found');
+  async updateLicense(
+    id: string,
+    data: UpdateLicenseDto,
+    actor = 'Provider operator',
+  ) {
+    const dateValue = (value: string | null | undefined) => {
+      if (value === undefined || value === null) return value;
+      const parsed = new Date(value);
+      if (!Number.isFinite(parsed.getTime()))
+        throw new BadRequestException('Invalid license date');
+      return parsed;
+    };
+    const updatePayload: Prisma.CompanyUpdateInput = {
+      plan: data.plan,
+      pricingModel: data.pricingModel,
+      status: data.status,
+      tier: data.tier,
+      state: data.state,
+      country: data.country,
+      maxUsers: data.maxUsers,
+      maxMachines: data.maxMachines,
+      maxDocsPerMonth: data.maxDocsPerMonth,
+      allowedModules: data.allowedModules,
+      gracePeriodDays: data.gracePeriodDays,
+      expiresAt: dateValue(data.expiresAt),
+      graceExpiresAt: dateValue(data.graceExpiresAt),
+      isMaintenance: data.isMaintenance,
+    };
+    const fields = Object.keys(updatePayload).filter(
+      (key) => updatePayload[key as keyof typeof updatePayload] !== undefined,
+    );
+    if (!fields.length)
+      throw new BadRequestException(
+        'At least one license field must be supplied',
+      );
+    return this.prisma.$transaction(async (tx) => {
+      const company = await tx.company.findUnique({ where: { id } });
+      if (!company) throw new NotFoundException('Company not found');
+      const updated = await tx.company.update({
+        where: { id },
+        data: updatePayload,
+      });
+      await tx.controlAudit.create({
+        data: {
+          actor,
+          action: 'UPDATE_LICENSE',
+          details: JSON.stringify({
+            companyId: id,
+            fields,
+            reason: data.details || null,
+          }),
+        },
+      });
+      return withoutEnrollmentKey(updated);
+    });
+  }
 
-    const updatePayload: any = { ...data };
-    if (data.expiresAt) {
-      updatePayload.expiresAt = new Date(data.expiresAt);
+  async executeRemoteAction(
+    companyId: string,
+    actionType: string,
+    details?: string,
+  ) {
+    const supportedRequests = [
+      'TOGGLE_MAINTENANCE',
+      'TRIGGER_MIGRATION',
+      'FORCE_SYNC',
+      'REFRESH_LICENSE',
+      'SYNC_TALLY',
+      'RESTART_SERVICE',
+    ];
+    if (!supportedRequests.includes(actionType)) {
+      throw new BadRequestException('Unknown remote action');
+    }
+    if (
+      details !== undefined &&
+      (typeof details !== 'string' || details.length > 1000)
+    ) {
+      throw new BadRequestException(
+        'Action details must be a string of at most 1000 characters',
+      );
+    }
+    if (actionType !== 'TOGGLE_MAINTENANCE') {
+      throw new ServiceUnavailableException(
+        'Remote execution provider is not configured; no action was queued or executed',
+      );
     }
 
-    return this.prisma.company.update({
-      where: { id },
-      data: updatePayload,
+    // This changes provider configuration only. Tenant acknowledgement requires
+    // a separate authenticated delivery mechanism and must not be fabricated.
+    return this.prisma.$transaction(async (tx) => {
+      const company = await tx.company.findUnique({ where: { id: companyId } });
+      if (!company) throw new NotFoundException('Company not found');
+      await tx.company.update({
+        where: { id: companyId },
+        data: { isMaintenance: !company.isMaintenance },
+      });
+      return tx.remoteAction.create({
+        data: {
+          companyId,
+          actionType,
+          details: `Provider maintenance preference saved; tenant application is unconfirmed.${details ? ` ${details}` : ''}`,
+          status: 'EXECUTED',
+          completedAt: new Date(),
+        },
+      });
     });
   }
 
-  async executeRemoteAction(companyId: string, actionType: string, details?: string) {
-    const company = await this.prisma.company.findUnique({ where: { id: companyId } });
-    if (!company) throw new NotFoundException('Company not found');
-
-    const action = await this.prisma.remoteAction.create({
-      data: {
-        companyId,
-        actionType,
-        details: details || `Triggered action ${actionType} from provider console`,
-        status: 'EXECUTED',
-        completedAt: new Date(),
-      }
-    });
-
-    if (actionType === 'TOGGLE_MAINTENANCE') {
-      await this.prisma.company.update({
-        where: { id: companyId },
-        data: { isMaintenance: !company.isMaintenance }
-      });
-    } else if (actionType === 'TRIGGER_MIGRATION') {
-      await this.prisma.company.update({
-        where: { id: companyId },
-        data: { lastMigrationStatus: 'MIGRATION_QUEUED' }
-      });
+  async updateMetrics(companyId: string, metrics: SyncCompanyDto) {
+    const counters = [
+      metrics.totalInwards,
+      metrics.totalOutwards,
+      metrics.totalInvoices,
+      metrics.activeUsers,
+    ];
+    const docsPosted =
+      metrics.totalInwards + metrics.totalOutwards + metrics.totalInvoices;
+    if (
+      counters.some(
+        (value) => !Number.isInteger(value) || value < 0 || value > MAX_COUNTER,
+      ) ||
+      docsPosted > MAX_COUNTER
+    ) {
+      throw new BadRequestException(
+        'Metrics exceed the supported nonnegative integer range',
+      );
     }
-
-    return action;
-  }
-
-  async updateMetrics(companyId: string, metrics: { totalInwards: number; totalOutwards: number; totalInvoices: number; activeUsers: number; appVersion?: string; additionalMetrics?: any }) {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const now = new Date();
+    const today = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
+    );
 
     const metricsData = {
-      totalInwards: metrics.totalInwards || 0,
-      totalOutwards: metrics.totalOutwards || 0,
-      totalInvoices: metrics.totalInvoices || 0,
-      activeUsers: metrics.activeUsers || 0,
-      additionalMetrics: metrics.additionalMetrics ? JSON.stringify(metrics.additionalMetrics) : null,
+      totalInwards: metrics.totalInwards,
+      totalOutwards: metrics.totalOutwards,
+      totalInvoices: metrics.totalInvoices,
+      activeUsers: metrics.activeUsers,
     };
 
-    await this.prisma.companyMetrics.upsert({
-      where: {
-        companyId_date: {
-          companyId,
-          date: today,
-        }
-      },
-      update: metricsData,
-      create: {
-        companyId,
-        date: today,
-        ...metricsData
+    return this.prisma.$transaction(async (tx) => {
+      if (
+        !(await tx.company.findUnique({
+          where: { id: companyId },
+          select: { id: true },
+        }))
+      ) {
+        throw new NotFoundException('Company not found');
       }
-    });
+      await tx.companyMetrics.upsert({
+        where: { companyId_date: { companyId, date: today } },
+        update: metricsData,
+        create: { companyId, date: today, ...metricsData },
+      });
 
-    const updateData: any = {
-      activeStaff: metrics.activeUsers || 0,
-      docsPosted: (metrics.totalInwards || 0) + (metrics.totalOutwards || 0) + (metrics.totalInvoices || 0),
-      lastSyncAt: new Date()
-    };
-    if (metrics.appVersion) {
-      updateData.appVersion = metrics.appVersion;
-    }
-
-    const updatedCompany = await this.prisma.company.update({
-      where: { id: companyId },
-      data: updateData,
-      select: { 
-        plan: true, 
-        status: true,
-        tier: true,
-        maxUsers: true,
-        maxMachines: true,
-        maxDocsPerMonth: true,
-        allowedModules: true,
-        isMaintenance: true,
-        expiresAt: true,
-        lastMigrationStatus: true,
+      const updateData: Prisma.CompanyUpdateInput = {
+        activeStaff: metrics.activeUsers,
+        docsPosted,
+        lastSyncAt: now,
+      };
+      if (metrics.appVersion) {
+        updateData.appVersion = metrics.appVersion;
       }
-    });
 
-    return { 
-      success: true, 
-      ...updatedCompany,
-    };
+      const updatedCompany = await tx.company.update({
+        where: { id: companyId },
+        data: updateData,
+        select: {
+          plan: true,
+          pricingModel: true,
+          gracePeriodDays: true,
+          status: true,
+          tier: true,
+          maxUsers: true,
+          maxMachines: true,
+          maxDocsPerMonth: true,
+          allowedModules: true,
+          isMaintenance: true,
+          expiresAt: true,
+          lastMigrationStatus: true,
+        },
+      });
+
+      return { success: true, ...updatedCompany };
+    });
   }
 }

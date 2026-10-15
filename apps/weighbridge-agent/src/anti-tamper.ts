@@ -32,8 +32,13 @@ export class AntiTamperEngine {
     grossKg: number,
     tareKg: number,
     moisturePercent: number,
-    baseMoisture: number = 8.5
+    baseMoisture: number
   ) {
+    // The base comes from the supplier contract. A missing value must not fall back
+    // to a regional figure and produce a plausible but wrong billable weight (BIZ-021).
+    if (typeof baseMoisture !== 'number' || !Number.isFinite(baseMoisture) || baseMoisture < 0 || baseMoisture > 100) {
+      throw new RangeError('Contract moisture base is required and must be a percentage between 0 and 100');
+    }
     const netWeight = Math.max(0, grossKg - tareKg);
     const excessPercent = Math.max(0, moisturePercent - baseMoisture);
     const moistureDeductionKg = Math.round(((netWeight * excessPercent) / 100) * 100) / 100;
@@ -89,7 +94,13 @@ export class AntiTamperEngine {
    * Verify an incoming weighbridge slip on the Tenant API server
    */
   static verifySlip(slip: SignedWeighbridgeSlip, secretKey: string): boolean {
-    const expected = this.signSlip(slip.payload, secretKey);
+    let expected: SignedWeighbridgeSlip;
+    try {
+      expected = this.signSlip(slip.payload, secretKey);
+    } catch {
+      // A slip without a valid contract base cannot be recomputed, so it cannot verify.
+      return false;
+    }
     const signatureMatch = expected.signature === slip.signature;
     const calculationsMatch =
       Math.abs(expected.calculations.netWeightKg - (slip.calculations?.netWeightKg || 0)) < 0.01 &&

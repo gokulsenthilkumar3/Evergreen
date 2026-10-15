@@ -173,15 +173,15 @@ Backups, DR and zero-downtime migration acceptance remain blocked. RPO/RTO must 
 
 | Check | Outcome | Meaning and limit |
 | --- | --- | --- |
-| Tenant API initial Jest | 16 suites, 146 tests passed | Unit/component-service evidence; not full HTTP or DB isolation. [Log](api-unit.log). |
-| Tenant API coverage run | Same 146 tests passed; statements 14.39%, branches 9.9%, functions 9.57%, lines 15.85% | Initial-source coverage, not a certification of subsequently changed production logic. [Log](api-coverage.log). |
-| Tenant frontend Vitest | 20 files, 179 tests passed | Selected UI/utility tests with test fixtures/mocked network. [Log](web-unit.log). |
-| Tenant frontend coverage | Statements/lines 18.4%; branches 59.31%; functions 38.32% | Instrumentation denominator differs by metric; high relative branch number does not override low statement coverage. [Log](web-coverage.log). |
-| Provider API initial/final | Initially 2 suites/5 tests passed; final recheck 3 suites/11 tests passed | External guard regression tests added during audit. [Initial](admin-unit.log), [final](admin-recheck.log). |
-| Provider frontend | 1 file/4 tests passed manually | No package test script wires these into normal workspace test invocation. [Log](admin-web-tests.log). |
-| Tenant HTTP e2e | Five tests fail at Prisma migration setup; retry also fails | App/guards/journeys never exercised by that run. Native engine failure cause unresolved, not attributed automatically to schema drift. [Initial](api-http.log), [retry](api-http-retry.log). |
+| Tenant API initial Jest | 16 suites, 146 tests passed | Unit/component-service evidence; not full HTTP or DB isolation. Log: `api-unit.log` (kept locally, not committed). |
+| Tenant API coverage run | Same 146 tests passed; statements 14.39%, branches 9.9%, functions 9.57%, lines 15.85% | Initial-source coverage, not a certification of subsequently changed production logic. Log: `api-coverage.log` (kept locally, not committed). |
+| Tenant frontend Vitest | 20 files, 179 tests passed | Selected UI/utility tests with test fixtures/mocked network. Log: `web-unit.log` (kept locally, not committed). |
+| Tenant frontend coverage | Statements/lines 18.4%; branches 59.31%; functions 38.32% | Instrumentation denominator differs by metric; high relative branch number does not override low statement coverage. Log: `web-coverage.log` (kept locally, not committed). |
+| Provider API initial/final | Initially 2 suites/5 tests passed; final recheck 3 suites/11 tests passed | External guard regression tests added during audit. Initial log: `admin-unit.log` (kept locally, not committed), final log: `admin-recheck.log` (kept locally, not committed). |
+| Provider frontend | 1 file/4 tests passed manually | No package test script wires these into normal workspace test invocation. Log: `admin-web-tests.log` (kept locally, not committed). |
+| Tenant HTTP e2e | Five tests fail at Prisma migration setup; retry also fails | App/guards/journeys never exercised by that run. Native engine failure cause unresolved, not attributed automatically to schema drift. Initial log: `api-http.log` (kept locally, not committed), retry log: `api-http-retry.log` (kept locally, not committed). |
 | TypeScript | API, provider API, tenant web and provider web initial checks completed without errors | Checks used noEmit and disabled incremental output. Source changes afterward limit transfer of this result. |
-| Production frontend builds | Initial tenant/provider succeeded; final rechecks logged separately | Tool invoked installed root Vite; no clean install/container image certification. [Tenant](tenant-build.log), [provider final](provider-build-final.log). |
+| Production frontend builds | Initial tenant/provider succeeded; final rechecks logged separately | Tool invoked installed root Vite; no clean install/container image certification. Tenant log: `tenant-build.log` (kept locally, not committed), provider final log: `provider-build-final.log` (kept locally, not committed). |
 | SQLite migration replay | All 24 registered scripts applied to empty in-memory databases; schema mismatch found | Not live database deployment/upgrade, data-integrity or PostgreSQL proof. [Evidence](reproductions.json). |
 | Current isolated security/parser checks | Final forged Origin rejected; original weight cases corrected; malformed unit/frame and slip replay/derived field weaknesses remain | [Final reproductions](final-reproductions.json). |
 | Registry audits | Root 50 affected packages; desktop backend 61 | Current npm advisory lookup, not exploit execution or complete artifact SBOM scan. [Report](dependency-report.md). |

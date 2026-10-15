@@ -4,7 +4,7 @@ NestJS and Prisma provide the staff, commerce and operational endpoints. Use `np
 
 - [Setup and service directory](../../QUICK_START.md)
 - [Business workflow](../../docs/BUSINESS_FLOW.md)
-- [Release gates](../../PARITY_REGISTER.md)
+- [Project status and open gates](../../docs/PROJECT_AUDIT.md)
 
 ## Interactive documentation
 

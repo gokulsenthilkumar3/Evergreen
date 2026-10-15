@@ -4,6 +4,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';
+import type { NextFunction, Request, Response } from 'express';
 import { NotFoundExceptionFilter } from './filters/not-found-exception.filter';
 import { BusinessActionFilter } from './filters/business-action.filter';
 import { PrismaService } from './services/prisma.service';
@@ -24,7 +25,12 @@ async function bootstrap() {
     origin: allowedAdminOrigins,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Provider-Key', 'X-Provider-Actor'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Provider-Key',
+      'X-Provider-Actor',
+    ],
   });
 
   app.use(
@@ -36,7 +42,11 @@ async function bootstrap() {
           'frame-ancestors': ["'none'"],
           scriptSrc: ["'self'", "'unsafe-inline'"],
           scriptSrcAttr: ["'unsafe-inline'"],
-          styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+          styleSrc: [
+            "'self'",
+            "'unsafe-inline'",
+            'https://fonts.googleapis.com',
+          ],
           fontSrc: ["'self'", 'https://fonts.gstatic.com', 'https:', 'data:'],
           imgSrc: ["'self'", 'data:', 'https:'],
           connectSrc: ["'self'", 'http:', 'https:', 'ws:'],
@@ -46,8 +56,11 @@ async function bootstrap() {
   );
 
   // Strict No-Cache headers to ensure real-time auto-synchronization across all services
-  app.use((_req: any, res: any, next: any) => {
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+  app.use((_req: Request, res: Response, next: NextFunction) => {
+    res.setHeader(
+      'Cache-Control',
+      'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+    );
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
     res.setHeader('Surrogate-Control', 'no-store');
@@ -65,46 +78,72 @@ async function bootstrap() {
   );
 
   // Global 404 Exception Filter
-  app.useGlobalFilters(new NotFoundExceptionFilter(), new BusinessActionFilter(app.get(PrismaService)));
+  app.useGlobalFilters(
+    new NotFoundExceptionFilter(),
+    new BusinessActionFilter(app.get(PrismaService)),
+  );
 
   if (process.env.NODE_ENV !== 'production') {
     const config = new DocumentBuilder()
-      .setTitle('EverGreen One API')
-      .setDescription(`EverGreen One operational API & Developer Explorer.
-
-**Business Workflow:** Issuer Settings → Receive Raw Cotton → Production & Waste → Review Inventory → Commerce Orders & Invoices → Ledger & Payments.
-
-Authorize with your own staff bearer token for protected endpoints. Try it out executes real operations against the configured database.`)
+      .setTitle('EverGreen Provider API')
+      .setDescription(
+        'Provider company, license and control-record API. Authenticate with the provider API key; tenant staff tokens do not grant provider access. Try it out executes real operations against the configured provider database. Saved configuration is not tenant execution acknowledgement.',
+      )
       .setVersion('1.0.0')
-      .addServer('/api/backend', 'Public web proxy (recommended: port 4000)')
-      .addServer('/', 'Direct API connection (port 4301)')
+      .addServer('/', 'Provider API connection (default port 4300)')
       .addBearerAuth({
         type: 'http',
         scheme: 'bearer',
-        bearerFormat: 'JWT',
         name: 'Authorization',
-        description: 'Enter your EverGreen JWT bearer token',
+        description: 'Enter the configured provider API key',
         in: 'header',
       })
-      .addTag('Health & Processors', 'System health checks, live processor status, telemetry & synchronization')
-      .addTag('Auth & Security', 'User authentication, session guards, passkeys & role access')
-      .addTag('Costing & EB', 'Electricity unit rates, packaging, labor & per-kg manufacturing calculations')
-      .addTag('Billing & Invoicing', 'GST tax invoices, payment reconciliation & digital verification')
-      .addTag('Production & Spinning', 'Daily shift production, blow room loss & spinning operations')
-      .addTag('Warehouse & Inventory', 'Bales, yarn bags, bay storage & stock movement')
-      .addTag('Quality & QC Lab', 'CSP lea testing, count verification & defect analysis')
-      .addTag('Machinery & Telemetry', 'Machine inventory, inspection schedules & uptime logs')
-      .addTag('HR & Payroll', 'Staff directory, shift rosters & wage disbursement')
+      .addTag(
+        'Health & Processors',
+        'System health checks, live processor status, telemetry & synchronization',
+      )
+      .addTag(
+        'Auth & Security',
+        'User authentication, session guards, passkeys & role access',
+      )
+      .addTag(
+        'Costing & EB',
+        'Electricity unit rates, packaging, labor & per-kg manufacturing calculations',
+      )
+      .addTag(
+        'Billing & Invoicing',
+        'GST tax invoices, payment reconciliation & digital verification',
+      )
+      .addTag(
+        'Production & Spinning',
+        'Daily shift production, blow room loss & spinning operations',
+      )
+      .addTag(
+        'Warehouse & Inventory',
+        'Bales, yarn bags, bay storage & stock movement',
+      )
+      .addTag(
+        'Quality & QC Lab',
+        'CSP lea testing, count verification & defect analysis',
+      )
+      .addTag(
+        'Machinery & Telemetry',
+        'Machine inventory, inspection schedules & uptime logs',
+      )
+      .addTag(
+        'HR & Payroll',
+        'Staff directory, shift rosters & wage disbursement',
+      )
       .build();
     const document = SwaggerModule.createDocument(app, config);
     SwaggerModule.setup('api/docs', app, document, {
-      customSiteTitle: 'EverGreen One — API Documentation & Interactive Explorer',
+      customSiteTitle: 'EverGreen Provider — API Documentation',
       swaggerOptions: {
-        persistAuthorization: true,
+        persistAuthorization: false,
         docExpansion: 'list',
         filter: true,
         displayRequestDuration: true,
-        tryItOutEnabled: true,
+        tryItOutEnabled: false,
         tagsSorter: 'alpha',
         operationsSorter: 'alpha',
         defaultModelsExpandDepth: 1,
