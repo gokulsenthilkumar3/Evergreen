@@ -10,7 +10,8 @@ const check = process.argv.includes('--check');
 const changed = [];
 const escape = value => String(value).replaceAll('|', '\\|').replace(/\s+/g, ' ').trim();
 const code = value => '`' + escape(value).replaceAll('`', "'") + '`';
-const walk = folder => fs.readdirSync(path.join(root, folder), { withFileTypes: true }).flatMap(entry => entry.isDirectory() ? walk(`${folder}/${entry.name}`) : [`${folder}/${entry.name}`]).filter(file => /\.tsx?$/.test(file) && !/\.(test|spec)\./.test(file));
+// Build output (dist) and dependencies are not source; indexing them makes the docs depend on build order.
+const walk = folder => fs.readdirSync(path.join(root, folder), { withFileTypes: true }).flatMap(entry => entry.isDirectory() ? (["dist", "node_modules"].includes(entry.name) ? [] : walk(`${folder}/${entry.name}`)) : [`${folder}/${entry.name}`]).filter(file => /\.tsx?$/.test(file) && !/\.(test|spec)\./.test(file));
 const parse = file => ts.createSourceFile(file, fs.readFileSync(path.join(root, file), 'utf8'), ts.ScriptTarget.Latest, true, file.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
 const visit = (node, fn) => { fn(node); ts.forEachChild(node, child => visit(child, fn)); };
 const write = (file, content) => {
