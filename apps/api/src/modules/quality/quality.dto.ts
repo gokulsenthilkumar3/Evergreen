@@ -8,9 +8,13 @@ import {
 } from 'class-validator';
 
 export class CreateQualityInspectionDto {
-  @IsOptional() @IsInt() @Min(1)
+  @IsOptional()
+  @IsInt()
+  @Min(1)
   lotId?: number;
-  @IsOptional() @IsNumber() @Min(0.000001)
+  @IsOptional()
+  @IsNumber()
+  @Min(0.000001)
   holdQuantity?: number;
   @IsOptional()
   @IsInt()

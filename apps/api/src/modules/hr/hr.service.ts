@@ -7,7 +7,9 @@ export class HrService {
 
   // ── Staff ────────────────────────────────────────────────────────────────
   listStaff() {
-    return (this.prisma as any).staff.findMany({ orderBy: { employeeId: 'asc' } });
+    return (this.prisma as any).staff.findMany({
+      orderBy: { employeeId: 'asc' },
+    });
   }
 
   createStaff(data: {
@@ -55,10 +57,17 @@ export class HrService {
     deductions?: number;
     netPay: number;
   }) {
-    const netPay = Math.round((data.basicPay + (data.overtime ?? 0) - (data.deductions ?? 0)) * 100) / 100;
+    const netPay =
+      Math.round(
+        (data.basicPay + (data.overtime ?? 0) - (data.deductions ?? 0)) * 100,
+      ) / 100;
     if (netPay < 0 || Math.abs(data.netPay - netPay) > 0.01) {
-      throw new BadRequestException('Net pay must equal basic pay plus overtime minus deductions');
+      throw new BadRequestException(
+        'Net pay must equal basic pay plus overtime minus deductions',
+      );
     }
-    return this.prisma.stockTransaction(tx => tx.payrollEntry.create({ data: { ...data, netPay } }));
+    return this.prisma.stockTransaction((tx) =>
+      tx.payrollEntry.create({ data: { ...data, netPay } }),
+    );
   }
 }

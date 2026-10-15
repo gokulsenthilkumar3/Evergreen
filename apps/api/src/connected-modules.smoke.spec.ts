@@ -1,6 +1,8 @@
 import { ForbiddenException, UnauthorizedException } from '@nestjs/common';
 
-jest.mock('./modules/auth/auth.service', () => ({ AuthService: class AuthService {} }));
+jest.mock('./modules/auth/auth.service', () => ({
+  AuthService: class AuthService {},
+}));
 jest.mock('./modules/auth/webauthn.service', () => ({
   WebAuthnService: class WebAuthnService {},
 }));
@@ -77,10 +79,15 @@ describe('connected module smoke tests', () => {
       commerce.listInvoices.mockResolvedValue([{ id: 3 }]);
       commerce.createInvoice.mockResolvedValue({ id: 4 });
       await expect(controller.invoices()).resolves.toEqual([{ id: 3 }]);
-      await expect(controller.invoice({ customerId: 1 }, { user: { username: 'tester' } })).resolves.toEqual({
+      await expect(
+        controller.invoice({ customerId: 1 }, { user: { username: 'tester' } }),
+      ).resolves.toEqual({
         id: 4,
       });
-      expect(commerce.createInvoice).toHaveBeenCalledWith({ customerId: 1, createdBy: 'tester' });
+      expect(commerce.createInvoice).toHaveBeenCalledWith({
+        customerId: 1,
+        createdBy: 'tester',
+      });
     });
   });
 

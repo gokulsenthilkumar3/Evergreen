@@ -7,8 +7,14 @@ import { PublicOrderRateLimitGuard } from '../../guards/public-order-rate-limit.
 export class StorefrontController {
   constructor(private readonly storefront: StorefrontService) {}
   @Public()
-  @Get('products') products() { return this.storefront.products(); }
+  @Get('products')
+  products() {
+    return this.storefront.products();
+  }
   @Public()
   @UseGuards(PublicOrderRateLimitGuard)
-  @Post('orders') order(@Body() body: any) { return this.storefront.placeOrder(body); }
+  @Post('orders')
+  order(@Body() body: any) {
+    return this.storefront.placeOrder(body);
+  }
 }

@@ -56,10 +56,16 @@ export class SettingsService {
       );
     }
     const updateData = { ...data };
-    if (data.businessMode !== undefined && !BUSINESS_MODES.includes(data.businessMode)) {
+    if (
+      data.businessMode !== undefined &&
+      !BUSINESS_MODES.includes(data.businessMode)
+    ) {
       throw new BadRequestException('Choose a supported business mode');
     }
-    if (data.workspaceMode !== undefined && !WORKSPACE_MODES.includes(data.workspaceMode)) {
+    if (
+      data.workspaceMode !== undefined &&
+      !WORKSPACE_MODES.includes(data.workspaceMode)
+    ) {
       throw new BadRequestException('Workspace mode must be GUIDED or FULL');
     }
     if (actor) updateData.updatedBy = actor;

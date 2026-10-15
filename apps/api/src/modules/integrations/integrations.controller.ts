@@ -8,7 +8,16 @@ import { IntegrationsService } from './integrations.service';
 @Roles('ADMIN')
 export class IntegrationsController {
   constructor(private readonly integrations: IntegrationsService) {}
-  @Post('imports/preview') preview(@Body() body: ImportInput) { return this.integrations.preview(body); }
-  @Post('imports/commit') commit(@Body() body: ImportInput & { source: string; requestKey: string }, @Req() req: AuthenticatedRequest) { return this.integrations.commit(body, req.user.username); }
-  @Get('imports') history() { return this.integrations.history(); }
+  @Post('imports/preview') preview(@Body() body: ImportInput) {
+    return this.integrations.preview(body);
+  }
+  @Post('imports/commit') commit(
+    @Body() body: ImportInput & { source: string; requestKey: string },
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.integrations.commit(body, req.user.username);
+  }
+  @Get('imports') history() {
+    return this.integrations.history();
+  }
 }

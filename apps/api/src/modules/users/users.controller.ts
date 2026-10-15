@@ -25,7 +25,10 @@ export class UsersController {
 
   @Post()
   @Roles('ADMIN')
-  async register(@Body() createUserDto: CreateUserDto, @Req() req: AuthenticatedRequest) {
+  async register(
+    @Body() createUserDto: CreateUserDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
     return this.usersService.createUser(createUserDto, req.user.username);
   }
 
@@ -36,13 +39,20 @@ export class UsersController {
 
   @Put(':id')
   @Roles('ADMIN')
-  async updateUser(@Param('id', ParseIntPipe) id: number, @Body() updateDto: UpdateUserDto, @Req() req: AuthenticatedRequest) {
+  async updateUser(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateDto: UpdateUserDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
     return this.usersService.updateUser(id, updateDto, req.user.username);
   }
 
   @Delete(':id')
   @Roles('ADMIN')
-  async deleteUser(@Param('id', ParseIntPipe) id: number, @Req() req: AuthenticatedRequest) {
+  async deleteUser(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: AuthenticatedRequest,
+  ) {
     return this.usersService.deleteUser(id, req.user.userId, req.user.username);
   }
 }

@@ -29,13 +29,25 @@ export class NotFoundExceptionFilter implements ExceptionFilter {
     // Security: strip query string to never leak sensitive tokens, credentials, or keys
     const rawUrl = String(request.originalUrl || request.url || '/');
     const pathOnly = rawUrl.split('?')[0];
-    const safePath = pathOnly.length > 64 ? pathOnly.slice(0, 64) + '…' : pathOnly;
-    const safeMethod = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'].includes(request.method)
+    const safePath =
+      pathOnly.length > 64 ? pathOnly.slice(0, 64) + '…' : pathOnly;
+    const safeMethod = [
+      'GET',
+      'POST',
+      'PUT',
+      'DELETE',
+      'PATCH',
+      'HEAD',
+      'OPTIONS',
+    ].includes(request.method)
       ? request.method
       : 'UNKNOWN';
 
     // Ensure no-cache on 404 responses as well
-    response.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    response.setHeader(
+      'Cache-Control',
+      'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+    );
     response.setHeader('Pragma', 'no-cache');
     response.setHeader('Expires', '0');
 

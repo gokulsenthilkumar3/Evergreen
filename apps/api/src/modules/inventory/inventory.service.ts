@@ -1,5 +1,12 @@
-import { Injectable, BadRequestException, ConflictException } from '@nestjs/common';
-import { calculateWeighbridge, type WeighbridgeReceipt } from '@evergreen/types';
+import {
+  Injectable,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common';
+import {
+  calculateWeighbridge,
+  type WeighbridgeReceipt,
+} from '@evergreen/types';
 import { randomUUID } from 'crypto';
 import { stockEventDate } from '../../utils/stock-event-date';
 import { PrismaService } from '../../services/prisma.service';
@@ -60,9 +67,14 @@ export class InventoryService {
 
     return batches.map((b) => ({
       ...b,
-      weighbridgeReceipt: b.weighbridgeReceipt ? JSON.parse(b.weighbridgeReceipt) : null,
+      weighbridgeReceipt: b.weighbridgeReceipt
+        ? JSON.parse(b.weighbridgeReceipt)
+        : null,
       remainingKg: usageMap.get(b.batchId) ?? b.kg, // if no usage, remaining is original
-      remainingBale: (usageMap.get(b.batchId) ?? b.kg) > 0.01 ? Math.max(0, b.bale - (baleMap.get(b.batchId) || 0)) : 0,
+      remainingBale:
+        (usageMap.get(b.batchId) ?? b.kg) > 0.01
+          ? Math.max(0, b.bale - (baleMap.get(b.batchId) || 0))
+          : 0,
     }));
   }
 
@@ -126,7 +138,9 @@ export class InventoryService {
         batchId: d.batchId,
         supplier: d.supplier,
         receivedAt,
-        earliestStartAt: new Date(new Date(receivedAt).getTime() + SETTLE_GAP_MS),
+        earliestStartAt: new Date(
+          new Date(receivedAt).getTime() + SETTLE_GAP_MS,
+        ),
         // Original totals
         originalKg: d.kg,
         originalBale: d.bale,
@@ -169,13 +183,40 @@ export class InventoryService {
     createdBy?: string;
   }) {
     data = { ...data, date: stockEventDate(data.date).toISOString() };
-    if (!Number.isFinite(new Date(data.date).getTime()) || !data.customerName?.trim() || !Array.isArray(data.items) || !data.items.length)
-      throw new BadRequestException('Date, customer and at least one yarn line are required');
-    if (new Set(data.items.map(item => item.count)).size !== data.items.length)
-      throw new BadRequestException('Combine duplicate yarn counts into one dispatch line');
-    if (data.items.some(item => !item.count?.trim() || !Number.isFinite(item.weight) || item.weight <= 0 || !Number.isInteger(item.bags) || item.bags <= 0))
-      throw new BadRequestException('Each dispatch line needs a yarn count, positive weight and whole bags');
-    if (data.items.some(item => Math.abs(item.weight - item.bags * 60) > 0.01)) throw new BadRequestException('Bag dispatch uses 60 kg per bag. Invoice loose yarn by its kilogram quantity.');
+    if (
+      !Number.isFinite(new Date(data.date).getTime()) ||
+      !data.customerName?.trim() ||
+      !Array.isArray(data.items) ||
+      !data.items.length
+    )
+      throw new BadRequestException(
+        'Date, customer and at least one yarn line are required',
+      );
+    if (
+      new Set(data.items.map((item) => item.count)).size !== data.items.length
+    )
+      throw new BadRequestException(
+        'Combine duplicate yarn counts into one dispatch line',
+      );
+    if (
+      data.items.some(
+        (item) =>
+          !item.count?.trim() ||
+          !Number.isFinite(item.weight) ||
+          item.weight <= 0 ||
+          !Number.isInteger(item.bags) ||
+          item.bags <= 0,
+      )
+    )
+      throw new BadRequestException(
+        'Each dispatch line needs a yarn count, positive weight and whole bags',
+      );
+    if (
+      data.items.some((item) => Math.abs(item.weight - item.bags * 60) > 0.01)
+    )
+      throw new BadRequestException(
+        'Bag dispatch uses 60 kg per bag. Invoice loose yarn by its kilogram quantity.',
+      );
     return this.prisma.stockTransaction(async (tx) => {
       const totalBags = data.items.reduce((sum, item) => sum + item.bags, 0);
       const totalWeight = data.items.reduce(
@@ -187,7 +228,10 @@ export class InventoryService {
       for (const item of data.items) {
         const dateLimit = new Date(data.date);
         if (!data.date.includes('T')) dateLimit.setHours(23, 59, 59, 999);
-        const stock = await tx.yarnInventory.aggregate({ where: { count: item.count, date: { lte: dateLimit } }, _sum: { quantity: true } });
+        const stock = await tx.yarnInventory.aggregate({
+          where: { count: item.count, date: { lte: dateLimit } },
+          _sum: { quantity: true },
+        });
         const available = stock._sum.quantity || 0;
         if (item.weight > available) {
           throw new BadRequestException(
@@ -264,27 +308,50 @@ export class InventoryService {
     });
   }
 
-  async createInward(data: {
-    batchId?: string;
-    date: string;
-    supplier: string;
-    bale: number;
-    kg: number;
-    createdBy?: string;
-  }, receipt?: WeighbridgeReceipt) {
+  async createInward(
+    data: {
+      batchId?: string;
+      date: string;
+      supplier: string;
+      bale: number;
+      kg: number;
+      createdBy?: string;
+    },
+    receipt?: WeighbridgeReceipt,
+  ) {
     data = { ...data, date: stockEventDate(data.date).toISOString() };
-    if (!Number.isFinite(new Date(data.date).getTime()) || !data.supplier?.trim() || !Number.isInteger(data.bale) || data.bale <= 0 || !Number.isFinite(data.kg) || data.kg <= 0)
-      throw new BadRequestException('Enter a valid receipt date, supplier, whole bales and positive cotton weight');
+    if (
+      !Number.isFinite(new Date(data.date).getTime()) ||
+      !data.supplier?.trim() ||
+      !Number.isInteger(data.bale) ||
+      data.bale <= 0 ||
+      !Number.isFinite(data.kg) ||
+      data.kg <= 0
+    )
+      throw new BadRequestException(
+        'Enter a valid receipt date, supplier, whole bales and positive cotton weight',
+      );
     try {
       return await this.prisma.stockTransaction(async (tx) => {
-        const batchId = data.batchId?.trim() || `IN-${data.date.replace(/-/g, '').slice(0, 6)}-${randomUUID().slice(0, 8).toUpperCase()}`;
+        const batchId =
+          data.batchId?.trim() ||
+          `IN-${data.date.replace(/-/g, '').slice(0, 6)}-${randomUUID().slice(0, 8).toUpperCase()}`;
         const receiptJson = receipt ? JSON.stringify(receipt) : null;
         if (receipt) {
-          const existing = await tx.inwardBatch.findUnique({ where: { batchId } });
+          const existing = await tx.inwardBatch.findUnique({
+            where: { batchId },
+          });
           if (existing) {
-            if (existing.weighbridgeReceipt === receiptJson && existing.supplier === data.supplier &&
-                existing.bale === data.bale && existing.date.toISOString() === data.date) return existing;
-            throw new ConflictException('This lot already exists with different receipt details. Review the saved lot.');
+            if (
+              existing.weighbridgeReceipt === receiptJson &&
+              existing.supplier === data.supplier &&
+              existing.bale === data.bale &&
+              existing.date.toISOString() === data.date
+            )
+              return existing;
+            throw new ConflictException(
+              'This lot already exists with different receipt details. Review the saved lot.',
+            );
           }
         }
         // 1. Create Inward Batch record
@@ -333,10 +400,15 @@ export class InventoryService {
             });
           }
         }
-        if (receipt) await tx.activityLog.create({ data: {
-          username: data.createdBy || 'SYSTEM', action: 'CREATE', module: 'WEIGHBRIDGE',
-          details: JSON.stringify({ batchId, ...receipt }),
-        } });
+        if (receipt)
+          await tx.activityLog.create({
+            data: {
+              username: data.createdBy || 'SYSTEM',
+              action: 'CREATE',
+              module: 'WEIGHBRIDGE',
+              details: JSON.stringify({ batchId, ...receipt }),
+            },
+          });
         return batch;
       });
     } catch (error: any) {
@@ -351,8 +423,15 @@ export class InventoryService {
     createdBy?: string;
   }) {
     data = { ...data, date: stockEventDate(data.date).toISOString() };
-    if (!Array.isArray(data.batchIds) || new Set(data.batchIds).size !== data.batchIds.length || data.batchIds.length < 2 || !Number.isFinite(new Date(data.date).getTime()))
-      throw new BadRequestException('Choose at least two different batches and a valid merge date');
+    if (
+      !Array.isArray(data.batchIds) ||
+      new Set(data.batchIds).size !== data.batchIds.length ||
+      data.batchIds.length < 2 ||
+      !Number.isFinite(new Date(data.date).getTime())
+    )
+      throw new BadRequestException(
+        'Choose at least two different batches and a valid merge date',
+      );
     return this.prisma.stockTransaction(async (tx) => {
       const { batchIds, date, createdBy } = data;
       let totalRemainingKg = 0;
@@ -578,12 +657,34 @@ export class InventoryService {
     });
     const totalCotton = cottonAgg._sum.quantity || 0;
 
-    const batches = await this.prisma.inwardBatch.findMany({ where: { date: { lte: asOf } }, select: { batchId: true, bale: true } });
-    const usedBales = await this.prisma.productionConsumption.groupBy({ by: ['batchNo'], _sum: { bale: true }, where: { production: { date: { lte: asOf } } } });
-    const usedByBatch = new Map(usedBales.map(row => [row.batchNo, row._sum.bale || 0]));
-    const balances = await this.prisma.cottonInventory.groupBy({ by: ['batchId'], where: { date: { lte: asOf } }, _sum: { quantity: true } });
-    const remaining = new Map(balances.map(row => [row.batchId, row._sum.quantity || 0]));
-    const cottonBales = batches.reduce((sum, batch) => sum + ((remaining.get(batch.batchId) || 0) > 0.01 ? Math.max(0, batch.bale - (usedByBatch.get(batch.batchId) || 0)) : 0), 0);
+    const batches = await this.prisma.inwardBatch.findMany({
+      where: { date: { lte: asOf } },
+      select: { batchId: true, bale: true },
+    });
+    const usedBales = await this.prisma.productionConsumption.groupBy({
+      by: ['batchNo'],
+      _sum: { bale: true },
+      where: { production: { date: { lte: asOf } } },
+    });
+    const usedByBatch = new Map(
+      usedBales.map((row) => [row.batchNo, row._sum.bale || 0]),
+    );
+    const balances = await this.prisma.cottonInventory.groupBy({
+      by: ['batchId'],
+      where: { date: { lte: asOf } },
+      _sum: { quantity: true },
+    });
+    const remaining = new Map(
+      balances.map((row) => [row.batchId, row._sum.quantity || 0]),
+    );
+    const cottonBales = batches.reduce(
+      (sum, batch) =>
+        sum +
+        ((remaining.get(batch.batchId) || 0) > 0.01
+          ? Math.max(0, batch.bale - (usedByBatch.get(batch.batchId) || 0))
+          : 0),
+      0,
+    );
 
     // Production & Waste Metrics (Period Based)
     let whereClause = {};
@@ -640,11 +741,33 @@ export class InventoryService {
       });
 
       if (!batch) throw new BadRequestException('Batch not found');
-      if (batch.weighbridgeReceipt) throw new BadRequestException('Weighbridge receipts retain their measurement history. Use a reviewed reversal workflow instead of deleting this lot.');
-      if (await tx.cottonInventory.count({ where: { batchId: batch.batchId, type: 'RECYCLED_WASTE' } })) throw new BadRequestException('Reverse the waste recycling entry to return this cotton to waste stock.');
-      if (batch.catalogueItemId) throw new BadRequestException('This cotton receipt belongs to procurement. Record its supplier return in Business flows to preserve the purchase and payable links.');
-      const receiptLinks = await tx.workflowDocument.findMany({ where: { kind: 'LINK_COTTON_RECEIPT' } });
-      if (receiptLinks.some(doc => JSON.parse(doc.metadata).batchId === batch.batchId)) throw new BadRequestException('This receipt is linked to supplier accounting. Record its supplier return in Business flows.');
+      if (batch.weighbridgeReceipt)
+        throw new BadRequestException(
+          'Weighbridge receipts retain their measurement history. Use a reviewed reversal workflow instead of deleting this lot.',
+        );
+      if (
+        await tx.cottonInventory.count({
+          where: { batchId: batch.batchId, type: 'RECYCLED_WASTE' },
+        })
+      )
+        throw new BadRequestException(
+          'Reverse the waste recycling entry to return this cotton to waste stock.',
+        );
+      if (batch.catalogueItemId)
+        throw new BadRequestException(
+          'This cotton receipt belongs to procurement. Record its supplier return in Business flows to preserve the purchase and payable links.',
+        );
+      const receiptLinks = await tx.workflowDocument.findMany({
+        where: { kind: 'LINK_COTTON_RECEIPT' },
+      });
+      if (
+        receiptLinks.some(
+          (doc) => JSON.parse(doc.metadata).batchId === batch.batchId,
+        )
+      )
+        throw new BadRequestException(
+          'This receipt is linked to supplier accounting. Record its supplier return in Business flows.',
+        );
 
       // 1. Dependency Check: Check if batch is used in any genuine manufacturing production
       const consumptions = await tx.productionConsumption.findMany({
@@ -669,7 +792,8 @@ export class InventoryService {
                 inwardId: id,
                 batchId: batch.batchId,
                 blockingProductionIds: prodIds,
-                reason: reason || 'Attempted delete on batch under active production',
+                reason:
+                  reason || 'Attempted delete on batch under active production',
               }),
             },
           });
@@ -691,8 +815,16 @@ export class InventoryService {
       if (batch.isMerged && batch.mergedFrom) {
         const sourceBatchIds = batch.mergedFrom.split(',').map((s) => s.trim());
         // The source references identify this merge; other merges must remain intact.
-        const mergeMovements = await tx.cottonInventory.findMany({ where: { type: 'MERGE_OUT', batchId: { in: sourceBatchIds } } });
-        const mergeIds = [...new Set(mergeMovements.map(m => Number(m.reference.replace(/^MERGE-/, ''))).filter(Number.isFinite))];
+        const mergeMovements = await tx.cottonInventory.findMany({
+          where: { type: 'MERGE_OUT', batchId: { in: sourceBatchIds } },
+        });
+        const mergeIds = [
+          ...new Set(
+            mergeMovements
+              .map((m) => Number(m.reference.replace(/^MERGE-/, '')))
+              .filter(Number.isFinite),
+          ),
+        ];
         await tx.cottonInventory.deleteMany({
           where: {
             type: 'MERGE_OUT',
@@ -767,7 +899,9 @@ export class InventoryService {
       if (!outward) throw new BadRequestException('Outward entry not found');
       if (outward.status === 'REVERSED') return { success: true };
 
-      const matchingInvoice = outward.invoices.find(invoice => invoice.status !== 'VOID');
+      const matchingInvoice = outward.invoices.find(
+        (invoice) => invoice.status !== 'VOID',
+      );
 
       if (matchingInvoice) {
         try {
@@ -795,11 +929,21 @@ export class InventoryService {
       }
 
       // Preserve dispatch history and record the physical return once.
-      const original = await tx.yarnInventory.findMany({ where: { reference: `O-${id}`, type: 'OUTWARD' } });
-      for (const movement of original) await tx.yarnInventory.create({ data: {
-        date: new Date(), type: 'OUTWARD_REVERSAL', quantity: -movement.quantity, balance: 0,
-        reference: `O-${id}-REVERSAL`, count: movement.count, createdBy: actor,
-      } });
+      const original = await tx.yarnInventory.findMany({
+        where: { reference: `O-${id}`, type: 'OUTWARD' },
+      });
+      for (const movement of original)
+        await tx.yarnInventory.create({
+          data: {
+            date: new Date(),
+            type: 'OUTWARD_REVERSAL',
+            quantity: -movement.quantity,
+            balance: 0,
+            reference: `O-${id}-REVERSAL`,
+            count: movement.count,
+            createdBy: actor,
+          },
+        });
 
       // 3. Delete outward record
       await tx.outward.update({
@@ -877,10 +1021,20 @@ export class InventoryService {
       });
       let balance = entries._sum.quantity || 0;
       if (availableOnly) {
-        const item = await this.prisma.catalogueItem.findUnique({ where: { sku: `LEGACY-YARN-${c.count}` } });
+        const item = await this.prisma.catalogueItem.findUnique({
+          where: { sku: `LEGACY-YARN-${c.count}` },
+        });
         if (item) {
-          const catalogue = await this.prisma.stockMovement.aggregate({ where: { itemId: item.id }, _sum: { quantity: true, reservedQty: true } });
-          balance = Math.min(balance, (catalogue._sum.quantity || 0) - (catalogue._sum.reservedQty || 0) - await unavailableStock(this.prisma, item.id));
+          const catalogue = await this.prisma.stockMovement.aggregate({
+            where: { itemId: item.id },
+            _sum: { quantity: true, reservedQty: true },
+          });
+          balance = Math.min(
+            balance,
+            (catalogue._sum.quantity || 0) -
+              (catalogue._sum.reservedQty || 0) -
+              (await unavailableStock(this.prisma, item.id)),
+          );
         }
       }
       if (balance > 0.01) {
@@ -896,7 +1050,14 @@ export class InventoryService {
     createdBy?: string;
   }) {
     data = { ...data, date: stockEventDate(data.date).toISOString() };
-    if (!Number.isFinite(data.quantity) || data.quantity <= 0 || !Number.isFinite(new Date(data.date).getTime())) throw new BadRequestException('Enter a valid recycle date and positive waste weight');
+    if (
+      !Number.isFinite(data.quantity) ||
+      data.quantity <= 0 ||
+      !Number.isFinite(new Date(data.date).getTime())
+    )
+      throw new BadRequestException(
+        'Enter a valid recycle date and positive waste weight',
+      );
     return this.prisma.stockTransaction(async (tx) => {
       // 1. Check Waste Balance as of the requested date
       const wasteAgg = await tx.wasteInventory.aggregate({
@@ -929,8 +1090,20 @@ export class InventoryService {
 
       // 3. Add to Cotton Inventory (Recycled)
       const batchId = `RECYCLE-${recycled.id}`;
-      await tx.wasteInventory.update({ where: { id: recycled.id }, data: { reference: batchId } });
-      await tx.inwardBatch.create({ data: { batchId, date: new Date(data.date), supplier: 'Internal waste recycling', bale: 0, kg: data.quantity, createdBy: data.createdBy } });
+      await tx.wasteInventory.update({
+        where: { id: recycled.id },
+        data: { reference: batchId },
+      });
+      await tx.inwardBatch.create({
+        data: {
+          batchId,
+          date: new Date(data.date),
+          supplier: 'Internal waste recycling',
+          bale: 0,
+          kg: data.quantity,
+          createdBy: data.createdBy,
+        },
+      });
       const lastCotton = await tx.cottonInventory.findFirst({
         orderBy: { id: 'desc' },
       });
@@ -958,7 +1131,16 @@ export class InventoryService {
     createdBy?: string;
   }) {
     data = { ...data, date: stockEventDate(data.date).toISOString() };
-    if (!Number.isFinite(data.quantity) || data.quantity <= 0 || !Number.isFinite(new Date(data.date).getTime()) || (data.price !== undefined && (!Number.isFinite(data.price) || data.price < 0))) throw new BadRequestException('Enter a valid waste sale date, positive weight and non-negative price');
+    if (
+      !Number.isFinite(data.quantity) ||
+      data.quantity <= 0 ||
+      !Number.isFinite(new Date(data.date).getTime()) ||
+      (data.price !== undefined &&
+        (!Number.isFinite(data.price) || data.price < 0))
+    )
+      throw new BadRequestException(
+        'Enter a valid waste sale date, positive weight and non-negative price',
+      );
     return this.prisma.stockTransaction(async (tx) => {
       // 1. Check Waste Balance as of the requested date
       const wasteAgg = await tx.wasteInventory.aggregate({
@@ -1002,8 +1184,13 @@ export class InventoryService {
 
       if (waste.type === 'PRODUCTION') {
         let parentProdId: number | null = waste.productionId || null;
-        if (!parentProdId && waste.reference && waste.reference.startsWith('P-')) {
-          parentProdId = parseInt(waste.reference.replace('P-', ''), 10) || null;
+        if (
+          !parentProdId &&
+          waste.reference &&
+          waste.reference.startsWith('P-')
+        ) {
+          parentProdId =
+            parseInt(waste.reference.replace('P-', ''), 10) || null;
         }
 
         try {
@@ -1055,13 +1242,34 @@ export class InventoryService {
 
       // 1. If it was RECYCLE, remove from Cotton Inventory
       if (waste.type === 'RECYCLE') {
-        const linked = await tx.cottonInventory.findMany({ where: { type: 'RECYCLED_WASTE', ...(waste.reference?.startsWith('RECYCLE-') ? { reference: waste.reference } : { date: waste.date, quantity: Math.abs(waste.quantity) }) } });
-        if (linked.length !== 1) throw new BadRequestException('This historical recycling entry has no unique cotton link. Reconcile its history before reversing it.');
-        if (linked[0].batchId && await tx.productionConsumption.count({ where: { batchNo: linked[0].batchId } })) throw new BadRequestException('Recycled cotton is already used in production or a merge. Reverse the dependent entry first.');
+        const linked = await tx.cottonInventory.findMany({
+          where: {
+            type: 'RECYCLED_WASTE',
+            ...(waste.reference?.startsWith('RECYCLE-')
+              ? { reference: waste.reference }
+              : { date: waste.date, quantity: Math.abs(waste.quantity) }),
+          },
+        });
+        if (linked.length !== 1)
+          throw new BadRequestException(
+            'This historical recycling entry has no unique cotton link. Reconcile its history before reversing it.',
+          );
+        if (
+          linked[0].batchId &&
+          (await tx.productionConsumption.count({
+            where: { batchNo: linked[0].batchId },
+          }))
+        )
+          throw new BadRequestException(
+            'Recycled cotton is already used in production or a merge. Reverse the dependent entry first.',
+          );
         await tx.cottonInventory.deleteMany({
           where: { id: linked[0].id },
         });
-        if (linked[0].batchId) await tx.inwardBatch.delete({ where: { batchId: linked[0].batchId } });
+        if (linked[0].batchId)
+          await tx.inwardBatch.delete({
+            where: { batchId: linked[0].batchId },
+          });
 
         // Recalculate Cotton Inventory
         const cottonMovements = await tx.cottonInventory.findMany({
@@ -1119,41 +1327,83 @@ export class InventoryService {
   }
 
   async syncWeighbridgeSlip(body: any, actor: string) {
-    if (!body || typeof body !== 'object') throw new BadRequestException('Receipt details are required.');
+    if (!body || typeof body !== 'object')
+      throw new BadRequestException('Receipt details are required.');
     // Agent envelopes are accepted as unverified readings only. Client totals and seals are never trusted.
-    const data = body.slip ? { ...body.metadata, ...(body.slip.payload || body.slip) } : body;
+    const data = body.slip
+      ? { ...body.metadata, ...(body.slip.payload || body.slip) }
+      : body;
     const number = (value: unknown) =>
-      (typeof value === 'number' || (typeof value === 'string' && value.trim() !== '')) ? Number(value) : NaN;
-    const batchId = typeof (data.batchId ?? data.lotNumber) === 'string' ? (data.batchId ?? data.lotNumber).trim() : '';
-    if (!batchId || batchId.length > 100) throw new BadRequestException('A stable lot reference of at most 100 characters is required for safe retries.');
-    if (typeof data.supplier !== 'string' || !data.supplier.trim()) throw new BadRequestException('Supplier is required.');
+      typeof value === 'number' ||
+      (typeof value === 'string' && value.trim() !== '')
+        ? Number(value)
+        : NaN;
+    const batchId =
+      typeof (data.batchId ?? data.lotNumber) === 'string'
+        ? (data.batchId ?? data.lotNumber).trim()
+        : '';
+    if (!batchId || batchId.length > 100)
+      throw new BadRequestException(
+        'A stable lot reference of at most 100 characters is required for safe retries.',
+      );
+    if (typeof data.supplier !== 'string' || !data.supplier.trim())
+      throw new BadRequestException('Supplier is required.');
     const dateStr = data.date ?? data.timestamp;
-    if (typeof dateStr !== 'string' || !/^\d{4}-\d{2}-\d{2}T.*(Z|[+-]\d{2}:\d{2})$/.test(dateStr))
-      throw new BadRequestException('Receipt time must include a time zone and remain unchanged on retries.');
+    if (
+      typeof dateStr !== 'string' ||
+      !/^\d{4}-\d{2}-\d{2}T.*(Z|[+-]\d{2}:\d{2})$/.test(dateStr)
+    )
+      throw new BadRequestException(
+        'Receipt time must include a time zone and remain unchanged on retries.',
+      );
     const method = data.method ?? 'PENDING';
     const measurement = {
       grossWeightKg: number(data.grossWeightKg ?? data.rawGrossKg),
       tareWeightKg: number(data.tareWeightKg ?? data.rawTareKg),
       moisturePercent: number(data.moisturePercent),
       method,
-      ...(method !== 'PENDING' ? {
-        standardMoistureBase: number(data.standardMoistureBase),
-        contractReference: typeof data.contractReference === 'string' ? data.contractReference.trim() : '',
-      } : {}),
+      ...(method !== 'PENDING'
+        ? {
+            standardMoistureBase: number(data.standardMoistureBase),
+            contractReference:
+              typeof data.contractReference === 'string'
+                ? data.contractReference.trim()
+                : '',
+          }
+        : {}),
     };
     let totals: ReturnType<typeof calculateWeighbridge>;
-    try { totals = calculateWeighbridge(measurement); }
-    catch (error) { throw new BadRequestException((error as Error).message); }
+    try {
+      totals = calculateWeighbridge(measurement);
+    } catch (error) {
+      throw new BadRequestException((error as Error).message);
+    }
     const receipt: WeighbridgeReceipt = {
-      version: 1, ...measurement, ...totals,
-      deviceSerial: typeof data.deviceSerial === 'string' ? data.deviceSerial.trim() || null : null,
+      version: 1,
+      ...measurement,
+      ...totals,
+      deviceSerial:
+        typeof data.deviceSerial === 'string'
+          ? data.deviceSerial.trim() || null
+          : null,
       verificationStatus: 'UNVERIFIED',
     };
-    const inward = await this.createInward({
-      batchId, date: dateStr, supplier: data.supplier.trim(),
-      bale: number(data.bale ?? data.bales), kg: totals.netWeightKg, createdBy: actor,
-    }, receipt);
-    return { success: true, batchId, ...receipt, inward: { ...inward, weighbridgeReceipt: receipt } };
+    const inward = await this.createInward(
+      {
+        batchId,
+        date: dateStr,
+        supplier: data.supplier.trim(),
+        bale: number(data.bale ?? data.bales),
+        kg: totals.netWeightKg,
+        createdBy: actor,
+      },
+      receipt,
+    );
+    return {
+      success: true,
+      batchId,
+      ...receipt,
+      inward: { ...inward, weighbridgeReceipt: receipt },
+    };
   }
 }
-

@@ -11,8 +11,10 @@ export class QualityService {
     if (params?.status) where.status = params.status;
     if (params?.from || params?.to) {
       where.date = {};
-      if (params.from) (where.date as Record<string, Date>).gte = new Date(params.from);
-      if (params.to) (where.date as Record<string, Date>).lte = new Date(params.to);
+      if (params.from)
+        (where.date as Record<string, Date>).gte = new Date(params.from);
+      if (params.to)
+        (where.date as Record<string, Date>).lte = new Date(params.to);
     }
     return this.prisma.qualityInspection.findMany({
       where,
@@ -38,15 +40,41 @@ export class QualityService {
     remarks?: string;
     inspectedBy?: string;
   }) {
-    return this.prisma.stockTransaction(async tx => {
-      if (['HOLD', 'FAIL'].includes(data.status || '') && (!data.lotId || !data.holdQuantity)) throw new BadRequestException('A failed/held inspection needs a stock lot and quarantined quantity');
-      if (data.lotId && !await tx.stockLot.findUnique({ where: { id: data.lotId } })) throw new BadRequestException('Stock lot not found');
+    return this.prisma.stockTransaction(async (tx) => {
+      if (
+        ['HOLD', 'FAIL'].includes(data.status || '') &&
+        (!data.lotId || !data.holdQuantity)
+      )
+        throw new BadRequestException(
+          'A failed/held inspection needs a stock lot and quarantined quantity',
+        );
+      if (
+        data.lotId &&
+        !(await tx.stockLot.findUnique({ where: { id: data.lotId } }))
+      )
+        throw new BadRequestException('Stock lot not found');
       const inspection = await tx.qualityInspection.create({ data });
       if (['HOLD', 'FAIL'].includes(data.status || '')) {
-        const lot = await tx.stockLot.findUniqueOrThrow({ where: { id: data.lotId! } });
-        await freezeOrdersForHold(tx, lot.itemId, data.holdQuantity!, data.inspectedBy || 'UNKNOWN');
+        const lot = await tx.stockLot.findUniqueOrThrow({
+          where: { id: data.lotId! },
+        });
+        await freezeOrdersForHold(
+          tx,
+          lot.itemId,
+          data.holdQuantity!,
+          data.inspectedBy || 'UNKNOWN',
+        );
       }
-      if (['HOLD', 'FAIL'].includes(data.status || '')) await tx.stockHold.create({ data: { lotId: data.lotId!, quantity: data.holdQuantity!, inspectionId: inspection.id, reason: data.remarks || 'Quality inspection hold', createdBy: data.inspectedBy || 'UNKNOWN' } });
+      if (['HOLD', 'FAIL'].includes(data.status || ''))
+        await tx.stockHold.create({
+          data: {
+            lotId: data.lotId!,
+            quantity: data.holdQuantity!,
+            inspectionId: inspection.id,
+            reason: data.remarks || 'Quality inspection hold',
+            createdBy: data.inspectedBy || 'UNKNOWN',
+          },
+        });
       return inspection;
     });
   }

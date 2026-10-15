@@ -153,8 +153,8 @@ describe('calculateInvoiceTotals — full mode (numeric discount)', () => {
     it('sums multiple lines with different GST rates', () => {
       const result = calculateInvoiceTotals(
         [
-          { quantity: 100, rate: 50, discount: 0, gstRate: 5 },   // yarn: 5000, tax 250
-          { quantity: 10, rate: 100, discount: 0, gstRate: 18 },  // services: 1000, tax 180
+          { quantity: 100, rate: 50, discount: 0, gstRate: 5 }, // yarn: 5000, tax 250
+          { quantity: 10, rate: 100, discount: 0, gstRate: 18 }, // services: 1000, tax 180
         ],
         0,
         'Tamil Nadu',
@@ -173,7 +173,12 @@ describe('calculateInvoiceTotals — full mode (numeric discount)', () => {
         discount: 0,
         gstRate: 18,
       }));
-      const result = calculateInvoiceTotals(lines, 0, 'Tamil Nadu', 'Tamil Nadu');
+      const result = calculateInvoiceTotals(
+        lines,
+        0,
+        'Tamil Nadu',
+        'Tamil Nadu',
+      );
       const expectedSubtotal = lines.reduce((sum, l) => sum + l.rate, 0);
       expect(result.subtotal).toBeCloseTo(expectedSubtotal);
     });
@@ -225,9 +230,7 @@ describe('calculateInvoiceTotals — full mode (numeric discount)', () => {
 
     it('does not introduce floating-point drift for common values', () => {
       const result = calculateInvoiceTotals(
-        [
-          { quantity: 3, rate: 33.33, discount: 0, gstRate: 18 },
-        ],
+        [{ quantity: 3, rate: 33.33, discount: 0, gstRate: 18 }],
         0,
         'Tamil Nadu',
         'Tamil Nadu',

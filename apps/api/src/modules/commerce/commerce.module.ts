@@ -7,7 +7,11 @@ import { InvoiceVerificationController } from './invoice-verification.controller
 import { WhatsAppCollectionsService } from './whatsapp-collections.service';
 
 @Module({
-  controllers: [CommerceController, StorefrontController, InvoiceVerificationController],
+  controllers: [
+    CommerceController,
+    StorefrontController,
+    InvoiceVerificationController,
+  ],
   providers: [CommerceService, StorefrontService, WhatsAppCollectionsService],
   exports: [CommerceService, WhatsAppCollectionsService],
 })

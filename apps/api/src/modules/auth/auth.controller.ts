@@ -11,7 +11,12 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { LoginDto, TotpCodeDto, UpdateProfileDto, ChangePasswordDto } from './auth.dto';
+import {
+  LoginDto,
+  TotpCodeDto,
+  UpdateProfileDto,
+  ChangePasswordDto,
+} from './auth.dto';
 import { WebAuthnService } from './webauthn.service';
 import { JwtAuthGuard } from '../../guards/jwt-auth.guard';
 import { PrismaService } from '../../services/prisma.service';
@@ -67,11 +72,10 @@ export class AuthController {
   async logout(@Req() req: any) {
     const sessionId = req.user?.sessionId;
     if (sessionId) {
-      await this.prisma.session
-        .updateMany({
-          where: { id: sessionId },
-          data: { isValid: false },
-        });
+      await this.prisma.session.updateMany({
+        where: { id: sessionId },
+        data: { isValid: false },
+      });
     }
     return { message: 'Logged out successfully' };
   }
@@ -136,13 +140,21 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Put('profile')
   async updateProfile(@Req() req: any, @Body() body: UpdateProfileDto) {
-    return this.authService.updateProfile(req.user.userId, req.user.username, body);
+    return this.authService.updateProfile(
+      req.user.userId,
+      req.user.username,
+      body,
+    );
   }
 
   @UseGuards(JwtAuthGuard)
   @Put('change-password')
   async changePassword(@Req() req: any, @Body() body: ChangePasswordDto) {
-    return this.authService.changePassword(req.user.userId, req.user.username, body);
+    return this.authService.changePassword(
+      req.user.userId,
+      req.user.username,
+      body,
+    );
   }
 
   // WebAuthn Passkeys Endpoints

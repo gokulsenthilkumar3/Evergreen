@@ -16,21 +16,80 @@ export class ProductionService {
   constructor(private prisma: PrismaService) {}
 
   async create(data: any) {
-    if (!Number.isFinite(Number(data.processingCost || 0)) || Number(data.processingCost || 0) < 0) throw new BadRequestException('Allocated process cost must be non-negative');
-    if (!Number.isFinite(new Date(data.date).getTime()) || !Array.isArray(data.consumed) || !data.consumed.length || !Array.isArray(data.produced))
-      throw new BadRequestException('A valid start time and cotton consumption are required');
-    if (data.consumed.some((c: any) => !c.batchNo?.trim() || !Number.isFinite(Number(c.weight)) || Number(c.weight) <= 0 || !Number.isFinite(Number(c.bale)) || Number(c.bale) < 0))
-      throw new BadRequestException('Cotton consumption needs a batch, positive weight and non-negative bales');
-    if (data.produced.some((p: any) => !p.count?.trim() || !Number.isFinite(Number(p.weight)) || Number(p.weight) <= 0 || !Number.isInteger(Number(p.bags)) || Number(p.bags) < 0))
-      throw new BadRequestException('Produced yarn needs a count, positive weight and whole bags');
-    const wasteValues = ['blowRoom', 'carding', 'oe', 'others'].map(key => Number(data.waste?.[key] || 0));
-    if (wasteValues.some(value => !Number.isFinite(value) || value < 0) || !Number.isFinite(Number(data.totalIntermediate || 0)) || Number(data.totalIntermediate || 0) < 0 || !Number.isFinite(Number(data.totalWaste || 0)) || Number(data.totalWaste || 0) < 0)
-      throw new BadRequestException('Waste and intermediate weights must be finite, non-negative numbers');
+    if (
+      !Number.isFinite(Number(data.processingCost || 0)) ||
+      Number(data.processingCost || 0) < 0
+    )
+      throw new BadRequestException(
+        'Allocated process cost must be non-negative',
+      );
+    if (
+      !Number.isFinite(new Date(data.date).getTime()) ||
+      !Array.isArray(data.consumed) ||
+      !data.consumed.length ||
+      !Array.isArray(data.produced)
+    )
+      throw new BadRequestException(
+        'A valid start time and cotton consumption are required',
+      );
+    if (
+      data.consumed.some(
+        (c: any) =>
+          !c.batchNo?.trim() ||
+          !Number.isFinite(Number(c.weight)) ||
+          Number(c.weight) <= 0 ||
+          !Number.isFinite(Number(c.bale)) ||
+          Number(c.bale) < 0,
+      )
+    )
+      throw new BadRequestException(
+        'Cotton consumption needs a batch, positive weight and non-negative bales',
+      );
+    if (
+      data.produced.some(
+        (p: any) =>
+          !p.count?.trim() ||
+          !Number.isFinite(Number(p.weight)) ||
+          Number(p.weight) <= 0 ||
+          !Number.isInteger(Number(p.bags)) ||
+          Number(p.bags) < 0,
+      )
+    )
+      throw new BadRequestException(
+        'Produced yarn needs a count, positive weight and whole bags',
+      );
+    const wasteValues = ['blowRoom', 'carding', 'oe', 'others'].map((key) =>
+      Number(data.waste?.[key] || 0),
+    );
+    if (
+      wasteValues.some((value) => !Number.isFinite(value) || value < 0) ||
+      !Number.isFinite(Number(data.totalIntermediate || 0)) ||
+      Number(data.totalIntermediate || 0) < 0 ||
+      !Number.isFinite(Number(data.totalWaste || 0)) ||
+      Number(data.totalWaste || 0) < 0
+    )
+      throw new BadRequestException(
+        'Waste and intermediate weights must be finite, non-negative numbers',
+      );
     // Derive stored totals from their actual rows, rather than trusting separately supplied totals.
-    data = { ...data, totalConsumed: data.consumed.reduce((sum: number, c: any) => sum + Number(c.weight), 0),
-      totalProduced: data.produced.reduce((sum: number, p: any) => sum + Number(p.weight), 0),
-      totalWaste: data.waste ? wasteValues.reduce((sum, value) => sum + value, 0) : Number(data.totalWaste || 0),
-      produced: data.produced.map((p: any) => ({ ...p, bags: Math.floor(Number(p.weight) / 60), remainingLog: Number(p.weight) % 60 })),
+    data = {
+      ...data,
+      totalConsumed: data.consumed.reduce(
+        (sum: number, c: any) => sum + Number(c.weight),
+        0,
+      ),
+      totalProduced: data.produced.reduce(
+        (sum: number, p: any) => sum + Number(p.weight),
+        0,
+      ),
+      totalWaste: data.waste
+        ? wasteValues.reduce((sum, value) => sum + value, 0)
+        : Number(data.totalWaste || 0),
+      produced: data.produced.map((p: any) => ({
+        ...p,
+        bags: Math.floor(Number(p.weight) / 60),
+        remainingLog: Number(p.weight) % 60,
+      })),
     };
     console.log(
       '[Production] Starting create with data:',
@@ -39,7 +98,11 @@ export class ProductionService {
     try {
       return await this.prisma.stockTransaction(async (tx) => {
         const prodDate = new Date(data.date);
-        await assertOverheadAvailable(tx, Number(data.processingCost || 0), prodDate);
+        await assertOverheadAvailable(
+          tx,
+          Number(data.processingCost || 0),
+          prodDate,
+        );
 
         // 0. Time Validation: Production date cannot be in the future
         if (prodDate.getTime() > Date.now() + 60_000) {
@@ -66,9 +129,16 @@ export class ProductionService {
         }
 
         // 0.2 Validation: Check Per-Batch Availability & Settle Gap (Rule 5)
-        const requests = new Map<string, { batchNo: string; weight: number; bale: number }>();
+        const requests = new Map<
+          string,
+          { batchNo: string; weight: number; bale: number }
+        >();
         for (const c of data.consumed) {
-          const request = requests.get(c.batchNo) || { batchNo: c.batchNo, weight: 0, bale: 0 };
+          const request = requests.get(c.batchNo) || {
+            batchNo: c.batchNo,
+            weight: 0,
+            bale: 0,
+          };
           request.weight += Number(c.weight);
           request.bale += Number(c.bale);
           requests.set(c.batchNo, request);
@@ -86,7 +156,9 @@ export class ProductionService {
 
           // Rule 5: Minimum settle gap between inward receipt and production start
           const inwardReceivedAt = new Date(batch.date || batch.createdAt);
-          const earliestAllowed = new Date(inwardReceivedAt.getTime() + SETTLE_GAP_MS);
+          const earliestAllowed = new Date(
+            inwardReceivedAt.getTime() + SETTLE_GAP_MS,
+          );
 
           if (prodDate.getTime() < earliestAllowed.getTime()) {
             throwProductionTooEarly({
@@ -138,7 +210,10 @@ export class ProductionService {
         const totalIntermediate = parseFloat(data.totalIntermediate || 0);
         const totalOutput = totalProduced + totalWaste + totalIntermediate;
 
-        if (totalOutput > totalConsumption * (1 + MASS_BALANCE_TOLERANCE) + 0.01) {
+        if (
+          totalOutput >
+          totalConsumption * (1 + MASS_BALANCE_TOLERANCE) + 0.01
+        ) {
           throwMassBalanceExceeded({
             totalConsumed: totalConsumption,
             totalProduced,
@@ -148,9 +223,12 @@ export class ProductionService {
         }
         // Spinning mills naturally experience 0.5% - 2.0% invisible process loss (moisture/micro-dust).
         // Disallow unexplained discrepancies that exceed the allowable mass balance tolerance.
-        if (totalOutput < totalConsumption * (1 - MASS_BALANCE_TOLERANCE) - 0.01) {
+        if (
+          totalOutput <
+          totalConsumption * (1 - MASS_BALANCE_TOLERANCE) - 0.01
+        ) {
           throw new BadRequestException(
-            `Total output (${totalOutput.toFixed(2)} kg) is more than ${(MASS_BALANCE_TOLERANCE * 100).toFixed(0)}% below cotton consumed (${totalConsumption.toFixed(2)} kg). Record any excessive process loss explicitly.`
+            `Total output (${totalOutput.toFixed(2)} kg) is more than ${(MASS_BALANCE_TOLERANCE * 100).toFixed(0)}% below cotton consumed (${totalConsumption.toFixed(2)} kg). Record any excessive process loss explicitly.`,
           );
         }
 
@@ -333,7 +411,16 @@ export class ProductionService {
           },
         });
 
-        if (totalIntermediate > 0) await tx.wipLot.create({ data: { productionId: production.id, code: `WIP-${production.id}`, date: prodDate, quantity: totalIntermediate, remaining: totalIntermediate } });
+        if (totalIntermediate > 0)
+          await tx.wipLot.create({
+            data: {
+              productionId: production.id,
+              code: `WIP-${production.id}`,
+              date: prodDate,
+              quantity: totalIntermediate,
+              remaining: totalIntermediate,
+            },
+          });
         return production;
       });
     } catch (error: any) {
@@ -361,8 +448,15 @@ export class ProductionService {
       });
       if (!prod) throw new BadRequestException('Production entry not found');
       const wip = await tx.wipLot.findUnique({ where: { productionId: id } });
-      if (wip && wip.remaining < wip.quantity - 0.000001) throw new BadRequestException('Intermediate output from this production was converted; retain the source production history.');
-      if (wip) await tx.wipLot.update({ where: { id: wip.id }, data: { status: 'CANCELLED', remaining: 0 } });
+      if (wip && wip.remaining < wip.quantity - 0.000001)
+        throw new BadRequestException(
+          'Intermediate output from this production was converted; retain the source production history.',
+        );
+      if (wip)
+        await tx.wipLot.update({
+          where: { id: wip.id },
+          data: { status: 'CANCELLED', remaining: 0 },
+        });
 
       // 1. Dependency Checks: Packaging / Maintenance Costing
       const costing = await tx.costingEntry.findMany({
@@ -398,7 +492,8 @@ export class ProductionService {
                 action: 'DELETE_BLOCKED',
                 module: 'PRODUCTION',
                 details: JSON.stringify({
-                  reason: 'Yarn bags from production are already billed or outwarded',
+                  reason:
+                    'Yarn bags from production are already billed or outwarded',
                   productionId: id,
                   count,
                   blockingDate: m.date,
@@ -518,7 +613,10 @@ export class ProductionService {
           module: 'PRODUCTION',
           details: JSON.stringify({
             productionId: id,
-            cascadedBags: prod.producedYarn.reduce((s, p) => s + (p.bags || 0), 0),
+            cascadedBags: prod.producedYarn.reduce(
+              (s, p) => s + (p.bags || 0),
+              0,
+            ),
             cascadedWasteKg: prod.totalWaste,
             cascadedProducedKg: prod.totalProduced,
             reason: reason || 'Production and its bags + waste cascade deleted',

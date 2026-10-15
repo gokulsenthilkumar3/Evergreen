@@ -37,7 +37,9 @@ export class DailySummaryService {
   async sendDailySummary() {
     const recipient = process.env.DAILY_SUMMARY_EMAIL;
     if (!this.transporter || !recipient) {
-      this.logger.log('Daily summary skipped (no SMTP or recipient configured)');
+      this.logger.log(
+        'Daily summary skipped (no SMTP or recipient configured)',
+      );
       return;
     }
 
@@ -58,21 +60,40 @@ export class DailySummaryService {
         this.prisma.systemSettings.findFirst(),
       ]);
 
-      const totalCost = costs.reduce((s: number, c: { totalCost: number | null }) => s + (c.totalCost || 0), 0);
+      const totalCost = costs.reduce(
+        (s: number, c: { totalCost: number | null }) => s + (c.totalCost || 0),
+        0,
+      );
       const totalProduced = production?.totalProduced || 0;
       const costPerKg = totalProduced > 0 ? totalCost / totalProduced : 0;
       const companyName = settings?.companyName || 'EverGreen Yarn Mills';
-      const dateStr = today.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      const dateStr = today.toLocaleDateString('en-IN', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
 
       const yarnTable = production?.producedYarn?.length
         ? production.producedYarn
-            .map((p: { count: string; bags: number; weight: number | string; remainingLog: number | string }) => `<tr><td>Count ${p.count}</td><td>${p.bags}</td><td>${Number(p.weight).toFixed(2)} kg</td><td>${Number(p.remainingLog).toFixed(2)} kg</td></tr>`)
+            .map(
+              (p: {
+                count: string;
+                bags: number;
+                weight: number | string;
+                remainingLog: number | string;
+              }) =>
+                `<tr><td>Count ${p.count}</td><td>${p.bags}</td><td>${Number(p.weight).toFixed(2)} kg</td><td>${Number(p.remainingLog).toFixed(2)} kg</td></tr>`,
+            )
             .join('')
         : '<tr><td colspan="4" style="text-align:center;color:#999">No production data</td></tr>';
 
       const costTable = costs.length
         ? costs
-            .map((c: { category: string; totalCost: number | null }) => `<tr><td>${c.category}</td><td style="text-align:right">₹${Number(c.totalCost).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td></tr>`)
+            .map(
+              (c: { category: string; totalCost: number | null }) =>
+                `<tr><td>${c.category}</td><td style="text-align:right">₹${Number(c.totalCost).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td></tr>`,
+            )
             .join('')
         : '<tr><td colspan="2" style="text-align:center;color:#999">No cost entries</td></tr>';
 

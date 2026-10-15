@@ -15,9 +15,17 @@ export class TallyExportController {
     @Query('types') types: string | undefined,
     @Res() res: Response,
   ) {
-    const validTypes: ('Purchase' | 'Sales' | 'Receipt')[] = ['Purchase', 'Sales', 'Receipt'];
+    const validTypes: ('Purchase' | 'Sales' | 'Receipt')[] = [
+      'Purchase',
+      'Sales',
+      'Receipt',
+    ];
     const voucherTypes: ('Purchase' | 'Sales' | 'Receipt')[] = types
-      ? types.split(',').filter((t): t is 'Purchase' | 'Sales' | 'Receipt' => validTypes.includes(t as any))
+      ? types
+          .split(',')
+          .filter((t): t is 'Purchase' | 'Sales' | 'Receipt' =>
+            validTypes.includes(t as any),
+          )
       : ['Sales', 'Receipt'];
 
     const result = await this.tallyService.generateTallyXml({

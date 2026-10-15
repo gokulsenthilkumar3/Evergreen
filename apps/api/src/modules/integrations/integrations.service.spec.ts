@@ -16,7 +16,11 @@ import { IntegrationsService } from './integrations.service';
 import { PrismaService } from '../../services/prisma.service';
 
 /** Compute the fingerprint that IntegrationsService.commit() would compute for a given input */
-function computeFingerprint(source: string, entity: string, input: any): string {
+function computeFingerprint(
+  source: string,
+  entity: string,
+  input: any,
+): string {
   const preview = previewImport(input);
   return createHash('sha256')
     .update(JSON.stringify({ source, entity, records: preview.records }))
@@ -150,14 +154,16 @@ describe('IntegrationsService', () => {
       prismaStub.customer.create = jest.fn().mockResolvedValue({ id: 1 });
       prismaStub.activityLog.create = jest.fn().mockResolvedValue({});
 
-      prismaStub.$transaction = jest.fn().mockImplementation(async (fn: any) => {
-        return fn({
-          customer: prismaStub.customer,
-          catalogueItem: prismaStub.catalogueItem,
-          importBatch: prismaStub.importBatch,
-          activityLog: prismaStub.activityLog,
+      prismaStub.$transaction = jest
+        .fn()
+        .mockImplementation(async (fn: any) => {
+          return fn({
+            customer: prismaStub.customer,
+            catalogueItem: prismaStub.catalogueItem,
+            importBatch: prismaStub.importBatch,
+            activityLog: prismaStub.activityLog,
+          });
         });
-      });
     });
 
     it('creates a new import batch and returns it with replayed: false', async () => {
@@ -185,7 +191,9 @@ describe('IntegrationsService', () => {
         createdAt: new Date(),
       };
       // First findUnique returns the prior batch with matching fingerprint
-      prismaStub.importBatch.findUnique = jest.fn().mockResolvedValue(existingBatch);
+      prismaStub.importBatch.findUnique = jest
+        .fn()
+        .mockResolvedValue(existingBatch);
 
       const result = await service.commit(validCustomerInput, 'admin');
       expect(result.replayed).toBe(true);
@@ -204,7 +212,9 @@ describe('IntegrationsService', () => {
         createdBy: 'admin',
         createdAt: new Date(),
       };
-      prismaStub.importBatch.findUnique = jest.fn().mockResolvedValue(existingBatch);
+      prismaStub.importBatch.findUnique = jest
+        .fn()
+        .mockResolvedValue(existingBatch);
 
       await expect(
         service.commit(
@@ -270,17 +280,21 @@ describe('IntegrationsService', () => {
     });
 
     it('throws ConflictException when SKU already exists', async () => {
-      prismaStub.$transaction = jest.fn().mockImplementation(async (fn: any) => {
-        return fn({
-          customer: prismaStub.customer,
-          catalogueItem: {
-            findUnique: jest.fn().mockResolvedValue({ id: 99, sku: 'YARN-2S' }),
-            create: jest.fn(),
-          },
-          importBatch: prismaStub.importBatch,
-          activityLog: prismaStub.activityLog,
+      prismaStub.$transaction = jest
+        .fn()
+        .mockImplementation(async (fn: any) => {
+          return fn({
+            customer: prismaStub.customer,
+            catalogueItem: {
+              findUnique: jest
+                .fn()
+                .mockResolvedValue({ id: 99, sku: 'YARN-2S' }),
+              create: jest.fn(),
+            },
+            importBatch: prismaStub.importBatch,
+            activityLog: prismaStub.activityLog,
+          });
         });
-      });
 
       await expect(service.commit(validItemInput, 'admin')).rejects.toThrow(
         ConflictException,
@@ -288,21 +302,25 @@ describe('IntegrationsService', () => {
     });
 
     it('throws ConflictException when customer name already exists (case-insensitive)', async () => {
-      prismaStub.$transaction = jest.fn().mockImplementation(async (fn: any) => {
-        return fn({
-          customer: {
-            findMany: jest.fn().mockResolvedValue([{ name: 'ramesh textiles' }]),
-            create: jest.fn(),
-          },
-          catalogueItem: prismaStub.catalogueItem,
-          importBatch: prismaStub.importBatch,
-          activityLog: prismaStub.activityLog,
+      prismaStub.$transaction = jest
+        .fn()
+        .mockImplementation(async (fn: any) => {
+          return fn({
+            customer: {
+              findMany: jest
+                .fn()
+                .mockResolvedValue([{ name: 'ramesh textiles' }]),
+              create: jest.fn(),
+            },
+            catalogueItem: prismaStub.catalogueItem,
+            importBatch: prismaStub.importBatch,
+            activityLog: prismaStub.activityLog,
+          });
         });
-      });
 
-      await expect(
-        service.commit(validCustomerInput, 'admin'),
-      ).rejects.toThrow(ConflictException);
+      await expect(service.commit(validCustomerInput, 'admin')).rejects.toThrow(
+        ConflictException,
+      );
     });
   });
 
@@ -311,9 +329,17 @@ describe('IntegrationsService', () => {
   describe('history()', () => {
     it('delegates to prisma.importBatch.findMany with correct options', async () => {
       const mockBatches = [
-        { id: 1, source: 'test', entity: 'customers', rowCount: 5, createdAt: new Date() },
+        {
+          id: 1,
+          source: 'test',
+          entity: 'customers',
+          rowCount: 5,
+          createdAt: new Date(),
+        },
       ];
-      prismaStub.importBatch.findMany = jest.fn().mockResolvedValue(mockBatches);
+      prismaStub.importBatch.findMany = jest
+        .fn()
+        .mockResolvedValue(mockBatches);
 
       const result = await service.history();
       expect(result).toEqual(mockBatches);

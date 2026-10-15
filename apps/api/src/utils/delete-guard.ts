@@ -5,7 +5,9 @@ import { ConflictException, BadRequestException } from '@nestjs/common';
  * Minimum settle gap between inward batch receipt and production start:
  * 0 hours + 1 minute + 1 second = 61,000 ms (00:01:01)
  */
-export const SETTLE_GAP_MS = Number(process.env.EVERGREEN_SETTLE_GAP_MS || 61_000);
+export const SETTLE_GAP_MS = Number(
+  process.env.EVERGREEN_SETTLE_GAP_MS || 61_000,
+);
 
 /**
  * Mass balance tolerance for production output vs raw material consumption
@@ -181,20 +183,25 @@ export function throwWasteSoldOrLinked(opts: {
         productionId: opts.productionId || undefined,
         reference: opts.reference,
       },
-      redirectTo: opts.productionId ? `/production?id=${opts.productionId}` : '/inventory',
+      redirectTo: opts.productionId
+        ? `/production?id=${opts.productionId}`
+        : '/inventory',
     });
   }
 
   throw new DeleteGuardConflictException({
     statusCode: 409,
     code: 'WASTE_PRODUCTION_LINKED',
-    message: 'Cannot delete production waste directly. Please delete or modify the parent production entry.',
+    message:
+      'Cannot delete production waste directly. Please delete or modify the parent production entry.',
     trace: {
       wasteId: opts.wasteId,
       productionId: opts.productionId || undefined,
       reference: opts.reference,
     },
-    redirectTo: opts.productionId ? `/production?id=${opts.productionId}` : '/production',
+    redirectTo: opts.productionId
+      ? `/production?id=${opts.productionId}`
+      : '/production',
   });
 }
 

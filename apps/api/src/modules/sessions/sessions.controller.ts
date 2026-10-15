@@ -17,7 +17,10 @@ export class SessionsController {
   }
 
   @Delete(':id/revoke')
-  async revokeSession(@Param('id') id: string, @Req() request: Request & { user: any }) {
+  async revokeSession(
+    @Param('id') id: string,
+    @Req() request: Request & { user: any },
+  ) {
     return this.sessionsService.revokeSession(id, request.user);
   }
 }
