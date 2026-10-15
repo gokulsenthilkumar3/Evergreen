@@ -8,7 +8,7 @@ assert.equal(taxonomy.length, 310);
 assert.equal(new Set(taxonomy.map(t => t.id)).size, 310);
 for (const t of taxonomy) assert.ok(skills.some(s => s.id === t.skill), `Missing owner for ${t.id}`);
 for (const s of skills) {
-  const card = await readFile(path.join(root, 'skills', s.id, 'SKILL.md'), 'utf8');
+  const card = (await readFile(path.join(root, 'skills', s.id, 'SKILL.md'), 'utf8')).replace(/\r\n/g, '\n');
   assert.ok(card.startsWith(`---\nname: evergreen-${s.id}\ndescription:`));
   for (const related of s.related) assert.ok(skills.some(item => item.id === related));
 }

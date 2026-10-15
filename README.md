@@ -1,165 +1,66 @@
-# 🧶 EverGreen One — Yarn, Billing & MSME ERP
+# EverGreen
 
-**EverGreen One** is the active React/Nest/SQLite application for yarn operations, job work, catalogue sales, a public shop, GST invoices and customer ledgers. Feature consolidation is still in progress; [PARITY_REGISTER.md](PARITY_REGISTER.md) records what is working and what remains unverified.
+EverGreen is an ERP for textile businesses: mills, traders, warehouses and job-work units. It covers material receipts, production, stock and lots, job work, sales orders, invoices and customer payments, with a separate provider workspace for managing customer companies and licenses.
 
-> 🧠 **AI & Developer Knowledge Base**: For complete system architecture, tab directories, business flow state machines, multi-arrowhead customization, and token-saving agent instructions, see [`docs/AGENT_KNOWLEDGE.md`](docs/AGENT_KNOWLEDGE.md) and [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+Built with React, NestJS and Prisma. Both databases use SQLite today; one PostgreSQL database per customer is the planned target.
 
-## One App, Connected Workspaces
+- **New here?** Follow the [Quick Start](QUICK_START.md).
+- **How it works:** [Architecture](docs/ARCHITECTURE.md) and [business flow](docs/BUSINESS_FLOW.md).
+- **What's done and what's open:** [Project status](docs/PROJECT_AUDIT.md) and [backlog](docs/IMPLEMENTATION_BACKLOG.md).
+- **All documentation:** [docs/README.md](docs/README.md).
 
-The **Business Workspace** is the single entry point for every part of the business:
+## Applications
 
-- **Yarn operations** — inward lots, inventory, production, waste and outward dispatch.
-- **Job work & production** — material movement, production receipts and count-wise output.
-- **Invoices & GST** — invoices, quotations, challans, purchase orders and printable documents.
-- **Customers & payments** — customer ledgers, dues and invoice-linked payments. Bank reconciliation is not part of this release.
+| Workspace | Purpose | Development address |
+| --- | --- | --- |
+| `apps/web` | Staff application and public shop | http://localhost:4000 |
+| `apps/api` | Customer API: operations, validation and ledgers | http://127.0.0.1:4301 |
+| `apps/admin-web` | Provider workspace for companies and licenses | http://localhost:5174 |
+| `apps/admin-api` | Provider API with its own database | http://localhost:4300 |
+| `apps/marketing-web` | Marketing site | http://localhost:3300 |
+| `apps/desktop` | Electron package of a local installation | See [desktop delivery](docs/DESKTOP_DELIVERY.md) |
+| `apps/weighbridge-agent` | Weighbridge parser and signing library | See [weighbridge agent](docs/WEIGHBRIDGE_AGENT_ARCHITECTURE.md) |
 
-The shared navigation and catalogue mean teams do not need to switch between separate apps to run the workflow from stock to sale to payment.
+Each customer gets its own installation: web app, API, database and secrets. A provider company record does not create that infrastructure.
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
-![React](https://img.shields.io/badge/Frontend-React%20%2B%20MUI-61DAFB?logo=react)
-![NestJS](https://img.shields.io/badge/Backend-NestJS-E0234E?logo=nestjs)
-![Prisma](https://img.shields.io/badge/Database-Prisma%20%2B%20SQLite-2D3748?logo=prisma)
+## Business flow
 
----
+Receive material → check stock and quality → produce or send out for job work → dispatch → invoice → collect payment.
 
-## 🚀 Key Features
+Every command must preserve lot ownership, available quantities, links between documents, duplicate-request handling and closed accounting periods. Staff roles are `VIEWER`, `MODIFIER` and `ADMIN`, with stricter rules on some endpoints. Provider credentials are separate and must never be installed on a customer machine.
 
-### 📊 Intelligent Dashboards
-*   **Global Dashboard**: Real-time KPIs for total production, stock levels, waste rates, and financial overviews.
-*   **Today's Summary**: A dedicated view for daily operations, tracking costs per KG and production status in real-time.
+## Development
 
-### 📦 Inventory & Procurement
-*   **Raw Material (Inward)**: Track cotton bale intake by supplier, weight (kg), and batch IDs.
-*   **Yarn Stock Management**: Automated inventory updates for finished yarn bags across different counts.
+You need Node.js 22.12 or newer and npm. On Windows, use `npm.cmd` if PowerShell blocks `npm.ps1`.
 
-### 🏭 Production Control
-*   **Mixing & Consumption**: Log cotton consumption from specific inward batches.
-*   **Yarn Output**: Record daily yarn production with count-wise breakdown.
-*   **Waste Tracking**: Detailed monitoring of Blow Room, Carding, and OE waste to minimize loss.
-
-### 💳 Complete Costing Module
-*   **Operational Expenses**: Log EB (Electricity), Employee wages, Packaging, Maintenance, and general expenses.
-*   **Dynamic Costing**: Automatically calculate the real cost per KG based on current production and expenses.
-
-### 🚚 Outward (Sales)
-*   **Sales Logging**: Manage customer shipments with vehicle and driver tracking.
-*   **Automatic Deduction**: Sales entries instantly deduct stock from the yarn inventory for precise balance tracking.
-
-### Administration
-
-The separate **Provider Mission Control** app runs at `http://localhost:5174/`. It has a responsive sidebar for its 16 modules, including tenant management, deployments, integrations, and payments. See the [provider admin README](apps/admin-web/README.md) for startup, verification, and current simulation limits.
-
-Sign in as an **ADMIN** and open **User Management** from the navigation, or visit `/users` on the staff application.
-
-- Search users by username, name, email or role. Summary cards show totals for Admins, Modifiers and Viewers; the table scrolls horizontally on smaller screens.
-- Add or edit a user with a username, email and role. New passwords require at least 12 characters and at most 72 UTF-8 bytes. Leave the password blank when editing to keep the current password.
-- **VIEWER** has read access, **MODIFIER** can create and update, and **ADMIN** can manage users and delete records, subject to each module's rules.
-- Your own account cannot be deleted. The last administrator cannot be deleted or demoted. The API also enforces these protections.
-- Failed user-list requests show an error with a Retry action. If a refresh fails, previously loaded records remain visible with a stale-data warning.
-
----
-
-## 🛠️ Tech Stack
-
-### Frontend
-- **Framework**: React 19
-- **UI Library**: Material UI (MUI)
-- **State Management**: TanStack Query (React Query)
-- **Styling**: Vanilla CSS / MUI System
-- **Build Tool**: Vite
-
-### Backend
-- **Framework**: NestJS (Node.js)
-- **Database**: SQLite (via Prisma ORM)
-- **Auth**: JWT (JSON Web Tokens) with Role-Based Access Control (RBAC)
-- **Logging**: Database activity records for selected actions; complete audit coverage remains a release gate
-
----
-
-## ⚙️ Installation & Setup
-
-Current knowledge: [page-level wiki](docs/wiki/README.md), [UI/API/TV architecture](docs/ARCHITECTURE.md), [shareable licensing and pricing proposal](docs/COMMERCIAL_MODEL.md), [easy migration and connector contracts](docs/INTEGRATIONS.md), and [validation evidence](docs/VALIDATION.md). Generate source references with `npm run docs:generate`; verify them with `npm run docs:check`. The commercial proposal does not change the repository's source license.
-
-Start with the maintained [quick start and service directory](QUICK_START.md). Run `npm run setup:check` for read-only configuration diagnostics. The [business-flow guide](docs/BUSINESS_FLOW.md) explains operational handoffs, and the [2030 roadmap](docs/2030_ROADMAP.md) separates delivered features from future work. The [agent system](agent-system/README.md) defines project-specific skills and validation gates for maintaining EverGreen.
-
-### Prerequisites
-- Node.js 20.19+ or 22.12+ (the installed Vite version does not support Node 18)
-- npm or yarn
-
-### 1. Clone the Repository
-```bash
-git clone https://github.com/gokulsenthilkumar3/Evergreen.git
-cd Evergreen
-```
-
-### 2. Install Dependencies
-```bash
-npm install
-```
-
-### 3. Environment Configuration
-Configure the API in `apps/api/.env`. Prisma CLI commands may also read the root `.env`; keep `DATABASE_URL` consistent in both when using the CLI:
-```env
-DATABASE_URL="file:./dev.db"
-JWT_SECRET="replace-with-a-random-secret-of-at-least-32-characters"
-BOOTSTRAP_ADMIN_USERNAME="your-admin-name"
-BOOTSTRAP_ADMIN_EMAIL="admin@example.com"
-BOOTSTRAP_ADMIN_PASSWORD="replace-with-a-unique-password-of-at-least-12-characters"
-```
-Bootstrap variables create an administrator only when the user table is empty. Remove them after the first successful startup. Do not use a known or shared password.
-
-### 4. Database Setup (new, empty database only)
-```bash
-npx prisma db push --schema packages/database/prisma/schema.prisma
-```
-Do not run `db push` or the legacy bridge script against an existing operational database without a verified SQLite backup and reconciliation. The current legacy bridge still needs a consistent online backup and transaction-safe cutover before use on live data.
-
-### 5. Start Development Servers
-```bash
-# 🚀 Start ALL surfaces in 1 step (Customer App, Admin Web, Marketing Web, APIs & Databases):
-npm run dev:all
-# or
-npm start
-
-# Or start only customer staff app & API:
+```sh
+npm ci
+npm run setup:check
 npm run dev
 ```
-- **Customer Tenant App & ERP**: `http://localhost:4000/` (proxies API via `/api/backend`)
-- **Customer Tenant API**: `http://127.0.0.1:4301/api/docs` & `http://localhost:4000/health`
-- **Provider Admin Control Plane**: `http://localhost:5174/` & `http://localhost:4300/api/docs`
-- **Public Product Marketing Portal**: `http://localhost:3300/`
-- **Isolated SQLite Databases**: `@evergreen/database` (`dev.db`) & `@evergreen/admin-database` (`admin.db`)
 
-Production build: `npm run build -w apps/api` and `npm run build -w apps/web`. These passing builds do not establish feature parity or release readiness; see the parity register and release gates.
+`npm run dev` starts the staff app and its API. `npm run dev:all` starts all three web apps and both APIs. See the [Quick Start](QUICK_START.md) for environment variables and the first database setup.
 
----
+Before opening a pull request, run:
 
-## 📁 Project Structure
-
-```text
-Evergreen/
-├── apps/
-│   ├── api/          # NestJS Backend
-│   ├── web/          # React staff application and public shop
-│   └── desktop/      # Desktop packaging
-├── packages/
-│   ├── database/     # Prisma Schema & Migrations
-│   └── types/        # Shared TypeScript types
-├── agent-system/     # Project maintenance workflows and validation
-├── docs/             # Business flow, roadmap and supporting documentation
-└── package.json      # Monorepo configuration
+```sh
+npm run verify
 ```
 
----
+It checks migrations against both schemas, type-checks, runs every test suite, checks that generated docs are current, and builds all workspaces. The [maintenance runbook](docs/MAINTENANCE_RUNBOOK.md) lists the separate lint and dependency checks.
 
-## 🔒 Security
-- **JWT Auth**: Secure login with persistent sessions.
-- **RBAC**: Access levels for Admin, Modifier, and Viewer roles.
-- **Transaction Safety**: Canonical commerce operations use database transactions. Legacy inward, production and costing write paths still require consolidation before release.
+## Repository layout
 
----
+- `apps/`: applications, APIs, desktop shell and hardware tooling.
+- `packages/`: shared types, invoice calculations, database schemas and helpers.
+- `scripts/`, `deploy/`, `.github/`: development scripts, deployment recipes and CI.
+- `docs/`: guides, generated references and dated audit evidence.
+- `agent-system/`: instructions and checks for AI coding agents working in this repo.
 
-## 📄 License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+## Status
 
-Developed with ❤️ for the Yarn Industry.
+EverGreen is not yet release-ready. Trusted provider-to-customer sync, recoverable deployment, physical devices and external integrations still need acceptance. See the [project status](docs/PROJECT_AUDIT.md).
+
+## License
+
+There is no license file yet, and the workspace package metadata disagrees. The owner needs to choose the source license and redistribution terms. Until then, this repository grants no license.

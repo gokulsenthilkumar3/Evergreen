@@ -1,116 +1,69 @@
-# ⚖️ Weighbridge Hardware Agent Architecture & Anti-Tamper Specification
-**Package:** `apps/weighbridge-agent`  
-**Target Hardware:** Industrial Weighbridge Indicators (Avery, Essae, Mettler) & Digital Moisture Meters (MCU-5, KETT)  
-**Host Environment:** Windows 10/11 Gate PC (Connected via RS-232 COM Port / USB-to-Serial FTDI)
+# Weighbridge agent
 
----
+Package: `apps/weighbridge-agent`. Target host: a Windows 10/11 gate PC connected to the weighbridge indicator and moisture meter over RS-232 or USB-to-serial.
 
-## 1. System Topology
+## What exists today
 
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│                        WEIGHBRIDGE GATE TOPOLOGY                       │
-├────────────────────────────────────────────────────────────────────────┤
-│                                                                        │
-│   [ Avery / Essae Indicator ]            [ Digital Moisture Meter ]    │
-│         (RS-232 / COM1)                       (RS-232 / COM2)          │
-│                │                                     │                 │
-│                ▼                                     ▼                 │
-│   ┌──────────────────────────────────────────────────────────────┐     │
-│   │               EverGreen TareZero Hardware Agent              │     │
-│   │                    (Node.js / TypeScript)                    │     │
-│   ├──────────────────────────────────────────────────────────────┤     │
-│   │ 1. Streaming Protocol Parser (ST,GS,+14520kg)                │     │
-│   │ 2. SIMA / CCI Moisture Deduction Engine (8.5% Standard Base) │     │
-│   │ 3. Cryptographic HMAC-SHA256 Anti-Fraud Sealer               │     │
-│   │ 4. Offline SQLite Buffer (Queue when factory Wi-Fi drops)    │     │
-│   └──────────────────────────────┬───────────────────────────────┘     │
-│                                  │                                     │
-│            ┌─────────────────────┴─────────────────────┐               │
-│            ▼                                           ▼               │
-│   [ Thermal Barcode Printer ]             [ EverGreen Tenant Cloud API ]│
-│   (TSC / Zebra via TSPL/ZPL)              (REST /inventory/inward/sync) │
-│   Prints 2"x1" Bale / Lot Sticker         Generates Inward Batch & Lot  │
-│                                                                        │
-└────────────────────────────────────────────────────────────────────────┘
+| Part | Source | State |
+| --- | --- | --- |
+| Indicator and moisture frame parsers | `src/indicator-parsers.ts` | Implemented with 25 unit tests; still accepts some invalid units and trailing text (BIZ-008) |
+| Slip signing (HMAC-SHA256) | `src/anti-tamper.ts` | Implemented as a library; no device enrollment, key storage or server-side verification (BIZ-009) |
+| Label commands (TSPL and ZPL) | `src/thermal-printer.ts` | Builds command text; not tested against a real printer |
+| Entry point | `src/index.ts` | `runAgentSimulation()` feeds a fixed sample frame and key. There is no serial capture (INT-006) |
+
+The receipt screen in the staff app is the supported way to record weighed receipts today.
+
+## Target topology
+
+```mermaid
+flowchart LR
+  Indicator[Weighbridge indicator] -->|RS-232| Agent[Gate PC agent]
+  Meter[Moisture meter] -->|RS-232| Agent
+  Agent --> Printer[Thermal label printer]
+  Agent -->|signed receipt, queued while offline| API[Customer API]
 ```
 
----
+The agent would parse stable frames, sign each reading with a per-device key, queue it locally when the network drops, and post it to the customer API. None of the serial, queue or enrollment parts exist yet.
 
-## 2. Supported Indicator Hardware Protocols
+## Indicator protocols
 
-The agent runs continuous streaming parsers that read raw ASCII byte frames from standard 9600 baud serial connections:
+The parsers read ASCII frames at 9600 baud.
 
-### 2.1 Avery Weigh-Tronix (E1205 / ZM Series)
-* **Frame Structure:** `<CR><LF>ST,GS,+014520kg<CR><LF>`
-* **Status Flags:** `ST` (Stable), `US` (Unstable), `GS` (Gross), `NT` (Net)
-* **Regex Engine:** `/ST,GS,\+?0*(\d+(?:\.\d+)?)\s*kg/i`
-* **Anti-Cheat Rule:** Weight is rejected if indicator status is `US` (unstable).
+| Indicator | Example frame | Notes |
+| --- | --- | --- |
+| Avery Weigh-Tronix (E1205, ZM) | `ST,GS,+014520kg` | `ST` stable, `US` unstable, `GS` gross, `NT` net. Unstable frames are rejected |
+| Essae-Teraoka (DS-215, DS-415) | `+014520 kg G` or `<STX>+014520<ETX>` | |
+| Mettler-Toledo (SICS) | Send `S`, receive `S S     14520.00 kg` | |
 
-### 2.2 Essae-Teraoka (DS-215 / DS-415 Series)
-* **Frame Structure:** `<STX>+014520<ETX>` or `+014520 kg G`
-* **Regex Engine:** `/(?:\+|-)?0*(\d{4,6})\s*(?:kg)?\s*[G|N]?/i`
+Each model and firmware still needs testing on real hardware.
 
-### 2.3 Mettler-Toledo (SICS Standard Interface)
-* **Command Sent:** `S\r\n` (Send stable weight)
-* **Frame Received:** `S S     14520.00 kg\r\n`
-* **Regex Engine:** `/S\s+S\s+(\d+(?:\.\d+)?)\s*kg/i`
+## Moisture settlement
 
----
+There is no single regional moisture standard. Each supplier contract sets its own base moisture, deduction bands, premiums and rejection limit. See [cotton moisture research](COTTON_MOISTURE_RESEARCH.md).
 
-## 3. Cotton Moisture Deduction Calculations (SIMA / CCI Standard)
+For a simple deduction-only contract:
 
-Cotton in Southern India is traded on an **8.5% standard moisture regain basis** (Southern India Mills' Association standard).
+- Net weight = gross weight − tare weight
+- Excess moisture % = max(0, measured % − contract base %)
+- Deduction (kg) = net weight × excess % ÷ 100
+- Billable weight = net weight − deduction
 
-$$\text{Net Weight} = \text{Gross Weight} - \text{Tare Weight}$$
+Example with a contract base of 8.5%: gross 14,500 kg, tare 4,200 kg, net 10,300 kg, meter reading 9.2%. The excess is 0.7%, so the deduction is 72.1 kg and the billable weight is 10,227.9 kg.
 
-$$\text{Excess Moisture \%} = \max(0, \text{Measured Moisture \%} - 8.5\%)$$
+Physical weight and billable weight must be stored separately, and stock always uses the physical weight. `AntiTamperEngine.calculateCottonMoisture` requires the contract base and throws `RangeError` when it is missing or invalid. It used to assume 8.5% (BIZ-021, fixed 15 October).
 
-$$\text{Moisture Deduction (kg)} = \frac{\text{Net Weight} \times \text{Excess Moisture \%}}{100}$$
+## Slip signing
 
-$$\text{Final Billable Weight (kg)} = \text{Net Weight} - \text{Moisture Deduction (kg)}$$
+The agent computes an HMAC-SHA256 over `deviceSerial:comPort:grossKg:tareKg:moisturePercent:finalBillableKg:timestamp`. It prints the first 8 hex characters as a seal, in text and as a QR code.
 
-### Example Calculation:
-* Gross Weight: 14,500 kg
-* Tare Weight: 4,200 kg
-* Net Weight: 10,300 kg
-* Moisture Meter: 9.2%
-* Excess: $9.2 - 8.5 = 0.7\%$
-* Deduction: $10,300 \times 0.007 = 72.10\text{ kg}$
-* Final Billable Weight: **10,227.90 kg**
-* **Financial Recovery at ₹200/kg:** **₹14,420 saved on this single truckload.**
+Eight hex characters is only 32 bits, enough to catch accidental edits but not to stop a determined forger. Real verification also needs per-device keys issued at enrollment, a server-side check, and replay protection with sequence numbers or nonces (BIZ-009). Until those exist, do not describe slips as tamper-proof.
 
----
+## Labels
 
-## 4. Cryptographic Anti-Tamper Sealing (HMAC-SHA256)
+`ThermalPrinterDriver.generateTsplCommand` (TSC printers) and `generateZplCommand` (Zebra printers) build a 4 × 2 inch label. It holds the company, lot, supplier, bales, gross, tare, moisture, net billable weight, seal and date, plus a Code 128 barcode of the lot and a QR code carrying `LOT`, `NET` and `SEAL`.
 
-To prevent mill gate operators from manually doctoring the paper slip or overriding numbers:
-1. Every gate PC holds a unique device secret key provisioned during hardware pairing.
-2. The agent generates a cryptographic HMAC-SHA256 hash across:
-   `deviceSerial:comPort:grossKg:tareKg:moisturePercent:finalBillableKg:timestamp`
-3. The first 8 hexadecimal characters are formatted as an uppercase security seal: `A9B4C2D1`.
-4. The seal is printed as a QR code and printed code on the paper weighment slip.
-5. When the truck arrives at the godown, the unloading supervisor scans the QR code; the EverGreen mobile app recomputes the HMAC hash against the server secret to verify zero tampering.
+Every field value passes through `tsplText` or `zplText` first. These replace control characters with spaces, TSPL quotes with apostrophes, and ZPL `^` and `~` with hyphens, so a supplier name cannot end its field or start a new printer command (INT-011, fixed 15 October). Neither format has been tested on a physical printer.
 
----
+## Acceptance before field use
 
-## 5. Thermal Barcode Label Generation (TSPL / ZPL)
-
-The agent talks directly to factory USB/Ethernet thermal barcode printers (TSC TTP-244 Pro, Zebra ZD220):
-
-### TSPL Command Structure (TSC Printers, 203 DPI):
-```ts
-SIZE 50 mm, 25 mm
-GAP 2 mm, 0 mm
-DIRECTION 1
-CLS
-TEXT 20, 20, "3", 0, 1, 1, "EVERGREEN SPINNING MILLS"
-TEXT 20, 50, "2", 0, 1, 1, "LOT: LOT-40S-9921"
-TEXT 20, 80, "2", 0, 1, 1, "SUPPLIER: Mahalakshmi Ginning"
-TEXT 20, 110, "3", 0, 1, 1, "BILLABLE: 10227.9 kg"
-TEXT 20, 140, "2", 0, 1, 1, "SEAL: A9B4C2D1"
-BARCODE 20, 170, "128", 50, 1, 0, 2, 2, "LOT-40S-9921"
-PRINT 1, 1
-```
-
-Labels are printed in **1.2 seconds**, affixed to the cotton bale stack, and scanned directly by blowroom operators.
+Use a real indicator, moisture meter and printer. Test unstable and malformed frames, unplugging and reconnecting, power loss, replayed and tampered payloads, and calibration records. A passing local HMAC test proves integrity under one key. It does not prove calibration or prevent fraud. Work package EG-20 in the [backlog](IMPLEMENTATION_BACKLOG.md) tracks this.

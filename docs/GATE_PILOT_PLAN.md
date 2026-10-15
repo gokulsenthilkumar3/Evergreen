@@ -1,6 +1,6 @@
 # EverGreen gate-to-accounts pilot plan
 
-Based on the [code audit](GATE_WORKFLOW_AUDIT.md) and [moisture research](COTTON_MOISTURE_RESEARCH.md), 11 October 2026.
+Based on the [code audit](audits/2026-10-11/GATE_WORKFLOW_AUDIT.md) and [moisture research](COTTON_MOISTURE_RESEARCH.md), 11 October 2026.
 
 ## Outcome and scope
 

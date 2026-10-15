@@ -1,7 +1,7 @@
 /**
  * EverGreen — Shared Validation Utilities
  * Centralised boundary-checked validators for all modules.
- * Every rule here corresponds to the TEST_PLAN.md specification.
+ * Every rule here corresponds to docs/TEST_PLAN.md.
  */
 
 // ─── Type Definitions ─────────────────────────────────────────────────────────

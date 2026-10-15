@@ -1,14 +1,24 @@
 import { useState, useEffect, useRef } from 'react';
 import './App.css';
+import { TRANSLATIONS, Language } from './data/translations';
+import { InteractiveFactorySimulator } from './components/InteractiveFactorySimulator';
+import { YarnRealizationCalculator } from './components/YarnRealizationCalculator';
+import { WeighbridgeHardwareMatrix } from './components/WeighbridgeHardwareMatrix';
+import { ProductTourModal } from './components/ProductTourModal';
+import { InteractiveCaseStudies } from './components/InteractiveCaseStudies';
+import { Toast } from './components/Toast';
 
 /* ─── DATA ────────────────────────────────────────────────────────────────── */
 const NAV_LINKS = [
-  { href: '#platform', label: 'Platform' },
-  { href: '#features', label: 'Features' },
-  { href: '#pricing', label: 'Pricing' },
-  { href: '#integrations', label: 'Integrations' },
-  { href: '#case-studies', label: 'Case Studies' },
-  { href: '#support', label: 'Support' },
+  { href: '#platform', labelKey: 'platform', fallback: 'Platform' },
+  { href: '#simulator', labelKey: 'simulators', fallback: 'Live Simulator' },
+  { href: '#features', labelKey: 'features', fallback: 'Features' },
+  { href: '#calculator', labelKey: 'calculator', fallback: 'ROI Matrix' },
+  { href: '#hardware', labelKey: 'hardware', fallback: 'Hardware' },
+  { href: '#pricing', labelKey: 'pricing', fallback: 'Pricing' },
+  { href: '#integrations', labelKey: 'integrations', fallback: 'Integrations' },
+  { href: '#case-studies', labelKey: 'caseStudies', fallback: 'Case Studies' },
+  { href: '#support', labelKey: 'support', fallback: 'Support' },
 ];
 
 const STATS = [
@@ -451,69 +461,45 @@ const INTEGRATIONS: IntegrationConnector[] = [
 ];
 
 
-const CASE_STUDIES = [
-  {
-    company: 'Sri Murugan Handlooms & Yarns',
-    location: 'Tirupur, Tamil Nadu',
-    type: 'Ring Spinning · 18,000 spindles',
-    result: '₹4.2L / year saved',
-    metric: '0.85% invisible weight loss eliminated',
-    quote: '"Before EverGreen, we lost ₹30-40 per bale on moisture fraud. The weighbridge integration caught ₹18.4L of fraud in the first year."',
-    person: 'M. Selvakumar, MD',
-    color: 'emerald',
-  },
-  {
-    company: 'Kavitha Cotton Mills Pvt Ltd',
-    location: 'Coimbatore, Tamil Nadu',
-    type: 'OE Rotor · 25,000 spindles',
-    result: '18 hours saved/month',
-    metric: 'Tally import time: 4 hours → 12 seconds',
-    quote: '"Our accountant used to spend 4 hours manually re-entering yarn sales into Tally. EverGreen generates the exact XML file. One import, zero errors."',
-    person: 'K. Priya, CFO',
-    color: 'sky',
-  },
-  {
-    company: 'Selvam Spinning Works',
-    location: 'Erode, Tamil Nadu',
-    type: 'Composite · 40,000 spindles',
-    result: '₹2.4L outstanding cleared',
-    metric: 'WhatsApp collections reduced DSO by 12 days',
-    quote: '"The bilingual Tamil WhatsApp reminders work better than phone calls. Buyers respond to WhatsApp. Collections improved in the first month."',
-    person: 'S. Rajan, Owner',
-    color: 'purple',
-  },
-];
 
 const FAQS = [
   {
+    category: 'Accounting & Tally',
     q: 'Does EverGreen replace Tally Prime?',
     a: 'No — and that\'s by design. We feed Tally, not compete with it. EverGreen generates Tally-compatible XML vouchers for all transactions. Your accountant stays in Tally. We are the operational layer that handles weighbridge, spindle, and inventory workflows Tally cannot.',
   },
   {
+    category: '30-Day Grace & Licensing',
     q: 'What happens when my license expires?',
     a: 'Nothing stops. Your mill operations continue uninterrupted for 30 full days (Active Grace Quota). Our licensing team contacts you for renewal. Once payment is verified (UTR), your license reactivates in under 3 minutes — from anywhere, by our provider admin.',
   },
   {
+    category: 'Cloud & Offline',
     q: 'Can it run offline on a local factory PC?',
     a: 'Yes. EverGreen runs natively on a Windows or Linux PC or server inside your mill, with zero cloud dependency. The local SQLite database holds all your data. Telemetry (no PII) syncs hourly to our control plane when internet is available.',
   },
   {
+    category: 'Book-Ellam',
     q: 'What is Book-Ellam (புக் எல்லாம்)?',
     a: 'Book-Ellam is our unified audit research engine. It lets your accountant or auditor search all registers simultaneously — Day Book, Inward, Outward, Cotton Ledger, Party Khata — with a single query. Eliminates hours of manual cross-referencing.',
   },
   {
+    category: 'Weighbridge & Hardware',
     q: 'How does the Weighbridge anti-fraud system work?',
     a: 'The TareZero system connects directly to your Avery, Essae, or Mettler weighbridge indicator via RS-232 serial. It captures the weight at the hardware level before software can manipulate it, applies SIMA/CCI standard moisture deductions, and creates a cryptographically signed log entry for every bale weighed.',
   },
   {
+    category: 'POC & Trials',
     q: 'Is there a trial or POC available?',
     a: 'Yes. We offer a 30-day fully functional POC at your mill with real data. No credit card needed. Our engineer visits (Tirupur / Coimbatore / Erode / Karur cluster) or assists remotely. Contact our sales team to schedule.',
   },
   {
+    category: 'Cloud & Offline',
     q: 'What languages does the system support?',
     a: 'English and Tamil (தமிழ்) fully. WhatsApp reminders are bilingual. UI is in English with Tamil labels for mill-floor terminology. Hindi support is in roadmap for North Indian textile clusters (Surat, Ludhiana, Bhilwara).',
   },
   {
+    category: 'Pricing & Plans',
     q: 'How is pricing determined?',
     a: 'We offer tiered monthly plans (Gatekeeper, Growth, Scale) and a Pay-As-You-Go option for seasonal or smaller units. All prices are transparent with regional multipliers for Tier-2 cities (lower cost) vs international deployments. No hidden fees.',
   },
@@ -528,15 +514,21 @@ const SUPPORT_CHANNELS = [
 
 /* ─── COMPONENT ───────────────────────────────────────────────────────────── */
 export default function App() {
+  const [lang, setLang] = useState<Language>('en');
+  const [currency, setCurrency] = useState<'INR' | 'USD'>('INR');
+  const [showTourModal, setShowTourModal] = useState(false);
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [navScrolled, setNavScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activePersona, setActivePersona] = useState<'OWNER' | 'SPINNER' | 'AUDIT' | 'DEVOPS'>('OWNER');
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
+  const [faqCategory, setFaqCategory] = useState<string>('All');
+  const [faqQuery, setFaqQuery] = useState<string>('');
   const [pricingCycle, setPricingCycle] = useState<'monthly' | 'annual'>('monthly');
   const [deployTarget, setDeployTarget] = useState<'LOCAL_VM' | 'GCP' | 'AWS' | 'AZURE'>('LOCAL_VM');
   const [copied, setCopied] = useState(false);
   const [showPocModal, setShowPocModal] = useState(false);
-  const [pocForm, setPocForm] = useState({ name: '', phone: '', company: '', city: '', spindles: '', message: '' });
+  const [pocForm, setPocForm] = useState({ name: '', phone: '', company: '', city: '', spindles: '', message: '', millType: 'Ring Spinning Mill' });
   const [pocSubmitted, setPocSubmitted] = useState(false);
   const [activeIntegCategory, setActiveIntegCategory] = useState('All');
   const [integSearch, setIntegSearch] = useState('');
@@ -546,12 +538,10 @@ export default function App() {
     { role: 'bot', text: 'வணக்கம்! I am the EverGreen AI textile assistant. Ask me anything about spinning mill ERP, weighbridge anti-fraud, Tally integration, or pricing. 🧵' },
   ]);
   const chatEndRef = useRef<HTMLDivElement>(null);
-  const [spindles, setSpindles] = useState(18000);
-  const [balesPerDay, setBalesPerDay] = useState(35);
-  const [candyRate, setCandyRate] = useState(62000);
-  const [moistureExcessPct, setMoistureExcessPct] = useState(1.2);
   const [contactForm, setContactForm] = useState({ name: '', email: '', phone: '', company: '', message: '', type: 'Sales Enquiry' });
   const [contactSent, setContactSent] = useState(false);
+
+  const t = TRANSLATIONS[lang];
 
   useEffect(() => {
     const handler = () => setNavScrolled(window.scrollY > 60);
@@ -572,6 +562,7 @@ export default function App() {
     };
     navigator.clipboard?.writeText(scripts[deployTarget]);
     setCopied(true);
+    setToastMsg(`${deployTarget} install command copied to clipboard!`);
     setTimeout(() => setCopied(false), 2500);
   };
 
@@ -597,15 +588,11 @@ export default function App() {
     return 'Thank you! Our textile ERP engineering team is ready to assist. You can WhatsApp us directly at +91 98427 55200 or email sales@evergreen-os.com. What are your mill\'s key requirements?';
   };
 
-  // Indian Textile Economics Calculations: 1 Candy = 355 kg; 1 Bale = ~170 kg
-  const monthlyBales = balesPerDay * 26;
-  const monthlyKgPurchased = monthlyBales * 170;
-  const pricePerKg = candyRate / 355;
-  const monthlyCottonSpend = Math.round(monthlyKgPurchased * pricePerKg);
-  const monthlyMoistureLoss = Math.round(monthlyCottonSpend * (moistureExcessPct / 100));
-  const annualFraudRecovered = monthlyMoistureLoss * 12;
-  const monthlyKgOutput = Math.round(monthlyKgPurchased * 0.86);
-  const tallyHours = Math.round(monthlyBales * 0.08);
+  const filteredFaqs = FAQS.filter(f => {
+    const matchCat = faqCategory === 'All' || f.category === faqCategory;
+    const matchQuery = !faqQuery || f.q.toLowerCase().includes(faqQuery.toLowerCase()) || f.a.toLowerCase().includes(faqQuery.toLowerCase());
+    return matchCat && matchQuery;
+  });
 
   const integCategories = ['All', ...Array.from(new Set(INTEGRATIONS.map(i => i.category)))];
   const filteredIntegs = INTEGRATIONS.filter(i => {
@@ -620,11 +607,15 @@ export default function App() {
       {/* ── ANNOUNCEMENT TICKER ── */}
       <div className="ticker-bar">
         <div className="mkt-container ticker-inner">
-          <span className="ticker-badge">🛡️ ENTERPRISE SAFEGUARD</span>
-          <span className="ticker-text">
-            <strong>30-Day Active Grace Quota:</strong> Your mill never stops on license expiry. Reactivate in under 3 minutes upon payment confirmation.
-          </span>
-          <a href="#pricing" className="ticker-cta">See Pricing →</a>
+          <span className="ticker-badge">{t.ticker.badge}</span>
+          <span className="ticker-text">{t.ticker.text}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+            <span style={{ fontSize: '0.74rem', color: 'var(--emerald-light)', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'rgba(16, 185, 129, 0.1)', padding: '0.2rem 0.55rem', borderRadius: 9999 }}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--emerald)', boxShadow: '0 0 6px var(--emerald)' }} />
+              142,840 Spindles Live
+            </span>
+            <a href="#pricing" className="ticker-cta">{t.ticker.cta}</a>
+          </div>
         </div>
       </div>
 
@@ -650,14 +641,42 @@ export default function App() {
           </a>
 
           <nav className={`nav-links ${mobileMenuOpen ? 'open' : ''}`}>
-            {NAV_LINKS.map(l => (
-              <a key={l.href} href={l.href} className="nav-link" onClick={() => setMobileMenuOpen(false)}>{l.label}</a>
-            ))}
+            {NAV_LINKS.map(l => {
+              const label = t.nav[l.labelKey as keyof typeof t.nav] || l.fallback;
+              return (
+                <a key={l.href} href={l.href} className="nav-link" onClick={() => setMobileMenuOpen(false)}>
+                  {label}
+                </a>
+              );
+            })}
           </nav>
 
           <div className="nav-actions">
-            <a href="http://localhost:4000/" target="_blank" rel="noreferrer" className="nav-link-ghost">Mill App →</a>
-            <button className="btn-primary" onClick={() => setShowPocModal(true)}>Start Free POC</button>
+            <button
+              className="lang-toggle-btn"
+              onClick={() => {
+                const nextLang = lang === 'en' ? 'ta' : 'en';
+                setLang(nextLang);
+                setToastMsg(nextLang === 'ta' ? 'தமிழ் மொழிக்கு மாற்றப்பட்டது' : 'Switched to English');
+              }}
+              title="Switch Language / மொழியை மாற்றவும்"
+            >
+              <span>🌐</span>
+              <span>{lang === 'en' ? 'தமிழ்' : 'English'}</span>
+            </button>
+            <button
+              className={`currency-toggle-btn ${currency === 'USD' ? 'active' : ''}`}
+              onClick={() => {
+                const nextCur = currency === 'INR' ? 'USD' : 'INR';
+                setCurrency(nextCur);
+                setToastMsg(`Currency display updated to ${nextCur}`);
+              }}
+              title="Toggle Currency"
+            >
+              {currency === 'INR' ? '₹ INR' : '$ USD'}
+            </button>
+            <a href="http://localhost:4000/" target="_blank" rel="noreferrer" className="nav-link-ghost">{t.nav.millApp}</a>
+            <button className="btn-primary" onClick={() => setShowPocModal(true)}>{t.nav.startPoc}</button>
             <button className="mobile-menu-btn" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
               {mobileMenuOpen ? '✕' : '☰'}
             </button>
@@ -673,25 +692,30 @@ export default function App() {
         <div className="mkt-container hero-content">
           <div className="hero-pill">
             <span className="pulse-dot" />
-            EverGreen v1.2.4-LTS · Live in Tamil Nadu · 140K+ Spindles Managed
+            {t.hero.badge}
           </div>
 
           <h1 className="hero-h1">
-            The Operating System <br />
-            for Modern <span className="gradient-text">Spinning Mills</span>
+            {t.hero.h1Line1} <br />
+            {t.hero.h1Line2} <span className="gradient-text">{t.hero.h1Gradient}</span>
           </h1>
 
           <p className="hero-p">
-            From raw cotton bales through weighbridge fraud detection, spindle telemetry, automated Tally Prime XML,
-            and the <strong>Book-Ellam (புக் எல்லாம்)</strong> all-books audit engine.
-            Deploy in one command — local VM, GCP, AWS, or Azure.
+            {t.hero.p}
           </p>
 
           <div className="hero-ctas">
             <button className="btn-primary btn-xl" onClick={() => setShowPocModal(true)} id="hero-cta">
-              🚀 Start Free 30-Day POC
+              {t.hero.startPocBtn}
             </button>
-            <a href="#features" className="btn-ghost btn-xl">Explore Features ↓</a>
+            <button
+              className="btn-ghost btn-xl"
+              onClick={() => setShowTourModal(true)}
+              style={{ borderColor: 'rgba(16, 185, 129, 0.4)', color: '#fff', background: 'rgba(16, 185, 129, 0.08)' }}
+            >
+              {t.hero.interactiveTourBtn}
+            </button>
+            <a href="#simulator" className="btn-ghost btn-xl">{t.hero.exploreBtn}</a>
           </div>
 
           {/* STATS TICKER */}
@@ -750,6 +774,18 @@ export default function App() {
               <span key={c} className="trust-logo-pill">📍 {c}</span>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ── LIVE INTERACTIVE DIGITAL TWIN SIMULATOR ── */}
+      <section id="simulator" className="mkt-section bg-alt">
+        <div className="mkt-container">
+          <div className="section-head">
+            <span className="eyebrow">{t.sections.simulatorEyebrow}</span>
+            <h2>{t.sections.simulatorTitle}</h2>
+            <p>{t.sections.simulatorSubtitle}</p>
+          </div>
+          <InteractiveFactorySimulator onStartPoc={() => setShowPocModal(true)} lang={lang} />
         </div>
       </section>
 
@@ -920,66 +956,27 @@ export default function App() {
         </div>
       </section>
 
-      {/* ── MILL SAVINGS CALCULATOR ── */}
+      {/* ── MILL SAVINGS & YARN REALIZATION MATRIX CALCULATOR ── */}
       <section id="calculator" className="mkt-section">
         <div className="mkt-container">
           <div className="section-head">
-            <span className="eyebrow">ROI CALCULATOR</span>
-            <h2>Calculate Your Mill's Annual Savings</h2>
-            <p>Adjust the sliders to see your exact ROI from deploying EverGreen OS.</p>
+            <span className="eyebrow">{t.sections.calculatorEyebrow}</span>
+            <h2>{t.sections.calculatorTitle}</h2>
+            <p>{t.sections.calculatorSubtitle}</p>
           </div>
-          <div className="calc-card glass-card">
-            <div className="calc-inputs">
-              <div className="calc-input-group">
-                <label>Active Spindles: <strong className="calc-val">{spindles.toLocaleString()}</strong></label>
-                <input type="range" min="1000" max="100000" step="1000" value={spindles}
-                  onChange={e => setSpindles(Number(e.target.value))} className="calc-slider" />
-                <div className="calc-slider-labels"><span>1,000 Spindles</span><span>100,000 Spindles</span></div>
-              </div>
-              <div className="calc-input-group">
-                <label>Cotton Bales Inward / Day: <strong className="calc-val">{balesPerDay} bales (~{(balesPerDay * 170).toLocaleString()} kg)</strong></label>
-                <input type="range" min="5" max="200" step="5" value={balesPerDay}
-                  onChange={e => setBalesPerDay(Number(e.target.value))} className="calc-slider" />
-                <div className="calc-slider-labels"><span>5 Bales/Day</span><span>200 Bales/Day</span></div>
-              </div>
-              <div className="calc-input-group">
-                <label>Cotton Candy Rate: <strong className="calc-val">₹{candyRate.toLocaleString()} / candy (355 kg)</strong></label>
-                <input type="range" min="45000" max="80000" step="1000" value={candyRate}
-                  onChange={e => setCandyRate(Number(e.target.value))} className="calc-slider" />
-                <div className="calc-slider-labels"><span>₹45,000 / candy</span><span>₹80,000 / candy</span></div>
-              </div>
-              <div className="calc-input-group">
-                <label>TareZero Moisture Fraud Intercept: <strong className="calc-val">{moistureExcessPct.toFixed(1)}% excess weight</strong></label>
-                <input type="range" min="0.4" max="3.0" step="0.1" value={moistureExcessPct}
-                  onChange={e => setMoistureExcessPct(Number(e.target.value))} className="calc-slider" />
-                <div className="calc-slider-labels"><span>0.4% Min</span><span>3.0% High Loss</span></div>
-              </div>
-            </div>
-            <div className="calc-results">
-              <div className="calc-result-card result-emerald">
-                <div className="calc-result-val">₹{(annualFraudRecovered / 100000).toFixed(1)}L / yr</div>
-                <div className="calc-result-label">Annual Fraud Recovered by TareZero</div>
-              </div>
-              <div className="calc-result-card result-amber">
-                <div className="calc-result-val">₹{(monthlyMoistureLoss / 1000).toFixed(0)}K / mo</div>
-                <div className="calc-result-label">Monthly Invisible Water Weight Saved</div>
-              </div>
-              <div className="calc-result-card result-sky">
-                <div className="calc-result-val">₹{(monthlyCottonSpend / 100000).toFixed(1)}L</div>
-                <div className="calc-result-label">Monthly Cotton Inward Protected</div>
-              </div>
-              <div className="calc-result-card result-purple">
-                <div className="calc-result-val">{Math.round(monthlyKgOutput / 1000)}T / mo</div>
-                <div className="calc-result-label">Yarn Tracked ({tallyHours}h Tally Saved)</div>
-              </div>
-            </div>
-            <div className="calc-cta">
-              <button className="btn-primary btn-lg" onClick={() => setShowPocModal(true)}>
-                🚀 Request Custom Mill Audit & ROI Report
-              </button>
-              <p className="calc-disclaimer">*Based on standard SIMA & CCI 8.5% moisture allowance norms and Avery/Essae RS-232 live tare lock records across Coimbatore & Tirupur spinning clusters.</p>
-            </div>
+          <YarnRealizationCalculator onStartPoc={() => setShowPocModal(true)} lang={lang} />
+        </div>
+      </section>
+
+      {/* ── WEIGHBRIDGE HARDWARE COMPATIBILITY MATRIX ── */}
+      <section id="hardware" className="mkt-section bg-alt">
+        <div className="mkt-container">
+          <div className="section-head">
+            <span className="eyebrow">{t.sections.hardwareEyebrow}</span>
+            <h2>{t.sections.hardwareTitle}</h2>
+            <p>{t.sections.hardwareSubtitle}</p>
           </div>
+          <WeighbridgeHardwareMatrix onStartPoc={() => setShowPocModal(true)} lang={lang} />
         </div>
       </section>
 
@@ -987,9 +984,9 @@ export default function App() {
       <section id="pricing" className="mkt-section bg-alt">
         <div className="mkt-container">
           <div className="section-head">
-            <span className="eyebrow">TRANSPARENT PRICING</span>
-            <h2>License Plans Built for Every Mill Size</h2>
-            <p>No hidden fees. Regional multipliers for Tier-2 cities. 30-day grace on all plans. Upgrade or downgrade anytime.</p>
+            <span className="eyebrow">{t.sections.pricingEyebrow}</span>
+            <h2>{t.sections.pricingTitle}</h2>
+            <p>{t.sections.pricingSubtitle}</p>
           </div>
 
           <div className="pricing-cycle-toggle">
@@ -1000,60 +997,75 @@ export default function App() {
           </div>
 
           <div className="pricing-grid">
-            {TIERS.map((t, i) => (
-              <div className={`pricing-card glass-card ${t.popular ? 'popular' : ''} tier-${t.color}`} key={i}>
-                {t.popular && <div className="popular-badge">⭐ MOST POPULAR</div>}
-                <div className="tier-badge-row">
-                  <span className={`tier-badge badge-${t.color}`}>{t.badge}</span>
+            {TIERS.map((tier, i) => {
+              // Currency logic
+              const isUsd = currency === 'USD';
+              const usdMonthly = tier.price === 3999 ? 49 : tier.price === 7999 ? 99 : tier.price === 14999 ? 189 : 0;
+              const usdAnnual = tier.price === 3999 ? 39 : tier.price === 7999 ? 79 : tier.price === 14999 ? 149 : 0;
+
+              return (
+                <div className={`pricing-card glass-card ${tier.popular ? 'popular' : ''} tier-${tier.color}`} key={i}>
+                  {tier.popular && <div className="popular-badge">⭐ MOST POPULAR</div>}
+                  <div className="tier-badge-row">
+                    <span className={`tier-badge badge-${tier.color}`}>{tier.badge}</span>
+                  </div>
+                  <h3 className="tier-name">{tier.name}</h3>
+                  <div className="tier-price">
+                    {tier.price === 0 ? (
+                      isUsd ? (
+                        <><span className="price-val">$0.15</span><span className="price-period">/bale inward</span></>
+                      ) : (
+                        <><span className="price-val">₹12</span><span className="price-period">/bale inward</span></>
+                      )
+                    ) : isUsd ? (
+                      <>
+                        <span className="price-val">${pricingCycle === 'annual' ? usdAnnual : usdMonthly}</span>
+                        <span className="price-period">/month</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="price-val">₹{pricingCycle === 'annual' ? Math.round(tier.price * 0.8).toLocaleString() : tier.price.toLocaleString()}</span>
+                        <span className="price-period">/month</span>
+                      </>
+                    )}
+                    {pricingCycle === 'annual' && tier.price > 0 && (
+                      <div className="price-annual-note">
+                        {isUsd
+                          ? `Billed $${usdAnnual * 12}/year (20% off)`
+                          : `Billed ₹${Math.round(tier.price * 0.8 * 12).toLocaleString()}/year`}
+                      </div>
+                    )}
+                  </div>
+                  <p className="tier-desc">{tier.desc}</p>
+                  <ul className="tier-features">
+                    {tier.features.map((f, j) => (
+                      <li key={j}><span className={`check-icon check-${tier.color}`}>✓</span>{f}</li>
+                    ))}
+                  </ul>
+                  <button
+                    className={`tier-cta ${tier.popular ? 'btn-primary' : 'btn-ghost-color'} btn-cta-color-${tier.color}`}
+                    onClick={() => setShowPocModal(true)}
+                  >
+                    {tier.cta}
+                  </button>
                 </div>
-                <h3 className="tier-name">{t.name}</h3>
-                <div className="tier-price">
-                  {t.price === 0 ? (
-                    <><span className="price-val">₹12</span><span className="price-period">/bale inward</span></>
-                  ) : (
-                    <>
-                      <span className="price-val">₹{pricingCycle === 'annual' ? Math.round(t.price * 0.8).toLocaleString() : t.price.toLocaleString()}</span>
-                      <span className="price-period">/month</span>
-                    </>
-                  )}
-                  {pricingCycle === 'annual' && t.price > 0 && (
-                    <div className="price-annual-note">Billed ₹{Math.round(t.price * 0.8 * 12).toLocaleString()}/year</div>
-                  )}
-                </div>
-                <p className="tier-desc">{t.desc}</p>
-                <ul className="tier-features">
-                  {t.features.map((f, j) => (
-                    <li key={j}><span className={`check-icon check-${t.color}`}>✓</span>{f}</li>
-                  ))}
-                </ul>
-                <button
-                  className={`tier-cta ${t.popular ? 'btn-primary' : 'btn-ghost-color'} btn-cta-color-${t.color}`}
-                  onClick={() => setShowPocModal(true)}
-                >
-                  {t.cta}
-                </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* GRACE POLICY CARD */}
           <div className="grace-card glass-card" id="grace-policy">
             <div className="grace-icon">🛡️</div>
             <div className="grace-content">
-              <h3>30-Day Active Grace Quota — Our Guarantee to Every Mill</h3>
-              <p>
-                When your license expires, <strong>operations never stop</strong>. For 30 full days your weighbridge, invoicing,
-                and Book-Ellam continue uninterrupted. Our Sales, Support, and Licensing teams reach out proactively.
-                Once payment is confirmed (NEFT/RTGS/UPI), reactivation happens in <strong>under 3 minutes</strong>.
-                No downtime. No data loss. Ever.
-              </p>
+              <h3>{t.grace.title}</h3>
+              <p>{t.grace.desc}</p>
             </div>
             <div className="grace-timeline">
               {[
-                { d: 'Day 0', label: 'License Expires', icon: '📅', color: 'var(--amber)' },
-                { d: 'Day 1–7', label: 'Support Team Contacts', icon: '📞', color: 'var(--sky)' },
-                { d: 'Day 7–30', label: 'Grace Operations Continue', icon: '✅', color: 'var(--emerald)' },
-                { d: '< 3 Min', label: 'Instant Reactivation on UTR', icon: '⚡', color: 'var(--emerald)' },
+                { d: 'Day 0', label: lang === 'ta' ? 'உரிம காலம் முடிகிறது' : 'License Expires', icon: '📅', color: 'var(--amber)' },
+                { d: 'Day 1–7', label: lang === 'ta' ? 'உதவி குழு தொடர்பு' : 'Support Team Contacts', icon: '📞', color: 'var(--sky)' },
+                { d: 'Day 7–30', label: lang === 'ta' ? 'சலுகை இயக்கம் தொடரும்' : 'Grace Operations Continue', icon: '✅', color: 'var(--emerald)' },
+                { d: '< 3 Min', label: lang === 'ta' ? 'UTR மூலம் உடனடி மீட்பு' : 'Instant Reactivation on UTR', icon: '⚡', color: 'var(--emerald)' },
               ].map((g, i) => (
                 <div className="grace-step" key={i}>
                   <div className="grace-step-icon" style={{ borderColor: g.color }}>{g.icon}</div>
@@ -1196,34 +1208,11 @@ export default function App() {
       <section id="case-studies" className="mkt-section">
         <div className="mkt-container">
           <div className="section-head">
-            <span className="eyebrow">CUSTOMER SUCCESS</span>
-            <h2>Real Mills. Real Results. Verified Numbers.</h2>
-            <p>Not marketing copy — actual operational data from spinning mills running EverGreen today.</p>
+            <span className="eyebrow">{t.sections.caseStudiesEyebrow}</span>
+            <h2>{t.sections.caseStudiesTitle}</h2>
+            <p>{t.sections.caseStudiesSubtitle}</p>
           </div>
-          <div className="case-studies-grid">
-            {CASE_STUDIES.map((cs, i) => (
-              <div className={`cs-card glass-card cs-${cs.color}`} key={i}>
-                <div className="cs-header">
-                  <div>
-                    <div className="cs-company">{cs.company}</div>
-                    <div className="cs-location">📍 {cs.location}</div>
-                    <div className="cs-type">{cs.type}</div>
-                  </div>
-                  <div className="cs-result">
-                    <div className="cs-result-val">{cs.result}</div>
-                    <div className="cs-result-metric">{cs.metric}</div>
-                  </div>
-                </div>
-                <blockquote className="cs-quote">{cs.quote}</blockquote>
-                <div className="cs-person">— {cs.person}</div>
-              </div>
-            ))}
-          </div>
-          <div className="case-studies-cta">
-            <button className="btn-primary btn-lg" onClick={() => setShowPocModal(true)}>
-              🏭 Get Your Mill's Case Study Started
-            </button>
-          </div>
+          <InteractiveCaseStudies onStartPoc={() => setShowPocModal(true)} lang={lang} />
         </div>
       </section>
 
@@ -1231,19 +1220,67 @@ export default function App() {
       <section id="faq" className="mkt-section bg-alt">
         <div className="mkt-container">
           <div className="section-head">
-            <span className="eyebrow">FAQ</span>
-            <h2>Questions Mill Owners Ask Before Signing</h2>
+            <span className="eyebrow">{t.sections.faqEyebrow}</span>
+            <h2>{t.sections.faqTitle}</h2>
+            <p>{lang === 'ta' ? 'உங்கள் ஆலைக்கான சந்தேகங்களை உடனே தீர்த்துக் கொள்ளுங்கள்' : 'Direct answers to architectural, operational, and commercial questions.'}</p>
           </div>
-          <div className="faq-list">
-            {FAQS.map((faq, i) => (
-              <div className={`faq-item glass-card ${activeFaq === i ? 'open' : ''}`} key={i} onClick={() => setActiveFaq(activeFaq === i ? null : i)}>
-                <div className="faq-q">
-                  <span>{faq.q}</span>
-                  <span className="faq-chevron">{activeFaq === i ? '▲' : '▼'}</span>
-                </div>
-                {activeFaq === i && <div className="faq-a">{faq.a}</div>}
-              </div>
+
+          <div style={{ maxWidth: 540, margin: '0 auto 1.25rem' }}>
+            <input
+              type="text"
+              placeholder={lang === 'ta' ? '🔍 கேள்விகளைத் தேடுங்கள் (எடைமேடை, டாலி, 30 நாள் சலுகை...)' : '🔍 Search FAQs (weighbridge, Tally, 30-day grace, pricing, offline...)'}
+              value={faqQuery}
+              onChange={e => setFaqQuery(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '0.75rem 1.25rem',
+                borderRadius: 9999,
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid var(--border)',
+                color: '#fff',
+                fontSize: '0.875rem',
+                outline: 'none',
+              }}
+            />
+          </div>
+
+          <div className="integ-filter" style={{ marginBottom: '2rem' }}>
+            {['All', 'Weighbridge & Hardware', 'Accounting & Tally', '30-Day Grace & Licensing', 'Cloud & Offline', 'Book-Ellam', 'Pricing & Plans'].map(cat => (
+              <button
+                key={cat}
+                className={`integ-filter-btn ${faqCategory === cat ? 'active' : ''}`}
+                onClick={() => setFaqCategory(cat)}
+              >
+                {cat}
+              </button>
             ))}
+          </div>
+
+          <div className="faq-list">
+            {filteredFaqs.length === 0 ? (
+              <div className="glass-card" style={{ padding: '2.5rem', textAlign: 'center' }}>
+                <p style={{ color: 'var(--muted)', marginBottom: '1rem' }}>No matching questions found for "{faqQuery}".</p>
+                <a
+                  href="https://wa.me/919842755200?text=Hello%20EverGreen%20Team%2C%20I%20have%20a%20specific%20question%20about%20your%20ERP"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn-primary"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
+                >
+                  💬 Ask Our Textile Engineers on WhatsApp
+                </a>
+              </div>
+            ) : (
+              filteredFaqs.map((faq, i) => (
+                <div className={`faq-item glass-card ${activeFaq === i ? 'open' : ''}`} key={i} onClick={() => setActiveFaq(activeFaq === i ? null : i)}>
+                  <div className="faq-q">
+                    <span>{faq.q}</span>
+                    <span className="faq-chevron">{activeFaq === i ? '▲' : '▼'}</span>
+                  </div>
+                  {activeFaq === i && <div className="faq-a">{faq.a}</div>}
+                </div>
+              ))
+            )}
           </div>
         </div>
       </section>
@@ -1384,7 +1421,11 @@ export default function App() {
                   <p>Our textile solutions engineer will contact you within 2 business hours. For urgent response, WhatsApp our team at <strong>+91 98427 55200</strong>.</p>
                 </div>
               ) : (
-                <form className="contact-form" onSubmit={e => { e.preventDefault(); setContactSent(true); }}>
+                <form className="contact-form" onSubmit={e => {
+                  e.preventDefault();
+                  setContactSent(true);
+                  setToastMsg('✅ Message received! Our textile specialist will reach out within 2 hours.');
+                }}>
                   <h3>Talk to an Engineer</h3>
                   <div className="cf-row-2">
                     <div className="cf-field">
@@ -1613,7 +1654,11 @@ export default function App() {
                   <h3>🚀 Start Your Free 30-Day POC</h3>
                   <p>Full deployment at your mill. Real yarn lots. Zero cost. Field engineer visits your mill in Tirupur, Coimbatore, Erode, or Karur.</p>
                 </div>
-                <form className="poc-form" onSubmit={e => { e.preventDefault(); setPocSubmitted(true); }}>
+                <form className="poc-form" onSubmit={e => {
+                  e.preventDefault();
+                  setPocSubmitted(true);
+                  setToastMsg('🎉 POC Request Submitted! Our South India engineering team will contact you within 2 hours.');
+                }}>
                   <div className="cf-row-2">
                     <div className="cf-field">
                       <label>Your Name *</label>
@@ -1634,9 +1679,33 @@ export default function App() {
                       <input value={pocForm.city} onChange={e => setPocForm(p => ({ ...p, city: e.target.value }))} placeholder="Tirupur, Tamil Nadu" />
                     </div>
                   </div>
-                  <div className="cf-field">
-                    <label>Number of Spindles (approx)</label>
-                    <input value={pocForm.spindles} onChange={e => setPocForm(p => ({ ...p, spindles: e.target.value }))} placeholder="e.g. 18,000" />
+                  <div className="cf-row-2">
+                    <div className="cf-field">
+                      <label>Mill Operation Type</label>
+                      <select
+                        value={pocForm.millType}
+                        onChange={e => setPocForm(p => ({ ...p, millType: e.target.value }))}
+                        style={{
+                          width: '100%',
+                          padding: '0.65rem 0.9rem',
+                          borderRadius: 8,
+                          background: 'rgba(255,255,255,0.05)',
+                          border: '1px solid var(--border)',
+                          color: '#fff',
+                          fontSize: '0.85rem',
+                        }}
+                      >
+                        <option value="Ring Spinning Mill">Ring Spinning (10k–60k Spindles)</option>
+                        <option value="OE Rotor Spinning">Open End (OE) Rotor Spinning</option>
+                        <option value="Cotton Ginning Unit">Cotton Ginning & Pressing</option>
+                        <option value="Yarn Trading Desk">Yarn Trading & Export Broker</option>
+                        <option value="Composite Mill">Composite Mill (Spinning + Weaving)</option>
+                      </select>
+                    </div>
+                    <div className="cf-field">
+                      <label>Number of Spindles / Rotors</label>
+                      <input value={pocForm.spindles} onChange={e => setPocForm(p => ({ ...p, spindles: e.target.value }))} placeholder="e.g. 18,000" />
+                    </div>
                   </div>
                   <div className="cf-field">
                     <label>Current Challenge / Hardware Setup</label>
@@ -1652,6 +1721,17 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* ── INTERACTIVE 5-STEP TOUR MODAL ── */}
+      <ProductTourModal
+        isOpen={showTourModal}
+        onClose={() => setShowTourModal(false)}
+        onStartPoc={() => setShowPocModal(true)}
+        lang={lang}
+      />
+
+      {/* ── FLOATING TOAST FEEDBACK ── */}
+      {toastMsg && <Toast message={toastMsg} onClose={() => setToastMsg(null)} />}
     </div>
   );
 }

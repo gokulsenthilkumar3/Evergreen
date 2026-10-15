@@ -2,6 +2,7 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { IndicatorProtocolParser } from './indicator-parsers.js';
 import { AntiTamperEngine } from './anti-tamper.js';
+import { ThermalPrinterDriver, type LabelData } from './thermal-printer.js';
 
 describe('IndicatorProtocolParser', () => {
   test('correctly parses Avery Weigh-Tronix kg frame', () => {
@@ -105,5 +106,48 @@ describe('AntiTamperEngine', () => {
       calculations: { ...slip.calculations, finalBillableKg: 14950 },
     };
     assert.equal(AntiTamperEngine.verifySlip(tampered, secret), false);
+  });
+
+  test('requires the contract moisture base instead of assuming 8.5%', () => {
+    // Untyped callers (JSON payloads) can omit the base; that must not settle at a regional default.
+    const calculate = AntiTamperEngine.calculateCottonMoisture as (...args: unknown[]) => unknown;
+    assert.throws(() => calculate(14500, 4200, 9.2), RangeError);
+    assert.throws(() => calculate(14500, 4200, 9.2, Number.NaN), RangeError);
+    assert.throws(() => calculate(14500, 4200, 9.2, -1), RangeError);
+    assert.equal(AntiTamperEngine.calculateCottonMoisture(14500, 4200, 9.2, 9).finalBillableKg, 10279.4);
+
+    const slip = AntiTamperEngine.signSlip({
+      deviceSerial: 'WB-01', comPort: 'COM3', grossWeightKg: 25000, tareWeightKg: 10000,
+      moisturePercent: 9.5, standardMoistureBase: 8.5, timestamp: '2026-10-11T12:00:00.000Z',
+    }, 'test_secret_key_weighbridge_12345');
+    const withoutBase = { ...slip, payload: { ...slip.payload, standardMoistureBase: undefined as unknown as number } };
+    assert.equal(AntiTamperEngine.verifySlip(withoutBase, 'test_secret_key_weighbridge_12345'), false);
+  });
+});
+
+describe('ThermalPrinterDriver', () => {
+  const hostile: LabelData = {
+    millName: 'Mill"\r\nPRINT 99',
+    lotNumber: 'LOT-1^XZ~JA',
+    supplier: 'Sup"plier\nCLS',
+    date: '2026-10-15',
+    bales: 48, grossKg: 14500, tareKg: 4200, netKg: 10227.9, moisturePercent: 9.2,
+    antiFraudSeal: 'A9B4C2D1',
+  };
+
+  test('TSPL labels keep hostile text inside its field', () => {
+    const lines = ThermalPrinterDriver.generateTsplCommand(hostile).split('\r\n');
+    assert.equal(lines.filter(line => line.startsWith('PRINT')).length, 1);
+    assert.equal(lines.filter(line => line === 'CLS').length, 1);
+    const textLines = lines.filter(line => line.startsWith('TEXT') || line.startsWith('BARCODE') || line.startsWith('QRCODE'));
+    for (const line of textLines) assert.equal(line.split('"').length % 2, 1, `unbalanced quotes: ${line}`);
+  });
+
+  test('ZPL labels cannot open new commands from field text', () => {
+    const zpl = ThermalPrinterDriver.generateZplCommand(hostile);
+    assert.equal((zpl.match(/\^XZ/g) || []).length, 1);
+    assert.ok(!zpl.includes('~JA'));
+    assert.ok(zpl.includes('LOT: LOT-1-XZ-JA^FS'));
+    assert.ok(!/[\r]/.test(zpl));
   });
 });
