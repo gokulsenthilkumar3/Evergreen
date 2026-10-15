@@ -73,9 +73,9 @@ describe('PrismaService reconciliation state', () => {
       .mockResolvedValueOnce('posted' as never)
       .mockResolvedValueOnce([] as never);
 
-    await expect(service.stockTransaction(async () => 'posted')).resolves.toBe(
-      'posted',
-    );
+    await expect(
+      service.stockTransaction(() => Promise.resolve('posted')),
+    ).resolves.toBe('posted');
 
     expect(transaction).toHaveBeenCalledTimes(3);
     expect(service.getStartupIssue()).toBeNull();
@@ -90,24 +90,24 @@ describe('PrismaService reconciliation state', () => {
         new BadRequestException('Still short of lot stock.') as never,
       );
 
-    await expect(service.stockTransaction(async () => 'posted')).resolves.toBe(
-      'posted',
-    );
+    await expect(
+      service.stockTransaction(() => Promise.resolve('posted')),
+    ).resolves.toBe('posted');
     expect(service.getStartupIssue()).toBe('Still short of lot stock.');
 
     transaction
       .mockResolvedValueOnce('posted' as never)
       .mockRejectedValueOnce(new Error('database is locked') as never);
-    await expect(service.stockTransaction(async () => 'posted')).resolves.toBe(
-      'posted',
-    );
+    await expect(
+      service.stockTransaction(() => Promise.resolve('posted')),
+    ).resolves.toBe('posted');
     expect(service.getStartupIssue()).toBe('Still short of lot stock.');
   });
 
   it('does not re-run the full check on every posting when nothing is wrong', async () => {
     transaction.mockResolvedValue([] as never);
     await service.onModuleInit();
-    await service.stockTransaction(async () => 'posted');
+    await service.stockTransaction(() => Promise.resolve('posted'));
     expect(transaction).toHaveBeenCalledTimes(2);
   });
 
@@ -120,7 +120,7 @@ describe('PrismaService reconciliation state', () => {
       new BadRequestException('Books are closed') as never,
     );
     await expect(
-      service.stockTransaction(async () => 'posted'),
+      service.stockTransaction(() => Promise.resolve('posted')),
     ).rejects.toThrow('Books are closed');
     expect(service.getDataIssues()).toHaveLength(1);
   });

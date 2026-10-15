@@ -13,6 +13,7 @@ import * as bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
 import type { User } from '@prisma/client';
 import { TOTP, generateURI } from 'otplib';
+import { omit } from '../../utils/omit';
 const authenticator = new TOTP();
 
 const SALT_ROUNDS = 10;
@@ -120,7 +121,7 @@ export class AuthService implements OnModuleInit {
       },
     });
 
-    const { password: _, ...result } = newUser;
+    const result = omit(newUser, ['password']);
     return { message: 'Signup successful', user: result };
   }
 
@@ -153,8 +154,7 @@ export class AuthService implements OnModuleInit {
     }
 
     if (passwordMatch) {
-      const { password, ...result } = user;
-      return result;
+      return omit(user, ['password']);
     }
     return null;
   }
@@ -200,7 +200,7 @@ export class AuthService implements OnModuleInit {
         if (data.status === 'success') {
           location = `${data.city}, ${data.country}`;
         }
-      } catch (e) {
+      } catch {
         // Geolocation is non-critical — silently fall back
         console.warn('Geolocation lookup failed or timed out');
       }

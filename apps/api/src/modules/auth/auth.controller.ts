@@ -35,9 +35,11 @@ export class AuthController {
   ) {}
 
   @Post('signup')
-  async signup() {
+  signup(): Promise<never> {
     // Staff accounts are created by authorized staff via /users only.
-    throw new ForbiddenException('Public staff signup is disabled');
+    return Promise.reject(
+      new ForbiddenException('Public staff signup is disabled'),
+    );
   }
 
   @Public()

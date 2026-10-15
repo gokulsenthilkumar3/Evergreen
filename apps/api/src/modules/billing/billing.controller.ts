@@ -5,7 +5,6 @@ import {
   Body,
   Delete,
   Param,
-  Put,
   BadRequestException,
   UseGuards,
 } from '@nestjs/common';
@@ -141,7 +140,9 @@ export class BillingController {
             }),
           },
         });
-      } catch (_) {}
+      } catch {
+        // Audit logging is best effort; it must not change the outcome.
+      }
 
       throw new BadRequestException(
         `Cannot delete invoice "${invoice.invoiceNo}" — payments totaling ₹${invoice.amountPaid.toFixed(2)} have been recorded. Please reverse or remove all payment entries before deleting the invoice.`,
@@ -165,7 +166,9 @@ export class BillingController {
           }),
         },
       });
-    } catch (_) {}
+    } catch {
+      // Audit logging is best effort; it must not change the outcome.
+    }
 
     return { success: true };
   }

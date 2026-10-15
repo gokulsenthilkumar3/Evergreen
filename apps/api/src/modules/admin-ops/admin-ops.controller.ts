@@ -12,12 +12,12 @@ import { execSync } from 'child_process';
 export class AdminOpsController {
   @Post('migrate')
   @UseGuards(ProviderAdminGuard)
-  async runMigration() {
+  runMigration() {
     try {
       console.log('🔄 Running admin-triggered database migrations...');
       execSync('npx prisma migrate deploy', { stdio: 'inherit' });
       return { status: 'Migration Applied successfully' };
-    } catch (error) {
+    } catch {
       throw new HttpException(
         'Migration failed to apply. See server logs.',
         HttpStatus.INTERNAL_SERVER_ERROR,

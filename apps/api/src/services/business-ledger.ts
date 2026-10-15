@@ -1,5 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { omit } from '../utils/omit';
 
 export const money = (n: number) =>
   Math.round((n + Number.EPSILON) * 100) / 100;
@@ -241,9 +242,13 @@ export async function reconcileLots(tx: Tx) {
           data: { lotId: lot.id, quantity: -qty },
         });
       else {
-        const { id, createdAt, ...data } = row;
         await tx.stockMovement.create({
-          data: { ...data, lotId: lot.id, quantity: -qty, reservedQty: 0 },
+          data: {
+            ...omit(row, ['id', 'createdAt']),
+            lotId: lot.id,
+            quantity: -qty,
+            reservedQty: 0,
+          },
         });
       }
       first = false;
@@ -903,11 +908,6 @@ export async function reconcileValuation(
           const cotton = await tx.cottonInventory.findUnique({
             where: { id: Number(row.referenceId) },
           });
-          const batch = cotton?.batchId
-            ? await tx.inwardBatch.findUnique({
-                where: { batchId: cotton.batchId },
-              })
-            : null;
           if (cotton?.type === 'INWARD') offset = 'GOODS_RECEIVED_NOT_BILLED';
           if (cotton?.type === 'SUPPLIER_RETURN') offset = 'INVENTORY_CLEARING';
         }

@@ -629,16 +629,6 @@ export class InventoryService {
       asOf.setHours(23, 59, 59, 999);
     }
 
-    // Calculate Total Yarn by summing latest balance of each count as of 'to' date
-    const yarnCounts = await this.prisma.yarnInventory.findMany({
-      distinct: ['count'],
-      select: { count: true },
-      where: {
-        count: { not: null },
-        date: { lte: asOf },
-      },
-    });
-
     let totalYarnKg = 0;
     let totalYarnBags = 0;
     let totalYarnLooseKg = 0;
@@ -797,7 +787,9 @@ export class InventoryService {
               }),
             },
           });
-        } catch (_) {}
+        } catch {
+          // Audit logging is best effort; it must not change the outcome.
+        }
 
         throwInwardUnderProduction({
           inwardId: id,
@@ -882,7 +874,9 @@ export class InventoryService {
             }),
           },
         });
-      } catch (_) {}
+      } catch {
+        // Audit logging is best effort; it must not change the outcome.
+      }
 
       return { success: true };
     });
@@ -920,7 +914,9 @@ export class InventoryService {
               }),
             },
           });
-        } catch (_) {}
+        } catch {
+          // Audit logging is best effort; it must not change the outcome.
+        }
 
         throwOutwardBilled({
           outwardId: id,
@@ -988,7 +984,9 @@ export class InventoryService {
             }),
           },
         });
-      } catch (_) {}
+      } catch {
+        // Audit logging is best effort; it must not change the outcome.
+      }
 
       return { success: true };
     });
@@ -1207,7 +1205,9 @@ export class InventoryService {
               }),
             },
           });
-        } catch (_) {}
+        } catch {
+          // Audit logging is best effort; it must not change the outcome.
+        }
 
         throwWasteSoldOrLinked({
           wasteId: id,
@@ -1231,7 +1231,9 @@ export class InventoryService {
               }),
             },
           });
-        } catch (_) {}
+        } catch {
+          // Audit logging is best effort; it must not change the outcome.
+        }
 
         throwWasteSoldOrLinked({
           wasteId: id,
@@ -1320,7 +1322,9 @@ export class InventoryService {
             }),
           },
         });
-      } catch (_) {}
+      } catch {
+        // Audit logging is best effort; it must not change the outcome.
+      }
 
       return { success: true };
     });

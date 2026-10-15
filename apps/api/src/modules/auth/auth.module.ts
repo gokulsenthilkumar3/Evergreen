@@ -14,7 +14,7 @@ import { requireJwtSecret } from './jwt-secret';
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
+      useFactory: (configService: ConfigService) => ({
         secret: requireJwtSecret(configService),
         signOptions: { expiresIn: '1d' },
       }),

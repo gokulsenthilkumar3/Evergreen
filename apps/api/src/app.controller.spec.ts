@@ -7,6 +7,9 @@ import { IS_PUBLIC_KEY } from './decorators/public.decorator';
 import { ROLES_KEY } from './decorators/roles.decorator';
 import { PrismaService } from './services/prisma.service';
 
+const handler = (name: 'index' | 'health' | 'status') =>
+  AppController.prototype[name];
+
 // Keep transport tests isolated from the operational database.
 describe('AppController health routes', () => {
   let controller: AppController;
@@ -72,18 +75,10 @@ describe('AppController health routes', () => {
   });
 
   it('keeps the probes public and the operational detail administrator-only', () => {
-    expect(reflector.get(IS_PUBLIC_KEY, AppController.prototype.index)).toBe(
-      true,
-    );
-    expect(reflector.get(IS_PUBLIC_KEY, AppController.prototype.health)).toBe(
-      true,
-    );
-    expect(
-      reflector.get(IS_PUBLIC_KEY, AppController.prototype.status),
-    ).toBeUndefined();
-    expect(reflector.get(ROLES_KEY, AppController.prototype.status)).toEqual([
-      'ADMIN',
-    ]);
+    expect(reflector.get(IS_PUBLIC_KEY, handler('index'))).toBe(true);
+    expect(reflector.get(IS_PUBLIC_KEY, handler('health'))).toBe(true);
+    expect(reflector.get(IS_PUBLIC_KEY, handler('status'))).toBeUndefined();
+    expect(reflector.get(ROLES_KEY, handler('status'))).toEqual(['ADMIN']);
   });
 
   it('exposes no other routes', () => {

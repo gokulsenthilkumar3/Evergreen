@@ -22,20 +22,20 @@ describe('weighbridge receipts', () => {
     let saved: any;
     tx = {
       inwardBatch: {
-        findUnique: jest.fn(async () => saved),
-        create: jest.fn(async ({ data }) => {
+        findUnique: jest.fn(() => Promise.resolve(saved)),
+        create: jest.fn(({ data }) => {
           saved = { id: 1, ...data };
-          return saved;
+          return Promise.resolve(saved);
         }),
       },
       cottonInventory: {
-        findFirst: jest.fn(async () => null),
+        findFirst: jest.fn(() => Promise.resolve(null)),
         create: jest.fn(),
-        findMany: jest.fn(async () => []),
+        findMany: jest.fn(() => Promise.resolve([])),
       },
       activityLog: { create: jest.fn() },
     };
-    prisma = { stockTransaction: jest.fn(async (work) => work(tx)) };
+    prisma = { stockTransaction: jest.fn(async (work) => await work(tx)) };
     service = new InventoryService(prisma);
     jest.spyOn(console, 'error').mockImplementation(() => {});
   });

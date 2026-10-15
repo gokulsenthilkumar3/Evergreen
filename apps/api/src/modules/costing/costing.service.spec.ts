@@ -19,8 +19,10 @@ describe('costing writes', () => {
   beforeEach(() => {
     tx = {
       costingEntry: {
-        create: jest.fn(async ({ data }) => ({ id: 1, ...data })),
-        update: jest.fn(async ({ data }) => ({ ...unposted, ...data })),
+        create: jest.fn(({ data }) => Promise.resolve({ id: 1, ...data })),
+        update: jest.fn(({ data }) =>
+          Promise.resolve({ ...unposted, ...data }),
+        ),
         delete: jest.fn(),
         findUnique: jest.fn().mockResolvedValue(unposted),
         count: jest.fn().mockResolvedValue(0),
@@ -28,7 +30,7 @@ describe('costing writes', () => {
       journalEntry: { findUnique: jest.fn().mockResolvedValue(null) },
     };
     // Every write must go through the stock transaction; direct access fails the test.
-    prisma = { stockTransaction: jest.fn(async (work: any) => work(tx)) };
+    prisma = { stockTransaction: jest.fn(async (work: any) => await work(tx)) };
     service = new CostingService(prisma);
   });
 

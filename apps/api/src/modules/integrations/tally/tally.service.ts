@@ -66,10 +66,10 @@ export class TallyExportService {
     const fromDate = filter.from ? new Date(filter.from) : undefined;
     const toDate = filter.to ? new Date(filter.to) : undefined;
 
-    let purchaseXml = '';
+    const purchaseXml = '';
     let salesXml = '';
     let receiptXml = '';
-    let purchaseCount = 0;
+    const purchaseCount = 0;
     let salesCount = 0;
     let receiptCount = 0;
 

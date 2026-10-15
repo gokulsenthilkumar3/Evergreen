@@ -36,7 +36,9 @@ it.each(['exportXml', 'getSummary'] as const)(
 );
 
 it('refuses to invent purchase amounts from cotton weight', async () => {
-  const prisma = { systemSettings: { findFirst: jest.fn(async () => null) } };
+  const prisma = {
+    systemSettings: { findFirst: jest.fn(() => Promise.resolve(null)) },
+  };
   await expect(
     new TallyExportService(prisma as any).generateTallyXml({
       voucherTypes: ['Purchase'],

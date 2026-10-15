@@ -50,7 +50,7 @@ describe('P0 safety: public surfaces and the costing kill-switch', () => {
     );
     const module = await Test.createTestingModule({ imports: [AppModule] })
       .overrideProvider(EmailService)
-      .useValue({ sendLoginNotification: async () => undefined })
+      .useValue({ sendLoginNotification: () => Promise.resolve() })
       .compile();
     app = module.createNestApplication();
     app.useGlobalPipes(

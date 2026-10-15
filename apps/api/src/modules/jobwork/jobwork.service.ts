@@ -270,5 +270,5 @@ export class JobWorkService {
 }
 
 function scrapNote(scrapQty: unknown) {
-  return Number(scrapQty || 0) > 0 ? `Scrap: ${scrapQty}` : null;
+  return Number(scrapQty || 0) > 0 ? `Scrap: ${String(scrapQty)}` : null;
 }

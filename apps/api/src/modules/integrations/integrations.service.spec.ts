@@ -157,7 +157,7 @@ describe('IntegrationsService', () => {
       prismaStub.$transaction = jest
         .fn()
         .mockImplementation(async (fn: any) => {
-          return fn({
+          return await fn({
             customer: prismaStub.customer,
             catalogueItem: prismaStub.catalogueItem,
             importBatch: prismaStub.importBatch,
@@ -283,7 +283,7 @@ describe('IntegrationsService', () => {
       prismaStub.$transaction = jest
         .fn()
         .mockImplementation(async (fn: any) => {
-          return fn({
+          return await fn({
             customer: prismaStub.customer,
             catalogueItem: {
               findUnique: jest
@@ -305,7 +305,7 @@ describe('IntegrationsService', () => {
       prismaStub.$transaction = jest
         .fn()
         .mockImplementation(async (fn: any) => {
-          return fn({
+          return await fn({
             customer: {
               findMany: jest
                 .fn()

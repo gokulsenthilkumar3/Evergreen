@@ -41,7 +41,7 @@ describe('Release HTTP regression checks', () => {
     );
     const module = await Test.createTestingModule({ imports: [AppModule] })
       .overrideProvider(EmailService)
-      .useValue({ sendLoginNotification: async () => undefined })
+      .useValue({ sendLoginNotification: () => Promise.resolve() })
       .compile();
     app = module.createNestApplication();
     app.useGlobalPipes(
