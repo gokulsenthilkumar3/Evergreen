@@ -20,8 +20,21 @@ Use `/commerce` for catalogue items, customers, orders, invoices, invoice-linked
 
 ```sh
 npm run setup:check
+npm run typecheck -w apps/api
 npm run build -w apps/api
 npm run test -w apps/api -- --runInBand
 ```
 
+The type-check covers application source, unit tests and HTTP test fixtures. Jest transpiles tests with isolated modules, so passing tests alone does not establish that their TypeScript contracts are valid. The root `npm run typecheck` and CI's `npm run verify` include this check.
+
 Environment and database initialization instructions live in the root README. Do not log secrets or bootstrap passwords. Health HTML is available at `/health`, and JSON at `/health?format=json`.
+
+## Optional provider sync
+
+The hourly sync job is disabled until both `ADMIN_API_URL` and `COMPANY_ID` are set. Invalid or partial configuration skips database reads and network requests. Use the provider API base URL (an optional path prefix is preserved) and the provider-issued company ID, containing 1–128 letters, digits, underscores or hyphens. URLs must use HTTPS and contain no credentials, query or fragment. Outside production, HTTP is allowed for `localhost`, `127.0.0.1` and `[::1]` only.
+
+Requests reject redirects and have a 10-second deadline covering both headers and response-body reading. Only one sync runs at a time per API process; the next hourly run can try again after a failure. There is no immediate retry or durable delivery queue. `HEARTBEAT_INTERVAL_MS` is not supported. Transport or response-validation failures leave local license settings unchanged, and logs omit raw errors, endpoint values and response bodies.
+
+Metrics are lifetime counts of receipt, dispatch and retained invoice records (including voided invoices), plus users with at least one valid session. They are not billing-period usage or monthly quota enforcement.
+
+Connected rollout remains blocked on tenant-scoped authentication: the provider currently requires its operator credential, which this client deliberately does not send. Do not install `ADMIN_API_KEY` on a customer machine. Keep sync disabled outside a controlled integration environment until that contract is implemented and accepted. See [EG-02 / EG-09](../../docs/IMPLEMENTATION_BACKLOG.md#eg-02--eg-09--tenant-scoped-sync-p0-before-connected-rollout-securityapi-owner-m).

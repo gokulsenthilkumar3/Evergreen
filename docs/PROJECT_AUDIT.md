@@ -1,6 +1,6 @@
 ﻿# Project status
 
-Assessed on 2026-10-14 and updated on 2026-10-15. This is the current engineering view of EverGreen. Work packages are in the [backlog](IMPLEMENTATION_BACKLOG.md), individual defects are in the [shared issue register](audits/2026-10-11/issue-register.md), and the latest review is the [15 October report](audits/2026-10-15/REPORT.md).
+Assessed on 2026-10-14 and updated on 2026-10-17. This is the current engineering view of EverGreen. Work packages are in the [backlog](IMPLEMENTATION_BACKLOG.md), individual defects are in the [shared issue register](audits/2026-10-11/issue-register.md), and the latest full review is the [15 October report](audits/2026-10-15/REPORT.md).
 
 ## Summary
 
@@ -23,7 +23,7 @@ A file, a passing unit suite or a generated document never moves a feature strai
 | ID | Priority | Finding | Status |
 | --- | --- | --- | --- |
 | EG-01 | P1 | Provider recorded every remote action as executed, including unsupported ones | Fixed: unknown actions return 400 and unsupported ones 503; the maintenance flag and its record share a transaction |
-| EG-02 | P0 before connected rollout | Customer sync hard-codes `localhost` and a demo company, sends no credential, estimates invoices from dispatches and has no timeout | Response handling fixed on 15 October; scoped credentials and exact metrics still open |
+| EG-02 | P0 before connected rollout | Customer sync still has no tenant-scoped credential or billing-period usage contract | Response handling fixed on 15 October; opt-in transport, timeout, overlap protection and actual lifetime invoice counts fixed on 17 October; authentication and period metering remain open |
 | EG-03 | P0 before containers | Dockerfiles copy a missing root `tsconfig.json` and call a missing `db:generate` script | Open (REL-001) |
 | EG-04 | P0 before customer use | Backups were plain copies of a live SQLite file, and no restore had been demonstrated | Guidance corrected; online snapshot tooling, off-site copies and a measured restore still open |
 | EG-05 | P1 | The roadmap audit used stale paths and mixed source checks with completion claims | Fixed, with regression tests |
@@ -56,6 +56,20 @@ P0 means a blocker for that rollout, not an active production incident.
 ## Validation record
 
 Every run is listed with its environment. A failed or unrun check stays visible, and no completion percentage is given.
+
+### 2026-10-17: API test contracts included in type-checking (TEST-006 partial)
+
+Windows, Node 24.12.0, based on `680fad0` plus the sync changes below. Reproduced the six test-file TypeScript errors found during the sync work, then fixed the missing commerce-controller dependency, removed the circular import mock type and directed shared-calculator compatibility cases to their supported API. The full customer API suite passed all 293 tests in 21 suites; after tightening mock types and lint cleanup, the 47 affected tests passed again.
+
+`npm run typecheck -w apps/api` now checks application source, unit tests and HTTP fixtures. Root `npm run typecheck` calls it, so the existing CI `npm run verify` gate also checks test contracts. The expanded root type-check and ESLint for all three edited test files pass with no diagnostics. The earlier six-error result below is resolved. This does not close the broader integration/device coverage gap in TEST-006 or the repository-wide lint work in TEST-005. The full root verify pipeline and hosted CI were not run for this change.
+
+### 2026-10-17: opt-in provider sync transport (API-006, BIZ-007 partial)
+
+Windows, Node 24.12.0, based on `680fad0`. The new transport suite reproduced 27 failures against the previous implementation; all 77 sync cases pass after the fix (28 transport, 49 licensing). These tests use mocked HTTP and Prisma and make no external sends or operational database writes. The full customer API suite passes 293 tests in 21 suites, `npm run typecheck` passes for the customer API and web app, and changed-file ESLint passes with no diagnostics. The customer API build passes, including Prisma generation and the types/PDF package builds. Generated documentation and audit checks pass (3,394 local links), along with all six maintenance tests. The full root `npm run verify` pipeline was not run.
+
+At this stage, the broader `tsc --noEmit -p apps/api/tsconfig.json` check failed on six existing errors in unchanged test files: `connected-modules.smoke.spec.ts`, `invoice-totals-extended.spec.ts` and `integrations.service.spec.ts`. The root type-check then used `apps/api/tsconfig.build.json` and excluded tests. The follow-up entry above records the fixes and expanded gate.
+
+The change needs no migration. It disables unconfigured sync, validates endpoint/company settings, blocks redirects and overlapping runs within one process, times out the HTTP exchange after 10 seconds, and reads actual invoice counts. Tenant authentication, billing periods, payload-size limits, durable retries and live provider acceptance remain open. Docker/VM examples were updated but were not deployed or executed.
 
 ### 2026-10-15: repository clean-up and documentation consolidation
 

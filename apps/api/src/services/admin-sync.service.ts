@@ -7,14 +7,59 @@ import { parseAdminSyncResponse } from './admin-sync-response.dto';
 export class AdminSyncService {
   private readonly logger = new Logger(AdminSyncService.name);
 
-  // Hardcoded for demo; in production this comes from env / settings
-  private readonly adminApiUrl = 'http://localhost:4300';
-  private readonly companyId = process.env.COMPANY_ID || 'demo-company-1';
+  private syncInProgress = false;
 
   constructor(private readonly prisma: PrismaService) {}
 
+  private getSyncUrl(): string | undefined {
+    const baseUrl = process.env.ADMIN_API_URL?.trim();
+    const companyId = process.env.COMPANY_ID?.trim();
+    // Local installations must not collect or send metrics until configured.
+    if (!baseUrl && !companyId) return undefined;
+    if (!baseUrl || !companyId) {
+      this.logger.warn(
+        'Provider sync disabled: configure both ADMIN_API_URL and COMPANY_ID.',
+      );
+      return undefined;
+    }
+
+    try {
+      const url = new URL(baseUrl);
+      const localDevelopment =
+        process.env.NODE_ENV !== 'production' &&
+        url.protocol === 'http:' &&
+        ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
+      if (
+        (url.protocol !== 'https:' && !localDevelopment) ||
+        url.username ||
+        url.password ||
+        url.search ||
+        url.hash ||
+        !/^[a-zA-Z0-9_-]{1,128}$/.test(companyId)
+      ) {
+        throw new Error('Invalid provider sync configuration');
+      }
+      url.pathname = `${url.pathname.replace(/\/+$/, '')}/companies/${companyId}/sync`;
+      return url.toString();
+    } catch {
+      // Configuration values may contain credentials; never echo them.
+      this.logger.warn(
+        'Provider sync disabled: ADMIN_API_URL must use HTTPS (loopback HTTP is allowed outside production), contain no credentials, query or fragment, and COMPANY_ID must contain 1-128 letters, digits, underscores or hyphens.',
+      );
+      return undefined;
+    }
+  }
+
   @Cron(CronExpression.EVERY_HOUR)
   async syncMetrics() {
+    if (this.syncInProgress) return;
+    const syncUrl = this.getSyncUrl();
+    if (!syncUrl) return;
+
+    this.syncInProgress = true;
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    let requestTimedOut = false;
+    let failureContext = 'reading local metrics';
     this.logger.log('Syncing metrics to Provider Admin Portal...');
     try {
       const activeUsers = await this.prisma.user.count({
@@ -23,30 +68,43 @@ export class AdminSyncService {
 
       const totalInwards = await this.prisma.inwardBatch.count();
       const totalOutwards = await this.prisma.outward.count();
-      // Note: invoices would be counted here but for simplicity we rely on outwards
+      const totalInvoices = await this.prisma.invoice.count();
 
       const metrics = {
         totalInwards,
         totalOutwards,
-        totalInvoices: totalOutwards, // approximated
+        totalInvoices,
         activeUsers,
       };
 
-      const response = await fetch(
-        `${this.adminApiUrl}/companies/${this.companyId}/sync`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(metrics),
-        },
-      );
+      const controller = new AbortController();
+      // Keep the deadline active through reading the body, not just headers.
+      timeout = setTimeout(() => {
+        requestTimedOut = true;
+        controller.abort();
+      }, 10_000);
+      failureContext = 'contacting the provider';
+      const response = await fetch(syncUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(metrics),
+        signal: controller.signal,
+        redirect: 'error',
+      });
 
       if (!response.ok) {
-        throw new Error(`Admin API returned ${response.status}`);
+        failureContext = `provider returned HTTP ${response.status}`;
+        await response.body?.cancel();
+        throw new Error('Provider rejected sync');
       }
 
+      failureContext = 'reading or validating the provider response';
       const payload: unknown = await response.json();
+      controller.signal.throwIfAborted();
       const adminResponse = parseAdminSyncResponse(payload);
+      clearTimeout(timeout);
+      timeout = undefined;
+      failureContext = 'updating local license settings';
       const settings = await this.prisma.systemSettings.findFirst();
       if (settings) {
         const now = new Date();
@@ -100,8 +158,13 @@ export class AdminSyncService {
       }
 
       this.logger.log('Metrics synced successfully.');
-    } catch (e) {
-      this.logger.error('Failed to sync metrics to Admin Portal', e);
+    } catch {
+      this.logger.error(
+        `Provider sync failed: ${requestTimedOut ? 'request timed out after 10 seconds' : failureContext}.`,
+      );
+    } finally {
+      clearTimeout(timeout);
+      this.syncInProgress = false;
     }
   }
 }

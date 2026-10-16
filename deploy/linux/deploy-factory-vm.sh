@@ -51,8 +51,9 @@ TENANT_SLUG=${TENANT_SLUG}
 EVERGREEN_API_PORT=4301
 PORT=4301
 DATABASE_URL="file:${DATA_DIR}/tenant.db"
-ADMIN_API_URL="http://127.0.0.1:4300"
-HEARTBEAT_INTERVAL_MS=3600000
+# Opt-in only; tenant-scoped provider authentication is still pending.
+ADMIN_API_URL=""
+COMPANY_ID=""
 EOF
 chmod 600 "$CONFIG_DIR/tenant.env"
 chown evergreen:evergreen "$CONFIG_DIR/tenant.env"

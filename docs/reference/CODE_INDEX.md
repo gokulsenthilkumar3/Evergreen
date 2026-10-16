@@ -441,7 +441,8 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `AdminSyncResponseDto` | ClassDeclaration | [apps/api/src/services/admin-sync-response.dto.ts:19](../../apps/api/src/services/admin-sync-response.dto.ts) |
 | `parseAdminSyncResponse` | FunctionDeclaration | [apps/api/src/services/admin-sync-response.dto.ts:70](../../apps/api/src/services/admin-sync-response.dto.ts) |
 | `AdminSyncService` | ClassDeclaration | [apps/api/src/services/admin-sync.service.ts:6](../../apps/api/src/services/admin-sync.service.ts) |
-| `syncMetrics` | MethodDeclaration | [apps/api/src/services/admin-sync.service.ts:16](../../apps/api/src/services/admin-sync.service.ts) |
+| `getSyncUrl` | MethodDeclaration | [apps/api/src/services/admin-sync.service.ts:14](../../apps/api/src/services/admin-sync.service.ts) |
+| `syncMetrics` | MethodDeclaration | [apps/api/src/services/admin-sync.service.ts:53](../../apps/api/src/services/admin-sync.service.ts) |
 | `AuditLog` | InterfaceDeclaration | [apps/api/src/services/audit.service.ts:3](../../apps/api/src/services/audit.service.ts) |
 | `AuditService` | ClassDeclaration | [apps/api/src/services/audit.service.ts:14](../../apps/api/src/services/audit.service.ts) |
 | `log` | MethodDeclaration | [apps/api/src/services/audit.service.ts:18](../../apps/api/src/services/audit.service.ts) |

@@ -37,8 +37,9 @@ services:
       PORT: 4301
       DATABASE_URL: "file:/app/packages/database/prisma/tenant.db"
       JWT_SECRET: "${TENANT_JWT_SECRET:?Set a unique tenant JWT secret}"
-      ADMIN_API_URL: "http://admin-api:4300"
-      HEARTBEAT_INTERVAL_MS: 3600000
+      # Opt-in only; tenant-scoped provider authentication is still pending.
+      ADMIN_API_URL: "${ADMIN_API_URL:-}"
+      COMPANY_ID: "${COMPANY_ID:-}"
     volumes:
       - tenant_sqlite_data:/app/packages/database/prisma
     networks:

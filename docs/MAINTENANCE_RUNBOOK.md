@@ -15,7 +15,9 @@ How to verify a change, keep the generated evidence current, investigate an issu
 npm run verify
 ```
 
-This generates both Prisma clients and compares each migration history with its schema in a shadow database. Then it type-checks the customer API and web app, runs every workspace's unit and component tests and the customer HTTP tests, validates the agent policies and audit scripts, checks generated docs for drift, and builds every workspace that has a build script.
+This generates both Prisma clients and compares each migration history with its schema in a shadow database. Then it type-checks the customer API (including unit and HTTP tests) and web app, runs every workspace's unit and component tests and the customer HTTP tests, validates the agent policies and audit scripts, checks generated docs for drift, and builds every workspace that has a build script.
+
+For a focused API contract check, run `npm run typecheck -w apps/api`. Jest's isolated-module transpilation does not replace this check; a passing test may still call an obsolete constructor or function signature.
 
 Run the read-only lint and dependency checks separately, as CI does:
 
@@ -95,7 +97,8 @@ A backup file name alone is not recovery evidence. Never run `migrate dev`, `db 
 
 - **Stale docs or inventory:** run the generators, review the diff and run the checks again.
 - **Migration difference:** compare the schema and history against a shadow database, then add a reviewed forward migration. Never rewrite applied history.
-- **Provider sync returns 401:** the customer sync has no scoped credential yet (EG-02). Do not copy the provider key onto a customer machine.
+- **Provider sync is disabled or returns 401:** unset `ADMIN_API_URL` and `COMPANY_ID` keep local installations offline; partial or invalid values emit a configuration warning. See [configuration and limits](../apps/api/README.md#optional-provider-sync). The client still has no tenant-scoped credential (EG-02), so a configured provider normally returns 401. Do not copy the provider key onto a customer machine.
+- **Provider sync times out:** the 10-second HTTP deadline includes body reading, leaves the prior license settings intact and releases the run lock. The next hourly run can retry; there is no durable queue or immediate retry. Check provider availability in the controlled integration environment before enabling sync again.
 - **Remote action returns 503:** expected until a real execution worker exists. Nothing was queued or run.
 - **Slow web tests:** imports dominate the run time. Keep the bounded worker count and profile imports before adding workers.
 - **Root build passes but packaging fails:** Docker and Electron are separate artefacts (EG-03, EG-11).

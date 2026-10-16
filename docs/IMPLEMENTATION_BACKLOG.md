@@ -41,6 +41,8 @@ Owners are roles to assign, not named people. Sizes: S is 1–2, M is 3–5 and 
 | 2026-10-15 | EG-02 license response safety | Full response validated, provider suspension wins, cleared expiry respected; 49 service tests |
 | 2026-10-15 | Provider renewal UI | Duplicate-submit protection and honest sync/payment messages |
 | 2026-10-15 | Repository clean-up (UI-020) | Unreachable web code, unused dependencies, archives and built bundles removed; see the [15 October report](audits/2026-10-15/REPORT.md) |
+| 2026-10-17 | EG-02 sync transport and counters (partial) | Explicit endpoint/company configuration, HTTPS validation, 10-second HTTP deadline, redirect rejection, per-process overlap guard and actual lifetime invoice counts; 77 sync tests pass; tenant authentication and billing periods remain open |
+| 2026-10-17 | API test contract gate (TEST-006 partial) | Six TypeScript errors fixed; root type-check and CI verification now include API unit and HTTP test files; 293 API tests pass, with 47 affected tests rechecked after mock cleanup; broader integration/device acceptance remains open |
 
 ## Release sequence and dependencies
 
@@ -109,7 +111,9 @@ Files: apps/api/src/services/admin-sync.service.ts, apps/admin-api/src/guards/pr
 
 15 October update: provider company DTOs, response minimization, bounded metrics and atomic persistence now have real HTTP regression coverage. The tenant client now validates the complete license response before writing settings, preserves explicit provider suspension regardless of expiry/grace, and clears both expiry dates when the provider removes expiry. Its 49 service regressions cover renewal, clock boundaries, invalid/partial responses and transport failures; 31 failed against the previous implementation. This closes these response-safety defects, not tenant ownership, credential rotation or exact billing-period metering.
 
-Create a distinct tenant credential scoped to one company and sync-only operations; store a verifier rather than a broadly returned credential. Keep provider operator authentication separate. Read configured HTTPS endpoint/company identity; omit sync entirely when unconfigured. Use exact invoice counts and explicit usage periods, bounded requests, timeout/backoff and redacted logs. Retain response validation before applying settings.
+17 October update: the client now requires explicit `ADMIN_API_URL` and `COMPANY_ID`, validates HTTPS (loopback HTTP only outside production), skips all work when unconfigured, rejects redirects, bounds the HTTP exchange to 10 seconds and prevents overlapping runs in one API process. It sends actual retained invoice counts rather than dispatch estimates, and failure logs omit raw errors and response contents. The 28 new transport cases plus 49 existing license cases pass; 27 new cases failed against the previous implementation. Deployment examples default to disabled sync. These are lifetime record counts, including voided invoices, not billing-period metering. See [configuration and limits](../apps/api/README.md#optional-provider-sync).
+
+Remaining work: create a distinct tenant credential scoped to one company and sync-only operations; store a verifier rather than a broadly returned credential. Keep provider operator authentication separate. Define explicit usage periods and billable-document rules, bounded payload sizes, retry/backoff, durable delivery and observable acknowledgement. The existing hourly schedule is the only retry opportunity; `HEARTBEAT_INTERVAL_MS` is not supported. Retain response validation before applying settings.
 
 Acceptance: tenant A cannot sync tenant B, list companies, change licensing or perform provider actions. Revoked keys fail. Forged counts/statuses are rejected or treated as untrusted metrics. Timeout leaves prior valid settings intact. Test clock/period boundaries and rotation. Never solve today's 401 by installing ADMIN_API_KEY on tenant machines.
 

@@ -43,6 +43,7 @@ describe('AdminSyncService licensing', () => {
     user: { count: jest.fn<Promise<number>, [unknown]>() },
     inwardBatch: { count: jest.fn<Promise<number>, []>() },
     outward: { count: jest.fn<Promise<number>, []>() },
+    invoice: { count: jest.fn<Promise<number>, []>() },
     systemSettings: {
       findFirst: jest.fn<Promise<typeof settings | null>, []>(),
       update: jest.fn<Promise<unknown>, [Prisma.SystemSettingsUpdateArgs]>(),
@@ -59,6 +60,11 @@ describe('AdminSyncService licensing', () => {
   beforeEach(() => {
     jest.useFakeTimers({ now: NOW });
     jest.resetAllMocks();
+    jest.replaceProperty(process, 'env', {
+      ...process.env,
+      ADMIN_API_URL: 'https://provider.example.test',
+      COMPANY_ID: 'test-company',
+    });
     jest.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined);
     jest.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
     errorLog = jest
@@ -69,6 +75,7 @@ describe('AdminSyncService licensing', () => {
     prisma.user.count.mockResolvedValue(2);
     prisma.inwardBatch.count.mockResolvedValue(10);
     prisma.outward.count.mockResolvedValue(4);
+    prisma.invoice.count.mockResolvedValue(7);
     prisma.systemSettings.findFirst.mockResolvedValue({ ...settings });
     prisma.systemSettings.update.mockResolvedValue({});
     service = new AdminSyncService(prisma as unknown as PrismaService);

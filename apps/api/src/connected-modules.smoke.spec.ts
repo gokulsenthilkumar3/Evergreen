@@ -1,12 +1,22 @@
 import { ForbiddenException, UnauthorizedException } from '@nestjs/common';
+import type { Request } from 'express';
+import type { AuthService } from './modules/auth/auth.service';
+import type { LoginDto } from './modules/auth/auth.dto';
+import type { WebAuthnService } from './modules/auth/webauthn.service';
+import type { PrismaService } from './services/prisma.service';
+import type { SessionsService } from './modules/sessions/sessions.service';
 
-jest.mock('./modules/auth/auth.service', () => ({ AuthService: class AuthService {} }));
+jest.mock('./modules/auth/auth.service', () => ({
+  AuthService: class AuthService {},
+}));
 jest.mock('./modules/auth/webauthn.service', () => ({
   WebAuthnService: class WebAuthnService {},
 }));
 
 import { AuthController } from './modules/auth/auth.controller';
 import { CommerceController } from './modules/commerce/commerce.controller';
+import type { CommerceService } from './modules/commerce/commerce.service';
+import type { WhatsAppCollectionsService } from './modules/commerce/whatsapp-collections.service';
 import { SessionsController } from './modules/sessions/sessions.controller';
 
 describe('connected module smoke tests', () => {
@@ -15,12 +25,16 @@ describe('connected module smoke tests', () => {
       validateUser: jest.fn(),
       login: jest.fn(),
     };
-    const controller = new AuthController(auth as any, {} as any, {} as any);
+    const controller = new AuthController(
+      auth as unknown as AuthService,
+      {} as WebAuthnService,
+      {} as PrismaService,
+    );
     const request = {
       ip: '127.0.0.1',
       socket: { remoteAddress: '127.0.0.1' },
       headers: { 'user-agent': 'Jest' },
-    } as any;
+    } as unknown as Request;
 
     beforeEach(() => jest.clearAllMocks());
 
@@ -32,7 +46,7 @@ describe('connected module smoke tests', () => {
 
     it('rejects malformed credentials without querying users', async () => {
       await expect(
-        controller.login({ username: 'admin' } as any, request),
+        controller.login({ username: 'admin' } as LoginDto, request),
       ).rejects.toBeInstanceOf(UnauthorizedException);
       expect(auth.validateUser).not.toHaveBeenCalled();
     });
@@ -59,7 +73,11 @@ describe('connected module smoke tests', () => {
       listInvoices: jest.fn(),
       createInvoice: jest.fn(),
     };
-    const controller = new CommerceController(commerce as any);
+    const whatsapp = { generateStatement: jest.fn() };
+    const controller = new CommerceController(
+      commerce as unknown as CommerceService,
+      whatsapp as unknown as WhatsAppCollectionsService,
+    );
 
     beforeEach(() => jest.clearAllMocks());
 
@@ -77,10 +95,15 @@ describe('connected module smoke tests', () => {
       commerce.listInvoices.mockResolvedValue([{ id: 3 }]);
       commerce.createInvoice.mockResolvedValue({ id: 4 });
       await expect(controller.invoices()).resolves.toEqual([{ id: 3 }]);
-      await expect(controller.invoice({ customerId: 1 }, { user: { username: 'tester' } })).resolves.toEqual({
+      await expect(
+        controller.invoice({ customerId: 1 }, { user: { username: 'tester' } }),
+      ).resolves.toEqual({
         id: 4,
       });
-      expect(commerce.createInvoice).toHaveBeenCalledWith({ customerId: 1, createdBy: 'tester' });
+      expect(commerce.createInvoice).toHaveBeenCalledWith({
+        customerId: 1,
+        createdBy: 'tester',
+      });
     });
   });
 
@@ -89,8 +112,12 @@ describe('connected module smoke tests', () => {
       findSessionsForUser: jest.fn(),
       revokeSession: jest.fn(),
     };
-    const controller = new SessionsController(sessions as any);
-    const request = { user: { userId: 7, role: 'VIEWER' } } as any;
+    const controller = new SessionsController(
+      sessions as unknown as SessionsService,
+    );
+    const request = {
+      user: { userId: 7, role: 'VIEWER' },
+    } as Request & { user: { userId: number; role: string } };
 
     beforeEach(() => jest.clearAllMocks());
 

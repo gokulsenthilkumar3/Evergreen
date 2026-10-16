@@ -70,7 +70,7 @@ The provider workspace stores company records, license settings, usage snapshots
 - `ProviderAccessGuard` requires the provider API key. That is one shared credential, not per-operator login (register SEC-003), and it must never be installed on a customer machine.
 - Company create, license and metrics routes validate input with DTOs, allowlist the fields they write and bound their numbers. Each license change is written in the same transaction as its audit record. Routine reads no longer return the enrollment API key.
 - Saving a license or maintenance flag changes provider configuration only. Nothing confirms that a customer installation applied it. Remote restart, sync and migration return HTTP 503 instead of recording fake success.
-- The customer sync job (`apps/api/src/services/admin-sync.service.ts`) validates the full license response and keeps an explicit provider suspension. It still points at `localhost`, sends no credential and estimates invoice counts, so connected rollout stays blocked (register SEP-002, API-006).
+- The customer sync job (`apps/api/src/services/admin-sync.service.ts`) is opt-in through `ADMIN_API_URL` and `COMPANY_ID`. It validates the endpoint, rejects redirects, limits the HTTP exchange to 10 seconds and prevents overlapping runs within one API process. It counts actual retained invoices, validates the full license response and keeps an explicit provider suspension. It still sends no credential and reports lifetime rather than billing-period counts, so connected rollout stays blocked (register SEP-002, API-006, BIZ-007). See [configuration and limits](../apps/api/README.md#optional-provider-sync).
 
 ## Integrations and adjacent apps
 
@@ -93,7 +93,7 @@ Details are in [integrations](INTEGRATIONS.md), [weighbridge agent](WEIGHBRIDGE_
 - `@evergreen/pdf`: invoice totals, discount allocation and document layout.
 - `@evergreen/config`, `@evergreen/email`, `@evergreen/i18n`: configuration, email and localisation helpers.
 
-`npm run build` builds every workspace that has a build script. It does not produce a desktop installer or a container image. `npm run typecheck` covers the customer API and web app only; the other workspaces type-check during their builds.
+`npm run build` builds every workspace that has a build script. It does not produce a desktop installer or a container image. `npm run typecheck` covers the customer API (application source plus unit and HTTP tests) and web app only; the other workspaces type-check during their builds. The API check also runs independently with `npm run typecheck -w apps/api`.
 
 ## Making a change
 
