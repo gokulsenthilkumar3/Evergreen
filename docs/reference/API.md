@@ -7,7 +7,7 @@ Generated from Nest controller decorators. Default global policy: authenticated 
 | GET | `/` | Public (inspect local guards) | `index(@Res({ passthrough: true }) res: Response)` | [apps/api/src/app.controller.ts:11](../../apps/api/src/app.controller.ts) |
 | GET | `/health` | Public (inspect local guards) | `health(@Res({ passthrough: true }) res: Response)` | [apps/api/src/app.controller.ts:18](../../apps/api/src/app.controller.ts) |
 | GET | `/status` | ADMIN | `status()` | [apps/api/src/app.controller.ts:25](../../apps/api/src/app.controller.ts) |
-| POST | `/admin-ops/migrate` | MODIFIER | `runMigration()` | [apps/api/src/modules/admin-ops/admin-ops.controller.ts:13](../../apps/api/src/modules/admin-ops/admin-ops.controller.ts) |
+| POST | `/admin-ops/migrate` | MODIFIER | `runMigration()` | [apps/api/src/modules/admin-ops/admin-ops.controller.ts:11](../../apps/api/src/modules/admin-ops/admin-ops.controller.ts) |
 | POST | `/auth/signup` | VIEWER | `signup()` | [apps/api/src/modules/auth/auth.controller.ts:37](../../apps/api/src/modules/auth/auth.controller.ts) |
 | POST | `/auth/login` | Public (inspect local guards) | `login(@Body() loginDto: LoginDto, @Req() req: Request)` | [apps/api/src/modules/auth/auth.controller.ts:45](../../apps/api/src/modules/auth/auth.controller.ts) |
 | DELETE | `/auth/logout` | VIEWER | `logout(@Req() req: any)` | [apps/api/src/modules/auth/auth.controller.ts:72](../../apps/api/src/modules/auth/auth.controller.ts) |
@@ -77,12 +77,14 @@ Generated from Nest controller decorators. Default global policy: authenticated 
 | GET | `/dashboard/summary` | VIEWER | `getSummary(@Query('from') from?: string, @Query('to') to?: string)` | [apps/api/src/modules/dashboard/dashboard.controller.ts:14](../../apps/api/src/modules/dashboard/dashboard.controller.ts) |
 | GET | `/dashboard/charts` | VIEWER | `getCharts(@Query('from') from?: string, @Query('to') to?: string)` | [apps/api/src/modules/dashboard/dashboard.controller.ts:95](../../apps/api/src/modules/dashboard/dashboard.controller.ts) |
 | GET | `/dashboard/recent-activity` | VIEWER | `getRecentActivity()` | [apps/api/src/modules/dashboard/dashboard.controller.ts:216](../../apps/api/src/modules/dashboard/dashboard.controller.ts) |
-| GET | `/hr/staff` | VIEWER | `listStaff()` | [apps/api/src/modules/hr/hr.controller.ts:14](../../apps/api/src/modules/hr/hr.controller.ts) |
-| POST | `/hr/staff` | MODIFIER | `createStaff(@Body() body: CreateStaffDto)` | [apps/api/src/modules/hr/hr.controller.ts:19](../../apps/api/src/modules/hr/hr.controller.ts) |
-| GET | `/hr/shifts` | VIEWER | `listShifts()` | [apps/api/src/modules/hr/hr.controller.ts:25](../../apps/api/src/modules/hr/hr.controller.ts) |
-| POST | `/hr/shifts` | MODIFIER | `createShift(@Body() body: CreateShiftDto)` | [apps/api/src/modules/hr/hr.controller.ts:30](../../apps/api/src/modules/hr/hr.controller.ts) |
-| GET | `/hr/payroll` | VIEWER | `listPayroll(@Query('month') month?: string)` | [apps/api/src/modules/hr/hr.controller.ts:36](../../apps/api/src/modules/hr/hr.controller.ts) |
-| POST | `/hr/payroll` | MODIFIER | `createPayrollEntry(@Body() body: CreatePayrollEntryDto)` | [apps/api/src/modules/hr/hr.controller.ts:41](../../apps/api/src/modules/hr/hr.controller.ts) |
+| GET | `/hr/staff` | VIEWER | `listStaff()` | [apps/api/src/modules/hr/hr.controller.ts:15](../../apps/api/src/modules/hr/hr.controller.ts) |
+| POST | `/hr/staff` | MODIFIER | `createStaff(@Body() body: CreateStaffDto)` | [apps/api/src/modules/hr/hr.controller.ts:20](../../apps/api/src/modules/hr/hr.controller.ts) |
+| GET | `/hr/shifts` | VIEWER | `listShifts()` | [apps/api/src/modules/hr/hr.controller.ts:26](../../apps/api/src/modules/hr/hr.controller.ts) |
+| POST | `/hr/shifts` | MODIFIER | `createShift(@Body() body: CreateShiftDto)` | [apps/api/src/modules/hr/hr.controller.ts:31](../../apps/api/src/modules/hr/hr.controller.ts) |
+| GET | `/hr/payroll` | VIEWER | `listPayroll(@Query('month') month?: string)` | [apps/api/src/modules/hr/hr.controller.ts:37](../../apps/api/src/modules/hr/hr.controller.ts) |
+| POST | `/hr/payroll` | MODIFIER | `createPayrollEntry(@Body() body: CreatePayrollEntryDto)` | [apps/api/src/modules/hr/hr.controller.ts:42](../../apps/api/src/modules/hr/hr.controller.ts) |
+| PUT | `/hr/payroll/:id` | MODIFIER | `updatePayrollEntry(@Param('id') id: string, @Body() body: UpdatePayrollEntryDto)` | [apps/api/src/modules/hr/hr.controller.ts:48](../../apps/api/src/modules/hr/hr.controller.ts) |
+| DELETE | `/hr/payroll/:id` | ADMIN | `deletePayrollEntry(@Param('id') id: string)` | [apps/api/src/modules/hr/hr.controller.ts:56](../../apps/api/src/modules/hr/hr.controller.ts) |
 | POST | `/integrations/imports/preview` | ADMIN | `preview(@Body() body: ImportInput)` | [apps/api/src/modules/integrations/integrations.controller.ts:11](../../apps/api/src/modules/integrations/integrations.controller.ts) |
 | POST | `/integrations/imports/commit` | ADMIN | `commit(@Body() body: ImportInput & { source: string; requestKey: string }, @Req() req: AuthenticatedRequest)` | [apps/api/src/modules/integrations/integrations.controller.ts:14](../../apps/api/src/modules/integrations/integrations.controller.ts) |
 | GET | `/integrations/imports` | ADMIN | `history()` | [apps/api/src/modules/integrations/integrations.controller.ts:20](../../apps/api/src/modules/integrations/integrations.controller.ts) |

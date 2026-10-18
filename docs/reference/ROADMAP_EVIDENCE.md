@@ -42,7 +42,7 @@ Acceptance: Tenant-scoped sync, real execution acknowledgement, connector accept
 ## Packaging and operation
 
 - PRESENT: Both schema histories. [source](../../packages/database/prisma/migrations/migration_lock.toml) [source](../../packages/admin-database/prisma/migrations/migration_lock.toml)
-- PRESENT: Container definitions (not image-build evidence). [source](../../docker-compose.production.yml) [source](../../deploy/docker/Dockerfile.tenant-api) [source](../../deploy/docker/Dockerfile.admin-api)
+- PRESENT: Container definitions (not image-build evidence). [source](../../docker-compose.production.yml) [source](../../deploy/docker/Dockerfile) [source](../../deploy/docker/compose.yml)
 - PRESENT: Desktop packaging. [source](../../apps/desktop/package.json)
 - PRESENT: Maintenance runbook. [source](../../docs/MAINTENANCE_RUNBOOK.md)
 
