@@ -35,7 +35,11 @@ function allocateDiscount(taxableAmounts: number[], discount: number): number[] 
   const remainder = Number(discountPaise - shares.reduce((sum, share) => sum + share.paise, 0n));
   const ranked = [...shares].sort((a, b) => a.remainder === b.remainder
     ? a.index - b.index : a.remainder > b.remainder ? -1 : 1);
-  for (let i = 0; i < remainder; i++) ranked[i].paise += 1n;
+  for (let i = 0; i < remainder; i++) {
+    const share = ranked[i];
+    if (!share) throw new InvoiceCalculationError("Invoice discount allocation failed");
+    share.paise += 1n;
+  }
   return shares.map(share => Number(share.paise) / 100);
 }
 
@@ -120,6 +124,9 @@ export function calculateInvoiceTotals(
   for (const [index, line] of taxableLines.entries()) {
     // Preserve each line's discount, then allocate only the document discount.
     const allocatedDocumentDiscount = allocatedDiscounts[index];
+    if (allocatedDocumentDiscount === undefined) {
+      throw new InvoiceCalculationError("Invoice discount allocation failed");
+    }
     const taxBase = money(line.taxable - allocatedDocumentDiscount);
     const tax = money((taxBase * line.gstRate) / 100);
     if (isSimpleMode ? !interstate : sameState) {

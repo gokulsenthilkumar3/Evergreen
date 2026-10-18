@@ -12,15 +12,15 @@
 
 | Area | Observed context | Source |
 | --- | --- | --- |
-| Domain | Yarn/textile operations, job work, commerce, invoicing, customer payments | ../README.md, ../PARITY_REGISTER.md |
+| Domain | Yarn/textile operations, job work, commerce, invoicing, customer payments | ../README.md, ../docs/PROJECT_AUDIT.md |
 | Web | React 19, TypeScript, Material UI, TanStack Query, Vite | ../apps/web/package.json |
 | API | NestJS, JWT/session and role controls, Prisma | ../apps/api/package.json, ../apps/api/src/modules/auth |
-| Data | SQLite; legacy mill paths coexist with commerce StockMovement | ../packages/database/prisma/schema.prisma, ../PARITY_REGISTER.md |
+| Data | SQLite; legacy mill paths coexist with commerce StockMovement | ../packages/database/prisma/schema.prisma, ../docs/PROJECT_AUDIT.md |
 | Desktop | Electron packaging, bundled backend and web assets | ../apps/desktop/package.json |
 | Shared packages | Types, PDF, i18n, email and config | ../packages |
-| Localization | English/Tamil foundation; action-level QA pending | ../PARITY_REGISTER.md |
+| Localization | English/Tamil foundation; action-level QA pending | ../docs/PROJECT_AUDIT.md |
 | Services | Public web 4000, internal API 4301, optional Studio 5555 | ../QUICK_START.md |
-| Existing uncertainty | Parity register includes older prototype assessments; code has newer connected modules | ../PARITY_REGISTER.md, ../apps/api/src/modules |
+| Existing uncertainty | The 6 October parity register is historical; code has newer connected modules | ../docs/PROJECT_AUDIT.md, ../apps/api/src/modules |
 
 When evidence conflicts, inspect the actual endpoint and record the discrepancy. Never silently upgrade a parity row to accepted.
 
@@ -28,11 +28,13 @@ When evidence conflicts, inspect the actual endpoint and record the discrepancy.
 
 Business owner, inventory clerk, production supervisor, accounts staff, administrator, public-shop customer, and operational support. Do not infer permission from a persona label: trace role enforcement in the API.
 
-## Target topology, not current capability
+## Current topology and future acceptance
+
+The [architecture](../docs/ARCHITECTURE.md) and [decision record](../docs/decisions/0001-installation-and-data-boundaries.md) define one installation and database per customer, with a separate provider database. Operational tables currently have no tenant discriminator. PostgreSQL per customer is the recorded target; SQLite remains the implemented datasource. Preserve these decisions unless the task explicitly changes them.
 
 1. Single business: reconcile physical stock and invoice/payment records; prove recoverability.
 2. Multiple sites: define organization/site boundaries, transfer ownership and reporting scope. Prevent duplicate stock during transfers.
-3. Multiple businesses: enforce tenant scope on every record, query, export, cache, background job, attachment and authorization decision. Prove cross-tenant denials before onboarding customer businesses.
+3. Multiple businesses: provision distinct databases, secrets, processes, storage and backups per customer. Prove isolation across APIs, background jobs, exports and restores using two installations. Provider sync needs a credential bound to one company. Shared-table tenancy would be a separate architecture change, not an assumed requirement to add tenant IDs to the current schema.
 4. Desktop + hosted: choose whether desktop connects online to hosted data or owns a local database. Offline writes and bidirectional sync require conflict, idempotency and cutover design. Do not assume the packaged backend provides safe synchronization.
 
 ## Open questions

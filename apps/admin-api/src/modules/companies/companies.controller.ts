@@ -1,12 +1,28 @@
-import { Controller, Get, Post, Body, Param, Put } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Req,
+  ParseUUIDPipe,
+} from '@nestjs/common';
+import type { Request } from 'express';
 import { CompaniesService } from './companies.service';
+import {
+  CompanyActionDto,
+  CreateCompanyDto,
+  SyncCompanyDto,
+  SyncCompanyV1Dto,
+  UpdateLicenseDto,
+} from './companies.dto';
 
 @Controller('companies')
 export class CompaniesController {
   constructor(private readonly companiesService: CompaniesService) {}
 
   @Post()
-  async createCompany(@Body() data: { name: string; plan?: string; businessMode?: string; workspaceMode?: string; cloudProvider?: string; appVersion?: string; deploymentUrl?: string }) {
+  async createCompany(@Body() data: CreateCompanyDto) {
     return this.companiesService.createCompany(data);
   }
 
@@ -16,7 +32,7 @@ export class CompaniesController {
   }
 
   @Get(':id')
-  async getCompany(@Param('id') id: string) {
+  async getCompany(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.companiesService.getCompany(id);
   }
 
@@ -24,8 +40,8 @@ export class CompaniesController {
   // Standard fallback sync
   @Post(':id/sync')
   async syncCompanyData(
-    @Param('id') id: string,
-    @Body() metrics: { totalInwards: number; totalOutwards: number; totalInvoices: number; activeUsers: number; appVersion?: string }
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() metrics: SyncCompanyDto,
   ) {
     return this.companiesService.updateMetrics(id, metrics);
   }
@@ -33,32 +49,34 @@ export class CompaniesController {
   // Explicit v1 strict sync
   @Post(':id/v1/sync')
   async syncCompanyDataV1(
-    @Param('id') id: string,
-    @Body() payload: { 
-      totalInwards: number; 
-      totalOutwards: number; 
-      totalInvoices: number; 
-      activeUsers: number; 
-      appVersion: string;
-      additionalMetrics?: any;
-    }
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() payload: SyncCompanyV1Dto,
   ) {
     return this.companiesService.updateMetrics(id, payload);
   }
 
   @Post(':id/license')
   async updateLicense(
-    @Param('id') id: string,
-    @Body() body: any
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() body: UpdateLicenseDto,
+    @Req() request: Request & { providerActor?: string },
   ) {
-    return this.companiesService.updateLicense(id, body);
+    return this.companiesService.updateLicense(
+      id,
+      body,
+      request.providerActor || 'Provider operator',
+    );
   }
 
   @Post(':id/actions')
   async executeAction(
-    @Param('id') id: string,
-    @Body() body: { actionType: string; details?: string }
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() body: CompanyActionDto,
   ) {
-    return this.companiesService.executeRemoteAction(id, body.actionType, body.details);
+    return this.companiesService.executeRemoteAction(
+      id,
+      body.actionType,
+      body.details,
+    );
   }
 }

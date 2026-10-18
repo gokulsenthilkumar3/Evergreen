@@ -11,7 +11,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException, ConflictException } from '@nestjs/common';
 import { createHash } from 'node:crypto';
-import { previewImport } from '@evergreen/types';
+import { previewImport, type ImportInput } from '@evergreen/types';
 import { IntegrationsService } from './integrations.service';
 import { PrismaService } from '../../services/prisma.service';
 
@@ -30,7 +30,7 @@ function computeFingerprint(
 // ---------------------------------------------------------------------------
 // Minimal PrismaService stub
 // ---------------------------------------------------------------------------
-const makePrismaStub = (overrides: Partial<typeof prismaStub> = {}) => ({
+const makePrismaStub = () => ({
   importBatch: {
     findUnique: jest.fn().mockResolvedValue(null),
     create: jest.fn(),
@@ -48,10 +48,12 @@ const makePrismaStub = (overrides: Partial<typeof prismaStub> = {}) => ({
     create: jest.fn(),
   },
   $transaction: jest.fn(),
-  ...overrides,
 });
 
 let prismaStub: ReturnType<typeof makePrismaStub>;
+type TransactionCallback = (
+  tx: Omit<ReturnType<typeof makePrismaStub>, '$transaction'>,
+) => Promise<unknown>;
 
 // ---------------------------------------------------------------------------
 // Valid import payloads

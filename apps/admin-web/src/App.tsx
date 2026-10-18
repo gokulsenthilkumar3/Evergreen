@@ -27,7 +27,6 @@ interface Company {
   deploymentUrl: string | null;
   cloudProvider: string;
   appVersion: string;
-  apiKey: string;
   licenseKey: string | null;
   plan: string;
   pricingModel: string;
@@ -186,7 +185,7 @@ export default function App() {
   const [reactivateTargetCompany, setReactivateTargetCompany] = useState<Company | null>(null);
   const [reactivateUtr, setReactivateUtr] = useState<string>('');
   const [reactivatePeriod, setReactivatePeriod] = useState<'1_YEAR' | '30_DAYS'>('1_YEAR');
-  const [reactivateTimer, setReactivateTimer] = useState<number | null>(null);
+  const [reactivating, setReactivating] = useState(false);
   const [selectedPackageToDeploy, setSelectedPackageToDeploy] = useState<string>('v1.2.4-lts');
   const [selectedStrategy, setSelectedStrategy] = useState<'ROLLING' | 'BLUE_GREEN' | 'CANARY' | 'INSTANT'>('ROLLING');
 
@@ -197,6 +196,8 @@ export default function App() {
   const [newPkgTargets, setNewPkgTargets] = useState<string[]>(['GCP', 'AWS', 'AZURE', 'LOCAL_VM']);
 
   const [showProvisionModal, setShowProvisionModal] = useState(false);
+  const [provisioning, setProvisioning] = useState(false);
+  const provisioningRef = useRef(false);
   const [name, setName] = useState('');
   const [cloud, setCloud] = useState('LOCAL_VM');
   const [url, setUrl] = useState('');
@@ -229,9 +230,8 @@ export default function App() {
 
   // Terminal & Bash Executor state
   const [terminalHistory, setTerminalHistory] = useState<string[]>([
-    'EverGreen Mission Control Orchestrator [Provider Kernel v1.2.4]',
-    'Connected to local control daemon on port 4300. Type "help" for commands.',
-    'System status: 4 cloud clusters synchronized. Weighbridge edge nodes active.',
+    'Provider console. Commands read the provider API; nothing runs on customer installations.',
+    'Type "help" for commands.',
   ]);
   const [terminalInput, setTerminalInput] = useState<string>('');
 
@@ -329,13 +329,16 @@ export default function App() {
   };
 
   const executeReactivation = async (company: Company) => {
+    if (reactivating) return;
+    setReactivating(true);
     try {
-      setReactivateTimer(59);
-      showMsg(`⚡ Sending 1-Minute Reactivation protocol to ${company.name}...`, false);
-      const nextExpiry = new Date();
-      reactivatePeriod === '1_YEAR'
-        ? nextExpiry.setFullYear(nextExpiry.getFullYear() + 1)
-        : nextExpiry.setDate(nextExpiry.getDate() + 30);
+      showMsg(`Saving license settings for ${company.name}...`, false);
+      const nextExpiry = new Date(Math.max(Date.now(), company.expiresAt ? Date.parse(company.expiresAt) || 0 : 0));
+      if (reactivatePeriod === '1_YEAR') {
+        nextExpiry.setFullYear(nextExpiry.getFullYear() + 1);
+      } else {
+        nextExpiry.setDate(nextExpiry.getDate() + 30);
+      }
 
       const res = await authFetch(`${adminApiBase}/companies/${company.id}/license`, {
         method: 'POST',
@@ -344,14 +347,14 @@ export default function App() {
           status: 'ACTIVE',
           expiresAt: nextExpiry.toISOString(),
           graceExpiresAt: null,
-          details: reactivateUtr
-            ? `Payment verified via UTR: ${reactivateUtr}`
-            : 'Payment verified by Provider Finance Desk',
+          details: reactivateUtr.trim()
+            ? `Operator renewal request; payment reference: ${reactivateUtr.trim()}`
+            : 'Operator renewal request; no payment reference supplied',
         }),
       });
 
       if (res.ok) {
-        showMsg(`✅ ${company.name} reactivated — quota unblocked in under 60 seconds.`);
+        showMsg(`License settings saved for ${company.name}. Tenant synchronization is not yet confirmed.`);
         fetchCompanies();
         fetchCicdData();
         setReactivateTargetCompany(null);
@@ -362,7 +365,7 @@ export default function App() {
     } catch {
       showMsg(`❌ Failed to connect to Provider Admin API`);
     } finally {
-      setReactivateTimer(null);
+      setReactivating(false);
     }
   };
 
@@ -444,13 +447,16 @@ export default function App() {
 
   const handleProvisionTenant = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (provisioningRef.current) return;
+    provisioningRef.current = true;
+    setProvisioning(true);
     try {
-      showMsg(`Provisioning tenant ${name}...`, false);
+      showMsg(`Registering company ${name}...`, false);
       const res = await authFetch(`${adminApiBase}/companies`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name,
+          name: name.trim(),
           cloudProvider: cloud,
           deploymentUrl: url || undefined,
           tier,
@@ -463,15 +469,20 @@ export default function App() {
         }),
       });
       if (res.ok) {
-        showMsg(`✅ Tenant "${name}" successfully provisioned.`);
+        showMsg(`Company "${name}" registered. Deployment has not been started.`, false);
         setShowProvisionModal(false);
         setName('');
         setUrl('');
         fetchCompanies();
         fetchCicdData();
+      } else {
+        showMsg(`Company registration failed (HTTP ${res.status}). Review the details and try again.`, false);
       }
     } catch {
-      showMsg(`❌ Failed to provision tenant.`);
+      showMsg('Company registration could not be confirmed. Refresh the mill list before retrying to avoid a duplicate.', false);
+    } finally {
+      provisioningRef.current = false;
+      setProvisioning(false);
     }
   };
 
@@ -484,55 +495,75 @@ export default function App() {
     showMsg(`⚡ Ping to ${connId.toUpperCase()}: 200 OK (${lat}ms latency)`);
   };
 
-  const handleRunTerminalCommand = (cmdText?: string) => {
+  // Every line printed here must come from a provider API response or say plainly
+  // that nothing ran. Never report an operation that was not performed (UI-003).
+  const readProviderJson = async (path: string) => {
+    const res = await authFetch(`${adminApiBase}${path}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+  };
+
+  const runTerminalCommand = async (cmd: string): Promise<string[]> => {
+    if (cmd === 'help') {
+      return [
+        'Available commands:',
+        '  health   - Provider API and database status',
+        '  status   - Provider API uptime and memory, plus loaded company count',
+        '  db       - Provider database record counts',
+        '  clear    - Clear this window',
+        'Not available here: backup, weighbridge, deploy. These print what to do instead.',
+      ];
+    }
+    if (cmd === 'health') {
+      const health = await readProviderJson('/health');
+      return [
+        `Provider API: ${health.status} (${health.service})`,
+        `Database: ${health.database?.status ?? 'unknown'}, ${health.database?.tenantsManaged ?? 0} companies`,
+        `Checked at ${health.timestamp}`,
+        'Customer installations are not probed from here; their status is not known to this console.',
+      ];
+    }
+    if (cmd === 'status') {
+      const health = await readProviderJson('/status');
+      return [
+        `Uptime: ${health.uptimeSeconds}s | Heap: ${health.memory?.heapUsedMB}/${health.memory?.heapTotalMB} MB | RSS: ${health.memory?.rssMB} MB`,
+        `Companies loaded in this workspace: ${companies.length}`,
+      ];
+    }
+    if (cmd === 'db' || cmd === 'db-ping') {
+      const db = await readProviderJson('/control/database');
+      return [`${db.scope} (${db.engine}): ${db.companies} companies, ${db.records} control records, ${db.auditEvents} audit events`];
+    }
+    if (cmd === 'backup') {
+      return [
+        'Not available: the provider API has no backup endpoint, so no snapshot was taken.',
+        'Take an online snapshot on the server with sqlite3 ".backup" and record its checksum (docs/MAINTENANCE_RUNBOOK.md).',
+      ];
+    }
+    if (cmd === 'weighbridge') {
+      return ['Not available: this console has no connection to weighbridge devices. No reading was taken.'];
+    }
+    if (cmd.startsWith('deploy')) {
+      return ['Not available: no deployment worker is configured. Nothing was deployed.'];
+    }
+    return [`Unknown command "${cmd}". Nothing was run. Type "help" for the list.`];
+  };
+
+  const handleRunTerminalCommand = async (cmdText?: string) => {
     const cmd = (cmdText || terminalInput).trim();
     if (!cmd) return;
-    const newLines = [`$ ${cmd}`];
-
-    if (cmd === 'help') {
-      newLines.push('Available commands:');
-      newLines.push('  health          - Run full cluster health audit');
-      newLines.push('  backup          - Create timestamped SQLite snapshot');
-      newLines.push('  db-ping         - Test SQLite connection pool');
-      newLines.push('  weighbridge     - Ping TareZero edge RS-232 COM port');
-      newLines.push('  deploy --all    - Dispatch rolling rollout to all active nodes');
-      newLines.push('  status          - Show system load, memory, and spindle counts');
-      newLines.push('  clear           - Clear terminal window');
-    } else if (cmd === 'clear') {
-      setTerminalHistory(['EverGreen Mission Control Orchestrator [Cleared]']);
-      setTerminalInput('');
-      return;
-    } else if (cmd === 'health') {
-      newLines.push('🔍 Probing 4 cloud clusters and 1 weighbridge edge...');
-      newLines.push('  [GCP Cloud Run]       http://selvam.evergreenos.in  -> 200 OK (22ms)');
-      newLines.push('  [Azure App Service]   http://kavitha.evergreenos.in -> 200 OK (38ms)');
-      newLines.push('  [AWS ECS Fargate]     http://lakshmi.evergreenos.in -> 200 OK (31ms)');
-      newLines.push('  [Local Factory VM]    http://192.168.1.100:4000     -> 200 OK (3ms)');
-      newLines.push('  [RS-232 Indicator]    COM3 (9600-8-N-1)             -> STREAM ACTIVE');
-      newLines.push('✅ Cluster health: 100% operational.');
-    } else if (cmd === 'backup') {
-      newLines.push('📦 Starting SQLite backup snapshot...');
-      newLines.push('  Reading: packages/admin-database/prisma/admin.db (1.4 MB)');
-      newLines.push('  Target:  backups/admin_snapshot_20261011_0318.sqlite');
-      newLines.push('  PRAGMA wal_checkpoint(TRUNCATE) -> COMPLETED');
-      newLines.push('  SHA256: 9f83a...20c4 verified');
-      newLines.push('✅ Backup created successfully.');
-    } else if (cmd === 'weighbridge') {
-      newLines.push('⚖️ Querying Avery Weighbridge indicator via RS-232...');
-      newLines.push('  Protocol: Avery E1205 Continuous ASCII');
-      newLines.push('  Gross: 34,820 kg | Tare: 12,410 kg | Net: 22,410 kg');
-      newLines.push('  TareZero Anti-Fraud: PASS (Moisture variance 7.4% <= 8.5% limit)');
-      newLines.push('✅ Weighbridge bridge nominal.');
-    } else if (cmd === 'status') {
-      newLines.push(`Nodes: ${companies.length} Spinning Mills | Spindles: ~140,000 | ARR: ₹${(metrics.estimatedArr / 100000).toFixed(1)}L`);
-      newLines.push('Memory: 184MB RSS | CPU Load: 2.1% | Active Socket Listeners: 12');
-    } else {
-      newLines.push(`Executing: "${cmd}"...`);
-      newLines.push(`[stdout] Command processed successfully by Mission Control agent.`);
-    }
-
-    setTerminalHistory(prev => [...prev, ...newLines]);
     setTerminalInput('');
+    if (cmd === 'clear') {
+      setTerminalHistory(['Provider console cleared.']);
+      return;
+    }
+    let output: string[];
+    try {
+      output = await runTerminalCommand(cmd);
+    } catch (error) {
+      output = [`Failed: the provider API did not answer (${error instanceof Error ? error.message : 'network error'}). Nothing is assumed.`];
+    }
+    setTerminalHistory(prev => [...prev, `$ ${cmd}`, ...output]);
   };
 
   const handleRunAiAgent = () => {
@@ -557,7 +588,7 @@ export default function App() {
           `- **Annual License**: Scale Tier (₹1,69,990 + 18% GST = ₹2,00,588).\n` +
           `- **Drafted Tamil & English WhatsApp Notice**:\n` +
           `  > *வணக்கம்! EverGreen OS உரிமம் புதுப்பித்தல் நிலுவையில் உள்ளது. தடையற்ற மில் செயல்பாட்டிற்கு ₹2,00,588 செலுத்தி UTR எண்ணை பகிரவும்.*\n` +
-          `  > *Dear Director, Your EverGreen OS subscription is due. Pay ₹2,00,588 and share UTR to auto-renew in 60 seconds.*`
+          `  > *Dear Director, Your EverGreen OS subscription is due. Contact the provider finance desk to confirm your renewal amount and payment reference.*`
         );
       } else {
         setAiResponse(
@@ -893,7 +924,7 @@ export default function App() {
                         <h4>7-Day Grace Quota Watch — {metrics.graceMills} Tenant(s) Pending Renewal</h4>
                         <p>
                           Factory operations remain 100% active during grace. Unblock instantly upon UTR verification
-                          with the 1-Minute Reactivation protocol.
+                          by reviewing and saving their license settings.
                         </p>
                       </div>
                     </div>
@@ -905,7 +936,7 @@ export default function App() {
                           if (graceComp) setReactivateTargetCompany(graceComp);
                         }}
                       >
-                        ⚡ 1-Minute Instant Reactivate
+                        Review license renewal
                       </button>
                     </div>
                   </div>
@@ -1243,7 +1274,7 @@ export default function App() {
                                     className="btn-table-action amber"
                                     onClick={() => setReactivateTargetCompany(c)}
                                   >
-                                    ⚡ 1-Min Reactivate
+                                    Renew license
                                   </button>
                                 )}
                                 <button
@@ -1464,7 +1495,7 @@ export default function App() {
                       className="btn-table-action primary"
                       onClick={() => handleRunTerminalCommand('backup')}
                     >
-                      📦 Create SQLite Snapshot
+                      📦 Snapshot instructions
                     </button>
                     <button
                       className="btn-table-action"
@@ -1746,7 +1777,7 @@ export default function App() {
                       {[
                         { method: 'GET', uri: '/companies', auth: 'Bearer / Dev Origin', scope: 'Provider multi-tenant read', limit: '1000 req/min' },
                         { method: 'POST', uri: '/companies', auth: 'Bearer (Admin)', scope: 'Tenant provisioning', limit: '100 req/min' },
-                        { method: 'POST', uri: '/companies/:id/license', auth: 'Bearer (Admin)', scope: '1-Min instant reactivation', limit: '300 req/min' },
+                        { method: 'POST', uri: '/companies/:id/license', auth: 'Provider API key', scope: 'Save provider license settings', limit: 'Deployment configured' },
                         { method: 'POST', uri: '/cicd/deploy', auth: 'Bearer (Admin)', scope: 'Multi-cloud orchestration', limit: '50 req/min' },
                         { method: 'GET', uri: '/control/records', auth: 'Public / Dev fallback', scope: 'Mission control ledger', limit: '2000 req/min' },
                         { method: 'POST', uri: '/control/database/backup', auth: 'Bearer (Admin)', scope: 'SQLite backup trigger', limit: '20 req/min' },
@@ -2149,7 +2180,7 @@ export default function App() {
                 <div className="page-toolbar">
                   <div>
                     <h1 className="page-title">Ops terminal</h1>
-                    <p style={{ fontSize: '0.82rem', color: 'var(--adm-muted)' }}>Interactive provider CLI shell, SQLite backup runners, edge port probes, and cluster health diagnostics</p>
+                    <p style={{ fontSize: '0.82rem', color: 'var(--adm-muted)' }}>Read-only provider API checks. Backups, devices and deployments are not run from here.</p>
                   </div>
                   <div style={{ display: 'flex', gap: '0.4rem' }}>
                     <button className="dash-widget-toggle-btn active" onClick={() => handleRunTerminalCommand('health')}>
@@ -2158,8 +2189,8 @@ export default function App() {
                     <button className="dash-widget-toggle-btn active" onClick={() => handleRunTerminalCommand('backup')}>
                       📦 backup
                     </button>
-                    <button className="dash-widget-toggle-btn active" onClick={() => handleRunTerminalCommand('weighbridge')}>
-                      ⚖️ weighbridge
+                    <button className="dash-widget-toggle-btn active" onClick={() => handleRunTerminalCommand('db')}>
+                      🗄️ db
                     </button>
                     <button className="dash-widget-toggle-btn" onClick={() => handleRunTerminalCommand('status')}>
                       📊 status
@@ -2178,16 +2209,16 @@ export default function App() {
                       <span style={{ background: '#10b981' }} />
                     </div>
                     <span style={{ fontSize: '0.72rem', fontFamily: 'var(--font-mono)', color: 'var(--adm-muted)' }}>
-                      root@evergreen-mission-control:~ (bash)
+                      Provider console (read-only)
                     </span>
                     <span className="font-mono text-cyan" style={{ fontSize: '0.7rem' }}>
-                      PID 4300 · PORT 5174
+                      Provider API
                     </span>
                   </div>
 
                   <div className="terminal-console-stream">
                     {terminalHistory.map((line, i) => (
-                      <div key={i} style={{ color: line.startsWith('$') ? 'var(--adm-cyan)' : line.includes('ERROR') ? 'var(--adm-rose)' : line.includes('✅') ? 'var(--adm-emerald)' : '#e2e8f0' }}>
+                      <div key={i} style={{ color: line.startsWith('$') ? 'var(--adm-cyan)' : /^(Failed|Not available|Unknown command)/.test(line) ? 'var(--adm-rose)' : '#e2e8f0' }}>
                         {line}
                       </div>
                     ))}
@@ -2198,7 +2229,7 @@ export default function App() {
                     <input
                       type="text"
                       className="terminal-input-field" aria-label="Terminal command"
-                      placeholder="Type bash or ops command (health, backup, weighbridge, status, help)..."
+                      placeholder="Type a command (help, health, status, db)..."
                       value={terminalInput}
                       onChange={e => setTerminalInput(e.target.value)}
                       onKeyDown={e => {
@@ -2270,17 +2301,19 @@ export default function App() {
           MODAL 1: PROVISION NEW MILL TENANT
           ═══════════════════════════════════════════════════════════════════ */}
       {showProvisionModal && (
-        <AdminModal onClose={() => setShowProvisionModal(false)}>
+        <AdminModal onClose={() => { if (!provisioning) setShowProvisionModal(false); }}>
           <div className="modal-dialog-box" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h3 id="admin-modal-title">🏢 Provision New Spinning Mill Tenant</h3>
-              <button className="btn-modal-close" aria-label="Close" onClick={() => setShowProvisionModal(false)}>×</button>
+              <button className="btn-modal-close" aria-label="Close" disabled={provisioning} onClick={() => setShowProvisionModal(false)}>×</button>
             </div>
             <form onSubmit={handleProvisionTenant}>
               <div className="modal-body">
                 <div className="form-field-row">
-                  <label>Mill Company Name *</label>
+                  <label htmlFor="company-name">Mill Company Name *</label>
                   <input
+                    id="company-name"
+                    maxLength={200}
                     type="text"
                     required
                     className="form-input-text"
@@ -2292,8 +2325,9 @@ export default function App() {
 
                 <div className="form-grid-2col">
                   <div className="form-field-row">
-                    <label>Cloud Deployment Target *</label>
+                    <label htmlFor="company-cloud">Cloud Deployment Target *</label>
                     <select
+                      id="company-cloud"
                       className="form-select-box"
                       value={cloud}
                       onChange={e => setCloud(e.target.value)}
@@ -2305,8 +2339,9 @@ export default function App() {
                     </select>
                   </div>
                   <div className="form-field-row">
-                    <label>Textile Cluster Region</label>
+                    <label htmlFor="company-tier">Textile Cluster Region</label>
                     <select
+                      id="company-tier"
                       className="form-select-box"
                       value={tier}
                       onChange={e => setTier(e.target.value)}
@@ -2319,8 +2354,10 @@ export default function App() {
                 </div>
 
                 <div className="form-field-row">
-                  <label>State / Province</label>
+                  <label htmlFor="company-state">State / Province</label>
                   <input
+                    id="company-state"
+                    maxLength={120}
                     type="text"
                     className="form-input-text"
                     placeholder="e.g. Tamil Nadu"
@@ -2331,8 +2368,9 @@ export default function App() {
 
                 <div className="form-grid-2col">
                   <div className="form-field-row">
-                    <label>Commercial Subscription Plan</label>
+                    <label htmlFor="company-plan">Commercial Subscription Plan</label>
                     <select
+                      id="company-plan"
                       className="form-select-box"
                       value={plan}
                       onChange={e => setPlan(e.target.value)}
@@ -2344,8 +2382,9 @@ export default function App() {
                     </select>
                   </div>
                   <div className="form-field-row">
-                    <label>Billing Structure</label>
+                    <label htmlFor="company-pricing">Billing Structure</label>
                     <select
+                      id="company-pricing"
                       className="form-select-box"
                       value={pricingModel}
                       onChange={e => setPricingModel(e.target.value)}
@@ -2359,8 +2398,10 @@ export default function App() {
 
                 <div className="form-grid-2col">
                   <div className="form-field-row">
-                    <label>Max Users (Seats)</label>
+                    <label htmlFor="company-users">Max Users (Seats)</label>
                     <input
+                      id="company-users"
+                      min={1} max={2147483647} step={1} required
                       type="number"
                       className="form-input-text"
                       value={maxUsers}
@@ -2368,8 +2409,10 @@ export default function App() {
                     />
                   </div>
                   <div className="form-field-row">
-                    <label>Max Machines / Spindles</label>
+                    <label htmlFor="company-machines">Max Machines / Spindles</label>
                     <input
+                      id="company-machines"
+                      min={0} max={2147483647} step={1} required
                       type="number"
                       className="form-input-text"
                       value={maxMachines}
@@ -2379,8 +2422,10 @@ export default function App() {
                 </div>
 
                 <div className="form-field-row">
-                  <label>Max Monthly Inward Documents</label>
+                  <label htmlFor="company-documents">Max Monthly Documents</label>
                   <input
+                    id="company-documents"
+                    min={0} max={2147483647} step={1} required
                     type="number"
                     className="form-input-text"
                     value={maxDocs}
@@ -2389,8 +2434,10 @@ export default function App() {
                 </div>
 
                 <div className="form-field-row">
-                  <label>Deployment URL (Optional if Factory VM)</label>
+                  <label htmlFor="company-url">Deployment URL (Optional if Factory VM)</label>
                   <input
+                    id="company-url"
+                    maxLength={2048}
                     type="url"
                     className="form-input-text"
                     placeholder="https://mahalakshmi.evergreenos.in"
@@ -2401,8 +2448,8 @@ export default function App() {
               </div>
 
               <div className="modal-footer">
-                <button type="button" className="btn-ghost" onClick={() => setShowProvisionModal(false)}>Cancel</button>
-                <button type="submit" className="btn-provision-trigger">Provision Mill</button>
+                <button type="button" className="btn-ghost" disabled={provisioning} onClick={() => setShowProvisionModal(false)}>Cancel</button>
+                <button type="submit" className="btn-provision-trigger" disabled={provisioning}>{provisioning ? 'Registering…' : 'Register Mill'}</button>
               </div>
             </form>
           </div>
@@ -2410,32 +2457,30 @@ export default function App() {
       )}
 
       {/* ═══════════════════════════════════════════════════════════════════
-          MODAL 2: 1-MINUTE INSTANT REACTIVATION
+          MODAL 2: LICENSE RENEWAL
           ═══════════════════════════════════════════════════════════════════ */}
       {reactivateTargetCompany && (
-        <AdminModal onClose={() => setReactivateTargetCompany(null)}>
+        <AdminModal onClose={() => { if (!reactivating) setReactivateTargetCompany(null); }}>
           <div className="modal-dialog-box" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h3 id="admin-modal-title">⚡ 1-Minute Lightning Reactivation Protocol</h3>
-              <button className="btn-modal-close" aria-label="Close" onClick={() => setReactivateTargetCompany(null)}>×</button>
+              <h3 id="admin-modal-title">Renew license</h3>
+              <button className="btn-modal-close" aria-label="Close" disabled={reactivating} onClick={() => setReactivateTargetCompany(null)}>×</button>
             </div>
             <div className="modal-body">
               <div className="reactivation-timer-box">
-                <div className="timer-circle-visual">
-                  {reactivateTimer !== null ? `${reactivateTimer}s` : '< 60s'}
-                </div>
                 <div className="timer-details">
-                  <h4>Zero-Downtime Mill Unblock</h4>
+                  <h4>Save provider license settings</h4>
                   <p>
-                    Reactivates license quotas, resumes Tally Prime sync, and re-enables TareZero weighbridge
-                    in under 60 seconds across all isolated cloud environments.
+                    Save the renewal status and expiry date. Tenant synchronization must be confirmed separately.
+                    A payment reference is an operator note; it does not verify a bank payment.
                   </p>
                 </div>
               </div>
 
               <div className="form-field-row">
-                <label>Mill Tenant Being Reactivated</label>
+                <label htmlFor="renewal-tenant">Mill tenant</label>
                 <input
+                  id="renewal-tenant"
                   type="text"
                   disabled
                   className="form-input-text"
@@ -2445,20 +2490,25 @@ export default function App() {
 
               <div className="form-grid-2col">
                 <div className="form-field-row">
-                  <label>Reactivation Duration</label>
+                  <label htmlFor="renewal-duration">Renewal duration</label>
                   <select
+                    id="renewal-duration"
                     className="form-select-box"
+                    disabled={reactivating}
                     value={reactivatePeriod}
                     onChange={e => setReactivatePeriod(e.target.value as '1_YEAR' | '30_DAYS')}
                   >
                     <option value="1_YEAR">1 Full Year (Annual Subscription Renewal)</option>
-                    <option value="30_DAYS">30-Day Commercial Grace Extension</option>
+                    <option value="30_DAYS">30-Day Renewal</option>
                   </select>
                 </div>
                 <div className="form-field-row">
-                  <label>Bank Payment UTR Reference</label>
+                  <label htmlFor="renewal-reference">Bank payment UTR reference (optional)</label>
                   <input
+                    id="renewal-reference"
                     type="text"
+                    maxLength={128}
+                    disabled={reactivating}
                     className="form-input-text"
                     placeholder="e.g. HDFC202610110482"
                     value={reactivateUtr}
@@ -2468,12 +2518,13 @@ export default function App() {
               </div>
             </div>
             <div className="modal-footer">
-              <button className="btn-ghost" onClick={() => setReactivateTargetCompany(null)}>Cancel</button>
+              <button className="btn-ghost" disabled={reactivating} onClick={() => setReactivateTargetCompany(null)}>Cancel</button>
               <button
                 className="btn-reactivate-lightning"
+                disabled={reactivating}
                 onClick={() => executeReactivation(reactivateTargetCompany)}
               >
-                ⚡ Execute 1-Minute Reactivation
+                {reactivating ? 'Saving…' : 'Save license renewal'}
               </button>
             </div>
           </div>
@@ -2533,25 +2584,24 @@ export default function App() {
       )}
 
       {/* ═══════════════════════════════════════════════════════════════════
-          MODAL 4: INSTALL SCRIPT INSPECTOR
+          MODAL 4: INSTALLATION DETAILS
           ═══════════════════════════════════════════════════════════════════ */}
       {activeModalCompany && (
         <AdminModal onClose={() => setActiveModalCompany(null)}>
           <div className="modal-dialog-box" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h3 id="admin-modal-title">📋 1-Click Install Script: {activeModalCompany.name}</h3>
+              <h3 id="admin-modal-title">Installation details: {activeModalCompany.name}</h3>
               <button className="btn-modal-close" aria-label="Close" onClick={() => setActiveModalCompany(null)}>×</button>
             </div>
             <div className="modal-body">
               <p style={{ fontSize: '0.84rem', color: 'var(--adm-muted)', lineHeight: '1.6' }}>
-                Run this single command on the factory Linux VM or Windows Weighbridge PC to auto-provision:
+                Automated installation is not configured. Use a verified deployment package and the deployment runbook.
+                Enrollment credentials are not included in company listings.
               </p>
               <div className="code-snippet-box">
-                curl -sSL https://get.evergreenos.in/install.sh | bash -s -- \<br />
-                &nbsp;&nbsp;--company-id="{activeModalCompany.id}" \<br />
-                &nbsp;&nbsp;--api-key="{activeModalCompany.apiKey}" \<br />
-                &nbsp;&nbsp;--cloud-provider="{activeModalCompany.cloudProvider}" \<br />
-                &nbsp;&nbsp;--admin-api="{adminApiBase}"
+                Company: {activeModalCompany.id}<br />
+                Target: {activeModalCompany.cloudProvider}<br />
+                Provider API: {adminApiBase}
               </div>
             </div>
             <div className="modal-footer">

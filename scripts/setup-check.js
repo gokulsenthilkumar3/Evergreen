@@ -11,7 +11,7 @@ const [major, minor] = process.versions.node.split('.').map(Number);
 check('Node runtime', (major === 20 && minor >= 19) || (major === 22 && minor >= 12) || major > 22, 'Use Node 20.19+ or 22.12+.');
 check('Core dependencies installed', ['@nestjs/cli', 'vite', '@prisma/client', 'typescript', 'dotenv'].every(name => fs.existsSync(path.join(root, 'node_modules', name))), 'Run npm install at the repository root.');
 const envPath = path.join(root, 'apps', 'api', '.env');
-check('API environment file', fs.existsSync(envPath), 'Create apps/api/.env using README.md.');
+check('API environment file', fs.existsSync(envPath), 'Create apps/api/.env using QUICK_START.md.');
 const dotenvPath = path.join(root, 'node_modules', 'dotenv');
 if (fs.existsSync(dotenvPath) && fs.existsSync(envPath)) {
   const { parse } = require(dotenvPath);

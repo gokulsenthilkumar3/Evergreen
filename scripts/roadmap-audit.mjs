@@ -1,132 +1,60 @@
-import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+﻿import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+export const reportPath = 'docs/reference/ROADMAP_EVIDENCE.md';
+// The report lives two levels below the root, so source links climb back up.
+const link = path => '[source](../../' + path + ')';
 
-const root = process.cwd();
-const has = (path) => existsSync(join(root, path));
-const text = (path) => has(path) ? readFileSync(join(root, path), 'utf8') : '';
-const contains = (path, pattern) => pattern.test(text(path));
-const containsTree = (path, pattern) => {
-  const absolute = join(root, path);
-  if (!existsSync(absolute)) return false;
-  return readdirSync(absolute, { recursive: true })
-    .map((entry) => join(absolute, String(entry)))
-    .filter((entry) => statSync(entry).isFile())
-    .some((entry) => pattern.test(readFileSync(entry, 'utf8')));
-};
-const packageHas = (path, dependency) => {
-  if (!has(path)) return false;
-  const pkg = JSON.parse(text(path));
-  return Boolean(pkg.dependencies?.[dependency] || pkg.devDependencies?.[dependency]);
-};
-
-const refs = [
-  ['Noolstitch', 'noolstitch'],
-  ['Weave', 'Weave/weave'],
-  ['MSME ERP', 'MSME ERP/msme-micro-erp'],
-  ['Invoice Generator', 'Invoice Generator'],
-  ['Yarn Management', 'Yarn/Yarn-Management'],
-];
-const referenceRows = refs.map(([name, path]) => ({ name, path, retained: has(path) }));
-
-const phases = [
-  {
-    phase: 'Phase 0 — Foundation & Safety',
-    status: 'PARTIAL',
-    evidence: [
-      ['API Jest infrastructure and smoke/security tests', has('apps/api/src/app.controller.spec.ts') && has('apps/api/src/guards/access-control.spec.ts')],
-      ['Auth, catalogue, invoice and session smoke tests', has('apps/api/src/connected-modules.smoke.spec.ts')],
-      ['Web Vitest component-test infrastructure', packageHas('apps/web/package.json', 'vitest')],
-      ['Tracked SQLite backup/snapshot manifest', has('BACKUP_MANIFEST.md')],
-      ['Reference projects retained', referenceRows.every((row) => row.retained)],
-    ],
-    gate: 'Builds pass in CI and connected modules have automated smoke tests; an external backup manifest and approved snapshot tag still need evidence.',
-  },
-  {
-    phase: 'Phase 1 — Core Business Logic',
-    status: 'PARTIAL',
-    evidence: [
-      ['Canonical yarn counts declared', contains('packages/types/index.ts', /YARN_COUNTS\s*=\s*\[["']2["'],\s*["']4["'],\s*["']6["'],\s*["']8["'],\s*["']10["']\]/)],
-      ['remainingLog persisted', contains('packages/database/prisma/schema.prisma', /remainingLog\s+Float/)],
-      ['Costing rate settings persisted', contains('packages/database/prisma/schema.prisma', /maintenanceRate[\s\S]*ebRate[\s\S]*packageRate/)],
-      ["Today's dashboard exists", has('apps/web/src/pages/TodayDashboard.tsx') && has('apps/api/src/modules/dashboard/dashboard.controller.ts')],
-      ['End-to-end no-mock inward → dashboard evidence', false],
-    ],
-    gate: 'The complete live-data walkthrough and reconciliation evidence remain outstanding.',
-  },
-  {
-    phase: 'Phase 2 — Users, RBAC & Sessions',
-    status: 'PARTIAL',
-    evidence: [
-      ['Canonical VIEWER/MODIFIER/ADMIN role hierarchy', contains('apps/api/src/utils/roles.ts', /ADMIN[\s\S]*MODIFIER[\s\S]*VIEWER/)],
-      ['Admin user management UI/API', has('apps/web/src/pages/UserManagement.tsx') && has('apps/api/src/modules/users/users.controller.ts')],
-      ['Session persistence and revocation', contains('packages/database/prisma/schema.prisma', /model Session/) && has('apps/api/src/modules/sessions/sessions.service.ts')],
-      ['Session IP and user-agent capture', contains('apps/api/src/modules/auth/auth.service.ts', /ipAddress[\s\S]*userAgent/)],
-      ['IP geolocation integration', containsTree('apps/api/src', /ip-api\.com|ipapi\./)],
-    ],
-    gate: 'Role tests exist; location enrichment and full browser role-matrix evidence are still pending.',
-  },
-  {
-    phase: 'Phase 3 — Reference Absorption',
-    status: 'PARTIAL',
-    evidence: [
-      ['Invoice totals centralized and duplicate designer hidden', packageHas('apps/api/package.json', '@evergreen/pdf') && !contains('apps/web/src/App.tsx', /page: 'invoicegen'/)],
-      ['Tamil/English toggle and customer ledger UI', contains('apps/web/src/App.tsx', /setLanguage/) && has('apps/web/src/pages/MsmeErp.tsx')],
-      ['Public Weave shop and checkout API', has('apps/web/src/pages/ShopPortal.tsx') && has('apps/api/src/modules/commerce/storefront.service.ts')],
-      ['Noolstitch job-work canonical module', has('apps/api/src/modules/jobwork/jobwork.service.ts')],
-      ['Persisted warehouse, machine, QC and HR models', contains('packages/database/prisma/schema.prisma', /model WarehouseLocation/) && contains('packages/database/prisma/schema.prisma', /model Machine/)],
-      ['All five parity gates accepted', false],
-    ],
-    gate: 'Action-level acceptance is incomplete, and missing reference directories must be restored or formally accounted for before parity can be evaluated.',
-  },
-  {
-    phase: 'Phase 4 — Advanced Auth & Notifications',
-    status: 'PARTIAL',
-    evidence: [
-      ['TOTP backend and settings UI', packageHas('apps/api/package.json', 'otplib') && has('apps/web/src/pages/SecuritySettings.tsx')],
-      ['WebAuthn backend and browser dependencies', packageHas('apps/api/package.json', '@simplewebauthn/server') && packageHas('apps/web/package.json', '@simplewebauthn/browser')],
-      ['Daily-summary template', has('packages/email/src/index.ts')],
-      ['Scheduled 23:59 IST email delivery', packageHas('apps/api/package.json', '@nestjs/schedule') && containsTree('apps/api/src', /23:59|59 23/)],
-    ],
-    gate: 'Authenticator/passkey live-device QA and scheduled email delivery evidence are outstanding.',
-  },
-  {
-    phase: 'Phase 5 — Database & Production Hardening',
-    status: 'NOT READY',
-    evidence: [
-      ['PostgreSQL service defined', contains('docker-compose.yml', /postgres:/)],
-      ['Prisma uses PostgreSQL', contains('packages/database/prisma/schema.prisma', /provider\s*=\s*"postgresql"/)],
-      ['Public/API production ports documented', contains('.env.production', /EVERGREEN_PUBLIC_PORT=4000/) && contains('.env.production', /EVERGREEN_API_PORT=4301/)],
-      ['SQLite → PostgreSQL reconciliation manifest', has('POSTGRES_RECONCILIATION.md')],
-    ],
-    gate: 'SQLite remains canonical; no production cutover or reconciliation evidence exists.',
-  },
-  {
-    phase: 'Phase 6 — Archive & Cleanup',
-    status: 'BLOCKED BY GATES',
-    evidence: referenceRows.map((row) => [`${row.name} source retained`, row.retained]),
-    gate: 'Blocked: three expected reference directories are absent, and there is no parity evidence or written retirement acceptance.',
-  },
-];
-
-const icon = (value) => value ? '✅' : '❌';
-const lines = [
-  '# EverGreen master-plan audit', '',
-  'Generated from the current checkout by `npm run audit:roadmap`.', '',
-  '> This report records repository evidence, not manual QA or production acceptance. A present page is not considered parity.', '',
-  '## Executive status', '',
-  '| Phase | Status | Evidence passed |', '| --- | --- | --- |',
-  ...phases.map((phase) => `| ${phase.phase} | **${phase.status}** | ${phase.evidence.filter(([, ok]) => ok).length}/${phase.evidence.length} |`),
-  '', '## Detailed gates', '',
-];
-for (const phase of phases) {
-  lines.push(`### ${phase.phase}`, '', `**Status: ${phase.status}**`, '');
-  for (const [label, ok] of phase.evidence) lines.push(`- ${icon(ok)} ${label}`);
-  lines.push('', `**Gate assessment:** ${phase.gate}`, '');
+// Source evidence is separate from tests and operator acceptance.
+export function renderRoadmap(has) {
+  const groups = [
+    ['Foundation and security', [
+      ['Tenant HTTP/permission regressions', ['apps/api/test/app.e2e-spec.ts', 'apps/api/test/p0-safety.e2e-spec.ts']],
+      ['Tenant component tests', ['apps/web/vite.config.ts', 'apps/web/src/test/setup.ts']],
+      ['Backup and restore procedure (not restore evidence)', ['docs/MAINTENANCE_RUNBOOK.md']],
+      ['Provider access tests', ['apps/admin-api/src/guards/provider-access.guard.spec.ts']],
+    ], 'Run verification and rehearse a restore in a separate environment.'],
+    ['Stock, production and finance', [
+      ['Transaction/ledger boundary', ['apps/api/src/services/prisma.service.ts', 'apps/api/src/services/business-ledger.ts']],
+      ['Commerce and job work', ['apps/api/src/modules/commerce/commerce.service.ts', 'apps/api/src/modules/jobwork/jobwork.service.ts']],
+      ['Operational modules', ['apps/api/src/modules/warehouse/warehouse.module.ts', 'apps/api/src/modules/machines/machine.module.ts', 'apps/api/src/modules/quality/quality.module.ts', 'apps/api/src/modules/hr/hr.module.ts']],
+    ], 'Reconcile receipt to collection, partial returns, quality holds, corrections and closed periods with a pilot dataset.'],
+    ['Provider and integrations', [
+      ['Provider registry and records', ['apps/admin-api/src/modules/companies/companies.service.ts', 'apps/admin-api/src/modules/control/control.service.ts']],
+      ['Master imports', ['apps/api/src/modules/integrations/integrations.service.ts']],
+      ['Remote-action regressions', ['apps/admin-api/src/modules/companies/companies.service.spec.ts']],
+      ['Weighbridge library/simulation', ['apps/weighbridge-agent/src/index.ts']],
+    ], 'Tenant-scoped sync, real execution acknowledgement, connector acceptance and physical device checks remain separate gates.'],
+    ['Packaging and operation', [
+      ['Both schema histories', ['packages/database/prisma/migrations/migration_lock.toml', 'packages/admin-database/prisma/migrations/migration_lock.toml']],
+      ['Container definitions (not image-build evidence)', ['docker-compose.production.yml', 'deploy/docker/Dockerfile.tenant-api', 'deploy/docker/Dockerfile.admin-api']],
+      ['Desktop packaging', ['apps/desktop/package.json']],
+      ['Maintenance runbook', ['docs/MAINTENANCE_RUNBOOK.md']],
+    ], 'Both databases are SQLite today. PostgreSQL per customer is the chosen target (register DB-003) and needs its own reconciled migration.'],
+  ];
+  const lines = ['# Roadmap source evidence', '',
+    'Generated by `npm run audit:roadmap`; `npm run audit:check` fails when it is stale.', '',
+    '**A present source file is not an accepted feature, and this report certifies no release.** See the [project status](../PROJECT_AUDIT.md) and [backlog](../IMPLEMENTATION_BACKLOG.md).', '',
+    '## Summary', '', '| Area | Source checks present | Acceptance |', '| --- | --- | --- |'];
+  for (const [name, checks] of groups) lines.push('| ' + name + ' | ' + checks.filter(([, paths]) => paths.every(has)).length + '/' + checks.length + ' | Needs execution and acceptance evidence |');
+  for (const [name, checks, gate] of groups) {
+    lines.push('', '## ' + name, '');
+    for (const [label, paths] of checks) lines.push('- ' + (paths.every(has) ? 'PRESENT' : 'MISSING') + ': ' + label + '. ' + paths.map(link).join(' '));
+    lines.push('', 'Acceptance: ' + gate);
+  }
+  lines.push('');
+  return lines.join('\n');
 }
-lines.push('## Reference-folder safety check', '', '| Reference | Path | Retained |', '| --- | --- | --- |',
-  ...referenceRows.map((row) => `| ${row.name} | \`${row.path}/\` | ${row.retained ? 'Yes' : 'NO — investigate'} |`), '',
-  '**Archive decision:** No reference folder is eligible for deletion based on current repository evidence.', '');
-writeFileSync(join(root, 'MASTER_PLAN_AUDIT.md'), `${lines.join('\n')}\n`);
-
-const incomplete = phases.filter((phase) => phase.status !== 'COMPLETE').length;
-console.log(`Roadmap audit written: ${phases.length} phases checked, ${incomplete} incomplete.`);
+export function updateReport(file, content, check = false) {
+  const previous = existsSync(file) ? readFileSync(file, 'utf8').replace(/^﻿/, '').replace(/\r\n/g, '\n') : null;
+  if (previous === content) return true;
+  if (check) return false;
+  writeFileSync(file, content);
+  return true;
+}
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  const current = updateReport(join(root, reportPath), renderRoadmap(p => existsSync(join(root, p))), process.argv.includes('--check'));
+  console.log(current ? 'Roadmap source report is current.' : 'Roadmap report is stale. Run npm run audit:roadmap.');
+  if (!current) process.exitCode = 1;
+}

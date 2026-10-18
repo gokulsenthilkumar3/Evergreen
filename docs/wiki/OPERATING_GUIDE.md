@@ -100,4 +100,4 @@ Queries continue to use staff authentication. Display a VIEWER account on a shar
 
 ## Verification and support
 
-Use a disposable rehearsal installation before migrating a running company. Confirm the intended company identity, saved record counts, stock ownership, accounting totals, printed output, role failures and restoration. On an API failure inspect the error and preserve the unchanged request key for an import retry. Check [validation evidence](../VALIDATION.md) for what was executed and what still needs real-device/provider acceptance.
+Use a disposable rehearsal installation before migrating a running company. Confirm the intended company identity, saved record counts, stock ownership, accounting totals, printed output, role failures and restoration. On an API failure inspect the error and preserve the unchanged request key for an import retry. Check [validation record](../PROJECT_AUDIT.md#validation-record) for what was executed and what still needs real-device/provider acceptance.

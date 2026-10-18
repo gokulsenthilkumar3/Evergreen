@@ -12,7 +12,7 @@ Translate textile business needs into verifiable handoffs.
 New feature, unclear request or changed acceptance criteria.
 
 ## Inputs
-User request; CONTEXT.md; PARITY_REGISTER.md.
+User request; CONTEXT.md; docs/PROJECT_AUDIT.md.
 
 ## Preconditions
 Read [context](../../CONTEXT.md) and the [operating contract](../../SYSTEM_PROMPT.md). Identify the authorized scope and affected canonical records before work. Required inputs that are unknown stay explicit.
@@ -46,7 +46,7 @@ Conditional: business owner decides pricing, scope conflicts and acceptance. Exi
 [architecture](../architecture/SKILL.md), [quality](../quality/SKILL.md).
 
 ## Example Prompt
-Apply evergreen-product to the current EverGreen task. Start from User request; CONTEXT.md; PARITY_REGISTER.md. Produce scoped brief and acceptance matrix, and show evidence for: every criterion has an evidence source; no planned capability presented as delivered. Respect the current user scope.
+Apply evergreen-product to the current EverGreen task. Start from User request; CONTEXT.md; docs/PROJECT_AUDIT.md. Produce scoped brief and acceptance matrix, and show evidence for: every criterion has an evidence source; no planned capability presented as delivered. Respect the current user scope.
 
 ## Priority and omission risk
 Must-have. Skipping this work can cause: invented personas or release readiness; cosmetic work masking broken handoffs. Domains: Product, Requirements, Risk, Stakeholder Communication.

@@ -1,8 +1,8 @@
-# Easy migration and integration contracts
+# Migration and integrations
 
-“ECC/VCC/VCCC” in the original dictated request means **easy**, not SAP connectors. Warehouses and mills are the intended facilities. This design assumes “Eway” means e-Way Bill; an eBay marketplace connector is not implemented or promised.
+How data gets into EverGreen and how it reaches other systems. The CSV importer and the Tally export exist today. Webhooks, Tally import acknowledgement and e-Way Bill are designs only. "Eway" in older requests means e-Way Bill; no eBay connector is planned.
 
-## Delivered master-data import
+## Master-data import (implemented)
 
 Source: [shared parsing/mapping](../packages/types/migration.ts), [API service](../apps/api/src/modules/integrations/integrations.service.ts), [UI](../apps/web/src/pages/Integrations.tsx).
 
@@ -67,11 +67,37 @@ Implementation contract: transactional outbox committed with the business mutati
 
 Resolve conflicts through an explicit source-of-truth policy per entity. Preserve source IDs, versions and correlation IDs. Do not use last-write-wins for posted invoices, payments or stock; use reviewed corrective documents. For a PC behind NAT, a local bridge makes outbound authenticated requests and stores a durable queue. A cloud webhook cannot directly reach an arbitrary offline PC.
 
-## TallyPrime and print compatibility (pending)
+## TallyPrime
 
-TallyPrime supports XML over HTTP; the default configured port is 9000 and the company must be open. A local bridge can translate reviewed EverGreen parties/items/vouchers and inspect Tally's import response. Keep Tally on the local network and use an outbound bridge to cloud services. Confirm the target Tally release and schema before selecting XML or another supported interface. [Official XML integration](https://help.tallysolutions.com/xml-integration/), [integration prerequisites](https://help.tallysolutions.com/pre-requisites-for-integrations/).
+The principle is to feed Tally, never replace it. Accountants keep Tally for statutory books, GST returns and audit. EverGreen prepares vouchers from the factory records.
 
-Map company identity, ledger names, units, tax ledgers, voucher type/number/date, debit/credit, rounding and cancellation semantics. Keep source references and external acknowledgement IDs; reconcile totals and retry without duplicate vouchers. Tally-compatible printing is separate: agree a template, retain issuer snapshots and compare printed quantities/tax/totals against the saved invoice. There is currently no tested Tally connector, TDL plugin or Tally-branded print certification.
+### Export (implemented, with known gaps)
+
+Source: [tally.service.ts](../apps/api/src/modules/integrations/tally/tally.service.ts).
+
+| Endpoint | Behaviour |
+| --- | --- |
+| GET `/integrations/tally/export` | Downloads an `<ENVELOPE>` XML file for the chosen date range and voucher types |
+| GET `/integrations/tally/summary` | Returns voucher counts and a preview as JSON |
+
+| Voucher | Built from | Ledger lines |
+| --- | --- | --- |
+| Sales | Invoices | Debit the customer for the total; credit `Cotton Yarn Sales` with the taxable amount; credit `Output IGST 5%`, or `Output CGST 2.5%` plus `Output SGST 2.5%` |
+| Receipt | Payments | Debit `Cash` or `Bank Account (Current)`; credit the customer |
+| Purchase | Not exported | Rejected on purpose: a purchase voucher needs an approved supplier bill, agreed rate, tax treatment and ledger mapping, not just an inward weight |
+
+Known gaps before an accountant should rely on the file:
+
+- Void invoices and internal payment rows (allocations, reversals) are exported, and negative amounts can produce `--` in the XML (INT-001).
+- Ledger names are fixed and ignore the invoice's actual GST rate and the customer's Tally mapping. Vouchers have no stable integration ID, Tally's import response is not read, and an end date at midnight can drop that day's later transactions (INT-002).
+
+To import: open the matching company in TallyPrime, choose Import → Vouchers, and select the file. Compare voucher counts, balances and tax totals against EverGreen afterwards.
+
+### Connector (proposed)
+
+TallyPrime accepts XML over HTTP (default port 9000, company open). A local bridge would translate reviewed parties, items and vouchers, read Tally's import response and keep Tally on the local network. Pin the customer's Tally release before choosing XML or another interface. See the [official XML integration guide](https://help.tallysolutions.com/xml-integration/) and [integration prerequisites](https://help.tallysolutions.com/pre-requisites-for-integrations/).
+
+Map company identity, ledger names, units, tax ledgers, voucher type, number and date, debit and credit, rounding and cancellation. Keep source references and Tally's acknowledgement IDs, reconcile totals, and retry without creating duplicate vouchers. Tally-style printing is a separate task: agree a template and compare printed quantities, tax and totals with the saved invoice.
 
 ## e-Way Bill (pending)
 

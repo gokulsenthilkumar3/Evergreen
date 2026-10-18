@@ -1,7 +1,7 @@
 /**
  * CommerceService — unit tests (extended invoice totals coverage)
  *
- * The calculateInvoiceTotals function has two modes:
+ * The shared calculator has two modes; the Nest adapter exposes only full mode:
  *  - Simple mode: second param is boolean (interstate flag); discount = % of line total
  *  - Full mode:   second param is number (document discount amount);
  *                 sellerState/buyerState determine CGST/SGST vs IGST
@@ -12,6 +12,7 @@
  *  - undefined buyerState defaults to sellerState (same-state = CGST+SGST)
  */
 import { calculateInvoiceTotals } from './invoice-totals';
+import { calculateInvoiceTotals as calculateSharedInvoiceTotals } from '@evergreen/pdf';
 
 // ---------------------------------------------------------------------------
 // Full-mode (numeric discount) tests
@@ -76,13 +77,13 @@ describe('calculateInvoiceTotals — full mode (numeric discount)', () => {
       expect(result.total).toBeCloseTo(1120);
     });
 
-    it('undefined buyerState defaults to sellerState (same-state = CGST+SGST)', () => {
+    it('the shared calculator defaults undefined buyerState to sellerState (same-state = CGST+SGST)', () => {
       // When buyerState is undefined, it defaults to sellerState → same-state → CGST+SGST
-      const result = calculateInvoiceTotals(
+      const result = calculateSharedInvoiceTotals(
         [{ quantity: 1, rate: 1000, discount: 0, gstRate: 18 }],
         0,
         'Tamil Nadu',
-        undefined as any,
+        undefined,
       );
       // Same-state: CGST + SGST, not IGST
       expect(result.cgst).toBeCloseTo(90);
@@ -242,11 +243,11 @@ describe('calculateInvoiceTotals — full mode (numeric discount)', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Simple-mode (boolean second param) tests — mirrors the smoke tests
+// Legacy simple-mode contract belongs to the shared calculator, not the Nest adapter.
 // ---------------------------------------------------------------------------
-describe('calculateInvoiceTotals — simple mode (boolean interstate flag)', () => {
+describe('shared calculateInvoiceTotals — simple mode (boolean interstate flag)', () => {
   it('applies CGST + SGST when interstate=false', () => {
-    const result = calculateInvoiceTotals(
+    const result = calculateSharedInvoiceTotals(
       [{ quantity: 10, rate: 100, discount: 0, gstRate: 18 }],
       false, // same-state
     );
@@ -256,7 +257,7 @@ describe('calculateInvoiceTotals — simple mode (boolean interstate flag)', () 
   });
 
   it('applies IGST when interstate=true', () => {
-    const result = calculateInvoiceTotals(
+    const result = calculateSharedInvoiceTotals(
       [{ quantity: 10, rate: 100, discount: 0, gstRate: 18 }],
       true, // interstate
     );
@@ -266,7 +267,7 @@ describe('calculateInvoiceTotals — simple mode (boolean interstate flag)', () 
   });
 
   it('treats discount as percentage in simple mode', () => {
-    const result = calculateInvoiceTotals(
+    const result = calculateSharedInvoiceTotals(
       [{ quantity: 10, rate: 100, discount: 10, gstRate: 18 }],
       false, // same-state
     );

@@ -527,108 +527,8 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `handleSaveProfile` | Function binding | [apps/web/src/components/ProfileModal.tsx:138](../../apps/web/src/components/ProfileModal.tsx) |
 | `handleChangePassword` | Function binding | [apps/web/src/components/ProfileModal.tsx:149](../../apps/web/src/components/ProfileModal.tsx) |
 | `getRoleColor` | Function binding | [apps/web/src/components/ProfileModal.tsx:165](../../apps/web/src/components/ProfileModal.tsx) |
-| `SignupProps` | InterfaceDeclaration | [apps/web/src/components/Signup.tsx:31](../../apps/web/src/components/Signup.tsx) |
-| `Signup` | Function binding | [apps/web/src/components/Signup.tsx:36](../../apps/web/src/components/Signup.tsx) |
-| `handleSubmit` | Function binding | [apps/web/src/components/Signup.tsx:50](../../apps/web/src/components/Signup.tsx) |
 | `WeighbridgeReceiptDialog` | FunctionDeclaration | [apps/web/src/components/WeighbridgeReceiptDialog.tsx:7](../../apps/web/src/components/WeighbridgeReceiptDialog.tsx) |
 | `save` | Function binding | [apps/web/src/components/WeighbridgeReceiptDialog.tsx:35](../../apps/web/src/components/WeighbridgeReceiptDialog.tsx) |
-| `BarcodeOptions` | Function binding | [apps/web/src/components/billing/BarcodeOptions.tsx:9](../../apps/web/src/components/billing/BarcodeOptions.tsx) |
-| `handleSave` | Function binding | [apps/web/src/components/billing/BarcodeOptions.tsx:20](../../apps/web/src/components/billing/BarcodeOptions.tsx) |
-| `handleSimulateScan` | Function binding | [apps/web/src/components/billing/BarcodeOptions.tsx:25](../../apps/web/src/components/billing/BarcodeOptions.tsx) |
-| `Category` | InterfaceDeclaration | [apps/web/src/components/billing/Category.tsx:12](../../apps/web/src/components/billing/Category.tsx) |
-| `Category` | Function binding | [apps/web/src/components/billing/Category.tsx:15](../../apps/web/src/components/billing/Category.tsx) |
-| `openAdd` | Function binding | [apps/web/src/components/billing/Category.tsx:26](../../apps/web/src/components/billing/Category.tsx) |
-| `openEdit` | Function binding | [apps/web/src/components/billing/Category.tsx:27](../../apps/web/src/components/billing/Category.tsx) |
-| `handleSave` | Function binding | [apps/web/src/components/billing/Category.tsx:28](../../apps/web/src/components/billing/Category.tsx) |
-| `CreditNote` | InterfaceDeclaration | [apps/web/src/components/billing/CreditNotes.tsx:10](../../apps/web/src/components/billing/CreditNotes.tsx) |
-| `CreditNotes` | Function binding | [apps/web/src/components/billing/CreditNotes.tsx:23](../../apps/web/src/components/billing/CreditNotes.tsx) |
-| `openAdd` | Function binding | [apps/web/src/components/billing/CreditNotes.tsx:29](../../apps/web/src/components/billing/CreditNotes.tsx) |
-| `openEdit` | Function binding | [apps/web/src/components/billing/CreditNotes.tsx:30](../../apps/web/src/components/billing/CreditNotes.tsx) |
-| `handleSave` | Function binding | [apps/web/src/components/billing/CreditNotes.tsx:32](../../apps/web/src/components/billing/CreditNotes.tsx) |
-| `DebitNote` | InterfaceDeclaration | [apps/web/src/components/billing/DebitNotes.tsx:10](../../apps/web/src/components/billing/DebitNotes.tsx) |
-| `DebitNotes` | Function binding | [apps/web/src/components/billing/DebitNotes.tsx:23](../../apps/web/src/components/billing/DebitNotes.tsx) |
-| `openAdd` | Function binding | [apps/web/src/components/billing/DebitNotes.tsx:29](../../apps/web/src/components/billing/DebitNotes.tsx) |
-| `openEdit` | Function binding | [apps/web/src/components/billing/DebitNotes.tsx:30](../../apps/web/src/components/billing/DebitNotes.tsx) |
-| `handleSave` | Function binding | [apps/web/src/components/billing/DebitNotes.tsx:32](../../apps/web/src/components/billing/DebitNotes.tsx) |
-| `DeletedItem` | InterfaceDeclaration | [apps/web/src/components/billing/DeletedView.tsx:10](../../apps/web/src/components/billing/DeletedView.tsx) |
-| `DeletedView` | Function binding | [apps/web/src/components/billing/DeletedView.tsx:18](../../apps/web/src/components/billing/DeletedView.tsx) |
-| `handleRestore` | Function binding | [apps/web/src/components/billing/DeletedView.tsx:26](../../apps/web/src/components/billing/DeletedView.tsx) |
-| `handlePermDelete` | Function binding | [apps/web/src/components/billing/DeletedView.tsx:31](../../apps/web/src/components/billing/DeletedView.tsx) |
-| `DeliveryChallan` | InterfaceDeclaration | [apps/web/src/components/billing/DeliveryChallans.tsx:10](../../apps/web/src/components/billing/DeliveryChallans.tsx) |
-| `DeliveryChallans` | Function binding | [apps/web/src/components/billing/DeliveryChallans.tsx:23](../../apps/web/src/components/billing/DeliveryChallans.tsx) |
-| `openAdd` | Function binding | [apps/web/src/components/billing/DeliveryChallans.tsx:29](../../apps/web/src/components/billing/DeliveryChallans.tsx) |
-| `openEdit` | Function binding | [apps/web/src/components/billing/DeliveryChallans.tsx:30](../../apps/web/src/components/billing/DeliveryChallans.tsx) |
-| `handleSave` | Function binding | [apps/web/src/components/billing/DeliveryChallans.tsx:32](../../apps/web/src/components/billing/DeliveryChallans.tsx) |
-| `EInvoice` | InterfaceDeclaration | [apps/web/src/components/billing/EInvoices.tsx:10](../../apps/web/src/components/billing/EInvoices.tsx) |
-| `EInvoices` | Function binding | [apps/web/src/components/billing/EInvoices.tsx:22](../../apps/web/src/components/billing/EInvoices.tsx) |
-| `openAdd` | Function binding | [apps/web/src/components/billing/EInvoices.tsx:28](../../apps/web/src/components/billing/EInvoices.tsx) |
-| `openEdit` | Function binding | [apps/web/src/components/billing/EInvoices.tsx:29](../../apps/web/src/components/billing/EInvoices.tsx) |
-| `handleSave` | Function binding | [apps/web/src/components/billing/EInvoices.tsx:31](../../apps/web/src/components/billing/EInvoices.tsx) |
-| `Expense` | InterfaceDeclaration | [apps/web/src/components/billing/Expenses.tsx:17](../../apps/web/src/components/billing/Expenses.tsx) |
-| `Expenses` | Function binding | [apps/web/src/components/billing/Expenses.tsx:29](../../apps/web/src/components/billing/Expenses.tsx) |
-| `openAdd` | Function binding | [apps/web/src/components/billing/Expenses.tsx:43](../../apps/web/src/components/billing/Expenses.tsx) |
-| `openEdit` | Function binding | [apps/web/src/components/billing/Expenses.tsx:44](../../apps/web/src/components/billing/Expenses.tsx) |
-| `handleSave` | Function binding | [apps/web/src/components/billing/Expenses.tsx:46](../../apps/web/src/components/billing/Expenses.tsx) |
-| `Batch` | InterfaceDeclaration | [apps/web/src/components/billing/ExpiryDatesBatches.tsx:10](../../apps/web/src/components/billing/ExpiryDatesBatches.tsx) |
-| `ExpiryDatesBatches` | Function binding | [apps/web/src/components/billing/ExpiryDatesBatches.tsx:22](../../apps/web/src/components/billing/ExpiryDatesBatches.tsx) |
-| `openAdd` | Function binding | [apps/web/src/components/billing/ExpiryDatesBatches.tsx:28](../../apps/web/src/components/billing/ExpiryDatesBatches.tsx) |
-| `openEdit` | Function binding | [apps/web/src/components/billing/ExpiryDatesBatches.tsx:33](../../apps/web/src/components/billing/ExpiryDatesBatches.tsx) |
-| `handleSave` | Function binding | [apps/web/src/components/billing/ExpiryDatesBatches.tsx:35](../../apps/web/src/components/billing/ExpiryDatesBatches.tsx) |
-| `isExpiringSoon` | Function binding | [apps/web/src/components/billing/ExpiryDatesBatches.tsx:43](../../apps/web/src/components/billing/ExpiryDatesBatches.tsx) |
-| `isExpired` | Function binding | [apps/web/src/components/billing/ExpiryDatesBatches.tsx:49](../../apps/web/src/components/billing/ExpiryDatesBatches.tsx) |
-| `Group` | InterfaceDeclaration | [apps/web/src/components/billing/Group.tsx:10](../../apps/web/src/components/billing/Group.tsx) |
-| `Group` | Function binding | [apps/web/src/components/billing/Group.tsx:13](../../apps/web/src/components/billing/Group.tsx) |
-| `openAdd` | Function binding | [apps/web/src/components/billing/Group.tsx:23](../../apps/web/src/components/billing/Group.tsx) |
-| `openEdit` | Function binding | [apps/web/src/components/billing/Group.tsx:24](../../apps/web/src/components/billing/Group.tsx) |
-| `handleSave` | Function binding | [apps/web/src/components/billing/Group.tsx:25](../../apps/web/src/components/billing/Group.tsx) |
-| `IndirectIncome` | InterfaceDeclaration | [apps/web/src/components/billing/IndirectIncomes.tsx:12](../../apps/web/src/components/billing/IndirectIncomes.tsx) |
-| `IndirectIncomes` | Function binding | [apps/web/src/components/billing/IndirectIncomes.tsx:23](../../apps/web/src/components/billing/IndirectIncomes.tsx) |
-| `openAdd` | Function binding | [apps/web/src/components/billing/IndirectIncomes.tsx:31](../../apps/web/src/components/billing/IndirectIncomes.tsx) |
-| `openEdit` | Function binding | [apps/web/src/components/billing/IndirectIncomes.tsx:32](../../apps/web/src/components/billing/IndirectIncomes.tsx) |
-| `handleSave` | Function binding | [apps/web/src/components/billing/IndirectIncomes.tsx:34](../../apps/web/src/components/billing/IndirectIncomes.tsx) |
-| `PackingList` | InterfaceDeclaration | [apps/web/src/components/billing/PackingLists.tsx:10](../../apps/web/src/components/billing/PackingLists.tsx) |
-| `PackingLists` | Function binding | [apps/web/src/components/billing/PackingLists.tsx:24](../../apps/web/src/components/billing/PackingLists.tsx) |
-| `openAdd` | Function binding | [apps/web/src/components/billing/PackingLists.tsx:30](../../apps/web/src/components/billing/PackingLists.tsx) |
-| `openEdit` | Function binding | [apps/web/src/components/billing/PackingLists.tsx:31](../../apps/web/src/components/billing/PackingLists.tsx) |
-| `handleSave` | Function binding | [apps/web/src/components/billing/PackingLists.tsx:33](../../apps/web/src/components/billing/PackingLists.tsx) |
-| `PriceEntry` | InterfaceDeclaration | [apps/web/src/components/billing/Pricelists.tsx:10](../../apps/web/src/components/billing/Pricelists.tsx) |
-| `Pricelist` | InterfaceDeclaration | [apps/web/src/components/billing/Pricelists.tsx:11](../../apps/web/src/components/billing/Pricelists.tsx) |
-| `Pricelists` | Function binding | [apps/web/src/components/billing/Pricelists.tsx:25](../../apps/web/src/components/billing/Pricelists.tsx) |
-| `openAdd` | Function binding | [apps/web/src/components/billing/Pricelists.tsx:31](../../apps/web/src/components/billing/Pricelists.tsx) |
-| `openEdit` | Function binding | [apps/web/src/components/billing/Pricelists.tsx:32](../../apps/web/src/components/billing/Pricelists.tsx) |
-| `setEntry` | Function binding | [apps/web/src/components/billing/Pricelists.tsx:34](../../apps/web/src/components/billing/Pricelists.tsx) |
-| `handleSave` | Function binding | [apps/web/src/components/billing/Pricelists.tsx:38](../../apps/web/src/components/billing/Pricelists.tsx) |
-| `Product` | InterfaceDeclaration | [apps/web/src/components/billing/ProductsServices.tsx:15](../../apps/web/src/components/billing/ProductsServices.tsx) |
-| `typeColor` | Function binding | [apps/web/src/components/billing/ProductsServices.tsx:30](../../apps/web/src/components/billing/ProductsServices.tsx) |
-| `ProductsServices` | Function binding | [apps/web/src/components/billing/ProductsServices.tsx:32](../../apps/web/src/components/billing/ProductsServices.tsx) |
-| `openAdd` | Function binding | [apps/web/src/components/billing/ProductsServices.tsx:43](../../apps/web/src/components/billing/ProductsServices.tsx) |
-| `openEdit` | Function binding | [apps/web/src/components/billing/ProductsServices.tsx:44](../../apps/web/src/components/billing/ProductsServices.tsx) |
-| `handleSave` | Function binding | [apps/web/src/components/billing/ProductsServices.tsx:46](../../apps/web/src/components/billing/ProductsServices.tsx) |
-| `ProformaInvoice` | InterfaceDeclaration | [apps/web/src/components/billing/ProformaInvoices.tsx:10](../../apps/web/src/components/billing/ProformaInvoices.tsx) |
-| `ProformaInvoices` | Function binding | [apps/web/src/components/billing/ProformaInvoices.tsx:22](../../apps/web/src/components/billing/ProformaInvoices.tsx) |
-| `openAdd` | Function binding | [apps/web/src/components/billing/ProformaInvoices.tsx:28](../../apps/web/src/components/billing/ProformaInvoices.tsx) |
-| `openEdit` | Function binding | [apps/web/src/components/billing/ProformaInvoices.tsx:29](../../apps/web/src/components/billing/ProformaInvoices.tsx) |
-| `handleSave` | Function binding | [apps/web/src/components/billing/ProformaInvoices.tsx:31](../../apps/web/src/components/billing/ProformaInvoices.tsx) |
-| `PurchaseOrder` | InterfaceDeclaration | [apps/web/src/components/billing/PurchaseOrders.tsx:10](../../apps/web/src/components/billing/PurchaseOrders.tsx) |
-| `PurchaseOrders` | Function binding | [apps/web/src/components/billing/PurchaseOrders.tsx:23](../../apps/web/src/components/billing/PurchaseOrders.tsx) |
-| `openAdd` | Function binding | [apps/web/src/components/billing/PurchaseOrders.tsx:29](../../apps/web/src/components/billing/PurchaseOrders.tsx) |
-| `openEdit` | Function binding | [apps/web/src/components/billing/PurchaseOrders.tsx:36](../../apps/web/src/components/billing/PurchaseOrders.tsx) |
-| `handleSave` | Function binding | [apps/web/src/components/billing/PurchaseOrders.tsx:38](../../apps/web/src/components/billing/PurchaseOrders.tsx) |
-| `Quotation` | InterfaceDeclaration | [apps/web/src/components/billing/Quotations.tsx:10](../../apps/web/src/components/billing/Quotations.tsx) |
-| `Quotations` | Function binding | [apps/web/src/components/billing/Quotations.tsx:23](../../apps/web/src/components/billing/Quotations.tsx) |
-| `openAdd` | Function binding | [apps/web/src/components/billing/Quotations.tsx:29](../../apps/web/src/components/billing/Quotations.tsx) |
-| `openEdit` | Function binding | [apps/web/src/components/billing/Quotations.tsx:36](../../apps/web/src/components/billing/Quotations.tsx) |
-| `handleSave` | Function binding | [apps/web/src/components/billing/Quotations.tsx:38](../../apps/web/src/components/billing/Quotations.tsx) |
-| `SalesOrder` | InterfaceDeclaration | [apps/web/src/components/billing/SalesOrders.tsx:10](../../apps/web/src/components/billing/SalesOrders.tsx) |
-| `SalesOrders` | Function binding | [apps/web/src/components/billing/SalesOrders.tsx:23](../../apps/web/src/components/billing/SalesOrders.tsx) |
-| `openAdd` | Function binding | [apps/web/src/components/billing/SalesOrders.tsx:29](../../apps/web/src/components/billing/SalesOrders.tsx) |
-| `openEdit` | Function binding | [apps/web/src/components/billing/SalesOrders.tsx:36](../../apps/web/src/components/billing/SalesOrders.tsx) |
-| `handleSave` | Function binding | [apps/web/src/components/billing/SalesOrders.tsx:38](../../apps/web/src/components/billing/SalesOrders.tsx) |
-| `Subscription` | InterfaceDeclaration | [apps/web/src/components/billing/Subscriptions.tsx:10](../../apps/web/src/components/billing/Subscriptions.tsx) |
-| `Subscriptions` | Function binding | [apps/web/src/components/billing/Subscriptions.tsx:22](../../apps/web/src/components/billing/Subscriptions.tsx) |
-| `openAdd` | Function binding | [apps/web/src/components/billing/Subscriptions.tsx:28](../../apps/web/src/components/billing/Subscriptions.tsx) |
-| `openEdit` | Function binding | [apps/web/src/components/billing/Subscriptions.tsx:29](../../apps/web/src/components/billing/Subscriptions.tsx) |
-| `handleSave` | Function binding | [apps/web/src/components/billing/Subscriptions.tsx:31](../../apps/web/src/components/billing/Subscriptions.tsx) |
 | `FeedEvent` | InterfaceDeclaration | [apps/web/src/components/command-center/ActivityFeed.tsx:19](../../apps/web/src/components/command-center/ActivityFeed.tsx) |
 | `ActivityFeedProps` | InterfaceDeclaration | [apps/web/src/components/command-center/ActivityFeed.tsx:29](../../apps/web/src/components/command-center/ActivityFeed.tsx) |
 | `timeAgo` | FunctionDeclaration | [apps/web/src/components/command-center/ActivityFeed.tsx:48](../../apps/web/src/components/command-center/ActivityFeed.tsx) |
@@ -689,12 +589,6 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `ShipmentStepperHud` | Function binding | [apps/web/src/components/command-center/ShipmentStepperHud.tsx:43](../../apps/web/src/components/command-center/ShipmentStepperHud.tsx) |
 | `WarRoomViewProps` | InterfaceDeclaration | [apps/web/src/components/command-center/WarRoomView.tsx:31](../../apps/web/src/components/command-center/WarRoomView.tsx) |
 | `WarRoomView` | Function binding | [apps/web/src/components/command-center/WarRoomView.tsx:48](../../apps/web/src/components/command-center/WarRoomView.tsx) |
-| `AccessibleDialogProps` | InterfaceDeclaration | [apps/web/src/components/common/AccessibleDialog.tsx:12](../../apps/web/src/components/common/AccessibleDialog.tsx) |
-| `AccessibleDialog` | Function binding | [apps/web/src/components/common/AccessibleDialog.tsx:27](../../apps/web/src/components/common/AccessibleDialog.tsx) |
-| `handleTabKey` | Function binding | [apps/web/src/components/common/AccessibleDialog.tsx:55](../../apps/web/src/components/common/AccessibleDialog.tsx) |
-| `handleEscape` | Function binding | [apps/web/src/components/common/AccessibleDialog.tsx:71](../../apps/web/src/components/common/AccessibleDialog.tsx) |
-| `ChartTooltipProps` | InterfaceDeclaration | [apps/web/src/components/common/AdvancedChartTooltip.tsx:5](../../apps/web/src/components/common/AdvancedChartTooltip.tsx) |
-| `AdvancedChartTooltip` | Function binding | [apps/web/src/components/common/AdvancedChartTooltip.tsx:18](../../apps/web/src/components/common/AdvancedChartTooltip.tsx) |
 | `BarcodeQRModalProps` | InterfaceDeclaration | [apps/web/src/components/common/BarcodeQRModal.tsx:27](../../apps/web/src/components/common/BarcodeQRModal.tsx) |
 | `escapeHtml` | Function binding | [apps/web/src/components/common/BarcodeQRModal.tsx:39](../../apps/web/src/components/common/BarcodeQRModal.tsx) |
 | `labelPrintDocument` | FunctionDeclaration | [apps/web/src/components/common/BarcodeQRModal.tsx:46](../../apps/web/src/components/common/BarcodeQRModal.tsx) |
@@ -708,36 +602,8 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `BreadcrumbsProps` | InterfaceDeclaration | [apps/web/src/components/common/Breadcrumbs.tsx:19](../../apps/web/src/components/common/Breadcrumbs.tsx) |
 | `Breadcrumbs` | Function binding | [apps/web/src/components/common/Breadcrumbs.tsx:24](../../apps/web/src/components/common/Breadcrumbs.tsx) |
 | `handleClick` | Function binding | [apps/web/src/components/common/Breadcrumbs.tsx:25](../../apps/web/src/components/common/Breadcrumbs.tsx) |
-| `BulkActionsProps` | InterfaceDeclaration | [apps/web/src/components/common/BulkActions.tsx:26](../../apps/web/src/components/common/BulkActions.tsx) |
-| `BulkActions` | FunctionDeclaration | [apps/web/src/components/common/BulkActions.tsx:40](../../apps/web/src/components/common/BulkActions.tsx) |
-| `handleToggleAll` | Function binding | [apps/web/src/components/common/BulkActions.tsx:56](../../apps/web/src/components/common/BulkActions.tsx) |
-| `handleMenuOpen` | Function binding | [apps/web/src/components/common/BulkActions.tsx:64](../../apps/web/src/components/common/BulkActions.tsx) |
-| `handleMenuClose` | Function binding | [apps/web/src/components/common/BulkActions.tsx:68](../../apps/web/src/components/common/BulkActions.tsx) |
-| `handleBulkDelete` | Function binding | [apps/web/src/components/common/BulkActions.tsx:72](../../apps/web/src/components/common/BulkActions.tsx) |
-| `confirmDelete` | Function binding | [apps/web/src/components/common/BulkActions.tsx:77](../../apps/web/src/components/common/BulkActions.tsx) |
-| `handleExport` | Function binding | [apps/web/src/components/common/BulkActions.tsx:83](../../apps/web/src/components/common/BulkActions.tsx) |
-| `SelectableRowProps` | InterfaceDeclaration | [apps/web/src/components/common/BulkActions.tsx:178](../../apps/web/src/components/common/BulkActions.tsx) |
-| `SelectableRow` | Function binding | [apps/web/src/components/common/BulkActions.tsx:190](../../apps/web/src/components/common/BulkActions.tsx) |
-| `ChartToolbarProps` | InterfaceDeclaration | [apps/web/src/components/common/ChartToolbar.tsx:23](../../apps/web/src/components/common/ChartToolbar.tsx) |
-| `ChartToolbar` | Function binding | [apps/web/src/components/common/ChartToolbar.tsx:36](../../apps/web/src/components/common/ChartToolbar.tsx) |
-| `handlePeriodClick` | Function binding | [apps/web/src/components/common/ChartToolbar.tsx:110](../../apps/web/src/components/common/ChartToolbar.tsx) |
-| `handleCustomDateApply` | Function binding | [apps/web/src/components/common/ChartToolbar.tsx:144](../../apps/web/src/components/common/ChartToolbar.tsx) |
-| `FilterConfig` | InterfaceDeclaration | [apps/web/src/components/common/ColumnFilters.tsx:27](../../apps/web/src/components/common/ColumnFilters.tsx) |
-| `SortConfig` | InterfaceDeclaration | [apps/web/src/components/common/ColumnFilters.tsx:34](../../apps/web/src/components/common/ColumnFilters.tsx) |
-| `ColumnFilterProps` | InterfaceDeclaration | [apps/web/src/components/common/ColumnFilters.tsx:39](../../apps/web/src/components/common/ColumnFilters.tsx) |
-| `ColumnFilters` | Function binding | [apps/web/src/components/common/ColumnFilters.tsx:51](../../apps/web/src/components/common/ColumnFilters.tsx) |
-| `handleOpen` | Function binding | [apps/web/src/components/common/ColumnFilters.tsx:61](../../apps/web/src/components/common/ColumnFilters.tsx) |
-| `handleClose` | Function binding | [apps/web/src/components/common/ColumnFilters.tsx:65](../../apps/web/src/components/common/ColumnFilters.tsx) |
-| `handleFilterApply` | Function binding | [apps/web/src/components/common/ColumnFilters.tsx:70](../../apps/web/src/components/common/ColumnFilters.tsx) |
-| `handleFilterClear` | Function binding | [apps/web/src/components/common/ColumnFilters.tsx:74](../../apps/web/src/components/common/ColumnFilters.tsx) |
-| `handleSort` | Function binding | [apps/web/src/components/common/ColumnFilters.tsx:80](../../apps/web/src/components/common/ColumnFilters.tsx) |
-| `clearAllFilters` | Function binding | [apps/web/src/components/common/ColumnFilters.tsx:89](../../apps/web/src/components/common/ColumnFilters.tsx) |
 | `ConfirmDialogProps` | InterfaceDeclaration | [apps/web/src/components/common/ConfirmDialog.tsx:13](../../apps/web/src/components/common/ConfirmDialog.tsx) |
 | `ConfirmDialog` | Function binding | [apps/web/src/components/common/ConfirmDialog.tsx:24](../../apps/web/src/components/common/ConfirmDialog.tsx) |
-| `EmailTemplateProps` | InterfaceDeclaration | [apps/web/src/components/common/EmailTemplate.tsx:22](../../apps/web/src/components/common/EmailTemplate.tsx) |
-| `EmailTemplate` | Function binding | [apps/web/src/components/common/EmailTemplate.tsx:35](../../apps/web/src/components/common/EmailTemplate.tsx) |
-| `copyToClipboard` | Function binding | [apps/web/src/components/common/EmailTemplate.tsx:43](../../apps/web/src/components/common/EmailTemplate.tsx) |
-| `generateEmailText` | Function binding | [apps/web/src/components/common/EmailTemplate.tsx:49](../../apps/web/src/components/common/EmailTemplate.tsx) |
 | `EmptyStateProps` | InterfaceDeclaration | [apps/web/src/components/common/EmptyState.tsx:11](../../apps/web/src/components/common/EmptyState.tsx) |
 | `EmptyState` | Function binding | [apps/web/src/components/common/EmptyState.tsx:20](../../apps/web/src/components/common/EmptyState.tsx) |
 | `EntryWizardHeaderProps` | InterfaceDeclaration | [apps/web/src/components/common/EntryWizardHeader.tsx:6](../../apps/web/src/components/common/EntryWizardHeader.tsx) |
@@ -760,13 +626,8 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `handler` | Function binding | [apps/web/src/components/common/GlassDatePicker.tsx:55](../../apps/web/src/components/common/GlassDatePicker.tsx) |
 | `isSameDay` | Function binding | [apps/web/src/components/common/GlassDatePicker.tsx:84](../../apps/web/src/components/common/GlassDatePicker.tsx) |
 | `isToday` | Function binding | [apps/web/src/components/common/GlassDatePicker.tsx:86](../../apps/web/src/components/common/GlassDatePicker.tsx) |
-| `LoadingSpinnerProps` | InterfaceDeclaration | [apps/web/src/components/common/LoadingSpinner.tsx:4](../../apps/web/src/components/common/LoadingSpinner.tsx) |
-| `LoadingSpinner` | Function binding | [apps/web/src/components/common/LoadingSpinner.tsx:14](../../apps/web/src/components/common/LoadingSpinner.tsx) |
-| `FullPageLoader` | Function binding | [apps/web/src/components/common/LoadingSpinner.tsx:81](../../apps/web/src/components/common/LoadingSpinner.tsx) |
 | `NotFoundProps` | InterfaceDeclaration | [apps/web/src/components/common/NotFound404.tsx:5](../../apps/web/src/components/common/NotFound404.tsx) |
 | `NotFound404` | Function binding | [apps/web/src/components/common/NotFound404.tsx:10](../../apps/web/src/components/common/NotFound404.tsx) |
-| `StatusChipProps` | InterfaceDeclaration | [apps/web/src/components/common/PaymentStatusChip.tsx:11](../../apps/web/src/components/common/PaymentStatusChip.tsx) |
-| `PaymentStatusChip` | Function binding | [apps/web/src/components/common/PaymentStatusChip.tsx:22](../../apps/web/src/components/common/PaymentStatusChip.tsx) |
 | `ProductionTimingAlert` | FunctionDeclaration | [apps/web/src/components/common/ProductionTimingAlert.tsx:6](../../apps/web/src/components/common/ProductionTimingAlert.tsx) |
 | `RequiredLabelProps` | InterfaceDeclaration | [apps/web/src/components/common/RequiredLabel.tsx:4](../../apps/web/src/components/common/RequiredLabel.tsx) |
 | `RequiredLabel` | Function binding | [apps/web/src/components/common/RequiredLabel.tsx:14](../../apps/web/src/components/common/RequiredLabel.tsx) |
@@ -776,36 +637,14 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `ScreenReaderAnnouncer` | Function binding | [apps/web/src/components/common/ScreenReaderAnnouncer.tsx:28](../../apps/web/src/components/common/ScreenReaderAnnouncer.tsx) |
 | `handleAnnounce` | Function binding | [apps/web/src/components/common/ScreenReaderAnnouncer.tsx:32](../../apps/web/src/components/common/ScreenReaderAnnouncer.tsx) |
 | `announceToScreenReader` | Function binding | [apps/web/src/components/common/ScreenReaderAnnouncer.tsx:85](../../apps/web/src/components/common/ScreenReaderAnnouncer.tsx) |
-| `TablePaginationProps` | InterfaceDeclaration | [apps/web/src/components/common/TablePagination.tsx:13](../../apps/web/src/components/common/TablePagination.tsx) |
-| `TablePagination` | Function binding | [apps/web/src/components/common/TablePagination.tsx:22](../../apps/web/src/components/common/TablePagination.tsx) |
-| `handlePageChange` | Function binding | [apps/web/src/components/common/TablePagination.tsx:34](../../apps/web/src/components/common/TablePagination.tsx) |
-| `handlePageSizeChange` | Function binding | [apps/web/src/components/common/TablePagination.tsx:38](../../apps/web/src/components/common/TablePagination.tsx) |
 | `TableSkeletonProps` | InterfaceDeclaration | [apps/web/src/components/common/TableSkeleton.tsx:12](../../apps/web/src/components/common/TableSkeleton.tsx) |
 | `TableSkeleton` | Function binding | [apps/web/src/components/common/TableSkeleton.tsx:18](../../apps/web/src/components/common/TableSkeleton.tsx) |
-| `ThemeNotificationBannerProps` | InterfaceDeclaration | [apps/web/src/components/common/ThemeNotificationBanner.tsx:14](../../apps/web/src/components/common/ThemeNotificationBanner.tsx) |
-| `ThemeNotificationBanner` | Function binding | [apps/web/src/components/common/ThemeNotificationBanner.tsx:25](../../apps/web/src/components/common/ThemeNotificationBanner.tsx) |
 | `EwayBill` | InterfaceDeclaration | [apps/web/src/components/insights/EwayBills.tsx:10](../../apps/web/src/components/insights/EwayBills.tsx) |
 | `EwayBills` | Function binding | [apps/web/src/components/insights/EwayBills.tsx:21](../../apps/web/src/components/insights/EwayBills.tsx) |
 | `handleGenerate` | Function binding | [apps/web/src/components/insights/EwayBills.tsx:26](../../apps/web/src/components/insights/EwayBills.tsx) |
 | `handleCancel` | Function binding | [apps/web/src/components/insights/EwayBills.tsx:30](../../apps/web/src/components/insights/EwayBills.tsx) |
 | `TallySync` | Function binding | [apps/web/src/components/insights/TallySync.tsx:10](../../apps/web/src/components/insights/TallySync.tsx) |
 | `handleSync` | Function binding | [apps/web/src/components/insights/TallySync.tsx:15](../../apps/web/src/components/insights/TallySync.tsx) |
-| `BankTransaction` | InterfaceDeclaration | [apps/web/src/components/payments/BankReconciliation.tsx:10](../../apps/web/src/components/payments/BankReconciliation.tsx) |
-| `BankReconciliation` | Function binding | [apps/web/src/components/payments/BankReconciliation.tsx:20](../../apps/web/src/components/payments/BankReconciliation.tsx) |
-| `toggleReconcile` | Function binding | [apps/web/src/components/payments/BankReconciliation.tsx:25](../../apps/web/src/components/payments/BankReconciliation.tsx) |
-| `handleUpload` | Function binding | [apps/web/src/components/payments/BankReconciliation.tsx:30](../../apps/web/src/components/payments/BankReconciliation.tsx) |
-| `JournalEntry` | InterfaceDeclaration | [apps/web/src/components/payments/Journals.tsx:10](../../apps/web/src/components/payments/Journals.tsx) |
-| `Journals` | Function binding | [apps/web/src/components/payments/Journals.tsx:22](../../apps/web/src/components/payments/Journals.tsx) |
-| `openAdd` | Function binding | [apps/web/src/components/payments/Journals.tsx:28](../../apps/web/src/components/payments/Journals.tsx) |
-| `openEdit` | Function binding | [apps/web/src/components/payments/Journals.tsx:29](../../apps/web/src/components/payments/Journals.tsx) |
-| `handleSave` | Function binding | [apps/web/src/components/payments/Journals.tsx:31](../../apps/web/src/components/payments/Journals.tsx) |
-| `PaymentLink` | InterfaceDeclaration | [apps/web/src/components/payments/PaymentLinks.tsx:10](../../apps/web/src/components/payments/PaymentLinks.tsx) |
-| `PaymentLinks` | Function binding | [apps/web/src/components/payments/PaymentLinks.tsx:22](../../apps/web/src/components/payments/PaymentLinks.tsx) |
-| `openAdd` | Function binding | [apps/web/src/components/payments/PaymentLinks.tsx:27](../../apps/web/src/components/payments/PaymentLinks.tsx) |
-| `handleSave` | Function binding | [apps/web/src/components/payments/PaymentLinks.tsx:34](../../apps/web/src/components/payments/PaymentLinks.tsx) |
-| `handleCopy` | Function binding | [apps/web/src/components/payments/PaymentLinks.tsx:47](../../apps/web/src/components/payments/PaymentLinks.tsx) |
-| `TimelineEvent` | InterfaceDeclaration | [apps/web/src/components/payments/Timelines.tsx:9](../../apps/web/src/components/payments/Timelines.tsx) |
-| `Timelines` | Function binding | [apps/web/src/components/payments/Timelines.tsx:18](../../apps/web/src/components/payments/Timelines.tsx) |
 | `ConfirmOptions` | InterfaceDeclaration | [apps/web/src/context/ConfirmContext.tsx:4](../../apps/web/src/context/ConfirmContext.tsx) |
 | `ConfirmContextType` | InterfaceDeclaration | [apps/web/src/context/ConfirmContext.tsx:12](../../apps/web/src/context/ConfirmContext.tsx) |
 | `ConfirmProvider` | Function binding | [apps/web/src/context/ConfirmContext.tsx:18](../../apps/web/src/context/ConfirmContext.tsx) |
@@ -840,27 +679,9 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `today` | Function binding | [apps/web/src/hooks/usePersist.ts:36](../../apps/web/src/hooks/usePersist.ts) |
 | `fmtDate` | Function binding | [apps/web/src/hooks/usePersist.ts:37](../../apps/web/src/hooks/usePersist.ts) |
 | `fmtAmt` | Function binding | [apps/web/src/hooks/usePersist.ts:38](../../apps/web/src/hooks/usePersist.ts) |
-| `InvoiceItem` | InterfaceDeclaration | [apps/web/src/pages/Billing.tsx:107](../../apps/web/src/pages/Billing.tsx) |
-| `PaymentEntry` | InterfaceDeclaration | [apps/web/src/pages/Billing.tsx:115](../../apps/web/src/pages/Billing.tsx) |
-| `BillingProps` | InterfaceDeclaration | [apps/web/src/pages/Billing.tsx:126](../../apps/web/src/pages/Billing.tsx) |
-| `PaymentDialog` | Function binding | [apps/web/src/pages/Billing.tsx:132](../../apps/web/src/pages/Billing.tsx) |
-| `handleSubmit` | Function binding | [apps/web/src/pages/Billing.tsx:156](../../apps/web/src/pages/Billing.tsx) |
-| `InvoiceEditor` | Function binding | [apps/web/src/pages/Billing.tsx:271](../../apps/web/src/pages/Billing.tsx) |
-| `handleItemChange` | Function binding | [apps/web/src/pages/Billing.tsx:314](../../apps/web/src/pages/Billing.tsx) |
-| `addItem` | Function binding | [apps/web/src/pages/Billing.tsx:318](../../apps/web/src/pages/Billing.tsx) |
-| `removeItem` | Function binding | [apps/web/src/pages/Billing.tsx:323](../../apps/web/src/pages/Billing.tsx) |
-| `handleSave` | Function binding | [apps/web/src/pages/Billing.tsx:344](../../apps/web/src/pages/Billing.tsx) |
-| `handleShare` | Function binding | [apps/web/src/pages/Billing.tsx:375](../../apps/web/src/pages/Billing.tsx) |
-| `BillingDashboard` | Function binding | [apps/web/src/pages/Billing.tsx:730](../../apps/web/src/pages/Billing.tsx) |
-| `handleDeletePayment` | Function binding | [apps/web/src/pages/Billing.tsx:797](../../apps/web/src/pages/Billing.tsx) |
-| `Billing` | Function binding | [apps/web/src/pages/Billing.tsx:1096](../../apps/web/src/pages/Billing.tsx) |
-| `handleSaveInvoice` | Function binding | [apps/web/src/pages/Billing.tsx:1132](../../apps/web/src/pages/Billing.tsx) |
-| `handleDeleteInvoice` | Function binding | [apps/web/src/pages/Billing.tsx:1143](../../apps/web/src/pages/Billing.tsx) |
-| `handlePaymentSuccess` | Function binding | [apps/web/src/pages/Billing.tsx:1154](../../apps/web/src/pages/Billing.tsx) |
-| `renderTabContent` | Function binding | [apps/web/src/pages/Billing.tsx:1160](../../apps/web/src/pages/Billing.tsx) |
-| `BookRecord` | InterfaceDeclaration | [apps/web/src/pages/BookEllam.tsx:37](../../apps/web/src/pages/BookEllam.tsx) |
-| `BookEllam` | FunctionDeclaration | [apps/web/src/pages/BookEllam.tsx:50](../../apps/web/src/pages/BookEllam.tsx) |
-| `exportToCSV` | Function binding | [apps/web/src/pages/BookEllam.tsx:223](../../apps/web/src/pages/BookEllam.tsx) |
+| `BookRecord` | InterfaceDeclaration | [apps/web/src/pages/BookEllam.tsx:38](../../apps/web/src/pages/BookEllam.tsx) |
+| `BookEllam` | FunctionDeclaration | [apps/web/src/pages/BookEllam.tsx:51](../../apps/web/src/pages/BookEllam.tsx) |
+| `exportToCSV` | Function binding | [apps/web/src/pages/BookEllam.tsx:224](../../apps/web/src/pages/BookEllam.tsx) |
 | `TaxonomyEditor` | FunctionDeclaration | [apps/web/src/pages/CatalogueTaxonomy.tsx:9](../../apps/web/src/pages/CatalogueTaxonomy.tsx) |
 | `save` | Function binding | [apps/web/src/pages/CatalogueTaxonomy.tsx:14](../../apps/web/src/pages/CatalogueTaxonomy.tsx) |
 | `archive` | Function binding | [apps/web/src/pages/CatalogueTaxonomy.tsx:24](../../apps/web/src/pages/CatalogueTaxonomy.tsx) |
@@ -912,16 +733,6 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `handlePackagingSubmit` | Function binding | [apps/web/src/pages/CostingEntry.tsx:292](../../apps/web/src/pages/CostingEntry.tsx) |
 | `handleMaintenanceSubmit` | Function binding | [apps/web/src/pages/CostingEntry.tsx:315](../../apps/web/src/pages/CostingEntry.tsx) |
 | `handleExpenseSubmit` | Function binding | [apps/web/src/pages/CostingEntry.tsx:338](../../apps/web/src/pages/CostingEntry.tsx) |
-| `CostingKPI` | InterfaceDeclaration | [apps/web/src/pages/CostingHistory.tsx:40](../../apps/web/src/pages/CostingHistory.tsx) |
-| `CostingHistoryEntry` | InterfaceDeclaration | [apps/web/src/pages/CostingHistory.tsx:49](../../apps/web/src/pages/CostingHistory.tsx) |
-| `CostingHistory` | Function binding | [apps/web/src/pages/CostingHistory.tsx:59](../../apps/web/src/pages/CostingHistory.tsx) |
-| `getDateRange` | Function binding | [apps/web/src/pages/CostingHistory.tsx:66](../../apps/web/src/pages/CostingHistory.tsx) |
-| `handleDateFilterChange` | Function binding | [apps/web/src/pages/CostingHistory.tsx:134](../../apps/web/src/pages/CostingHistory.tsx) |
-| `handleExport` | Function binding | [apps/web/src/pages/CostingHistory.tsx:138](../../apps/web/src/pages/CostingHistory.tsx) |
-| `TabPanelProps` | InterfaceDeclaration | [apps/web/src/pages/CostingList.tsx:20](../../apps/web/src/pages/CostingList.tsx) |
-| `TabPanel` | FunctionDeclaration | [apps/web/src/pages/CostingList.tsx:26](../../apps/web/src/pages/CostingList.tsx) |
-| `CostingList` | Function binding | [apps/web/src/pages/CostingList.tsx:35](../../apps/web/src/pages/CostingList.tsx) |
-| `getFilteredEntries` | Function binding | [apps/web/src/pages/CostingList.tsx:52](../../apps/web/src/pages/CostingList.tsx) |
 | `KPI` | InterfaceDeclaration | [apps/web/src/pages/Dashboard.tsx:60](../../apps/web/src/pages/Dashboard.tsx) |
 | `DashboardSummary` | InterfaceDeclaration | [apps/web/src/pages/Dashboard.tsx:70](../../apps/web/src/pages/Dashboard.tsx) |
 | `DashboardProps` | InterfaceDeclaration | [apps/web/src/pages/Dashboard.tsx:75](../../apps/web/src/pages/Dashboard.tsx) |
@@ -966,14 +777,6 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `handleDateFilterChange` | Function binding | [apps/web/src/pages/Inventory.tsx:195](../../apps/web/src/pages/Inventory.tsx) |
 | `handleExport` | Function binding | [apps/web/src/pages/Inventory.tsx:250](../../apps/web/src/pages/Inventory.tsx) |
 | `renderMovementTable` | Function binding | [apps/web/src/pages/Inventory.tsx:277](../../apps/web/src/pages/Inventory.tsx) |
-| `UploadZone` | FunctionDeclaration | [apps/web/src/pages/InvoiceGenerator/index.tsx:31](../../apps/web/src/pages/InvoiceGenerator/index.tsx) |
-| `handleFile` | Function binding | [apps/web/src/pages/InvoiceGenerator/index.tsx:33](../../apps/web/src/pages/InvoiceGenerator/index.tsx) |
-| `InvoiceGenerator` | Function binding | [apps/web/src/pages/InvoiceGenerator/index.tsx:55](../../apps/web/src/pages/InvoiceGenerator/index.tsx) |
-| `fmt` | Function binding | [apps/web/src/pages/InvoiceGenerator/index.tsx:66](../../apps/web/src/pages/InvoiceGenerator/index.tsx) |
-| `fmtDate` | Function binding | [apps/web/src/pages/InvoiceGenerator/index.tsx:67](../../apps/web/src/pages/InvoiceGenerator/index.tsx) |
-| `InvoiceItem` | InterfaceDeclaration | [apps/web/src/pages/InvoiceGenerator/store.ts:2](../../apps/web/src/pages/InvoiceGenerator/store.ts) |
-| `InvoiceState` | InterfaceDeclaration | [apps/web/src/pages/InvoiceGenerator/store.ts:3](../../apps/web/src/pages/InvoiceGenerator/store.ts) |
-| `genId` | Function binding | [apps/web/src/pages/InvoiceGenerator/store.ts:17](../../apps/web/src/pages/InvoiceGenerator/store.ts) |
 | `BatchEntry` | InterfaceDeclaration | [apps/web/src/pages/InwardEntry.tsx:77](../../apps/web/src/pages/InwardEntry.tsx) |
 | `InwardEntryProps` | InterfaceDeclaration | [apps/web/src/pages/InwardEntry.tsx:92](../../apps/web/src/pages/InwardEntry.tsx) |
 | `InwardEntry` | Function binding | [apps/web/src/pages/InwardEntry.tsx:97](../../apps/web/src/pages/InwardEntry.tsx) |
@@ -996,9 +799,6 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `LogsProps` | InterfaceDeclaration | [apps/web/src/pages/Logs.tsx:47](../../apps/web/src/pages/Logs.tsx) |
 | `Logs` | Function binding | [apps/web/src/pages/Logs.tsx:79](../../apps/web/src/pages/Logs.tsx) |
 | `handleExport` | Function binding | [apps/web/src/pages/Logs.tsx:119](../../apps/web/src/pages/Logs.tsx) |
-| `TabPanel` | Function binding | [apps/web/src/pages/MsmeErp.tsx:7](../../apps/web/src/pages/MsmeErp.tsx) |
-| `MsmeErp` | Function binding | [apps/web/src/pages/MsmeErp.tsx:16](../../apps/web/src/pages/MsmeErp.tsx) |
-| `filtered` | Function binding | [apps/web/src/pages/MsmeErp.tsx:32](../../apps/web/src/pages/MsmeErp.tsx) |
 | `newRow` | Function binding | [apps/web/src/pages/OperationsDesk.tsx:58](../../apps/web/src/pages/OperationsDesk.tsx) |
 | `OperationsDesk` | Function binding | [apps/web/src/pages/OperationsDesk.tsx:60](../../apps/web/src/pages/OperationsDesk.tsx) |
 | `refresh` | Function binding | [apps/web/src/pages/OperationsDesk.tsx:116](../../apps/web/src/pages/OperationsDesk.tsx) |
@@ -1020,13 +820,6 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `handleSave` | Function binding | [apps/web/src/pages/OutwardEntry.tsx:163](../../apps/web/src/pages/OutwardEntry.tsx) |
 | `handleDeleteOutward` | Function binding | [apps/web/src/pages/OutwardEntry.tsx:254](../../apps/web/src/pages/OutwardEntry.tsx) |
 | `handleExport` | Function binding | [apps/web/src/pages/OutwardEntry.tsx:267](../../apps/web/src/pages/OutwardEntry.tsx) |
-| `TabPanelProps` | InterfaceDeclaration | [apps/web/src/pages/Payments.tsx:43](../../apps/web/src/pages/Payments.tsx) |
-| `TabPanel` | Function binding | [apps/web/src/pages/Payments.tsx:49](../../apps/web/src/pages/Payments.tsx) |
-| `statusColor` | Function binding | [apps/web/src/pages/Payments.tsx:55](../../apps/web/src/pages/Payments.tsx) |
-| `PartyTable` | Function binding | [apps/web/src/pages/Payments.tsx:62](../../apps/web/src/pages/Payments.tsx) |
-| `Payments` | Function binding | [apps/web/src/pages/Payments.tsx:135](../../apps/web/src/pages/Payments.tsx) |
-| `handleAddOpen` | Function binding | [apps/web/src/pages/Payments.tsx:144](../../apps/web/src/pages/Payments.tsx) |
-| `handleSaveParty` | Function binding | [apps/web/src/pages/Payments.tsx:149](../../apps/web/src/pages/Payments.tsx) |
 | `ConsumptionItem` | InterfaceDeclaration | [apps/web/src/pages/ProductionEntry.tsx:67](../../apps/web/src/pages/ProductionEntry.tsx) |
 | `ProductionItem` | InterfaceDeclaration | [apps/web/src/pages/ProductionEntry.tsx:74](../../apps/web/src/pages/ProductionEntry.tsx) |
 | `WasteBreakdown` | InterfaceDeclaration | [apps/web/src/pages/ProductionEntry.tsx:82](../../apps/web/src/pages/ProductionEntry.tsx) |
@@ -1100,7 +893,6 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `handleSubmit` | Function binding | [apps/web/src/pages/UserManagement.tsx:172](../../apps/web/src/pages/UserManagement.tsx) |
 | `handleDelete` | Function binding | [apps/web/src/pages/UserManagement.tsx:201](../../apps/web/src/pages/UserManagement.tsx) |
 | `getRoleColor` | Function binding | [apps/web/src/pages/UserManagement.tsx:207](../../apps/web/src/pages/UserManagement.tsx) |
-| `Vyapari` | Function binding | [apps/web/src/pages/Vyapari.tsx:8](../../apps/web/src/pages/Vyapari.tsx) |
 | `field` | Function binding | [apps/web/src/pages/WorkflowDesk.tsx:12](../../apps/web/src/pages/WorkflowDesk.tsx) |
 | `titleCase` | Function binding | [apps/web/src/pages/WorkflowDesk.tsx:45](../../apps/web/src/pages/WorkflowDesk.tsx) |
 | `fmt` | Function binding | [apps/web/src/pages/WorkflowDesk.tsx:46](../../apps/web/src/pages/WorkflowDesk.tsx) |
@@ -1112,9 +904,6 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `submit` | Function binding | [apps/web/src/pages/WorkflowDesk.tsx:75](../../apps/web/src/pages/WorkflowDesk.tsx) |
 | `changeLine` | Function binding | [apps/web/src/pages/WorkflowDesk.tsx:90](../../apps/web/src/pages/WorkflowDesk.tsx) |
 | `handleRelease` | Function binding | [apps/web/src/pages/WorkflowDesk.tsx:91](../../apps/web/src/pages/WorkflowDesk.tsx) |
-| `YarnModule` | InterfaceDeclaration | [apps/web/src/pages/YarnERP.tsx:26](../../apps/web/src/pages/YarnERP.tsx) |
-| `YarnERPProps` | InterfaceDeclaration | [apps/web/src/pages/YarnERP.tsx:110](../../apps/web/src/pages/YarnERP.tsx) |
-| `YarnERP` | Function binding | [apps/web/src/pages/YarnERP.tsx:114](../../apps/web/src/pages/YarnERP.tsx) |
 | `CommerceReport` | InterfaceDeclaration | [apps/web/src/pages/yarn/ComplianceReports.tsx:15](../../apps/web/src/pages/yarn/ComplianceReports.tsx) |
 | `PayrollEntry` | InterfaceDeclaration | [apps/web/src/pages/yarn/ComplianceReports.tsx:20](../../apps/web/src/pages/yarn/ComplianceReports.tsx) |
 | `ComplianceReports` | Function binding | [apps/web/src/pages/yarn/ComplianceReports.tsx:24](../../apps/web/src/pages/yarn/ComplianceReports.tsx) |
@@ -1161,8 +950,10 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `packagingCostPayload` | Function binding | [apps/web/src/utils/costingPayloads.ts:26](../../apps/web/src/utils/costingPayloads.ts) |
 | `maintenanceCostPayload` | Function binding | [apps/web/src/utils/costingPayloads.ts:32](../../apps/web/src/utils/costingPayloads.ts) |
 | `expensePayload` | Function binding | [apps/web/src/utils/costingPayloads.ts:42](../../apps/web/src/utils/costingPayloads.ts) |
-| `generateCSV` | Function binding | [apps/web/src/utils/csvGenerator.ts:6](../../apps/web/src/utils/csvGenerator.ts) |
-| `tableToCSV` | Function binding | [apps/web/src/utils/csvGenerator.ts:62](../../apps/web/src/utils/csvGenerator.ts) |
+| `csvCell` | Function binding | [apps/web/src/utils/csvGenerator.ts:2](../../apps/web/src/utils/csvGenerator.ts) |
+| `buildCSV` | Function binding | [apps/web/src/utils/csvGenerator.ts:10](../../apps/web/src/utils/csvGenerator.ts) |
+| `generateCSV` | Function binding | [apps/web/src/utils/csvGenerator.ts:16](../../apps/web/src/utils/csvGenerator.ts) |
+| `tableToCSV` | Function binding | [apps/web/src/utils/csvGenerator.ts:28](../../apps/web/src/utils/csvGenerator.ts) |
 | `DateRange` | InterfaceDeclaration | [apps/web/src/utils/dateFilters.ts:14](../../apps/web/src/utils/dateFilters.ts) |
 | `getDateRange` | FunctionDeclaration | [apps/web/src/utils/dateFilters.ts:28](../../apps/web/src/utils/dateFilters.ts) |
 | `DeleteGuardTrace` | InterfaceDeclaration | [apps/web/src/utils/deleteGuardHandler.ts:5](../../apps/web/src/utils/deleteGuardHandler.ts) |

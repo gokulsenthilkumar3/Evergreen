@@ -1,0 +1,67 @@
+# Use scripts/release/deploy.mjs to create persistent secrets and select a database generation.
+services:
+  tenant-api:
+    image: ${EVERGREEN_IMAGE_PREFIX:-evergreen}/tenant-api:${EVERGREEN_RELEASE:?Set a release tag}
+    build: { context: ../.., dockerfile: deploy/docker/Dockerfile, target: tenant-api }
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      EVERGREEN_API_HOST: 0.0.0.0
+      DATABASE_URL: file:/data/${TENANT_DATABASE:-tenant.db}
+      JWT_SECRET: ${TENANT_JWT_SECRET:?Set a unique tenant JWT secret}
+      ENCRYPTION_SECRET: ${TENANT_ENCRYPTION_SECRET:?Set a unique encryption secret}
+      BOOTSTRAP_ADMIN_USERNAME: ${BOOTSTRAP_ADMIN_USERNAME:-}
+      BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:-}
+      BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:-}
+      ADMIN_API_URL: ''
+      COMPANY_ID: ''
+      AUTO_MIGRATE: 'false'
+    volumes: [tenant_data:/data]
+    networks: [tenant]
+  tenant-web:
+    image: ${EVERGREEN_IMAGE_PREFIX:-evergreen}/tenant-web:${EVERGREEN_RELEASE:?Set a release tag}
+    build: { context: ../.., dockerfile: deploy/docker/Dockerfile, target: tenant-web }
+    restart: unless-stopped
+    ports: ['${EVERGREEN_BIND:-127.0.0.1}:${EVERGREEN_PUBLIC_PORT:-4000}:4000']
+    depends_on:
+      tenant-api: { condition: service_healthy }
+    networks: [tenant]
+  admin-api:
+    profiles: [provider]
+    image: ${EVERGREEN_IMAGE_PREFIX:-evergreen}/admin-api:${EVERGREEN_RELEASE:?Set a release tag}
+    build: { context: ../.., dockerfile: deploy/docker/Dockerfile, target: admin-api }
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      EVERGREEN_API_HOST: 0.0.0.0
+      ADMIN_DATABASE_URL: file:/data/${PROVIDER_DATABASE:-provider.db}
+      ADMIN_API_KEY: ${PROVIDER_ADMIN_API_KEY:-}
+      JWT_SECRET: ${ADMIN_JWT_SECRET:-}
+      EVERGREEN_GITHUB_REPOSITORY: ${EVERGREEN_GITHUB_REPOSITORY:-}
+      EVERGREEN_GITHUB_TOKEN: ${EVERGREEN_GITHUB_TOKEN:-}
+      EVERGREEN_DEPLOY_TARGETS: ${EVERGREEN_DEPLOY_TARGETS:-}
+    volumes: [provider_data:/data]
+    networks: [provider]
+  admin-web:
+    profiles: [provider]
+    image: ${EVERGREEN_IMAGE_PREFIX:-evergreen}/admin-web:${EVERGREEN_RELEASE:?Set a release tag}
+    build: { context: ../.., dockerfile: deploy/docker/Dockerfile, target: admin-web }
+    restart: unless-stopped
+    ports: ['${EVERGREEN_BIND:-127.0.0.1}:${EVERGREEN_PROVIDER_PORT:-5174}:5174']
+    depends_on:
+      admin-api: { condition: service_healthy }
+    networks: [provider]
+  marketing-web:
+    profiles: [marketing]
+    image: ${EVERGREEN_IMAGE_PREFIX:-evergreen}/marketing-web:${EVERGREEN_RELEASE:?Set a release tag}
+    build: { context: ../.., dockerfile: deploy/docker/Dockerfile, target: marketing-web }
+    restart: unless-stopped
+    ports: ['${EVERGREEN_BIND:-127.0.0.1}:${EVERGREEN_MARKETING_PORT:-3300}:3300']
+    networks: [marketing]
+networks:
+  tenant: {}
+  provider: {}
+  marketing: {}
+volumes:
+  tenant_data: {}
+  provider_data: {}
