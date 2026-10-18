@@ -116,40 +116,85 @@ export class CostingController {
   }
 
   @Post('eb')
-  createEBCost(@Body() entry: CreateEbCostDto, @Req() req: AuthenticatedRequest) {
-    return this.costingService.addEntry({ ...entry, category: 'EB (Electricity)', createdBy: req.user.username });
+  createEBCost(
+    @Body() entry: CreateEbCostDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.costingService.addEntry({
+      ...entry,
+      category: 'EB (Electricity)',
+      createdBy: req.user.username,
+    });
   }
 
   @Post('employee')
-  createEmployeeCost(@Body() entry: CreateEmployeeCostDto, @Req() req: AuthenticatedRequest) {
-    return this.costingService.addEntry({ ...entry, category: 'Employee', createdBy: req.user.username });
+  createEmployeeCost(
+    @Body() entry: CreateEmployeeCostDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.costingService.addEntry({
+      ...entry,
+      category: 'Employee',
+      createdBy: req.user.username,
+    });
   }
 
   @Post('packaging')
-  createPackagingCost(@Body() entry: CreatePackagingCostDto, @Req() req: AuthenticatedRequest) {
-    return this.costingService.addEntry({ ...entry, category: 'Packaging', createdBy: req.user.username });
+  createPackagingCost(
+    @Body() entry: CreatePackagingCostDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.costingService.addEntry({
+      ...entry,
+      category: 'Packaging',
+      createdBy: req.user.username,
+    });
   }
 
   @Post('maintenance')
-  createMaintenanceCost(@Body() entry: CreateMaintenanceCostDto, @Req() req: AuthenticatedRequest) {
-    return this.costingService.addEntry({ ...entry, category: 'Maintenance', createdBy: req.user.username });
+  createMaintenanceCost(
+    @Body() entry: CreateMaintenanceCostDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.costingService.addEntry({
+      ...entry,
+      category: 'Maintenance',
+      createdBy: req.user.username,
+    });
   }
 
   @Post('expense')
-  createExpense(@Body() entry: CreateExpenseDto, @Req() req: AuthenticatedRequest) {
+  createExpense(
+    @Body() entry: CreateExpenseDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
     const type = entry.type || 'General';
-    return this.costingService.addEntry({ ...entry, type, details: `${entry.title} (${type})`, category: 'Expense', createdBy: req.user.username });
+    return this.costingService.addEntry({
+      ...entry,
+      type,
+      details: `${entry.title} (${type})`,
+      category: 'Expense',
+      createdBy: req.user.username,
+    });
   }
 
   @Delete(':id')
   async deleteEntry(@Param('id') id: string) {
-    if (!(await this.costingService.deleteEntry(id))) throw new NotFoundException('Cost entry not found');
+    if (!(await this.costingService.deleteEntry(id)))
+      throw new NotFoundException('Cost entry not found');
     return { success: true };
   }
 
   @Put(':id')
-  async updateEntry(@Param('id') id: string, @Body() entry: UpdateCostingEntryDto, @Req() req: AuthenticatedRequest) {
-    const updated = await this.costingService.updateEntry(id, { ...entry, updatedBy: req.user.username });
+  async updateEntry(
+    @Param('id') id: string,
+    @Body() entry: UpdateCostingEntryDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    const updated = await this.costingService.updateEntry(id, {
+      ...entry,
+      updatedBy: req.user.username,
+    });
     if (!updated) throw new NotFoundException('Cost entry not found');
     return updated;
   }

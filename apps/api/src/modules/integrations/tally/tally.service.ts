@@ -50,21 +50,26 @@ export class TallyExportService {
   /**
    * Generate canonical Tally Prime XML Import document
    */
-  async generateTallyXml(filter: TallyExportFilter = {}): Promise<TallyExportResult> {
+  async generateTallyXml(
+    filter: TallyExportFilter = {},
+  ): Promise<TallyExportResult> {
     const settings = await this.prisma.systemSettings.findFirst();
-    const millCompanyName = filter.companyName || settings?.companyName || 'Evergreen Spinning Mills';
+    const millCompanyName =
+      filter.companyName || settings?.companyName || 'Evergreen Spinning Mills';
 
     const voucherTypes = filter.voucherTypes || ['Sales', 'Receipt'];
     if (voucherTypes.includes('Purchase')) {
-      throw new BadRequestException('Purchase export requires an approved supplier bill with agreed rate, tax treatment and ledger mapping. Inward weight alone cannot create a purchase voucher. Export Sales or Receipt vouchers separately.');
+      throw new BadRequestException(
+        'Purchase export requires an approved supplier bill with agreed rate, tax treatment and ledger mapping. Inward weight alone cannot create a purchase voucher. Export Sales or Receipt vouchers separately.',
+      );
     }
     const fromDate = filter.from ? new Date(filter.from) : undefined;
     const toDate = filter.to ? new Date(filter.to) : undefined;
 
-    let purchaseXml = '';
+    const purchaseXml = '';
     let salesXml = '';
     let receiptXml = '';
-    let purchaseCount = 0;
+    const purchaseCount = 0;
     let salesCount = 0;
     let receiptCount = 0;
 
@@ -93,7 +98,7 @@ export class TallyExportService {
         const isInterstate = (inv.igst || 0) > 0;
         const totalAmount = inv.total;
         const taxableAmount = inv.subtotal - (inv.discount || 0);
-        const narration = `Yarn Tax Invoice - No: ${inv.invoiceNo}, Buyer: ${inv.customerName}, Vehicle: ${inv.vehicleNo || inv.outward?.vehicleNo || 'Self Gate Pass'}. Items: ${inv.items.map(i => `${i.yarnCount || 'Yarn'} (${i.bags} bags, ${i.weight} kg)`).join('; ')}`;
+        const narration = `Yarn Tax Invoice - No: ${inv.invoiceNo}, Buyer: ${inv.customerName}, Vehicle: ${inv.vehicleNo || inv.outward?.vehicleNo || 'Self Gate Pass'}. Items: ${inv.items.map((i) => `${i.yarnCount || 'Yarn'} (${i.bags} bags, ${i.weight} kg)`).join('; ')}`;
 
         salesXml += `
         <TALLYMESSAGE xmlns:UDF="TallyUDF">
@@ -168,7 +173,8 @@ export class TallyExportService {
         receiptCount++;
         const tallyDate = this.formatTallyDate(pay.date);
         const customerName = pay.invoice?.customerName || 'Sundry Debtor';
-        const bankLedger = pay.method === 'CASH' ? 'Cash' : 'Bank Account (Current)';
+        const bankLedger =
+          pay.method === 'CASH' ? 'Cash' : 'Bank Account (Current)';
         const narration = `Payment received against Inv #${pay.invoice?.invoiceNo || pay.invoiceId} via ${pay.method}. Ref: ${pay.reference || 'Direct Deposit'}.`;
 
         receiptXml += `

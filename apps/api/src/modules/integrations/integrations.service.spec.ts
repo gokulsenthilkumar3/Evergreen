@@ -19,7 +19,7 @@ import { PrismaService } from '../../services/prisma.service';
 function computeFingerprint(
   source: string,
   entity: string,
-  input: ImportInput,
+  input: any,
 ): string {
   const preview = previewImport(input);
   return createHash('sha256')
@@ -158,8 +158,8 @@ describe('IntegrationsService', () => {
 
       prismaStub.$transaction = jest
         .fn()
-        .mockImplementation((fn: TransactionCallback) => {
-          return fn({
+        .mockImplementation(async (fn: any) => {
+          return await fn({
             customer: prismaStub.customer,
             catalogueItem: prismaStub.catalogueItem,
             importBatch: prismaStub.importBatch,
@@ -284,8 +284,8 @@ describe('IntegrationsService', () => {
     it('throws ConflictException when SKU already exists', async () => {
       prismaStub.$transaction = jest
         .fn()
-        .mockImplementation((fn: TransactionCallback) => {
-          return fn({
+        .mockImplementation(async (fn: any) => {
+          return await fn({
             customer: prismaStub.customer,
             catalogueItem: {
               findUnique: jest
@@ -306,8 +306,8 @@ describe('IntegrationsService', () => {
     it('throws ConflictException when customer name already exists (case-insensitive)', async () => {
       prismaStub.$transaction = jest
         .fn()
-        .mockImplementation((fn: TransactionCallback) => {
-          return fn({
+        .mockImplementation(async (fn: any) => {
+          return await fn({
             customer: {
               findMany: jest
                 .fn()

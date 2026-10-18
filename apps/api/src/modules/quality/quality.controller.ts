@@ -19,6 +19,9 @@ export class QualityController {
   @Post('inspections')
   @Roles('MODIFIER')
   createInspection(@Body() body: CreateQualityInspectionDto, @Req() req: any) {
-    return this.qualityService.createInspection({ ...body, inspectedBy: req.user.username });
+    return this.qualityService.createInspection({
+      ...body,
+      inspectedBy: req.user.username,
+    });
   }
 }

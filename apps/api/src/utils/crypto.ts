@@ -1,4 +1,9 @@
-import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from 'crypto';
+import {
+  createCipheriv,
+  createDecipheriv,
+  randomBytes,
+  scryptSync,
+} from 'crypto';
 
 const ALGORITHM = 'aes-256-gcm';
 const IV_LENGTH = 12; // 96 bits for GCM
@@ -6,7 +11,10 @@ const TAG_LENGTH = 16; // 128 bits
 const SALT = 'evergreen_spinning_field_encryption_salt_2026';
 
 function getKey(masterSecret?: string): Buffer {
-  const secret = masterSecret || process.env.ENCRYPTION_SECRET || 'evergreen_default_production_encryption_key_9921';
+  const secret =
+    masterSecret ||
+    process.env.ENCRYPTION_SECRET ||
+    'evergreen_default_production_encryption_key_9921';
   return scryptSync(secret, SALT, 32);
 }
 
@@ -32,7 +40,10 @@ export function encryptField(plaintext: string, masterSecret?: string): string {
 /**
  * Decrypt an AES-256-GCM ciphertext string.
  */
-export function decryptField(encryptedPayload: string, masterSecret?: string): string {
+export function decryptField(
+  encryptedPayload: string,
+  masterSecret?: string,
+): string {
   if (!encryptedPayload) return '';
   const key = getKey(masterSecret);
   const buffer = Buffer.from(encryptedPayload, 'base64');

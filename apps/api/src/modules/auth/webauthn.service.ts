@@ -63,7 +63,11 @@ export class WebAuthnService {
       });
     } catch (error) {
       console.error(error);
-      throw new BadRequestException(error instanceof Error ? error.message : 'WebAuthn registration verification failed');
+      throw new BadRequestException(
+        error instanceof Error
+          ? error.message
+          : 'WebAuthn registration verification failed',
+      );
     }
 
     const { verified, registrationInfo } = verification;
@@ -157,7 +161,11 @@ export class WebAuthnService {
       });
     } catch (error) {
       console.error(error);
-      throw new BadRequestException(error instanceof Error ? error.message : 'WebAuthn authentication verification failed');
+      throw new BadRequestException(
+        error instanceof Error
+          ? error.message
+          : 'WebAuthn authentication verification failed',
+      );
     }
 
     if (verification.verified) {

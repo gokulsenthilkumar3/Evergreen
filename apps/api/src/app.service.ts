@@ -96,7 +96,12 @@ export class AppService {
     }
     return {
       service: 'evergreen-api',
-      status: database && !this.prisma.getStartupIssue() && !this.prisma.getDataIssues().length ? 'ok' : 'degraded',
+      status:
+        database &&
+        !this.prisma.getStartupIssue() &&
+        !this.prisma.getDataIssues().length
+          ? 'ok'
+          : 'degraded',
       database,
       timestamp: new Date().toISOString(),
     };
@@ -111,7 +116,9 @@ export class AppService {
     const rssMB = Math.round((mem.rss / 1024 / 1024) * 10) / 10;
     const percentage = Math.round((mem.heapUsed / mem.heapTotal) * 100);
 
-    const apiPort = Number(process.env.EVERGREEN_API_PORT || process.env.PORT || 4301);
+    const apiPort = Number(
+      process.env.EVERGREEN_API_PORT || process.env.PORT || 4301,
+    );
     const webPort = Number(process.env.EVERGREEN_PUBLIC_PORT || 4000);
 
     // Ping Database
@@ -154,38 +161,124 @@ export class AppService {
       userCount,
       validSessionsCount,
     ] = await Promise.all([
-      this.prisma.inwardBatch.count().catch(() => { countReadFailed = true; return 0; }),
-      this.prisma.cottonInventory.count().catch(() => { countReadFailed = true; return 0; }),
-      this.prisma.production.count().catch(() => { countReadFailed = true; return 0; }),
-      this.prisma.wasteInventory.count().catch(() => { countReadFailed = true; return 0; }),
-      this.prisma.yarnInventory.count().catch(() => { countReadFailed = true; return 0; }),
-      this.prisma.outward.count().catch(() => { countReadFailed = true; return 0; }),
-      this.prisma.costingEntry.count().catch(() => { countReadFailed = true; return 0; }),
-      this.prisma.invoice.count().catch(() => { countReadFailed = true; return 0; }),
-      this.prisma.payment.count().catch(() => { countReadFailed = true; return 0; }),
-      this.prisma.catalogueItem.count().catch(() => { countReadFailed = true; return 0; }),
-      this.prisma.salesOrder.count().catch(() => { countReadFailed = true; return 0; }),
-      this.prisma.jobWorker.count().catch(() => { countReadFailed = true; return 0; }),
-      this.prisma.jobWorkChallan.count().catch(() => { countReadFailed = true; return 0; }),
-      this.prisma.qualityInspection.count().catch(() => { countReadFailed = true; return 0; }),
-      this.prisma.machine.count().catch(() => { countReadFailed = true; return 0; }),
-      this.prisma.machineInspection.count().catch(() => { countReadFailed = true; return 0; }),
-      this.prisma.warehouseLocation.count().catch(() => { countReadFailed = true; return 0; }),
-      this.prisma.warehouseMovement.count().catch(() => { countReadFailed = true; return 0; }),
-      this.prisma.staff.count().catch(() => { countReadFailed = true; return 0; }),
-      this.prisma.shift.count().catch(() => { countReadFailed = true; return 0; }),
-      this.prisma.user.count().catch(() => { countReadFailed = true; return 0; }),
-      this.prisma.session.count({ where: { isValid: true } }).catch(() => { countReadFailed = true; return 0; }),
+      this.prisma.inwardBatch.count().catch(() => {
+        countReadFailed = true;
+        return 0;
+      }),
+      this.prisma.cottonInventory.count().catch(() => {
+        countReadFailed = true;
+        return 0;
+      }),
+      this.prisma.production.count().catch(() => {
+        countReadFailed = true;
+        return 0;
+      }),
+      this.prisma.wasteInventory.count().catch(() => {
+        countReadFailed = true;
+        return 0;
+      }),
+      this.prisma.yarnInventory.count().catch(() => {
+        countReadFailed = true;
+        return 0;
+      }),
+      this.prisma.outward.count().catch(() => {
+        countReadFailed = true;
+        return 0;
+      }),
+      this.prisma.costingEntry.count().catch(() => {
+        countReadFailed = true;
+        return 0;
+      }),
+      this.prisma.invoice.count().catch(() => {
+        countReadFailed = true;
+        return 0;
+      }),
+      this.prisma.payment.count().catch(() => {
+        countReadFailed = true;
+        return 0;
+      }),
+      this.prisma.catalogueItem.count().catch(() => {
+        countReadFailed = true;
+        return 0;
+      }),
+      this.prisma.salesOrder.count().catch(() => {
+        countReadFailed = true;
+        return 0;
+      }),
+      this.prisma.jobWorker.count().catch(() => {
+        countReadFailed = true;
+        return 0;
+      }),
+      this.prisma.jobWorkChallan.count().catch(() => {
+        countReadFailed = true;
+        return 0;
+      }),
+      this.prisma.qualityInspection.count().catch(() => {
+        countReadFailed = true;
+        return 0;
+      }),
+      this.prisma.machine.count().catch(() => {
+        countReadFailed = true;
+        return 0;
+      }),
+      this.prisma.machineInspection.count().catch(() => {
+        countReadFailed = true;
+        return 0;
+      }),
+      this.prisma.warehouseLocation.count().catch(() => {
+        countReadFailed = true;
+        return 0;
+      }),
+      this.prisma.warehouseMovement.count().catch(() => {
+        countReadFailed = true;
+        return 0;
+      }),
+      this.prisma.staff.count().catch(() => {
+        countReadFailed = true;
+        return 0;
+      }),
+      this.prisma.shift.count().catch(() => {
+        countReadFailed = true;
+        return 0;
+      }),
+      this.prisma.user.count().catch(() => {
+        countReadFailed = true;
+        return 0;
+      }),
+      this.prisma.session.count({ where: { isValid: true } }).catch(() => {
+        countReadFailed = true;
+        return 0;
+      }),
     ]);
 
-    const balances = await this.prisma.$transaction([
-      this.prisma.cottonInventory.aggregate({ _sum: { quantity: true } }),
-      this.prisma.yarnInventory.aggregate({ _sum: { quantity: true } }),
-      this.prisma.stockMovement.aggregate({ where: { item: { legacySource: 'EVERGREEN_LEGACY', type: 'RAW_MATERIAL' } }, _sum: { quantity: true } }),
-      this.prisma.stockMovement.aggregate({ where: { item: { legacySource: 'EVERGREEN_LEGACY', type: 'YARN' } }, _sum: { quantity: true } }),
-    ]).catch(() => null);
-    const cottonMatches = !!balances && Math.abs(Number(balances[0]._sum.quantity || 0) - Number(balances[2]._sum.quantity || 0)) <= 0.01;
-    const yarnMatches = !!balances && Math.abs(Number(balances[1]._sum.quantity || 0) - Number(balances[3]._sum.quantity || 0)) <= 0.01;
+    const balances = await this.prisma
+      .$transaction([
+        this.prisma.cottonInventory.aggregate({ _sum: { quantity: true } }),
+        this.prisma.yarnInventory.aggregate({ _sum: { quantity: true } }),
+        this.prisma.stockMovement.aggregate({
+          where: {
+            item: { legacySource: 'EVERGREEN_LEGACY', type: 'RAW_MATERIAL' },
+          },
+          _sum: { quantity: true },
+        }),
+        this.prisma.stockMovement.aggregate({
+          where: { item: { legacySource: 'EVERGREEN_LEGACY', type: 'YARN' } },
+          _sum: { quantity: true },
+        }),
+      ])
+      .catch(() => null);
+    const cottonMatches =
+      !!balances &&
+      Math.abs(
+        Number(balances[0]._sum.quantity || 0) -
+          Number(balances[2]._sum.quantity || 0),
+      ) <= 0.01;
+    const yarnMatches =
+      !!balances &&
+      Math.abs(
+        Number(balances[1]._sum.quantity || 0) -
+          Number(balances[3]._sum.quantity || 0),
+      ) <= 0.01;
     const syncTime = new Date().toLocaleTimeString();
 
     const processors: ProcessorInfo[] = [
@@ -196,12 +289,13 @@ export class AppService {
         status: dbStatus === 'CONNECTED' ? 'ONLINE' : 'DEGRADED',
         latencyMs: dbLatencyMs,
         lastSync: syncTime,
-        summary: 'Embedded relational datastore handling transactions, schema constraints & relational integrity.',
+        summary:
+          'Embedded relational datastore handling transactions, schema constraints & relational integrity.',
         metrics: {
-          'Connection': 'Active & Healthy',
-          'Latency': `${dbLatencyMs} ms`,
+          Connection: 'Active & Healthy',
+          Latency: `${dbLatencyMs} ms`,
           'Storage File': 'dev.db',
-          'Provider': 'SQLite 3'
+          Provider: 'SQLite 3',
         },
         icon: '🗄️',
       },
@@ -212,13 +306,22 @@ export class AppService {
         status: 'ONLINE',
         latencyMs: dbLatencyMs,
         lastSync: syncTime,
-        summary: 'Records cotton batch identifiers, receipt timestamps, bales and weights.',
+        summary:
+          'Records cotton batch identifiers, receipt timestamps, bales and weights.',
         metrics: {
           'Inward Batches': inwardBatchCount,
           'Cotton Ledger Records': cottonInventoryCount,
-          'Physical cotton kg': balances ? Number(balances[0]._sum.quantity || 0) : 'Unavailable',
-          'Catalogue cotton kg': balances ? Number(balances[2]._sum.quantity || 0) : 'Unavailable',
-          'Stock agreement': !balances ? 'Unavailable' : cottonMatches ? 'Matches' : 'Mismatch'
+          'Physical cotton kg': balances
+            ? Number(balances[0]._sum.quantity || 0)
+            : 'Unavailable',
+          'Catalogue cotton kg': balances
+            ? Number(balances[2]._sum.quantity || 0)
+            : 'Unavailable',
+          'Stock agreement': !balances
+            ? 'Unavailable'
+            : cottonMatches
+              ? 'Matches'
+              : 'Mismatch',
         },
         icon: '📦',
       },
@@ -229,12 +332,13 @@ export class AppService {
         status: 'ONLINE',
         latencyMs: dbLatencyMs,
         lastSync: syncTime,
-        summary: 'Calculates Blow Room loss, Carding loss, OE yarn output, and invisible loss efficiency.',
+        summary:
+          'Calculates Blow Room loss, Carding loss, OE yarn output, and invisible loss efficiency.',
         metrics: {
           'Production Runs': productionCount,
           'Waste Records': wasteInventoryCount,
           'Material balance': 'Checked on write',
-          'Scenario verification': 'See business flow review'
+          'Scenario verification': 'See business flow review',
         },
         icon: '🧵',
       },
@@ -245,14 +349,23 @@ export class AppService {
         status: 'ONLINE',
         latencyMs: dbLatencyMs,
         lastSync: syncTime,
-        summary: 'Yarn inventory by configured count with vehicle dispatch gate pass generation.',
+        summary:
+          'Yarn inventory by configured count with vehicle dispatch gate pass generation.',
         metrics: {
           'Yarn Stock Ledger': yarnInventoryCount,
           'Outward Passes': outwardCount,
           'Stock Categorization': 'Count-wise (Bags/Kgs)',
-          'Physical yarn kg': balances ? Number(balances[1]._sum.quantity || 0) : 'Unavailable',
-          'Catalogue yarn kg': balances ? Number(balances[3]._sum.quantity || 0) : 'Unavailable',
-          'Stock agreement': !balances ? 'Unavailable' : yarnMatches ? 'Matches' : 'Mismatch'
+          'Physical yarn kg': balances
+            ? Number(balances[1]._sum.quantity || 0)
+            : 'Unavailable',
+          'Catalogue yarn kg': balances
+            ? Number(balances[3]._sum.quantity || 0)
+            : 'Unavailable',
+          'Stock agreement': !balances
+            ? 'Unavailable'
+            : yarnMatches
+              ? 'Matches'
+              : 'Mismatch',
         },
         icon: '🧶',
       },
@@ -263,12 +376,13 @@ export class AppService {
         status: 'ONLINE',
         latencyMs: dbLatencyMs,
         lastSync: syncTime,
-        summary: 'Computes per-kg yarn manufacturing cost: Electricity (EB unit rate), Labor, Packaging & Spares.',
+        summary:
+          'Computes per-kg yarn manufacturing cost: Electricity (EB unit rate), Labor, Packaging & Spares.',
         metrics: {
           'Cost Entries': costingCount,
           'EB Rate Sync': 'Configured (₹10/unit)',
           'Labor Shifts': 'Shift-linked',
-          'Cost/Kg Algorithm': 'Online'
+          'Cost/Kg Algorithm': 'Online',
         },
         icon: '⚡',
       },
@@ -279,12 +393,13 @@ export class AppService {
         status: 'ONLINE',
         latencyMs: dbLatencyMs,
         lastSync: syncTime,
-        summary: 'Uses configured item tax rates, state-based tax splitting, document verification and payment records.',
+        summary:
+          'Uses configured item tax rates, state-based tax splitting, document verification and payment records.',
         metrics: {
           'Tax Invoices': invoiceCount,
           'Payment Entries': paymentCount,
           'HSN/SAC': 'Catalogue and invoice fields',
-          'Verification Hashes': 'SHA-256'
+          'Verification Hashes': 'SHA-256',
         },
         icon: '🧾',
       },
@@ -295,12 +410,13 @@ export class AppService {
         status: 'ONLINE',
         latencyMs: dbLatencyMs,
         lastSync: syncTime,
-        summary: 'Unified commercial SKU catalog, customer sales orders, inventory reservations & proformas.',
+        summary:
+          'Unified commercial SKU catalog, customer sales orders, inventory reservations & proformas.',
         metrics: {
           'Catalogue Items': catalogueCount,
           'Sales Orders': salesOrderCount,
           'Stock Reservation': 'Synchronized',
-          'B2B Desk': 'Active'
+          'B2B Desk': 'Active',
         },
         icon: '🛒',
       },
@@ -311,12 +427,13 @@ export class AppService {
         status: 'ONLINE',
         latencyMs: dbLatencyMs,
         lastSync: syncTime,
-        summary: 'Dispatches yarn/cotton to outside winders/knitters via delivery challans with scrap recovery tracking.',
+        summary:
+          'Dispatches yarn/cotton to outside winders/knitters via delivery challans with scrap recovery tracking.',
         metrics: {
           'Registered Workers': jobWorkerCount,
           'Active Challans': jobWorkChallanCount,
           'Scrap Reconciliation': 'Active',
-          'Gate Inward Link': 'Synced'
+          'Gate Inward Link': 'Synced',
         },
         icon: '🤝',
       },
@@ -327,12 +444,13 @@ export class AppService {
         status: 'ONLINE',
         latencyMs: dbLatencyMs,
         lastSync: syncTime,
-        summary: 'Lab testing suite: CSP (Lea strength), Tenacity, Elongation, U% evenness and Classimate fault classification.',
+        summary:
+          'Lab testing suite: CSP (Lea strength), Tenacity, Elongation, U% evenness and Classimate fault classification.',
         metrics: {
           'QC Inspections': qcCount,
           'Disposition Rules': 'PASS/FAIL/HOLD',
           'Lab Verification': 'Active',
-          'Testing Standards': 'ASTM / ISO'
+          'Testing Standards': 'ASTM / ISO',
         },
         icon: '🔬',
       },
@@ -343,12 +461,13 @@ export class AppService {
         status: 'ONLINE',
         latencyMs: dbLatencyMs,
         lastSync: syncTime,
-        summary: 'Tracks machinery registry (Ring Frames, Open End, Blow Room, Carding), inspections & downtime logs.',
+        summary:
+          'Tracks machinery registry (Ring Frames, Open End, Blow Room, Carding), inspections & downtime logs.',
         metrics: {
           'Machines Tracked': machineCount,
-          'Inspections': machineInspectionCount,
+          Inspections: machineInspectionCount,
           'Preventive Schedule': 'Active',
-          'Downtime Watchdog': 'Listening'
+          'Downtime Watchdog': 'Listening',
         },
         icon: '⚙️',
       },
@@ -359,12 +478,13 @@ export class AppService {
         status: 'ONLINE',
         latencyMs: dbLatencyMs,
         lastSync: syncTime,
-        summary: 'Manages godown locations, raw cotton storage bays, yarn bag bins, and inter-location transfers.',
+        summary:
+          'Manages godown locations, raw cotton storage bays, yarn bag bins, and inter-location transfers.',
         metrics: {
           'Locations/Bays': warehouseLocCount,
           'Stock Movements': warehouseMovCount,
           'Bin Tracking': 'Active',
-          'Capacity Guard': 'Online'
+          'Capacity Guard': 'Online',
         },
         icon: '🏢',
       },
@@ -375,12 +495,13 @@ export class AppService {
         status: 'ONLINE',
         latencyMs: dbLatencyMs,
         lastSync: syncTime,
-        summary: 'Operator shift rostering (Morning, Afternoon, Night), attendance tracking, overtime, and wage processing.',
+        summary:
+          'Operator shift rostering (Morning, Afternoon, Night), attendance tracking, overtime, and wage processing.',
         metrics: {
           'Staff Directory': staffCount,
           'Configured Shifts': shiftCount,
           'Roster Sync': 'Active',
-          'Overtime Engine': 'Online'
+          'Overtime Engine': 'Online',
         },
         icon: '👥',
       },
@@ -391,12 +512,13 @@ export class AppService {
         status: 'ONLINE',
         latencyMs: dbLatencyMs,
         lastSync: syncTime,
-        summary: 'JWT authentication, WebAuthn passkey biometric challenges, session timeouts, and role-based access control.',
+        summary:
+          'JWT authentication, WebAuthn passkey biometric challenges, session timeouts, and role-based access control.',
         metrics: {
           'Registered Users': userCount,
           'Active Sessions': validSessionsCount,
           'JWT Secret': 'Validated by authentication configuration',
-          'RBAC Guard': 'Enforcing'
+          'RBAC Guard': 'Enforcing',
         },
         icon: '🛡️',
       },
@@ -407,24 +529,41 @@ export class AppService {
         status: 'ONLINE',
         latencyMs: dbLatencyMs,
         lastSync: syncTime,
-        summary: 'Runs registered scheduled tasks; email delivery depends on SMTP configuration.',
+        summary:
+          'Runs registered scheduled tasks; email delivery depends on SMTP configuration.',
         metrics: {
           'Auto Backup': 'Check settings and backup scheduler',
-          'Daily Summary': process.env.SMTP_HOST ? 'SMTP configured' : 'SMTP not configured',
+          'Daily Summary': process.env.SMTP_HOST
+            ? 'SMTP configured'
+            : 'SMTP not configured',
           'Scheduler Module': 'Active',
-          'Event Loop': 'Healthy'
+          'Event Loop': 'Healthy',
         },
         icon: '⏱️',
-      }
+      },
     ];
 
     for (const processor of processors) {
       processor.metrics['Latency scope'] = 'Measured database ping';
-      if (countReadFailed || dbStatus !== 'CONNECTED' || (processor.id === 'inward-cotton' && !cottonMatches) || (processor.id === 'yarn-inventory' && !yarnMatches)) processor.status = 'DEGRADED';
+      if (
+        countReadFailed ||
+        dbStatus !== 'CONNECTED' ||
+        (processor.id === 'inward-cotton' && !cottonMatches) ||
+        (processor.id === 'yarn-inventory' && !yarnMatches)
+      )
+        processor.status = 'DEGRADED';
     }
     return {
       service: 'evergreen-api',
-      status: dbStatus === 'CONNECTED' && !countReadFailed && cottonMatches && yarnMatches && !startupIssue && !dataIssues.length ? 'ok' : 'degraded',
+      status:
+        dbStatus === 'CONNECTED' &&
+        !countReadFailed &&
+        cottonMatches &&
+        yarnMatches &&
+        !startupIssue &&
+        !dataIssues.length
+          ? 'ok'
+          : 'degraded',
       startupIssue,
       dataIssues,
       timestamp: new Date().toISOString(),
@@ -443,12 +582,24 @@ export class AppService {
       },
       summary: {
         total: processors.length,
-        healthy: processors.filter(p => p.status === 'ONLINE' || p.status === 'SYNCED').length,
-        degraded: processors.filter(p => p.status === 'DEGRADED').length,
+        healthy: processors.filter(
+          (p) => p.status === 'ONLINE' || p.status === 'SYNCED',
+        ).length,
+        degraded: processors.filter((p) => p.status === 'DEGRADED').length,
       },
       services: {
-        api: { name: 'EverGreen One Core API', status: 'ONLINE', port: apiPort, docs: `http://localhost:${webPort}/api/docs` },
-        web: { name: 'EverGreen Yarn Management UI', status: 'ONLINE', port: webPort, url: `http://localhost:${webPort}/` },
+        api: {
+          name: 'EverGreen One Core API',
+          status: 'ONLINE',
+          port: apiPort,
+          docs: `http://localhost:${webPort}/api/docs`,
+        },
+        web: {
+          name: 'EverGreen Yarn Management UI',
+          status: 'ONLINE',
+          port: webPort,
+          url: `http://localhost:${webPort}/`,
+        },
       },
       security: {
         authentication: 'JWT Bearer & SQLite Session Guard',

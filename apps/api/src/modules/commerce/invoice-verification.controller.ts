@@ -6,5 +6,8 @@ import { Public } from '../../decorators/public.decorator';
 export class InvoiceVerificationController {
   constructor(private readonly commerce: CommerceService) {}
   @Public()
-  @Get('verify/:key') verify(@Param('key') key: string) { return this.commerce.verifyInvoice(key); }
+  @Get('verify/:key')
+  verify(@Param('key') key: string) {
+    return this.commerce.verifyInvoice(key);
+  }
 }

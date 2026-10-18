@@ -15,7 +15,10 @@ export class SettingsController {
 
   @Put()
   @Roles('ADMIN')
-  async updateSettings(@Body() data: UpdateSettingsDto, @Req() req: AuthenticatedRequest) {
+  async updateSettings(
+    @Body() data: UpdateSettingsDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
     return this.settingsService.updateSettings(data, req.user.username);
   }
 }

@@ -19,7 +19,9 @@ export class WhatsAppCollectionsService {
   /**
    * Generate an automated Tamil & English collections statement for a weaving / knitting customer
    */
-  async generateStatement(customerId: number): Promise<WhatsAppStatementResult> {
+  async generateStatement(
+    customerId: number,
+  ): Promise<WhatsAppStatementResult> {
     const customer = await this.prisma.customer.findUnique({
       where: { id: customerId },
       include: {
@@ -48,7 +50,9 @@ export class WhatsAppCollectionsService {
     const outstanding = Math.round((debit - credit) * 100) / 100;
 
     const lastInvoice = customer.invoices[0];
-    const invoiceRef = lastInvoice ? `Inv #${lastInvoice.invoiceNo} (${new Date(lastInvoice.date).toLocaleDateString()})` : 'N/A';
+    const invoiceRef = lastInvoice
+      ? `Inv #${lastInvoice.invoiceNo} (${new Date(lastInvoice.date).toLocaleDateString()})`
+      : 'N/A';
     const dateStr = new Date().toLocaleDateString('en-IN');
 
     // Tamil localized message (native for Tirupur/Karur/Coimbatore textile owners)
@@ -59,7 +63,9 @@ export class WhatsAppCollectionsService {
       lastInvoice ? `கடைசி பில்: ${invoiceRef}` : '',
       `தயவுசெய்து வங்கி பரிவர்த்தனை (NEFT/RTGS) மூலம் செலுத்தி விவரங்களை பகிரவும்.`,
       `பேரேடு சரிபார்க்க 'DISPUTE' எனவும், உறுதிசெய்ய 'OK' எனவும் பதிலளிக்கவும்.`,
-    ].filter(Boolean).join('\n');
+    ]
+      .filter(Boolean)
+      .join('\n');
 
     // Professional English message
     const englishMessage = [
@@ -69,12 +75,15 @@ export class WhatsAppCollectionsService {
       lastInvoice ? `Recent Invoice: ${invoiceRef}` : '',
       `Kindly arrange payment via RTGS/NEFT and share the UTR reference.`,
       `Reply 'OK' to acknowledge or 'DISPUTE' to review the ledger statement.`,
-    ].filter(Boolean).join('\n');
+    ]
+      .filter(Boolean)
+      .join('\n');
 
     const combinedMessage = `${tamilMessage}\n\n---\n\n${englishMessage}`;
 
     const cleanPhone = (customer.phone || '').replace(/[^0-9]/g, '');
-    const phoneWithCountry = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
+    const phoneWithCountry =
+      cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
     const whatsappDeepLink = `https://wa.me/${phoneWithCountry}?text=${encodeURIComponent(combinedMessage)}`;
 
     // Log the collection reminder dispatch in activity log

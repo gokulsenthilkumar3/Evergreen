@@ -14,10 +14,13 @@ export class RolesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
-    if (this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ])) return true;
+    if (
+      this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+        context.getHandler(),
+        context.getClass(),
+      ])
+    )
+      return true;
     const requiredRoles = this.reflector.getAllAndOverride<string[]>(
       ROLES_KEY,
       [context.getHandler(), context.getClass()],
@@ -28,9 +31,13 @@ export class RolesGuard implements CanActivate {
     // reserved for ADMIN. This is the canonical three-role permission matrix.
     const request = context.switchToHttp().getRequest();
     const method = request.method;
-    const effectiveRoles = requiredRoles ||
-      (method === 'GET' || method === 'HEAD' ? ['VIEWER'] :
-        method === 'DELETE' ? ['ADMIN'] : ['MODIFIER']);
+    const effectiveRoles =
+      requiredRoles ||
+      (method === 'GET' || method === 'HEAD'
+        ? ['VIEWER']
+        : method === 'DELETE'
+          ? ['ADMIN']
+          : ['MODIFIER']);
 
     const { user } = request;
 

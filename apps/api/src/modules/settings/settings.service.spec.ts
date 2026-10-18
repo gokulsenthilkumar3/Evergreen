@@ -50,7 +50,14 @@ describe('SettingsService', () => {
   });
 
   it('saves processing-only guided setup with the authenticated actor', async () => {
-    const result = await service.updateSettings({ businessMode: 'PROCESSING', workspaceMode: 'GUIDED' }, 'owner');
-    expect(result).toMatchObject({ businessMode: 'PROCESSING', workspaceMode: 'GUIDED', updatedBy: 'owner' });
+    const result = await service.updateSettings(
+      { businessMode: 'PROCESSING', workspaceMode: 'GUIDED' },
+      'owner',
+    );
+    expect(result).toMatchObject({
+      businessMode: 'PROCESSING',
+      workspaceMode: 'GUIDED',
+      updatedBy: 'owner',
+    });
   });
 });

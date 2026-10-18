@@ -118,12 +118,18 @@ export class InventoryController {
 
   @Post('inward')
   async createInward(@Body() data: any, @Req() req: any) {
-    return this.inventoryService.createInward({ ...data, createdBy: req.user.username });
+    return this.inventoryService.createInward({
+      ...data,
+      createdBy: req.user.username,
+    });
   }
 
   @Post('inward/weighbridge-sync')
   async syncWeighbridgeReading(@Body() body: any, @Req() req: any) {
-    return this.inventoryService.syncWeighbridgeSlip(body, req?.user?.username || 'WEIGHBRIDGE_AGENT');
+    return this.inventoryService.syncWeighbridgeSlip(
+      body,
+      req?.user?.username || 'WEIGHBRIDGE_AGENT',
+    );
   }
 
   @Post('inward/merge')
@@ -131,12 +137,18 @@ export class InventoryController {
     @Body() data: { batchIds: string[]; date: string; createdBy?: string },
     @Req() req: any,
   ) {
-    return this.inventoryService.mergeBatches({ ...data, createdBy: req.user.username });
+    return this.inventoryService.mergeBatches({
+      ...data,
+      createdBy: req.user.username,
+    });
   }
 
   @Post('outward')
   async createOutward(@Body() data: any, @Req() req: any) {
-    return this.inventoryService.createOutward({ ...data, createdBy: req.user.username });
+    return this.inventoryService.createOutward({
+      ...data,
+      createdBy: req.user.username,
+    });
   }
 
   @Get('outward')
@@ -171,14 +183,24 @@ export class InventoryController {
   }
 
   @Get('yarn-stock')
-  async getStockByCount(@Query('date') date?: string, @Query('available') available?: string) {
-    return this.inventoryService.getYarnStockByCount(date, available === 'true');
+  async getStockByCount(
+    @Query('date') date?: string,
+    @Query('available') available?: string,
+  ) {
+    return this.inventoryService.getYarnStockByCount(
+      date,
+      available === 'true',
+    );
   }
 
   @Get('yarn-inventory')
   async getYarnInventory(@Query('range') range: DateRange = DateRange.MONTH) {
     const stock = await this.inventoryService.getYarnStockByCount();
-    const inventory = Object.entries(stock).map(([count, kg]) => ({ count, kg, bags: Math.floor(kg / 60) }));
+    const inventory = Object.entries(stock).map(([count, kg]) => ({
+      count,
+      kg,
+      bags: Math.floor(kg / 60),
+    }));
     return {
       range,
       inventory,
@@ -194,7 +216,11 @@ export class InventoryController {
     @Req() req?: any,
   ) {
     const actor = req?.user?.username || 'SYSTEM';
-    return this.inventoryService.deleteInward(parseInt(id), actor, reason || queryReason);
+    return this.inventoryService.deleteInward(
+      parseInt(id),
+      actor,
+      reason || queryReason,
+    );
   }
 
   @Delete('outward/:id')
@@ -205,7 +231,11 @@ export class InventoryController {
     @Req() req?: any,
   ) {
     const actor = req?.user?.username || 'SYSTEM';
-    return this.inventoryService.deleteOutward(parseInt(id), actor, reason || queryReason);
+    return this.inventoryService.deleteOutward(
+      parseInt(id),
+      actor,
+      reason || queryReason,
+    );
   }
 
   @Post('waste/recycle')
@@ -226,6 +256,10 @@ export class InventoryController {
     @Req() req?: any,
   ) {
     const actor = req?.user?.username || 'SYSTEM';
-    return this.inventoryService.deleteWaste(parseInt(id), actor, reason || queryReason);
+    return this.inventoryService.deleteWaste(
+      parseInt(id),
+      actor,
+      reason || queryReason,
+    );
   }
 }

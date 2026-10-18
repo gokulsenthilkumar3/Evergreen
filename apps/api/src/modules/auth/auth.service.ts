@@ -13,6 +13,7 @@ import * as bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
 import type { User } from '@prisma/client';
 import { TOTP, generateURI } from 'otplib';
+import { omit } from '../../utils/omit';
 const authenticator = new TOTP();
 
 const SALT_ROUNDS = 10;
@@ -31,11 +32,17 @@ export class AuthService implements OnModuleInit {
     try {
       const count = await this.prisma.user.count();
       if (count === 0) {
-        const username = this.configService.get<string>('BOOTSTRAP_ADMIN_USERNAME');
-        const password = this.configService.get<string>('BOOTSTRAP_ADMIN_PASSWORD');
+        const username = this.configService.get<string>(
+          'BOOTSTRAP_ADMIN_USERNAME',
+        );
+        const password = this.configService.get<string>(
+          'BOOTSTRAP_ADMIN_PASSWORD',
+        );
         const email = this.configService.get<string>('BOOTSTRAP_ADMIN_EMAIL');
         if (!username || !email || !password || password.length < 12) {
-          this.logger.warn('No users exist. Set BOOTSTRAP_ADMIN_USERNAME, BOOTSTRAP_ADMIN_EMAIL and a 12+ character BOOTSTRAP_ADMIN_PASSWORD for one-time setup.');
+          this.logger.warn(
+            'No users exist. Set BOOTSTRAP_ADMIN_USERNAME, BOOTSTRAP_ADMIN_EMAIL and a 12+ character BOOTSTRAP_ADMIN_PASSWORD for one-time setup.',
+          );
           return;
         }
         const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
@@ -48,7 +55,9 @@ export class AuthService implements OnModuleInit {
             email,
           },
         });
-        this.logger.warn('One-time administrator created. Remove bootstrap variables now.');
+        this.logger.warn(
+          'One-time administrator created. Remove bootstrap variables now.',
+        );
       }
     } catch (e) {
       console.error('Failed to seed default user:', e);
@@ -112,11 +121,14 @@ export class AuthService implements OnModuleInit {
       },
     });
 
-    const { password: _, ...result } = newUser;
+    const result = omit(newUser, ['password']);
     return { message: 'Signup successful', user: result };
   }
 
-  async validateUser(username: string, pass: string): Promise<Omit<User, 'password'> | null> {
+  async validateUser(
+    username: string,
+    pass: string,
+  ): Promise<Omit<User, 'password'> | null> {
     const user = await this.prisma.user.findUnique({
       where: { username },
     });
@@ -142,8 +154,7 @@ export class AuthService implements OnModuleInit {
     }
 
     if (passwordMatch) {
-      const { password, ...result } = user;
-      return result;
+      return omit(user, ['password']);
     }
     return null;
   }
@@ -181,14 +192,15 @@ export class AuthService implements OnModuleInit {
         // Use HTTPS and a 3-second timeout for geolocation
         const endpoint = this.configService.get<string>('GEOLOCATION_URL')!;
         const url = new URL(endpoint.replace('{ip}', encodeURIComponent(ip)));
-        if (url.protocol !== 'https:') throw new Error('Geolocation requires HTTPS');
+        if (url.protocol !== 'https:')
+          throw new Error('Geolocation requires HTTPS');
         const res = await fetch(url, { signal: AbortSignal.timeout(3000) });
         if (!res.ok) throw new Error('Geolocation provider rejected request');
         const data = await res.json();
         if (data.status === 'success') {
           location = `${data.city}, ${data.country}`;
         }
-      } catch (e) {
+      } catch {
         // Geolocation is non-critical — silently fall back
         console.warn('Geolocation lookup failed or timed out');
       }
@@ -239,7 +251,9 @@ export class AuthService implements OnModuleInit {
   async generateTotpSecret(userId: number, email: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user || user.isTotpEnabled) {
-      throw new BadRequestException('Disable existing two-factor authentication before setting it up again');
+      throw new BadRequestException(
+        'Disable existing two-factor authentication before setting it up again',
+      );
     }
     const secret = authenticator.generateSecret();
     const otpauth = generateURI({
@@ -280,10 +294,15 @@ export class AuthService implements OnModuleInit {
   async disableTotp(userId: number, code: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user?.isTotpEnabled || !user.totpSecret || !/^\d{6}$/.test(code)) {
-      throw new BadRequestException('A valid current authentication code is required');
+      throw new BadRequestException(
+        'A valid current authentication code is required',
+      );
     }
-    const result = await authenticator.verify(code, { secret: user.totpSecret });
-    if (!result.valid) throw new BadRequestException('Invalid authentication code');
+    const result = await authenticator.verify(code, {
+      secret: user.totpSecret,
+    });
+    if (!result.valid)
+      throw new BadRequestException('Invalid authentication code');
     await this.prisma.user.update({
       where: { id: userId },
       data: { isTotpEnabled: false, totpSecret: null },
@@ -291,13 +310,19 @@ export class AuthService implements OnModuleInit {
     return { success: true };
   }
 
-  async updateProfile(userId: number, username: string, data: { name?: string; email?: string }) {
+  async updateProfile(
+    userId: number,
+    username: string,
+    data: { name?: string; email?: string },
+  ) {
     if (data.email) {
       const existing = await this.prisma.user.findFirst({
         where: { email: data.email, NOT: { id: userId } },
       });
       if (existing) {
-        throw new BadRequestException('Email is already in use by another account');
+        throw new BadRequestException(
+          'Email is already in use by another account',
+        );
       }
     }
 
@@ -318,11 +343,19 @@ export class AuthService implements OnModuleInit {
       },
     });
 
-    await this.logActivity(username, 'PROFILE_UPDATE', `User ${username} updated personal profile details`);
+    await this.logActivity(
+      username,
+      'PROFILE_UPDATE',
+      `User ${username} updated personal profile details`,
+    );
     return updated;
   }
 
-  async changePassword(userId: number, username: string, data: { currentPassword: string; newPassword: string }) {
+  async changePassword(
+    userId: number,
+    username: string,
+    data: { currentPassword: string; newPassword: string },
+  ) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
       throw new UnauthorizedException('User not found');
@@ -340,7 +373,9 @@ export class AuthService implements OnModuleInit {
     }
 
     if (data.newPassword === data.currentPassword) {
-      throw new BadRequestException('New password must be different from current password');
+      throw new BadRequestException(
+        'New password must be different from current password',
+      );
     }
 
     const hashedPassword = await bcrypt.hash(data.newPassword, SALT_ROUNDS);
@@ -352,7 +387,11 @@ export class AuthService implements OnModuleInit {
       },
     });
 
-    await this.logActivity(username, 'PASSWORD_CHANGE', `User ${username} changed account password`);
+    await this.logActivity(
+      username,
+      'PASSWORD_CHANGE',
+      `User ${username} changed account password`,
+    );
     return { success: true, message: 'Password changed successfully' };
   }
 }

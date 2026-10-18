@@ -7,11 +7,9 @@ import type { User } from '@prisma/client';
 
 const verify = jest.fn();
 jest.mock('otplib', () => ({
-  TOTP: jest
-    .fn()
-    .mockImplementation(() => ({
-      verify: (...args: unknown[]) => verify(...args),
-    })),
+  TOTP: jest.fn().mockImplementation(() => ({
+    verify: (...args: unknown[]) => verify(...args),
+  })),
   generateURI: jest.fn(),
 }));
 import { AuthService } from './auth.service';
