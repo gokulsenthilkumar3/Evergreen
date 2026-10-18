@@ -7,6 +7,9 @@
 .agents
 .codex
 .aws
+.claude
+.cursor
+.vscode
 **/.env
 **/.env.*
 !**/.env.example

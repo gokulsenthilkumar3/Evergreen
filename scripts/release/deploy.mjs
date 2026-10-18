@@ -123,7 +123,7 @@ function composeArgs(options, envFile, state, command) {
     ...(state.all ? ['--profile', 'provider', '--profile', 'marketing'] : []), ...command];
 }
 
-function runDocker(args, state) {
+export function runDocker(args, state) {
   const envFile = args[args.indexOf('--env-file') + 1];
   const configured = readEnvironment(envFile);
   const result = spawnSync('docker', args, { cwd: root, stdio: 'inherit', windowsHide: true,
