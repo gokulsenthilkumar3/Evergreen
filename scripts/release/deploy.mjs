@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { randomBytes, randomUUID } from 'node:crypto';
+import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
@@ -35,10 +35,23 @@ export function createEnvironment(file) {
     TENANT_JWT_SECRET: secret(), TENANT_ENCRYPTION_SECRET: secret(),
     PROVIDER_ADMIN_API_KEY: secret(), ADMIN_JWT_SECRET: secret(),
     BOOTSTRAP_ADMIN_USERNAME: 'admin', BOOTSTRAP_ADMIN_EMAIL: 'admin@evergreen.local',
-    BOOTSTRAP_ADMIN_PASSWORD: secret(),
+    BOOTSTRAP_ADMIN_PASSWORD: randomBytes(24).toString('hex'),
   };
   fs.writeFileSync(file, Object.entries(env).map(([key, value]) => `${key}=${value}`).join('\n') + '\n', { flag: 'wx', mode: 0o600 });
   return true;
+}
+
+export function readEnvironment(file) {
+  const environment = {};
+  for (const line of fs.readFileSync(file, 'utf8').split(/\r?\n/)) {
+    if (!line.trim() || line.trimStart().startsWith('#')) continue;
+    const match = /^([A-Z][A-Z0-9_]*)=(.*)$/.exec(line);
+    if (!match) throw new Error('Installation environment contains an invalid line');
+    let value = match[2].trim();
+    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) value = value.slice(1, -1);
+    environment[match[1]] = value;
+  }
+  return environment;
 }
 
 // Dependency injection lets failure/rollback tests exercise the real orchestration without Docker.
@@ -63,8 +76,11 @@ export async function deploy(options, execute = runDocker) {
     if (options.command === 'install' && previous) throw new Error('Installation already exists; use update');
     if (previous && previous.release === options.release) throw new Error('That release is already installed; use status');
     createEnvironment(envFile);
+    const installationEnvironment = readEnvironment(envFile);
     const generation = randomUUID();
     const next = { format: 1, project: options.project, release: options.release, all: previous?.all ?? options.all,
+      engineProject: previous?.engineProject || `${options.project}-${createHash('sha256').update(fs.realpathSync(options.state)).digest('hex').slice(0, 8)}`,
+      imagePrefix: process.env.EVERGREEN_IMAGE_PREFIX || previous?.imagePrefix || installationEnvironment.EVERGREEN_IMAGE_PREFIX || 'evergreen',
       tenantDatabase: `tenant-${generation}.db`, providerDatabase: `provider-${generation}.db`, updatedAt: new Date().toISOString() };
     const run = (state, args) => execute(composeArgs(options, envFile, state, args), state);
     const apis = next.all ? ['tenant-api', 'admin-api'] : ['tenant-api'];
@@ -103,13 +119,15 @@ export async function deploy(options, execute = runDocker) {
 }
 
 function composeArgs(options, envFile, state, command) {
-  return ['compose', '--project-name', options.project, '--env-file', envFile, '-f', path.join(root, 'deploy/docker/compose.yml'),
+  return ['compose', '--project-name', state.engineProject || options.project, '--env-file', envFile, '-f', path.join(root, 'deploy/docker/compose.yml'),
     ...(state.all ? ['--profile', 'provider', '--profile', 'marketing'] : []), ...command];
 }
 
 function runDocker(args, state) {
+  const envFile = args[args.indexOf('--env-file') + 1];
+  const configured = readEnvironment(envFile);
   const result = spawnSync('docker', args, { cwd: root, stdio: 'inherit', windowsHide: true,
-    env: { ...process.env, EVERGREEN_RELEASE: state.release, TENANT_DATABASE: state.tenantDatabase, PROVIDER_DATABASE: state.providerDatabase } });
+    env: { ...process.env, ...configured, EVERGREEN_IMAGE_PREFIX: state.imagePrefix || 'evergreen', EVERGREEN_RELEASE: state.release, TENANT_DATABASE: state.tenantDatabase, PROVIDER_DATABASE: state.providerDatabase } });
   if (result.error || result.status !== 0) throw new Error(`Docker operation failed (${result.error?.code || result.status})`);
 }
 

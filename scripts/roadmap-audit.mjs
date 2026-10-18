@@ -28,7 +28,7 @@ export function renderRoadmap(has) {
     ], 'Tenant-scoped sync, real execution acknowledgement, connector acceptance and physical device checks remain separate gates.'],
     ['Packaging and operation', [
       ['Both schema histories', ['packages/database/prisma/migrations/migration_lock.toml', 'packages/admin-database/prisma/migrations/migration_lock.toml']],
-      ['Container definitions (not image-build evidence)', ['docker-compose.production.yml', 'deploy/docker/Dockerfile.tenant-api', 'deploy/docker/Dockerfile.admin-api']],
+      ['Container definitions (not image-build evidence)', ['docker-compose.production.yml', 'deploy/docker/Dockerfile', 'deploy/docker/compose.yml']],
       ['Desktop packaging', ['apps/desktop/package.json']],
       ['Maintenance runbook', ['docs/MAINTENANCE_RUNBOOK.md']],
     ], 'Both databases are SQLite today. PostgreSQL per customer is the chosen target (register DB-003) and needs its own reconciled migration.'],

@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 import type { ReleaseJob } from '@prisma/admin-client';
 import { PrismaService } from '../../services/prisma.service';
 import { BuildReleaseDto, DeployReleaseDto } from './cicd.dto';
-import { githubConfig, githubRequest, type GithubRelease, type GithubRun } from './github-release.service';
+import { githubConfig, githubRequest, GithubRequestRejected, type GithubRelease, type GithubRun } from './github-release.service';
 
 const releaseTag = (value: string) => {
   if (!/^v?\d+\.\d+\.\d+$/.test(value)) throw new BadRequestException('Use a stable release version such as 1.0.0');
@@ -90,7 +90,7 @@ export class CicdService {
   async triggerBuild(data: BuildReleaseDto, actor = 'Provider operator') {
     if (!githubConfig()) throw new ServiceUnavailableException('Release provider is not configured');
     const version = releaseTag(data.version);
-    return this.dispatch({ requestKey: data.requestKey, kind: 'BUILD', version, target: 'release', commit: 'main', actor, companyId: null });
+    return this.dispatch({ requestKey: data.requestKey, kind: 'BUILD', version, target: 'release', commit: 'main', actor, companyId: null, title: data.name, notes: data.changelog });
   }
 
   async deployPackage(data: DeployReleaseDto, actor = 'Provider operator') {
@@ -103,6 +103,11 @@ export class CicdService {
     const target = targets?.[data.companyId];
     if (typeof target !== 'string' || !/^[a-z][a-z0-9-]{0,50}$/.test(target)) throw new BadRequestException('This company has no configured deployment target');
     if (!await this.prisma.company.findUnique({ where: { id: data.companyId }, select: { id: true } })) throw new NotFoundException('Company not found');
+    const prior = await this.prisma.releaseJob.findUnique({ where: { requestKey: data.requestKey } });
+    if (prior) {
+      if (prior.kind !== 'DEPLOY' || prior.version !== version || prior.companyId !== data.companyId || prior.target !== target) throw new ConflictException('Request key belongs to a different release or target');
+      return this.view(prior);
+    }
     const release = await githubRequest<GithubRelease>(`/releases/tags/${version}`);
     if (release.draft || release.prerelease || release.tag_name !== version) throw new BadRequestException('Select a published stable release');
     const revision = await githubRequest<{ sha: string }>(`/commits/${version}`);
@@ -110,8 +115,9 @@ export class CicdService {
     return this.dispatch({ requestKey: data.requestKey, kind: 'DEPLOY', version, target, commit: revision.sha, actor, companyId: data.companyId });
   }
 
-  private async dispatch(input: { requestKey: string; kind: string; version: string; target: string; commit: string; actor: string; companyId: string | null }) {
-    const fingerprint = createHash('sha256').update(JSON.stringify([input.kind, input.version, input.target, input.commit, input.companyId])).digest('hex');
+  private async dispatch(input: { requestKey: string; kind: string; version: string; target: string; commit: string; actor: string; companyId: string | null; title?: string; notes?: string }) {
+    const { title, notes, ...record } = input;
+    const fingerprint = createHash('sha256').update(JSON.stringify([input.kind, input.version, input.target, input.commit, input.companyId, title, notes])).digest('hex');
     const prior = await this.prisma.releaseJob.findUnique({ where: { requestKey: input.requestKey } });
     if (prior) {
       if (prior.fingerprint !== fingerprint) throw new ConflictException('Request key belongs to a different release or target');
@@ -119,20 +125,24 @@ export class CicdService {
     }
     let job: ReleaseJob;
     try {
-      job = await this.prisma.releaseJob.create({ data: { ...input, fingerprint, activeTarget: `${input.kind}:${input.target}` } });
+      job = await this.prisma.releaseJob.create({ data: { ...record, fingerprint, activeTarget: `${input.kind}:${input.target}` } });
     } catch (error) {
-      if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') throw new ConflictException('A release operation is already recorded or active for this target');
+      if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
+        const concurrent = await this.prisma.releaseJob.findUnique({ where: { requestKey: input.requestKey } });
+        if (concurrent?.fingerprint === fingerprint) return this.view(concurrent);
+        throw new ConflictException('A release operation is already recorded or active for this target');
+      }
       throw error;
     }
     try {
       await githubRequest<void>(`/actions/workflows/${input.kind === 'BUILD' ? 'release.yml' : 'deploy.yml'}/dispatches`, {
         ref: 'main',
-        inputs: input.kind === 'BUILD' ? { request_id: job.id, version: input.version } :
+        inputs: input.kind === 'BUILD' ? { request_id: job.id, version: input.version, title: title || input.version, notes: notes || '' } :
           { request_id: job.id, target: input.target, release: input.commit },
       });
       job = await this.prisma.releaseJob.update({ where: { id: job.id }, data: { status: 'QUEUED' } });
-    } catch {
-      job = await this.prisma.releaseJob.update({ where: { id: job.id }, data: { status: 'UNKNOWN' } });
+    } catch (error) {
+      job = await this.prisma.releaseJob.update({ where: { id: job.id }, data: error instanceof GithubRequestRejected ? { status: 'FAILED', activeTarget: null } : { status: 'UNKNOWN' } });
     }
     this.refreshedAt = 0;
     return this.view(job);

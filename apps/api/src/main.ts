@@ -8,13 +8,9 @@ import { NotFoundExceptionFilter } from './filters/not-found-exception.filter';
 import { BusinessActionFilter } from './filters/business-action.filter';
 import { PrismaService } from './services/prisma.service';
 
-import { execSync } from 'child_process';
-
 async function bootstrap() {
-  // Hybrid Migration Strategy 1: Auto-apply on startup (Useful for VMs)
   if (process.env.AUTO_MIGRATE === 'true') {
-    console.log('🔄 Running automated database migrations...');
-    execSync('npx prisma migrate deploy', { stdio: 'inherit' });
+    throw new Error('AUTO_MIGRATE is no longer supported. Use the release deployment helper to snapshot and migrate the selected database.');
   }
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -494,7 +490,9 @@ Authorize with your own staff bearer token for protected endpoints. Try it out e
         void app.close().then(() => process.exit(0));
       }
     });
-    process.send({ type: 'evergreen-ready', port: app.getHttpServer().address().port });
+    const address = app.getHttpServer().address();
+    if (!address || typeof address === 'string') throw new Error('Local API did not bind a TCP port');
+    process.send({ type: 'evergreen-ready', port: address.port });
   }
   console.log(`🚀 Application is listening on ${host}:${port}`);
   if (process.env.NODE_ENV !== 'production') {

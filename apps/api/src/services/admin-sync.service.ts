@@ -7,9 +7,7 @@ import { parseAdminSyncResponse } from './admin-sync-response.dto';
 export class AdminSyncService {
   private readonly logger = new Logger(AdminSyncService.name);
 
-  // Hardcoded for demo; in production this comes from env / settings
-  private readonly adminApiUrl = 'http://localhost:4300';
-  private readonly companyId = process.env.COMPANY_ID || 'demo-company-1';
+  private syncInProgress = false;
 
   constructor(private readonly prisma: PrismaService) {}
 
@@ -70,23 +68,29 @@ export class AdminSyncService {
 
       const totalInwards = await this.prisma.inwardBatch.count();
       const totalOutwards = await this.prisma.outward.count();
-      // Note: invoices would be counted here but for simplicity we rely on outwards
+      const totalInvoices = await this.prisma.invoice.count();
 
       const metrics = {
         totalInwards,
         totalOutwards,
-        totalInvoices: totalOutwards, // approximated
+        totalInvoices,
         activeUsers,
       };
 
-      const response = await fetch(
-        `${this.adminApiUrl}/companies/${this.companyId}/sync`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(metrics),
-        },
-      );
+      const controller = new AbortController();
+      // Keep the deadline active through reading the body, not just headers.
+      timeout = setTimeout(() => {
+        requestTimedOut = true;
+        controller.abort();
+      }, 10_000);
+      failureContext = 'contacting the provider';
+      const response = await fetch(syncUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(metrics),
+        signal: controller.signal,
+        redirect: 'error',
+      });
 
       if (!response.ok) {
         failureContext = `provider returned HTTP ${response.status}`;
@@ -94,87 +98,41 @@ export class AdminSyncService {
         throw new Error('Provider rejected sync');
       }
 
-      const adminResponse = await response.json();
+      failureContext = 'reading or validating the provider response';
+      const payload: unknown = await response.json();
+      controller.signal.throwIfAborted();
+      const adminResponse = parseAdminSyncResponse(payload);
+      clearTimeout(timeout);
+      timeout = undefined;
+      failureContext = 'updating local license settings';
+      const settings = await this.prisma.systemSettings.findFirst();
+      if (settings) {
+        const now = new Date();
+        let effectiveStatus = adminResponse.status;
+        const expiry =
+          adminResponse.expiresAt === null
+            ? null
+            : new Date(adminResponse.expiresAt);
+        const graceExpiresAt =
+          expiry === null
+            ? null
+            : new Date(
+                expiry.getTime() +
+                  adminResponse.gracePeriodDays * 24 * 60 * 60 * 1000,
+              );
 
-      if (
-        adminResponse &&
-        (adminResponse.plan || adminResponse.status || adminResponse.tier)
-      ) {
-        const settings = await this.prisma.systemSettings.findFirst();
-        if (settings) {
-          const now = new Date();
-          let effectiveStatus = adminResponse.status || settings.status;
-
-          // 7-Day Active Grace Quota Logic
-          let graceExpiresAt: Date | null = null;
-          if (adminResponse.expiresAt) {
-            const expiry = new Date(adminResponse.expiresAt);
-            const graceDays =
-              adminResponse.gracePeriodDays ?? settings.gracePeriodDays ?? 7;
-            graceExpiresAt = new Date(
-              expiry.getTime() + graceDays * 24 * 60 * 60 * 1000,
-            );
-
-            if (now > expiry) {
-              if (now <= graceExpiresAt) {
-                // Within 7-day grace: NOT BLOCKED from daily operations, flagged for renewal
-                effectiveStatus = 'GRACE_PERIOD';
-                this.logger.warn(
-                  `Tenant operating under 7-Day Active Grace Period until ${graceExpiresAt.toISOString()}`,
-                );
-              } else {
-                // Grace period elapsed: lock access
-                effectiveStatus = 'SUSPENDED';
-                this.logger.error(
-                  `Tenant 7-Day Grace Period elapsed. Service suspended.`,
-                );
-              }
-            } else if (
-              effectiveStatus === 'GRACE_PERIOD' ||
-              effectiveStatus === 'SUSPENDED'
-            ) {
-              effectiveStatus = 'ACTIVE';
+        // Provider suspension takes precedence over date-derived licensing.
+        // An active renewal can still recover a locally expired license.
+        if (effectiveStatus !== 'SUSPENDED' && expiry && graceExpiresAt) {
+          if (now > expiry) {
+            if (now <= graceExpiresAt) {
+              effectiveStatus = 'GRACE_PERIOD';
+            } else {
+              effectiveStatus = 'SUSPENDED';
             }
           } else {
             effectiveStatus = 'ACTIVE';
           }
-
-          await this.prisma.systemSettings.update({
-            where: { id: settings.id },
-            data: {
-              plan: adminResponse.plan || settings.plan,
-              pricingModel: adminResponse.pricingModel || settings.pricingModel,
-              status: effectiveStatus,
-              licenseExpiresAt: adminResponse.expiresAt
-                ? new Date(adminResponse.expiresAt)
-                : settings.licenseExpiresAt,
-              gracePeriodDays:
-                adminResponse.gracePeriodDays ?? settings.gracePeriodDays ?? 7,
-              graceExpiresAt,
-              maxUsers:
-                adminResponse.maxUsers !== undefined
-                  ? adminResponse.maxUsers
-                  : settings.maxUsers,
-              maxMachines:
-                adminResponse.maxMachines !== undefined
-                  ? adminResponse.maxMachines
-                  : settings.maxMachines,
-              maxDocsPerMonth:
-                adminResponse.maxDocsPerMonth !== undefined
-                  ? adminResponse.maxDocsPerMonth
-                  : settings.maxDocsPerMonth,
-              allowedModules:
-                adminResponse.allowedModules || settings.allowedModules,
-              tier: adminResponse.tier || settings.tier,
-              isMaintenance:
-                adminResponse.isMaintenance !== undefined
-                  ? adminResponse.isMaintenance
-                  : settings.isMaintenance,
-            },
-          });
-          this.logger.log(
-            `Licensing updated: ${adminResponse.plan} [${effectiveStatus}] | Pricing: ${adminResponse.pricingModel || 'TIERED'} | Quotas: users=${adminResponse.maxUsers ?? settings.maxUsers}, machines=${adminResponse.maxMachines ?? settings.maxMachines}`,
-          );
         }
 
         await this.prisma.systemSettings.update({

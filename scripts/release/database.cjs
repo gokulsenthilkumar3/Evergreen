@@ -49,7 +49,7 @@ async function snapshot(root, source, destination, plane = 'tenant') {
   return manifest;
 }
 
-function migrate(root, file, plane = 'tenant', executable = process.execPath) {
+function migrate(root, file, plane = 'tenant', executable = fs.existsSync(path.join(root, 'node.exe')) ? path.join(root, 'node.exe') : process.execPath) {
   const schema = path.join(root, 'packages', plane === 'provider' ? 'admin-database' : 'database', 'prisma/schema.prisma');
   const urlName = plane === 'provider' ? 'ADMIN_DATABASE_URL' : 'DATABASE_URL';
   fs.mkdirSync(path.dirname(file), { recursive: true });

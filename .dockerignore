@@ -22,4 +22,5 @@
 backups
 apps/desktop/backend
 apps/desktop/web-dist
-docs/audits
+docs
+agent-system

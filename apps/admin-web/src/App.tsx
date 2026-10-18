@@ -77,6 +77,7 @@ interface DeploymentRecord {
   startedAt: string;
   completedAt?: string;
   details: string;
+  runUrl?: string;
 }
 
 interface CicdLogEntry {
@@ -186,14 +187,19 @@ export default function App() {
   const [reactivateUtr, setReactivateUtr] = useState<string>('');
   const [reactivatePeriod, setReactivatePeriod] = useState<'1_YEAR' | '30_DAYS'>('1_YEAR');
   const [reactivating, setReactivating] = useState(false);
-  const [selectedPackageToDeploy, setSelectedPackageToDeploy] = useState<string>('v1.2.4-lts');
-  const [selectedStrategy, setSelectedStrategy] = useState<'ROLLING' | 'BLUE_GREEN' | 'CANARY' | 'INSTANT'>('ROLLING');
+  const [selectedPackageToDeploy, setSelectedPackageToDeploy] = useState<string>('');
+  const [deploying, setDeploying] = useState(false);
+  const deployingRef = useRef(false);
+  const deploymentRequestRef = useRef<{ fingerprint: string; key: string } | null>(null);
+  const [building, setBuilding] = useState(false);
+  const buildingRef = useRef(false);
+  const buildRequestRef = useRef<{ fingerprint: string; key: string } | null>(null);
 
   const [showNewPkgModal, setShowNewPkgModal] = useState(false);
   const [newPkgVersion, setNewPkgVersion] = useState('');
   const [newPkgName, setNewPkgName] = useState('');
   const [newPkgChangelog, setNewPkgChangelog] = useState('');
-  const [newPkgTargets, setNewPkgTargets] = useState<string[]>(['GCP', 'AWS', 'AZURE', 'LOCAL_VM']);
+  const newPkgTargets = ['WINDOWS', 'DOCKER'];
 
   const [showProvisionModal, setShowProvisionModal] = useState(false);
   const [provisioning, setProvisioning] = useState(false);
@@ -390,34 +396,51 @@ export default function App() {
   };
 
   const triggerPackageDeployment = async () => {
-    if (!deployTargetCompany) return;
+    const version = selectedPackageToDeploy || packages[0]?.version;
+    if (!deployTargetCompany || !version || deployingRef.current) return;
+    const fingerprint = JSON.stringify([deployTargetCompany.id, version]);
+    if (deploymentRequestRef.current?.fingerprint !== fingerprint) deploymentRequestRef.current = { fingerprint, key: crypto.randomUUID() };
+    deployingRef.current = true;
+    setDeploying(true);
     try {
-      showMsg(`🚀 Triggering ${selectedStrategy} deployment of ${selectedPackageToDeploy} to ${deployTargetCompany.name}...`, false);
+      showMsg(`Requesting deployment of ${version} to ${deployTargetCompany.name}...`, false);
       const res = await authFetch(`${adminApiBase}/cicd/deploy`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           companyId: deployTargetCompany.id,
-          packageVersion: selectedPackageToDeploy,
-          strategy: selectedStrategy,
-          triggeredBy: 'Provider Admin Web UI',
+          packageVersion: version,
+          strategy: 'MAINTENANCE',
+          requestKey: deploymentRequestRef.current.key,
         }),
       });
       if (res.ok) {
-        showMsg(`✅ Deployment pipeline initiated for ${deployTargetCompany.name}.`);
+        const job = await res.json();
+        showMsg(job.status === 'UNKNOWN'
+          ? `Deployment ${job.id} needs verification: dispatch acknowledgement was lost. Check the workflow before retrying.`
+          : `Deployment ${job.id} is ${job.status.toLowerCase()}. Completion will appear after the workflow health checks.`, false);
         fetchCicdData();
         fetchCompanies();
         setDeployTargetCompany(null);
       } else {
-        showMsg(`Deployment unavailable (HTTP ${res.status}). No deployment was started.`);
+        const error = await res.json().catch(() => ({}));
+        showMsg(error.message || `Deployment request failed (HTTP ${res.status}). Check the deployment history before retrying.`);
       }
     } catch {
-      showMsg(`❌ Failed to start deployment.`);
+      showMsg('The deployment response was lost. Check the deployment history; retrying the unchanged request reuses its request key.');
+    } finally {
+      deployingRef.current = false;
+      setDeploying(false);
     }
   };
 
   const handleCreatePackage = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (buildingRef.current) return;
+    const fingerprint = JSON.stringify([newPkgVersion, newPkgName, newPkgChangelog, newPkgTargets]);
+    if (buildRequestRef.current?.fingerprint !== fingerprint) buildRequestRef.current = { fingerprint, key: crypto.randomUUID() };
+    buildingRef.current = true;
+    setBuilding(true);
     try {
       showMsg(`🔨 Building release package ${newPkgVersion}...`, false);
       const res = await authFetch(`${adminApiBase}/cicd/build`, {
@@ -428,10 +451,12 @@ export default function App() {
           name: newPkgName,
           changelog: newPkgChangelog,
           targets: newPkgTargets,
+          requestKey: buildRequestRef.current.key,
         }),
       });
       if (res.ok) {
-        showMsg(`✅ Package ${newPkgVersion} registered and queued for distribution.`);
+        const job = await res.json();
+        showMsg(`Release job ${job.id}: ${job.status}. The release appears in the registry after the build and publication complete.`, false);
         setShowNewPkgModal(false);
         setNewPkgVersion('');
         setNewPkgName('');
@@ -441,7 +466,10 @@ export default function App() {
         showMsg(`Build unavailable (HTTP ${res.status}). No release was created.`);
       }
     } catch {
-      showMsg(`❌ Failed to create package.`);
+      showMsg('The release response was lost. Check the workflow before retrying the unchanged request.');
+    } finally {
+      buildingRef.current = false;
+      setBuilding(false);
     }
   };
 
@@ -1410,7 +1438,7 @@ export default function App() {
                     <tbody>
                       {deployments.map(d => (
                         <tr key={d.id}>
-                          <td><span className="font-mono text-cyan" style={{ fontSize: '0.76rem' }}>{d.id}</span></td>
+                          <td><span className="font-mono text-cyan" style={{ fontSize: '0.76rem' }}>{d.id}</span>{d.runUrl && <div><a href={d.runUrl} target="_blank" rel="noreferrer">View workflow</a></div>}</td>
                           <td><strong>{d.companyName}</strong></td>
                           <td><span className={`cloud-pill-tag ${d.cloudProvider.toLowerCase()}`}>{d.cloudProvider}</span></td>
                           <td><span className="font-mono">{d.packageVersion}</span></td>
@@ -1467,12 +1495,12 @@ export default function App() {
                       </div>
 
                       <p style={{ fontSize: '0.78rem', color: 'var(--adm-muted)', lineHeight: '1.5', margin: 0 }}>
-                        {p.changelog || 'Production-ready release package.'}
+                        {p.changelog || 'See the published release for changes and acceptance evidence.'}
                       </p>
 
                       <div style={{ background: 'rgba(0,0,0,0.25)', padding: '0.6rem 0.8rem', borderRadius: 6, fontSize: '0.72rem', color: 'var(--adm-dim)' }}>
                         <div>Commit: <span className="font-mono text-cyan">{p.commit}</span> on <span className="font-mono">{p.branch}</span></div>
-                        <div>Artifacts: {p.artifacts?.length || 1} signed bundle(s)</div>
+                        <div>Artifacts: {p.artifacts?.length || 0} published file(s)</div>
                       </div>
                     </div>
                   ))}
@@ -2535,48 +2563,41 @@ export default function App() {
           MODAL 3: CLOUD DEPLOYMENT TRIGGER
           ═══════════════════════════════════════════════════════════════════ */}
       {deployTargetCompany && (
-        <AdminModal onClose={() => setDeployTargetCompany(null)}>
+        <AdminModal onClose={() => { if (!deployingRef.current) setDeployTargetCompany(null); }}>
           <div className="modal-dialog-box" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h3 id="admin-modal-title">🚀 Deploy Release to {deployTargetCompany.name}</h3>
-              <button className="btn-modal-close" aria-label="Close" onClick={() => setDeployTargetCompany(null)}>×</button>
+              <button className="btn-modal-close" aria-label="Close" disabled={deploying} onClick={() => setDeployTargetCompany(null)}>×</button>
             </div>
             <div className="modal-body">
               <div className="form-grid-2col">
                 <div className="form-field-row">
-                  <label>Release Package</label>
+                  <label htmlFor="deployment-release">Release Package</label>
                   <select
+                    id="deployment-release"
                     className="form-select-box"
-                    value={selectedPackageToDeploy}
+                    value={selectedPackageToDeploy || packages[0]?.version || ''}
+                    disabled={deploying || packages.length === 0}
                     onChange={e => setSelectedPackageToDeploy(e.target.value)}
                   >
                     {packages.map(p => (
                       <option key={p.id} value={p.version}>{p.version} — {p.name}</option>
                     ))}
                     {packages.length === 0 && (
-                      <option value="v1.2.4-lts">v1.2.4-lts (Production LTS)</option>
+                      <option value="">No published releases available</option>
                     )}
                   </select>
                 </div>
                 <div className="form-field-row">
-                  <label>Rollout Strategy</label>
-                  <select
-                    className="form-select-box"
-                    value={selectedStrategy}
-                    onChange={e => setSelectedStrategy(e.target.value as any)}
-                  >
-                    <option value="ROLLING">Rolling Zero-Downtime</option>
-                    <option value="BLUE_GREEN">Blue / Green Switch</option>
-                    <option value="CANARY">Canary (10% Traffic)</option>
-                    <option value="INSTANT">Instant Hot-Patch</option>
-                  </select>
+                  <label>Deployment window</label>
+                  <p>The app pauses while a database snapshot is migrated and checked. Previous data is retained for recovery.</p>
                 </div>
               </div>
             </div>
             <div className="modal-footer">
-              <button className="btn-ghost" onClick={() => setDeployTargetCompany(null)}>Cancel</button>
-              <button className="btn-provision-trigger" onClick={triggerPackageDeployment}>
-                Trigger Deployment
+              <button className="btn-ghost" disabled={deploying} onClick={() => setDeployTargetCompany(null)}>Cancel</button>
+              <button className="btn-provision-trigger" disabled={deploying || packages.length === 0} onClick={triggerPackageDeployment}>
+                {deploying ? 'Requesting deployment…' : 'Deploy release'}
               </button>
             </div>
           </div>
@@ -2615,51 +2636,53 @@ export default function App() {
           MODAL 5: NEW PACKAGE BUILD
           ═══════════════════════════════════════════════════════════════════ */}
       {showNewPkgModal && (
-        <AdminModal onClose={() => setShowNewPkgModal(false)}>
+        <AdminModal onClose={() => { if (!buildingRef.current) setShowNewPkgModal(false); }}>
           <div className="modal-dialog-box" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h3 id="admin-modal-title">🔨 Compile & Register Release Package</h3>
-              <button className="btn-modal-close" aria-label="Close" onClick={() => setShowNewPkgModal(false)}>×</button>
+              <button className="btn-modal-close" aria-label="Close" disabled={building} onClick={() => setShowNewPkgModal(false)}>×</button>
             </div>
             <form onSubmit={handleCreatePackage}>
               <div className="modal-body">
                 <div className="form-grid-2col">
                   <div className="form-field-row">
-                    <label>Package Version *</label>
+                    <label htmlFor="release-version">Package Version *</label>
                     <input
+                      id="release-version"
                       type="text"
                       required
                       className="form-input-text"
-                      placeholder="e.g. v1.2.5-lts"
+                      placeholder="e.g. v1.0.0"
+                      disabled={building}
+                      pattern="v?[0-9]+\.[0-9]+\.[0-9]+"
                       value={newPkgVersion}
                       onChange={e => setNewPkgVersion(e.target.value)}
                     />
                   </div>
                   <div className="form-field-row">
-                    <label>Release Title *</label>
+                    <label htmlFor="release-title">Release Title *</label>
                     <input
+                      id="release-title"
                       type="text"
                       required
                       className="form-input-text"
                       placeholder="TareZero & Tally Prime 4.0 XML Sync"
                       value={newPkgName}
+                      disabled={building}
                       onChange={e => setNewPkgName(e.target.value)}
                     />
                   </div>
                 </div>
 
                 <div className="form-field-row">
-                  <label>Target Cloud Platforms</label>
+                  <label>Release artifacts</label>
                   <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', padding: '0.75rem', background: 'rgba(255,255,255,0.025)', borderRadius: 8, border: '1px solid var(--adm-border)' }}>
-                    {['GCP', 'AWS', 'AZURE', 'LOCAL_VM'].map(t => (
+                    {newPkgTargets.map(t => (
                       <label key={t} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', fontSize: '0.82rem', color: '#ffffff', userSelect: 'none' }}>
                         <input
                           type="checkbox"
-                          checked={newPkgTargets.includes(t)}
-                          onChange={e => {
-                            if (e.target.checked) setNewPkgTargets([...newPkgTargets, t]);
-                            else setNewPkgTargets(newPkgTargets.filter(item => item !== t));
-                          }}
+                          checked
+                          disabled
                           style={{ accentColor: 'var(--adm-cyan)', width: 15, height: 15 }}
                         />
                         <span className={`cloud-pill-tag ${t.toLowerCase()}`} style={{ fontSize: '0.7rem', cursor: 'pointer' }}>{t}</span>
@@ -2669,19 +2692,21 @@ export default function App() {
                 </div>
 
                 <div className="form-field-row">
-                  <label>Changelog / Release Notes</label>
+                  <label htmlFor="release-notes">Changelog / Release Notes</label>
                   <textarea
+                    id="release-notes"
                     className="form-input-text"
                     rows={3}
                     placeholder="Bug fixes, security patches, and performance improvements..."
                     value={newPkgChangelog}
+                    disabled={building}
                     onChange={e => setNewPkgChangelog(e.target.value)}
                   />
                 </div>
               </div>
               <div className="modal-footer">
-                <button type="button" className="btn-ghost" onClick={() => setShowNewPkgModal(false)}>Cancel</button>
-                <button type="submit" className="btn-provision-trigger">🔨 Trigger Build</button>
+                <button type="button" className="btn-ghost" disabled={building} onClick={() => setShowNewPkgModal(false)}>Cancel</button>
+                <button type="submit" className="btn-provision-trigger" disabled={building}>{building ? 'Requesting build…' : 'Trigger build'}</button>
               </div>
             </form>
           </div>

@@ -9,6 +9,17 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const require = createRequire(import.meta.url);
 const json = file => JSON.parse(fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, ''));
 const digest = value => createHash('sha256').update(value).digest('hex');
+function treeDigest(directory) {
+  const hash = createHash('sha256');
+  const visit = (folder, relative = '') => {
+    for (const name of fs.readdirSync(folder).sort()) {
+      const file = path.join(folder, name), key = path.posix.join(relative, name);
+      if (fs.statSync(file).isDirectory()) visit(file, key);
+      else hash.update(key).update('\0').update(fs.readFileSync(file)).update('\0');
+    }
+  };
+  visit(directory); return hash.digest('hex');
+}
 
 export function updateConfiguration(env) {
   const url = env.EVERGREEN_UPDATE_URL?.trim();
@@ -67,6 +78,7 @@ export async function prepareDesktop({ build = true } = {}) {
   const app = path.join(stage, 'app');
   const runtime = path.join(stage, 'runtime');
   fs.mkdirSync(app, { recursive: true }); fs.mkdirSync(runtime, { recursive: true });
+  fs.copyFileSync(process.execPath, path.join(runtime, 'node.exe'));
   const desktop = json(path.join(root, 'apps/desktop/package.json'));
   const api = json(path.join(root, 'apps/api/package.json'));
   const rootManifest = json(path.join(root, 'package.json'));
@@ -86,9 +98,10 @@ export async function prepareDesktop({ build = true } = {}) {
   const git = spawnSync('git', ['-c', `safe.directory=${root.replaceAll('\\', '/')}`, 'rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8', windowsHide: true });
   const manifest = { format: 1, version: desktop.version, commit: git.status === 0 ? git.stdout.trim() : 'unknown',
     lockSha256: digest(fs.readFileSync(path.join(root, 'package-lock.json'))),
-    apiSha256: digest(fs.readFileSync(path.join(runtime, 'apps/api/dist/main.js'))),
+    apiSha256: digest(treeDigest(path.join(runtime, 'apps/api/dist')) + treeDigest(path.join(runtime, 'node_modules/@evergreen'))),
     webSha256: digest(fs.readFileSync(path.join(stage, 'web/index.html'))),
-    schemaSha256: digest(fs.readFileSync(path.join(runtime, 'packages/database/prisma/schema.prisma'))),
+    schemaSha256: treeDigest(path.join(runtime, 'packages/database/prisma')),
+    nodeVersion: process.versions.node,
     platform: process.platform, arch: process.arch, updatesEnabled: config.enabled };
   fs.writeFileSync(path.join(runtime, 'release-manifest.json'), JSON.stringify(manifest, null, 2));
   return { stage, app, runtime, manifest, config, desktop };

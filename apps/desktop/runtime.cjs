@@ -69,7 +69,7 @@ async function serveWeb(webRoot) {
 function startApi(runtimeRoot, environment, onUnexpectedExit = () => {}) {
   return new Promise((resolve, reject) => {
     const child = fork(path.join(runtimeRoot, 'apps/api/dist/main.js'), [], {
-      cwd: runtimeRoot, execPath: process.execPath, windowsHide: true,
+      cwd: runtimeRoot, execPath: path.join(runtimeRoot, 'node.exe'), execArgv: [], windowsHide: true,
       env: { ...process.env, ...environment, ELECTRON_RUN_AS_NODE: '1', NODE_ENV: 'production',
         EVERGREEN_DESKTOP: 'true', EVERGREEN_API_HOST: '127.0.0.1', EVERGREEN_API_PORT: '0',
         AUTO_MIGRATE: 'false', ADMIN_API_URL: '', COMPANY_ID: '', SMTP_HOST: '', DAILY_SUMMARY_EMAIL: '' },

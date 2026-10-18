@@ -27,7 +27,7 @@
     "docs:generate": "node scripts/generate-knowledge.mjs",
     "docs:check": "node scripts/generate-knowledge.mjs --check && node scripts/check-knowledge-links.mjs",
     "typecheck": "npm run typecheck -w apps/api && npx tsc --noEmit -p apps/web/tsconfig.json",
-    "verify": "npm run generate -w @evergreen/database && npm run migrate:check -w @evergreen/database && npm run generate -w @evergreen/admin-database && npm run migrate:check -w @evergreen/admin-database && npm run typecheck && npm test && npm run test:e2e -w apps/api && npm run agent:check && npm run test:maintenance && npm run audit:check && npm run docs:check && npm run build",
+    "verify": "npm run generate -w @evergreen/database && npm run migrate:check -w @evergreen/database && npm run generate -w @evergreen/admin-database && npm run migrate:check -w @evergreen/admin-database && npm run typecheck && npm test && npm run test:e2e -w apps/api && npm run agent:check && npm run test:maintenance && npm run test:release && npm run audit:check && npm run docs:check && npm run build",
     "desktop": "npm run start -w apps/desktop",
     "dist:desktop": "npm run dist -w apps/desktop",
     "release:desktop": "node scripts/release/desktop.mjs",

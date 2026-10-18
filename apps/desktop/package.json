@@ -1,52 +1,18 @@
 {
-    "name": "evergreen-desktop",
-    "version": "1.0.0",
-    "description": "Ever Green Yarn Management System Desktop",
-    "author": "Ever Green",
-    "main": "main.js",
-    "scripts": {
-        "start": "electron .",
-        "dist": "node ../../scripts/release/desktop.mjs"
-    },
-    "build": {
-        "appId": "com.evergreen.yarnsms",
-        "productName": "EverGreen",
-        "electronVersion": "33.0.0",
-        "compression": "normal",
-        "directories": {
-            "output": "dist"
-        },
-        "electronDownload": {
-            "mirror": "https://npmmirror.com/mirrors/electron/"
-        },
-        "win": {
-            "target": [
-                "nsis"
-            ],
-            "artifactName": "${productName}-${version}-win.${ext}"
-        },
-        "files": [
-            "main.js",
-            "preload.js",
-            "assets/**/*",
-            "web-dist/**/*"
-        ],
-        "nsis": {
-            "oneClick": true,
-            "perMachine": false,
-            "deleteAppDataOnUninstall": false,
-            "createDesktopShortcut": true,
-            "runAfterFinish": true
-        },
-        "extraResources": [
-            "backend/**/*"
-        ]
-    },
-    "devDependencies": {
-        "electron": "33.0.0",
-        "electron-builder": "^26.7.0"
-    },
-    "dependencies": {
-        "electron-updater": "6.6.2"
-    }
+  "name": "evergreen-desktop",
+  "version": "1.0.0",
+  "description": "Ever Green Yarn Management System Desktop",
+  "author": "Ever Green",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "node ../../scripts/release/desktop.mjs"
+  },
+  "devDependencies": {
+    "electron": "33.0.0",
+    "electron-builder": "^26.7.0"
+  },
+  "dependencies": {
+    "electron-updater": "6.6.2"
+  }
 }

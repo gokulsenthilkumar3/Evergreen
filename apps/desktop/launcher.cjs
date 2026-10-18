@@ -42,7 +42,7 @@ async function start() {
     const account = previous ? null : await setupAccount();
     const secrets = secretsFor(directory, safeStorage);
     const storage = require(path.join(runtimeRoot, 'scripts/release/database.cjs'));
-    const changed = !previous || previous.version !== manifest.version || previous.apiSha256 !== manifest.apiSha256 || previous.schemaSha256 !== manifest.schemaSha256;
+    const changed = !previous || previous.version !== manifest.version || previous.apiSha256 !== manifest.apiSha256 || previous.schemaSha256 !== manifest.schemaSha256 || previous.lockSha256 !== manifest.lockSha256;
     const filename = changed ? `${randomUUID()}.db` : previous.database;
     if (!/^[a-f0-9-]+\.db$/.test(filename) || (previous && !/^[a-f0-9-]+\.db$/.test(previous.database))) throw new Error('Invalid installation database reference');
     database = path.join(directory, 'databases', filename);
@@ -58,7 +58,7 @@ async function start() {
     if (!health.ok) throw new Error('Local service health check failed; the previous database is retained');
     if (changed) {
       if (previous) writeJson(path.join(directory, `previous-${randomUUID()}.json`), previous);
-      writeJson(stateFile, { version: manifest.version, apiSha256: manifest.apiSha256, schemaSha256: manifest.schemaSha256, database: filename });
+      writeJson(stateFile, { version: manifest.version, apiSha256: manifest.apiSha256, schemaSha256: manifest.schemaSha256, lockSha256: manifest.lockSha256, database: filename });
     }
   }
   mainWindow = new BrowserWindow({ width: 1280, height: 800, title: 'EverGreen', webPreferences: { nodeIntegration: false, contextIsolation: true, sandbox: true } });

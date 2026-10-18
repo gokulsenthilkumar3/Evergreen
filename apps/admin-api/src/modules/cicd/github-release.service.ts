@@ -1,5 +1,7 @@
 import { ServiceUnavailableException } from '@nestjs/common';
 
+export class GithubRequestRejected extends ServiceUnavailableException {}
+
 export interface GithubRelease {
   id: number; tag_name: string; name: string; body: string; draft: boolean; prerelease: boolean;
   published_at: string; target_commitish: string;
@@ -29,7 +31,10 @@ export async function githubRequest<T>(route: string, body?: object): Promise<T>
         'X-GitHub-Api-Version': '2022-11-28', 'Content-Type': 'application/json' },
       ...(body ? { body: JSON.stringify(body) } : {}),
     });
-    if (!response.ok) throw new Error('Provider request failed');
+    if (!response.ok) {
+      if (response.status >= 400 && response.status < 500) throw new GithubRequestRejected('The release provider rejected the request');
+      throw new Error('Provider request failed');
+    }
     if (response.status === 204) return undefined as T;
     const reader = response.body?.getReader();
     if (!reader) throw new Error('Missing provider body');
@@ -42,7 +47,8 @@ export async function githubRequest<T>(route: string, body?: object): Promise<T>
       chunks.push(part.value);
     }
     return JSON.parse(Buffer.concat(chunks).toString('utf8')) as T;
-  } catch {
+  } catch (error) {
+    if (error instanceof GithubRequestRejected) throw error;
     // A dispatch failure may occur after GitHub accepted it. The caller retains UNKNOWN.
     throw new ServiceUnavailableException('Release provider request failed; inspect the recorded job before retrying');
   }

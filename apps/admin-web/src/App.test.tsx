@@ -55,6 +55,43 @@ async function openApp() {
 }
 
 describe("Provider admin workspace", () => {
+  it("does not offer a made-up release when the registry is empty", async () => {
+    const nav = await openApp();
+    fireEvent.click(nav.getByRole("button", { name: /^Deployments/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Trigger New Deployment/ }));
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByRole("button", { name: "Deploy release" })).toBeDisabled();
+    expect(within(dialog).getByText("No published releases available")).toBeInTheDocument();
+    expect(within(dialog).queryByText(/v1.2.4-lts/)).not.toBeInTheDocument();
+  });
+
+  it("submits one deployment request and keeps operator identity on the server", async () => {
+    let complete!: (response: Response) => void;
+    const pending = new Promise<Response>(resolve => { complete = resolve; });
+    vi.mocked(fetch).mockImplementation(async input => {
+      const url = String(input);
+      if (url.endsWith('/cicd/deploy')) return pending;
+      return { ok: true, json: async () => url.endsWith('/companies') ? DEMO_TENANTS : url.endsWith('/cicd/releases') ? [{ id: 'release-1', version: 'v1.0.0', name: 'Release fixture', targets: ['DOCKER'], artifacts: [], createdAt: '2026-10-19T00:00:00Z' }] : [] } as Response;
+    });
+    const nav = await openApp();
+    fireEvent.click(nav.getByRole('button', { name: /^Deployments/ }));
+    fireEvent.click(screen.getByRole('button', { name: /Trigger New Deployment/ }));
+    const dialog = screen.getByRole('dialog');
+    await waitFor(() => expect(within(dialog).getByLabelText('Release Package')).toHaveValue('v1.0.0'));
+    const submit = within(dialog).getByRole('button', { name: 'Deploy release' });
+    fireEvent.click(submit); fireEvent.click(submit);
+    expect(within(dialog).getByRole('button', { name: 'Requesting deployment…' })).toBeDisabled();
+    expect(within(dialog).getByRole('button', { name: 'Cancel' })).toBeDisabled();
+    const calls = vi.mocked(fetch).mock.calls.filter(([url]) => String(url).endsWith('/cicd/deploy'));
+    expect(calls).toHaveLength(1);
+    const payload = JSON.parse(String(calls[0][1]?.body));
+    expect(payload).toMatchObject({ strategy: 'MAINTENANCE', packageVersion: 'v1.0.0' });
+    expect(payload.requestKey).toMatch(/^[a-f0-9-]{36}$/);
+    expect(payload).not.toHaveProperty('triggeredBy');
+    await act(async () => { complete({ ok: true, json: async () => ({ id: 'job-1', status: 'QUEUED' }) } as Response); });
+    expect(await screen.findByText(/job-1 is queued/)).toBeInTheDocument();
+  });
+
   it("prevents duplicate renewals and reports only the saved provider settings", async () => {
     let complete!: (response: Response) => void;
     const pending = new Promise<Response>((resolve) => { complete = resolve; });
