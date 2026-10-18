@@ -2,8 +2,9 @@ import {
   CreateStaffDto,
   CreateShiftDto,
   CreatePayrollEntryDto,
+  UpdatePayrollEntryDto,
 } from './hr.dto';
-import { Controller, Get, Post, Body, Query } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, NotFoundException } from '@nestjs/common';
 import { HrService } from './hr.service';
 import { Roles } from '../../decorators/roles.decorator';
 
@@ -42,5 +43,20 @@ export class HrController {
   @Roles('MODIFIER')
   createPayrollEntry(@Body() body: CreatePayrollEntryDto) {
     return this.hrService.createPayrollEntry(body);
+  }
+
+  @Put('payroll/:id')
+  @Roles('MODIFIER')
+  async updatePayrollEntry(@Param('id') id: string, @Body() body: UpdatePayrollEntryDto) {
+    const updated = await this.hrService.updatePayrollEntry(id, body);
+    if (!updated) throw new NotFoundException('Payroll entry not found');
+    return updated;
+  }
+
+  @Delete('payroll/:id')
+  @Roles('ADMIN')
+  async deletePayrollEntry(@Param('id') id: string) {
+    if (!(await this.hrService.deletePayrollEntry(id))) throw new NotFoundException('Payroll entry not found');
+    return { success: true };
   }
 }

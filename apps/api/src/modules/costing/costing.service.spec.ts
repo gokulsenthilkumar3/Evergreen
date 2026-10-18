@@ -417,6 +417,18 @@ describe('ledger projection of cost and payroll entries', () => {
     });
   });
 
+  it.each([
+    ['a negative amount', { basicPay: -1000, netPay: -1100 }],
+    ['an amount that is not a number', { overtime: NaN }],
+    ['amounts that do not balance', { netPay: 950 }],
+  ])('reports a payroll row with %s instead of throwing, and posts the others', async (_case, change) => {
+    const pay = { staffId: 1, month: '2026-10', basicPay: 1000, overtime: 0, netPay: 900, deductions: 100, createdAt: date };
+    const ledger = tx([], [{ id: 5, ...pay, ...change }, { id: 6, ...pay }]);
+    await expect(reconcileFinance(ledger)).resolves.toEqual([expect.stringContaining('Payroll entry #5 has')]);
+    expect(ledger.journalEntry.create).toHaveBeenCalledTimes(1);
+    expect(ledger.journalEntry.create).toHaveBeenCalledWith({ data: expect.objectContaining({ sourceKey: 'PAYROLL:6' }) });
+  });
+
   it('reports nothing when every row is valid', async () => {
     await expect(
       reconcileFinance(

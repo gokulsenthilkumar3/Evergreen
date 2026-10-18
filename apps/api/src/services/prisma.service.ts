@@ -125,10 +125,13 @@ export class PrismaService
     };
     return this.mutationScope.run(scope, async () => {
       let unposted: string[] = [];
+      const repairFirst = await this.leadingReconcileBlocked();
       const committed = await this.$transaction(
         async (tx) => {
-          await reconcileStock(tx);
-          await reconcileLots(tx);
+          if (!repairFirst) {
+            await reconcileStock(tx);
+            await reconcileLots(tx);
+          }
           const period = await tx.accountingPeriod.findFirst({
             orderBy: { through: 'desc' },
           });
@@ -172,6 +175,29 @@ export class PrismaService
         );
       return committed;
     });
+  }
+
+  /**
+   * While a data problem is recorded, the stock and lot reconcile that leads
+   * every posting may be the very step that fails, and the posting that would
+   * repair it would never reach its work. Try that step alone first: it runs in
+   * its own transaction, so a failure rolls back whole and leaves no
+   * half-assigned lots behind. When it is blocked the posting runs its work
+   * first; the full reconcile and the guards after the work still decide
+   * whether anything commits.
+   */
+  private async leadingReconcileBlocked(): Promise<boolean> {
+    if (!this.startupIssue) return false;
+    try {
+      await this.$transaction(async tx => {
+        await reconcileStock(tx);
+        await reconcileLots(tx);
+      }, { timeout: 60_000 });
+      return false;
+    } catch (error) {
+      if (!(error instanceof BadRequestException)) throw error;
+      return true;
+    }
   }
 
   private async closedSnapshot(tx: Prisma.TransactionClient, through: Date) {
