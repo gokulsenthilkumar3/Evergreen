@@ -1,22 +1,39 @@
 # syntax=docker/dockerfile:1
-FROM node:22-bookworm-slim AS dependencies
+FROM node:22-bookworm-slim@sha256:c3de60bf2f9dd0ac6370e6117950ff62d6e339527e7472301c9c78a017978392 AS dependencies
 WORKDIR /app
 ENV ELECTRON_SKIP_BINARY_DOWNLOAD=1
 RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates && rm -rf /var/lib/apt/lists/*
-# .dockerignore excludes credentials, databases, generated copies and local dependencies.
 # All workspace manifests must be present when resolving the root lockfile.
+COPY package.json package-lock.json ./
+COPY apps/admin-api/package.json ./apps/admin-api/
+COPY apps/admin-web/package.json ./apps/admin-web/
+COPY apps/api/package.json ./apps/api/
+COPY apps/desktop/package.json ./apps/desktop/
+COPY apps/marketing-web/package.json ./apps/marketing-web/
+COPY apps/web/package.json ./apps/web/
+COPY apps/weighbridge-agent/package.json ./apps/weighbridge-agent/
+COPY packages/admin-database/package.json ./packages/admin-database/
+COPY packages/config/package.json ./packages/config/
+COPY packages/database/package.json ./packages/database/
+COPY packages/email/package.json ./packages/email/
+COPY packages/i18n/package.json ./packages/i18n/
+COPY packages/pdf/package.json ./packages/pdf/
+COPY packages/types/package.json ./packages/types/
+RUN npm ci --ignore-scripts --no-audit --no-fund
+
+FROM dependencies AS source
+# .dockerignore excludes credentials, databases, generated copies and local dependencies.
 COPY . .
-RUN npm ci --ignore-scripts
 
-FROM dependencies AS tenant-build
+FROM source AS tenant-build
 RUN npm run build -w apps/api
-RUN npm prune --omit=dev --ignore-scripts && npm run generate -w @evergreen/database
+RUN npm prune --omit=dev --ignore-scripts --no-audit --no-fund && npm run generate -w @evergreen/database
 
-FROM dependencies AS provider-build
+FROM source AS provider-build
 RUN npm run build -w apps/admin-api
-RUN npm prune --omit=dev --ignore-scripts && npm run generate -w @evergreen/database && npm run generate -w @evergreen/admin-database
+RUN npm prune --omit=dev --ignore-scripts --no-audit --no-fund && npm run generate -w @evergreen/database && npm run generate -w @evergreen/admin-database
 
-FROM node:22-bookworm-slim AS api-runtime
+FROM node:22-bookworm-slim@sha256:c3de60bf2f9dd0ac6370e6117950ff62d6e339527e7472301c9c78a017978392 AS api-runtime
 WORKDIR /app
 ENV NODE_ENV=production EVERGREEN_API_HOST=0.0.0.0
 RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates gosu && rm -rf /var/lib/apt/lists/*
@@ -43,11 +60,11 @@ EXPOSE 4300
 HEALTHCHECK --interval=5s --timeout=3s --start-period=90s --retries=12 CMD node -e "fetch('http://127.0.0.1:4300/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 CMD ["node", "apps/admin-api/dist/main.js"]
 
-FROM dependencies AS tenant-web-build
+FROM source AS tenant-web-build
 RUN npm run build -w @evergreen/types && npm run build -w apps/web
-FROM dependencies AS admin-web-build
+FROM source AS admin-web-build
 RUN npm run build -w apps/admin-web
-FROM dependencies AS marketing-build
+FROM source AS marketing-build
 RUN npm run build -w apps/marketing-web
 
 FROM nginx:stable-alpine AS tenant-web

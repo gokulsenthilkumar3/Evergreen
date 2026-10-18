@@ -96,7 +96,11 @@ export async function prepareDesktop({ build = true } = {}) {
   fs.writeFileSync(path.join(app, 'package.json'), JSON.stringify({ name: desktop.name, productName: 'EverGreen', version: desktop.version,
     description: desktop.description, author: desktop.author, license: 'UNLICENSED', main: 'main.js', dependencies: desktop.dependencies }, null, 2));
   const git = spawnSync('git', ['-c', `safe.directory=${root.replaceAll('\\', '/')}`, 'rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8', windowsHide: true });
+  const status = spawnSync('git', ['-c', `safe.directory=${root.replaceAll('\\', '/')}`, 'status', '--porcelain'], { cwd: root, encoding: 'utf8', windowsHide: true });
+  const dirty = status.status !== 0 || status.stdout.trim().length > 0;
+  if (config.enabled && dirty) throw new Error('Signed update releases require a clean committed source tree');
   const manifest = { format: 1, version: desktop.version, commit: git.status === 0 ? git.stdout.trim() : 'unknown',
+    dirty,
     lockSha256: digest(fs.readFileSync(path.join(root, 'package-lock.json'))),
     apiSha256: digest(treeDigest(path.join(runtime, 'apps/api/dist')) + treeDigest(path.join(runtime, 'node_modules/@evergreen'))),
     webSha256: digest(fs.readFileSync(path.join(stage, 'web/index.html'))),
@@ -107,13 +111,9 @@ export async function prepareDesktop({ build = true } = {}) {
   return { stage, app, runtime, manifest, config, desktop };
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  try {
-    const prepared = await prepareDesktop();
-    if (process.argv.includes('--prepare-only')) console.log(JSON.stringify({ stage: prepared.stage, ...prepared.manifest }, null, 2));
-    else {
+export async function packageDesktop(prepared, { directory = false } = {}) {
       const { build, Platform } = require('electron-builder');
-      await build({ projectDir: prepared.app, targets: Platform.WINDOWS.createTarget(process.argv.includes('--dir') ? 'dir' : 'nsis'), publish: 'never', config: {
+      const artifacts = await build({ projectDir: prepared.app, targets: Platform.WINDOWS.createTarget(directory ? 'dir' : 'nsis'), publish: 'never', config: {
         appId: 'com.evergreen.yarnsms', productName: 'EverGreen', electronVersion: prepared.desktop.devDependencies.electron,
         directories: { output: path.join(root, 'apps/desktop/dist') }, npmRebuild: false,
         files: ['**/*'], extraResources: [{ from: prepared.runtime, to: 'runtime' }, { from: path.join(prepared.stage, 'web'), to: 'web' }],
@@ -122,6 +122,23 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
         forceCodeSigning: prepared.config.enabled,
         publish: prepared.config.enabled ? { provider: 'generic', url: prepared.config.url } : null,
       } });
+      if (!directory) {
+        const output = path.join(root, 'apps/desktop/dist');
+        const files = artifacts.filter(file => fs.existsSync(file) && fs.statSync(file).isFile());
+        const checksums = files.map(file => `${digest(fs.readFileSync(file))}  ${path.basename(file)}`).join('\n');
+        fs.writeFileSync(path.join(output, 'SHA256SUMS'), checksums + '\n');
+        fs.writeFileSync(path.join(output, 'release-manifest.json'), JSON.stringify(prepared.manifest, null, 2));
+      }
+      return artifacts;
+}
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  try {
+    const prepared = await prepareDesktop();
+    runNode(['scripts/release/smoke-desktop.mjs', prepared.stage]);
+    if (process.argv.includes('--prepare-only')) console.log(JSON.stringify({ stage: prepared.stage, ...prepared.manifest }, null, 2));
+    else {
+      await packageDesktop(prepared, { directory: process.argv.includes('--dir') });
       console.log('Desktop artifacts prepared. Publishing is a separate release action.');
     }
   } catch (error) { console.error(error.message); process.exitCode = 1; }
