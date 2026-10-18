@@ -67,19 +67,19 @@ RUN npm run build -w apps/admin-web
 FROM source AS marketing-build
 RUN npm run build -w apps/marketing-web
 
-FROM nginx:stable-alpine AS tenant-web
+FROM nginx:stable-alpine@sha256:970364228b1e4f932abc22d321932816782cca8a20b85a77552a7cfe9acfb3b5 AS tenant-web
 COPY deploy/docker/nginx-tenant.conf /etc/nginx/conf.d/default.conf
 COPY --from=tenant-web-build /app/apps/web/dist /usr/share/nginx/html
 EXPOSE 4000
 HEALTHCHECK --interval=5s --timeout=3s --retries=12 CMD wget -q -O /dev/null http://127.0.0.1:4000/health || exit 1
 
-FROM nginx:stable-alpine AS admin-web
+FROM nginx:stable-alpine@sha256:970364228b1e4f932abc22d321932816782cca8a20b85a77552a7cfe9acfb3b5 AS admin-web
 COPY deploy/docker/nginx-admin.conf /etc/nginx/conf.d/default.conf
 COPY --from=admin-web-build /app/apps/admin-web/dist /usr/share/nginx/html
 EXPOSE 5174
 HEALTHCHECK --interval=5s --timeout=3s --retries=12 CMD wget -q -O /dev/null http://127.0.0.1:5174/admin-api/health || exit 1
 
-FROM nginx:stable-alpine AS marketing-web
+FROM nginx:stable-alpine@sha256:970364228b1e4f932abc22d321932816782cca8a20b85a77552a7cfe9acfb3b5 AS marketing-web
 COPY deploy/docker/nginx-marketing.conf /etc/nginx/conf.d/default.conf
 COPY --from=marketing-build /app/apps/marketing-web/dist /usr/share/nginx/html
 EXPOSE 3300

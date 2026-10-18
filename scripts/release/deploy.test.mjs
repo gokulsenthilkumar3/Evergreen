@@ -3,7 +3,18 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
+import { spawnSync } from 'node:child_process';
 import { deploy, parseOptions, createEnvironment } from './deploy.mjs';
+
+test('workflow rejects checkout-owned installation state before any Docker operation', () => {
+  const result = spawnSync(process.execPath, ['scripts/release/workflow-deploy.mjs'], {
+    encoding: 'utf8', windowsHide: true,
+    env: { ...process.env, TARGET: 'test', RELEASE_SHA: 'a'.repeat(40), STATE_DIRECTORY: path.resolve('.evergreen/unsafe-workflow-state') },
+  });
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /state must be outside the checkout/);
+  assert.equal(fs.existsSync('.evergreen/unsafe-workflow-state'), false);
+});
 
 function fixture(t) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'evergreen-release-'));
