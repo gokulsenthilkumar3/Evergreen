@@ -58,7 +58,7 @@ The [commercial proposal](COMMERCIAL_MODEL.md) remains a proposal. Do not publis
 
 ## Technical research queue
 
-1. Profile posting/reconciliation across 1k/10k/100k movement datasets; compare query count, p95/p99 and lock failures before proposing PostgreSQL.
+1. Profile posting/reconciliation across 1k/10k/100k movement datasets; compare query count, p95/p99 and lock failures before and after the planned PostgreSQL conversion. PostgreSQL per customer is already the [recorded target](decisions/0001-installation-and-data-boundaries.md); these measurements inform migration acceptance and transaction design.
 2. Profile list/history reads and 3D/print/export imports on the intended operator machine. Keep animation separate from availability of business records.
 3. Verify Tally mapping and protocol for the installed version, then external acknowledgements and duplicate recovery.
 4. Test actual devices and power/network loss before changing a simulation label to live capture.

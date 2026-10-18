@@ -27,7 +27,7 @@ npm run test -w apps/api -- --runInBand
 
 The type-check covers application source, unit tests and HTTP test fixtures. Jest transpiles tests with isolated modules, so passing tests alone does not establish that their TypeScript contracts are valid. The root `npm run typecheck` and CI's `npm run verify` include this check.
 
-Environment and database initialization instructions live in the root README. Do not log secrets or bootstrap passwords. Health HTML is available at `/health`, and JSON at `/health?format=json`.
+Environment and database initialization instructions live in the [Quick Start](../../QUICK_START.md). Do not log secrets or bootstrap passwords. `/health` always returns a public JSON probe containing `service`, `status`, `database` and `timestamp`; it returns HTTP 503 when the database is unreachable. Operational details are available at `/status` only to an authenticated administrator. There is no HTML health page or format selector.
 
 ## Optional provider sync
 

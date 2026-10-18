@@ -1,0 +1,9 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'unsafe-inline'">
+<title>Set up EverGreen</title><style>body{font:16px system-ui;margin:40px;color:#18332a;background:#f5f8f6}label{display:block;margin:18px 0 6px}input,button{font:inherit;padding:10px;box-sizing:border-box;width:100%}button{margin-top:24px;background:#126c4a;color:white;border:0;border-radius:6px}p{line-height:1.5}#error{color:#a31a24}</style></head>
+<body><h1>Welcome to EverGreen</h1><p>Create the administrator for this computer. Your company records stay on this computer.</p>
+<form id="setup"><label for="username">Username</label><input id="username" autocomplete="username" required minlength="3" maxlength="80" pattern="[a-zA-Z0-9_.-]+">
+<label for="email">Email</label><input id="email" type="email" autocomplete="email" required maxlength="200">
+<label for="password">Password</label><input id="password" type="password" autocomplete="new-password" required minlength="12"><p>Use at least 12 characters.</p>
+<p id="error" role="alert"></p><button type="submit">Create administrator and start</button></form><script src="setup.js"></script></body></html>

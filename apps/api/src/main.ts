@@ -18,6 +18,7 @@ async function bootstrap() {
   }
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  app.enableShutdownHooks();
   // Company logo uploads are limited to 500 KB before base64 encoding.
   app.useBodyParser('json', { limit: '1mb' });
   // Only the loopback web proxy may supply the original client address.
@@ -446,7 +447,15 @@ Authorize with your own staff bearer token for protected endpoints. Try it out e
   const host =
     process.env.EVERGREEN_API_HOST ??
     (process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1');
-  await app.listen(port, host);
+  await app.listen(Number(port), host);
+  if (process.env.EVERGREEN_DESKTOP === 'true' && process.send) {
+    process.on('message', (message: { type?: string }) => {
+      if (message?.type === 'evergreen-shutdown') {
+        void app.close().then(() => process.exit(0));
+      }
+    });
+    process.send({ type: 'evergreen-ready', port: app.getHttpServer().address().port });
+  }
   console.log(`🚀 Application is listening on ${host}:${port}`);
   if (process.env.NODE_ENV !== 'production') {
     console.log(`📊 API Documentation: http://localhost:${port}/api/docs`);

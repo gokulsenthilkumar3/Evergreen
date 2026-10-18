@@ -28,11 +28,13 @@ When evidence conflicts, inspect the actual endpoint and record the discrepancy.
 
 Business owner, inventory clerk, production supervisor, accounts staff, administrator, public-shop customer, and operational support. Do not infer permission from a persona label: trace role enforcement in the API.
 
-## Target topology, not current capability
+## Current topology and future acceptance
+
+The [architecture](../docs/ARCHITECTURE.md) and [decision record](../docs/decisions/0001-installation-and-data-boundaries.md) define one installation and database per customer, with a separate provider database. Operational tables currently have no tenant discriminator. PostgreSQL per customer is the recorded target; SQLite remains the implemented datasource. Preserve these decisions unless the task explicitly changes them.
 
 1. Single business: reconcile physical stock and invoice/payment records; prove recoverability.
 2. Multiple sites: define organization/site boundaries, transfer ownership and reporting scope. Prevent duplicate stock during transfers.
-3. Multiple businesses: enforce tenant scope on every record, query, export, cache, background job, attachment and authorization decision. Prove cross-tenant denials before onboarding customer businesses.
+3. Multiple businesses: provision distinct databases, secrets, processes, storage and backups per customer. Prove isolation across APIs, background jobs, exports and restores using two installations. Provider sync needs a credential bound to one company. Shared-table tenancy would be a separate architecture change, not an assumed requirement to add tenant IDs to the current schema.
 4. Desktop + hosted: choose whether desktop connects online to hosted data or owns a local database. Offline writes and bidirectional sync require conflict, idempotency and cutover design. Do not assume the packaged backend provides safe synchronization.
 
 ## Open questions

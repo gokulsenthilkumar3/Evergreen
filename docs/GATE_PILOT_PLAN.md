@@ -65,7 +65,7 @@ Illustrative assumptions only: at ₹3,499/month, a 75% contribution margin and 
 
 ## Deployment decision
 
-Keep a simple tenant installation for the first pilot. Compare same-region quotes for the same CPU/RAM/storage, backups, bandwidth and support requirements before choosing a cloud. No blanket GCP cost advantage is assumed. Keep portable application/container boundaries; postpone Kubernetes and a PostgreSQL transition until scale, concurrency, customer policy or recovery requirements justify them.
+Keep a simple tenant installation for the first pilot. Compare same-region quotes for the same CPU/RAM/storage, backups, bandwidth and support requirements before choosing a cloud. No blanket GCP cost advantage is assumed. Keep portable application/container boundaries and defer Kubernetes until a measured need exists. The later [architecture decision](decisions/0001-installation-and-data-boundaries.md) records PostgreSQL per customer as the target; SQLite is still implemented, and conversion requires the EG-26 migration and reconciliation gates before rollout.
 
 ## Running this implementation
 
@@ -75,7 +75,9 @@ Build shared types and regenerate Prisma as normal. In Inward Entry, choose **We
 
 The API preserves a stable lot reference and timestamp across identical retries. Keep these unchanged after an uncertain save. Existing generic Add Batch remains available, without reconstructed historical moisture details. Purchase Tally export is intentionally unavailable until approved bill mapping is implemented; Sales/Receipt export requires ADMIN and still needs Tally acceptance testing.
 
-## Verification
+## Verification (2026-10-11)
+
+This is the original implementation evidence. Later migration checks and fixes are recorded in the [current validation record](PROJECT_AUDIT.md#validation-record); the historical failure below is not a current check result.
 
 - Full API regression suite: 146 tests passed, including 29 receipt and export authorization cases.
 - API/frontend TypeScript checks passed. Web production build passed with bundle-size warnings.

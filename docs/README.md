@@ -7,6 +7,7 @@ Start with the [Quick Start](../QUICK_START.md). Inside the app, the searchable 
 | Document | Read it to learn |
 | --- | --- |
 | [Architecture](ARCHITECTURE.md) | How the system is built, which code owns each rule, and how to make a change safely |
+| [Architecture decision](decisions/0001-installation-and-data-boundaries.md) | Why the modular monolith and separate customer installations are retained, with rollout and rollback gates |
 | [Business flow](BUSINESS_FLOW.md) | How material and money move, who owns each handoff, and the end-to-end acceptance check |
 | [Integrations](INTEGRATIONS.md) | CSV import, Tally export, and the webhook and e-Way Bill designs |
 | [Desktop delivery](DESKTOP_DELIVERY.md) | Electron development, packaging and customer installation |
@@ -14,6 +15,7 @@ Start with the [Quick Start](../QUICK_START.md). Inside the app, the searchable 
 | [Maintenance runbook](MAINTENANCE_RUNBOOK.md) | Verifying changes, refreshing generated docs, backup and restore |
 | [Test scenario catalogue](TEST_PLAN.md) | Functional, boundary and negative test cases by module |
 | [Operating guide](wiki/OPERATING_GUIDE.md) | Day-to-day use of the staff application |
+| [Engineering agent system](../agent-system/README.md) | Repository-local skills, operating rules and their validation limits |
 
 ## Status and planning
 
@@ -39,6 +41,8 @@ Start with the [Quick Start](../QUICK_START.md). Inside the app, the searchable 
 
 Regenerate these with `npm run docs:generate`, `npm run audit:roadmap` and `npm run audit:surface`. Never edit them by hand.
 
+The [Integrations operating guide](wiki/pages/Integrations.md) is the exception inside the page wiki: it is maintained by hand and preserved by the generator. Review its instructions against the screen and API when import behavior changes.
+
 - [Page wiki](wiki/README.md): one page per screen, with its routes, controls and API calls.
 - [UI controls](reference/UI_CONTROLS.md), [API handlers](reference/API.md), [workflow actions](reference/WORKFLOWS.md), [data models](reference/DATA_MODEL.md), [code index](reference/CODE_INDEX.md) and [coverage counts](reference/COVERAGE.md).
 - [Project surface](reference/PROJECT_SURFACE.md): every authored source and configuration file.
@@ -46,7 +50,7 @@ Regenerate these with `npm run docs:generate`, `npm run audit:roadmap` and `npm 
 
 ## Dated evidence
 
-`docs/audits/<date>/` holds point-in-time reviews. They are kept for history and are not updated afterwards. When they disagree with the guides above, the newer document wins.
+`docs/audits/<date>/` holds point-in-time reviews. Keep those reports as historical evidence. The [shared issue register](audits/2026-10-11/issue-register.md) is the exception: its location reflects when the audit began, and its entries receive dated resolution updates. Use the [project status](PROJECT_AUDIT.md), current register entries and backlog for today's status; an older report does not reopen a resolved finding.
 
 | Date | Contents |
 | --- | --- |

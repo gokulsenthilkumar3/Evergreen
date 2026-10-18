@@ -44,7 +44,7 @@ This starts the staff app and its API. To start everything (staff, provider and 
 | Staff application | http://localhost:4000/ | `npm run dev` or `dev:all` |
 | Business workspace | http://localhost:4000/workspace | Staff sign-in required |
 | Workflow guide | http://localhost:4000/tutorial | Staff sign-in required |
-| Health probe | http://localhost:4000/health | Public; returns service, status and time only |
+| Health probe | http://localhost:4000/health | Public JSON: service, status, database connectivity and timestamp |
 | Operational status | http://localhost:4000/api/backend/status | Administrator sign-in required |
 | Customer API explorer | http://localhost:4000/api/docs | Development only |
 | Provider workspace | http://localhost:5174/ | `dev:all` only |

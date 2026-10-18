@@ -8,6 +8,27 @@ datasource db {
   url      = env("ADMIN_DATABASE_URL")
 }
 
+// Execution records are separate from operator-editable control records.
+model ReleaseJob {
+  id           String   @id @default(uuid())
+  requestKey   String   @unique
+  fingerprint  String
+  kind         String
+  companyId    String?
+  target       String
+  version      String
+  commit       String
+  actor        String
+  status       String   @default("REQUESTED")
+  activeTarget String?  @unique
+  runId        String?
+  runUrl       String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([kind, createdAt])
+}
+
 model Company {
   id             String   @id @default(uuid())
   name           String

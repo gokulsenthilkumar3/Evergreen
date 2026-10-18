@@ -1,6 +1,6 @@
 ﻿# Architecture
 
-Reviewed against the source on 2026-10-15. This page explains how EverGreen is put together and which code owns each rule. For what is finished and what is still open, see the [project status](PROJECT_AUDIT.md) and the [backlog](IMPLEMENTATION_BACKLOG.md).
+Reviewed against the source on 2026-10-18. This page explains how EverGreen is put together and which code owns each rule. The [architecture decision](decisions/0001-installation-and-data-boundaries.md) records the reasons, constraints and rollout gates. For what is finished and what is still open, see the [project status](PROJECT_AUDIT.md) and the [backlog](IMPLEMENTATION_BACKLOG.md).
 
 ## System overview
 
@@ -22,7 +22,7 @@ Ports are development defaults and can be overridden. The marketing site runs on
 
 ### One installation per company
 
-Each customer gets its own web app, API, database, secrets and backups. There is no shared customer database, so operational tables have no tenant ID column. The provider application is a separate system with its own database. Its company records do not provision infrastructure, and warehouse or machine names are not an isolation boundary between sites.
+The supported design assigns each customer its own web app, API, database, secrets and backups. There is no shared customer database design, so operational tables have no tenant ID column. The provider application is a separate system with its own database. Its company records do not provision infrastructure, and warehouse or machine names are not an isolation boundary between sites. Provisioning and two-installation isolation still need deployment evidence (SEP-004); separate schema files alone do not prove isolation.
 
 ### Databases
 
@@ -43,9 +43,9 @@ Business modes are `INTEGRATED`, `WAREHOUSE`, `MILL` and `PROCESSING`. Workspace
 
 ## Customer API (`apps/api`)
 
-`src/app.module.ts` wires the domain modules: auth, users, sessions, settings, inventory, production, costing, commerce, billing (read-only legacy), job work, warehouse, machines, quality, HR, workflows, integrations, search, dashboard and logs.
+`src/app.module.ts` wires the domain modules: auth, users, sessions, settings, inventory, production, costing, commerce, billing (read-only legacy), job work, warehouse, machines, quality, HR, workflows, integrations, search, dashboard, logs and admin operations, with a shared database module.
 
-A protected request goes through the session/JWT guard and the role guard, then DTO validation, then the controller, domain service and a Prisma transaction. Default role rules separate reads, writes and deletes, and route decorators can tighten them. The roles are `VIEWER`, `MODIFIER` and `ADMIN`. Many legacy handlers still accept `any` bodies, which global validation cannot check (register API-001), so read a handler's own validation before trusting it.
+A protected request goes through the session/JWT guard and the role guard, then DTO validation, then the controller and domain service. A domain service selects its transaction boundary; guards and validation do not automatically wrap requests in a transaction. Default role rules separate reads, writes and deletes, and route decorators can tighten them. The roles are `VIEWER`, `MODIFIER` and `ADMIN`. Many legacy handlers still accept `any` bodies, which global validation cannot check (register API-001), so read a handler's own validation before trusting it.
 
 ### Consistency owners
 
@@ -62,6 +62,28 @@ Rules that every change must keep:
 - Master-data imports create customers and items only. They post no opening stock or cash.
 - Retry protection is per command, not global. Invoices, workflow documents, imports and payments have request keys or fingerprints. Check the specific command before calling a retry safe (register API-008).
 - Reconciliation reads broadly and loops inside write transactions. Measure before optimising, and keep the full reconciliation as a cross-check when adding incremental projections (register API-012, PERF-001).
+
+```mermaid
+flowchart TD
+  UI[Staff screen] --> HTTP[HTTP client and proxy]
+  HTTP --> Guards[JWT session and role guards]
+  Guards --> Input[DTO and command validation]
+  Input --> Domain[Owning domain service]
+  Domain --> Tx[stockTransaction for stock and ledger postings]
+  Tx --> Source[Source documents and movements]
+  Source --> Projection[Stock bridge, lots, finance and valuation]
+  Projection --> Checks[Stock guards and closed-period checks]
+  Checks --> Commit[Commit together or roll back]
+  Commit --> Readback[Refetch reports and saved document snapshots]
+```
+
+This is the posting contract. Read endpoints and ordinary master-data changes can use other Prisma operations. Retry identity and validation still need review per command; the diagram does not certify every legacy writer.
+
+### Operational exceptions
+
+- `/health` is a public JSON connectivity probe; `/status` requires `ADMIN` and includes reconciliation issues and operational detail. A healthy database connection does not establish balanced books.
+- `POST /admin-ops/migrate` still runs synchronous `npx prisma migrate deploy` inside the request after staff and provider guards. `AUTO_MIGRATE=true` invokes the same command during boot. These are existing exceptions to controlled deployment ownership, not an accepted migration workflow (API-005 / EG-10).
+- Startup reconciliation can change derived ledger state. Point startup and restore rehearsals at isolated copies, and keep outbound integrations disabled until reconciliation is accepted.
 
 ## Provider application (`apps/admin-web`, `apps/admin-api`)
 
@@ -87,6 +109,10 @@ The provider workspace stores company records, license settings, usage snapshots
 Details are in [integrations](INTEGRATIONS.md), [weighbridge agent](WEIGHBRIDGE_AGENT_ARCHITECTURE.md) and [desktop delivery](DESKTOP_DELIVERY.md).
 
 ## Shared packages and builds
+
+Applications may depend on shared packages; shared packages must not import application internals. Browser code calls API contracts and must not import a Prisma client or backend service. Customer and provider applications use separate database clients (`@prisma/client` and `@prisma/admin-client` respectively). Any exchange between them belongs to an authenticated HTTP contract, never a cross-database write.
+
+The 14 workspace manifests currently declare no dependency cycles. This is a manifest-level check, not proof that every TypeScript import or business dependency is acyclic. The ownership boundary is still enforced through source review and focused tests.
 
 - `@evergreen/types`: shared types and runtime helpers. Node uses its compiled CommonJS output and bundlers use the TypeScript source.
 - `@evergreen/database` and `@evergreen/admin-database`: the two Prisma schemas and migration histories.

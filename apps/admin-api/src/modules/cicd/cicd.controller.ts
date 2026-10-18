@@ -1,5 +1,7 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, Req } from '@nestjs/common';
 import { CicdService } from './cicd.service';
+import { BuildReleaseDto, DeployReleaseDto } from './cicd.dto';
+import type { Request } from 'express';
 
 @Controller('cicd')
 export class CicdController {
@@ -23,26 +25,17 @@ export class CicdController {
 
   @Post('build')
   triggerBuild(
-    @Body()
-    body: {
-      version: string;
-      name: string;
-      changelog: string;
-      targets?: string[];
-    },
+    @Body() body: BuildReleaseDto,
+    @Req() request: Request & { providerActor?: string },
   ) {
-    return this.cicdService.triggerBuild(body);
+    return this.cicdService.triggerBuild(body, request.providerActor);
   }
 
   @Post('deploy')
   deployPackage(
-    @Body()
-    body: {
-      packageVersion: string;
-      companyId: string;
-      strategy?: 'ROLLING' | 'BLUE_GREEN' | 'CANARY' | 'INSTANT';
-    },
+    @Body() body: DeployReleaseDto,
+    @Req() request: Request & { providerActor?: string },
   ) {
-    return this.cicdService.deployPackage(body);
+    return this.cicdService.deployPackage(body, request.providerActor);
   }
 }

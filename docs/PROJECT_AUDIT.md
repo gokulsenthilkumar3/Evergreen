@@ -1,6 +1,6 @@
 ﻿# Project status
 
-Assessed on 2026-10-14 and updated on 2026-10-17. This is the current engineering view of EverGreen. Work packages are in the [backlog](IMPLEMENTATION_BACKLOG.md), individual defects are in the [shared issue register](audits/2026-10-11/issue-register.md), and the latest full review is the [15 October report](audits/2026-10-15/REPORT.md).
+Assessed on 2026-10-14 and updated on 2026-10-18. This is the current engineering view of EverGreen. Work packages are in the [backlog](IMPLEMENTATION_BACKLOG.md), individual defects are in the [shared issue register](audits/2026-10-11/issue-register.md), and the latest full review is the [15 October report](audits/2026-10-15/REPORT.md).
 
 ## Summary
 
@@ -56,6 +56,24 @@ P0 means a blocker for that rollout, not an active production incident.
 ## Validation record
 
 Every run is listed with its environment. A failed or unrun check stays visible, and no completion percentage is given.
+
+### 2026-10-18: documentation and architecture review
+
+Windows, Node 24.12.0, based on `5397aab`. Reviewed the customer/provider module wiring, guards, database clients, transaction and reconciliation ownership, sync transport, Electron launcher and container recipes. The 14 workspace manifests declare no local dependency cycles; this is not a source-import cycle check or deployment-isolation proof. The [architecture decision](decisions/0001-installation-and-data-boundaries.md) records existing boundaries, migration exceptions, rollout gates and rollback requirements.
+
+Corrected the obsolete HTML-health instructions, public probe fields, issue-register maintenance guidance, conflicting PostgreSQL planning text and agent topology context. The maintained Integrations guide now matches the implemented import screen and labels connectors and scoped keys as pending. Two stale section links were found by an additional heading-link scan and corrected. The final scan passed 3,911 local file links and 33 heading links across all 118 Markdown files returned by the repository file inventory, including agent documentation; external URLs were not revalidated.
+
+| Check | Result |
+| --- | --- |
+| `npm run typecheck` | Passed for the customer API, its test contracts and the web app |
+| Customer API unit suite | 293 passed in 21 suites |
+| Provider API suite | 81 passed in 6 suites, including temporary-database HTTP contracts |
+| Customer HTTP suite | 22 passed in 2 suites against temporary migrated databases |
+| `npm run agent:check` | Structure/links passed; 8 planner tests passed; model-behavior scenarios remain unexecuted |
+| `npm run test:maintenance` | 6 passed |
+| Generated references and audit inventories | Current; 38 page entries, 139 customer API handlers and 30 workflow actions |
+
+The changes are documentation-only. No operational database was migrated, no artifact was deployed and no production feature was accepted. The full root verify pipeline, builds, repository lint, dependency audit, browser/device checks, restore drills and two-installation isolation were not rerun. EG-02 provider authentication, EG-03 containers, EG-04 recovery, EG-10 migration orchestration, EG-11 desktop delivery and EG-26 storage/site work remain open.
 
 ### 2026-10-17: API test contracts included in type-checking (TEST-006 partial)
 
@@ -136,7 +154,7 @@ The main optimisation candidates are repeated reconciliation inside write transa
 2. The backlog: open work and acceptance criteria.
 3. Architecture: current boundaries and intended changes.
 4. Generated references: what the source contains.
-5. Anything under `docs/audits/` older than the latest report: historical context only.
+5. Dated reports under `docs/audits/`: historical context only. The shared issue register is actively maintained despite its dated directory; use its latest dated resolution evidence.
 
 ## Working notes
 
