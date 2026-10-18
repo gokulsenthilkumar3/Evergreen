@@ -5,7 +5,8 @@ export function httpClient(origin, account) {
   let token;
   return async function request(method, route, body) {
     const response = await fetch(origin + '/api/backend' + route, { method, signal: AbortSignal.timeout(30_000),
-      headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      // Containers are replaced between phases; do not reuse a socket to the stopped web server.
+      headers: { 'Content-Type': 'application/json', Connection: 'close', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
       ...(body ? { body: JSON.stringify(body) } : {}),
     });
     const result = await response.json();

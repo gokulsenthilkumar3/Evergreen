@@ -71,13 +71,13 @@ Acceptance: restore a representative database; compare row counts, open invoices
 
 ### EG-03 — Reproducible deployments (P0 for containers, platform owner, M)
 
-Files: deploy/docker/Dockerfile.*, deploy/docker/*entrypoint.sh, docker-compose.production.yml, deploy/linux/*.
+Files: deploy/docker/Dockerfile, deploy/docker/api-entrypoint.sh, deploy/docker/compose.yml, scripts/release/deploy.mjs, deploy/linux/*.
 
-Remove nonexistent root tsconfig copy and replace db:generate with the real generate command. Supply the complete required workspace manifests before npm ci. Build/copy every runtime workspace export; separate writable DB files from image-owned schema/migrations; verify non-root ownership and clean-volume behavior. Review published API ports, TLS, secret injection and the provider/tenant network boundary.
+19 October implementation: one multi-target Dockerfile now supplies all workspace manifests before `npm ci`, uses real build/generate scripts and includes runtime exports. Writable databases live under `/data`, separately from image-owned migrations. APIs are private, runtime drops root privileges, and provider/customer networks and volumes are separate. Install/update helpers retain secrets, lock operations and migrate verified candidate snapshots. See [delivery and recovery](ONE_CLICK_DELIVERY.md).
 
-The VM helper currently overwrites tenant.env, omits JWT/bootstrap setup and claims RHEL support while using apt-get. Make reruns preserve configured secrets, select supported distributions explicitly, and verify service executable paths.
+The VM helper now delegates to the canonical Node/Docker helper and checks prerequisites. It does not install OS packages or overwrite installation configuration.
 
-Acceptance: clean-cache images build in CI; fresh volume boots; upgrade preserves data; health and proxy routes work; secrets are absent from image layers; restart/restore works. Run the desktop gate separately. No container daemon or deployed host was exercised in this audit.
+Acceptance: clean-context images build in CI; fresh volume boots; upgrade preserves data; health/proxy routes work; secrets are absent from layers; failed-update rollback and independent restore work. Local executed evidence is recorded in [project status](PROJECT_AUDIT.md#validation-record); host TLS, off-site recovery and production acceptance remain separate. Run the desktop gate separately.
 
 ### EG-15 — End-to-end operational acceptance (P0 for pilot, business/QA owner, M)
 
@@ -122,6 +122,8 @@ Acceptance: tenant A cannot sync tenant B, list companies, change licensing or p
 Files: companies.service.ts, control records, tenant admin-ops controller, provider UI and schema.
 
 Current behavior rejects unimplemented actions. Future worker states: REQUESTED → APPROVED → QUEUED → RUNNING → SUCCEEDED/FAILED/EXPIRED. Bind approval to tenant, action, package digest and expiry; require tenant receipt and execution evidence before success. Use idempotent acknowledgements, bounded retries and audit actor identity. Migration execution uses a reviewed artifact, explicit schema path, backup proof and asynchronous worker.
+
+19 October delivery implementation: request-time migration is disabled and boot migration is rejected. Provider build/deploy now persists retry identity and target locks, dispatches protected GitHub workflows and reports real workflow evidence or unknown acknowledgement. Server-side company/runner mapping and published commit resolution constrain deployment. Candidate snapshots, explicit migrations and health checks run outside HTTP requests. Configure/sign/rehearse the actual target before production acceptance; this does not implement arbitrary remote company actions.
 
 Acceptance: disconnected tenant never appears successful; expired/replayed approvals fail; unknown actions cannot become shell commands; requester/canceller/executor are attributable. Provider maintenance preference is desired state, not evidence of enforcement. Existing historical EXECUTED rows need classification rather than automatic acceptance.
 
@@ -181,7 +183,7 @@ Acceptance: first/last pages and filtered totals agree, no duplicated/missing ro
 
 ### EG-11 — Supported Windows distribution (P1 for desktop sales, desktop owner, L)
 
-Build the backend from canonical source for every release; record commit and artifact digest. Bootstrap an empty migrated database instead of shipping operational data. Verify writable user-data path, runtime dependencies, port configuration, upgrade and recovery. Define offline scope; bidirectional cloud sync is a separate conflict-resolution project.
+19 October implementation: the canonical builder compiles API/web/shared packages, bundles Node and Prisma, records source/runtime hashes and tests a disposable business database before NSIS packaging. First-run setup creates credentials and OS-protected secrets; upgrades use new database generations and consistent snapshots. Signed-feed update handling exists; unsigned local packages have updates disabled. See [desktop delivery](DESKTOP_DELIVERY.md). Bidirectional cloud sync remains separate work.
 
 Acceptance: clean Windows install, update from previous supported version, user-data preservation, recovery and signed installer provenance. Root npm run build does not run electron-builder.
 

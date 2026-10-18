@@ -31,6 +31,7 @@ jobs:
           node --input-type=module -e "import fs from 'node:fs'; const p=JSON.parse(fs.readFileSync('apps/desktop/package.json')); if (!/^[a-f0-9-]{36}$/.test(process.env.REQUEST_ID) || process.env.RELEASE_VERSION !== 'v'+p.version || !/^v\d+\.\d+\.\d+$/.test(process.env.RELEASE_VERSION)) process.exit(1)"
           printf 'commit=%s\n' "$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
       - run: npm ci
+      - run: npm audit --omit=dev --audit-level=high
       - run: npm run verify
   images:
     needs: validate
@@ -86,6 +87,7 @@ jobs:
             apps/desktop/dist/*.exe
             apps/desktop/dist/*.blockmap
             apps/desktop/dist/latest.yml
+            apps/desktop/dist/release-manifest.json
           if-no-files-found: error
   publish:
     needs: [validate, images, windows]
@@ -106,5 +108,5 @@ jobs:
         run: |
           if gh api "repos/$GH_REPO/git/ref/tags/$RELEASE_VERSION" >/dev/null 2>&1; then echo 'Release tag already exists; choose a new version.' >&2; exit 1; fi
           node -e "require('fs').writeFileSync('release-notes.txt', process.env.RELEASE_NOTES || '')"
-          (cd artifacts && sha256sum *.exe *.blockmap latest.yml > SHA256SUMS)
+          (cd artifacts && sha256sum *.exe *.blockmap latest.yml release-manifest.json > SHA256SUMS)
           gh release create "$RELEASE_VERSION" artifacts/* --target "$RELEASE_COMMIT" --title "${RELEASE_TITLE:-$RELEASE_VERSION}" --notes-file release-notes.txt

@@ -318,7 +318,7 @@ export class CicdService {
           activeTarget: `${input.kind}:${input.target}`,
         },
       });
-    } catch (error) {
+    } catch (error: unknown) {
       if (
         error &&
         typeof error === 'object' &&

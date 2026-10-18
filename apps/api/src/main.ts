@@ -4,6 +4,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';
+import type { NextFunction, Request, Response } from 'express';
 import { NotFoundExceptionFilter } from './filters/not-found-exception.filter';
 import { BusinessActionFilter } from './filters/business-action.filter';
 import { PrismaService } from './services/prisma.service';
@@ -53,7 +54,7 @@ async function bootstrap() {
   );
 
   // Strict No-Cache headers to ensure real-time auto-synchronization across all services
-  app.use((_req: any, res: any, next: any) => {
+  app.use((_req: Request, res: Response, next: NextFunction) => {
     res.setHeader(
       'Cache-Control',
       'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',

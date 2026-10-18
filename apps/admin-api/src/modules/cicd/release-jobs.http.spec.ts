@@ -78,18 +78,21 @@ describe('Release jobs through authenticated HTTP and a temporary database', () 
       [companyId]: 'fixture',
     });
     global.fetch = jest.fn(async (url) => {
-      const route = String(url);
+      const route =
+        typeof url === 'string' ? url : url instanceof URL ? url.href : url.url;
       if (route.endsWith('/dispatches')) {
         dispatches++;
-        return new Response(null, { status: 204 });
+        return Promise.resolve(new Response(null, { status: 204 }));
       }
-      return new Response(
-        JSON.stringify(
-          route.includes('/commits/')
-            ? { sha: 'a'.repeat(40) }
-            : { tag_name: 'v1.0.0', draft: false, prerelease: false },
+      return Promise.resolve(
+        new Response(
+          JSON.stringify(
+            route.includes('/commits/')
+              ? { sha: 'a'.repeat(40) }
+              : { tag_name: 'v1.0.0', draft: false, prerelease: false },
+          ),
+          { headers: { 'Content-Type': 'application/json' } },
         ),
-        { headers: { 'Content-Type': 'application/json' } },
       );
     });
   }, 60_000);
@@ -117,7 +120,9 @@ describe('Release jobs through authenticated HTTP and a temporary database', () 
       http().post('/cicd/deploy').set(headers()).send(input),
     ]);
     expect(responses.map((response) => response.status)).toEqual([201, 201]);
-    expect(responses[0].body.id).toBe(responses[1].body.id);
+    expect((responses[0].body as { id: string }).id).toBe(
+      (responses[1].body as { id: string }).id,
+    );
     expect(dispatches).toBe(1);
     expect(await prisma.releaseJob.count()).toBe(1);
     const job = await prisma.releaseJob.findFirstOrThrow();

@@ -33,6 +33,8 @@ The API `lint` scripts fix files in place, so use `lint:check` on them. Record e
 
 `npm run verify` does not build a desktop installer or a container image. Those have their own gates (EG-03, EG-11).
 
+Use [installation, deployment and updates](ONE_CLICK_DELIVERY.md) for the supported release commands, persistent configuration, candidate database generations, provider runner setup and interrupted-update recovery. `npm run test:release` is part of verification; actual container and NSIS acceptance are separate checks.
+
 ## Refresh generated evidence
 
 After changing source, regenerate the knowledge references and inventories, then confirm nothing is stale:

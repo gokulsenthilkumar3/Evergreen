@@ -103,7 +103,7 @@ export async function prepareDesktop({ build = true } = {}) {
     dirty,
     lockSha256: digest(fs.readFileSync(path.join(root, 'package-lock.json'))),
     apiSha256: digest(treeDigest(path.join(runtime, 'apps/api/dist')) + treeDigest(path.join(runtime, 'node_modules/@evergreen'))),
-    webSha256: digest(fs.readFileSync(path.join(stage, 'web/index.html'))),
+    webSha256: treeDigest(path.join(stage, 'web')),
     schemaSha256: treeDigest(path.join(runtime, 'packages/database/prisma')),
     nodeVersion: process.versions.node,
     platform: process.platform, arch: process.arch, updatesEnabled: config.enabled };
@@ -122,12 +122,23 @@ export async function packageDesktop(prepared, { directory = false } = {}) {
         forceCodeSigning: prepared.config.enabled,
         publish: prepared.config.enabled ? { provider: 'generic', url: prepared.config.url } : null,
       } });
+      // Inspect the actual ASAR, including the packager's dependency collection.
+      const entries = require('@electron/asar').listPackage(path.join(root, 'apps/desktop/dist/win-unpacked/resources/app.asar'));
+      if (!entries.some(file => /node_modules[\\/]electron-updater[\\/]package.json$/.test(file)) || entries.some(file =>
+        /(?:^|[\\/])(?:backend|web-dist|@evergreen|@nestjs)(?:[\\/]|$)/.test(file) ||
+        /(?:^|[\\/])\.env(?:\.|$)|\.(?:db(?:-.*)?|sqlite(?:3)?(?:-.*)?|pfx|pem|key)$/.test(file))) {
+        throw new Error('Desktop artifact contains an unexpected application dependency, database or secret, or lacks its updater');
+      }
       if (!directory) {
         const output = path.join(root, 'apps/desktop/dist');
-        const files = artifacts.filter(file => fs.existsSync(file) && fs.statSync(file).isFile());
+        const manifestFile = path.join(output, 'release-manifest.json');
+        fs.writeFileSync(manifestFile, JSON.stringify(prepared.manifest, null, 2));
+        const files = [...new Set([...artifacts, manifestFile,
+          path.join(output, `EverGreen-${prepared.manifest.version}-win.exe.blockmap`),
+          ...(prepared.config.enabled ? [path.join(output, 'latest.yml')] : []),
+        ])].filter(file => fs.existsSync(file) && fs.statSync(file).isFile());
         const checksums = files.map(file => `${digest(fs.readFileSync(file))}  ${path.basename(file)}`).join('\n');
         fs.writeFileSync(path.join(output, 'SHA256SUMS'), checksums + '\n');
-        fs.writeFileSync(path.join(output, 'release-manifest.json'), JSON.stringify(prepared.manifest, null, 2));
       }
       return artifacts;
 }

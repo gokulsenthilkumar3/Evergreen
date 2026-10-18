@@ -41,7 +41,7 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `canActivate` | MethodDeclaration | [apps/api/src/guards/public-order-rate-limit.guard.ts:59](../../apps/api/src/guards/public-order-rate-limit.guard.ts) |
 | `RolesGuard` | ClassDeclaration | [apps/api/src/guards/roles.guard.ts:12](../../apps/api/src/guards/roles.guard.ts) |
 | `canActivate` | MethodDeclaration | [apps/api/src/guards/roles.guard.ts:16](../../apps/api/src/guards/roles.guard.ts) |
-| `bootstrap` | FunctionDeclaration | [apps/api/src/main.ts:11](../../apps/api/src/main.ts) |
+| `bootstrap` | FunctionDeclaration | [apps/api/src/main.ts:12](../../apps/api/src/main.ts) |
 | `AdminOpsController` | ClassDeclaration | [apps/api/src/modules/admin-ops/admin-ops.controller.ts:9](../../apps/api/src/modules/admin-ops/admin-ops.controller.ts) |
 | `runMigration` | MethodDeclaration | [apps/api/src/modules/admin-ops/admin-ops.controller.ts:11](../../apps/api/src/modules/admin-ops/admin-ops.controller.ts) |
 | `AdminOpsModule` | ClassDeclaration | [apps/api/src/modules/admin-ops/admin-ops.module.ts:4](../../apps/api/src/modules/admin-ops/admin-ops.module.ts) |

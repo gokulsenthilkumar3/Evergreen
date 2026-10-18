@@ -9,7 +9,7 @@
     "dist": "node ../../scripts/release/desktop.mjs"
   },
   "devDependencies": {
-    "electron": "33.0.0",
+    "electron": "44.9.0",
     "electron-builder": "^26.7.0"
   },
   "dependencies": {

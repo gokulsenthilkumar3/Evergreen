@@ -1,10 +1,10 @@
 ﻿# Project status
 
-Assessed on 2026-10-14 and updated on 2026-10-18. This is the current engineering view of EverGreen. Work packages are in the [backlog](IMPLEMENTATION_BACKLOG.md), individual defects are in the [shared issue register](audits/2026-10-11/issue-register.md), and the latest full review is the [15 October report](audits/2026-10-15/REPORT.md).
+Assessed on 2026-10-14 and updated on 2026-10-19. This is the current engineering view of EverGreen. Work packages are in the [backlog](IMPLEMENTATION_BACKLOG.md), individual defects are in the [shared issue register](audits/2026-10-11/issue-register.md), and the latest full review is the [15 October report](audits/2026-10-15/REPORT.md).
 
 ## Summary
 
-EverGreen has a substantial operational core: receipts, production, stock and lots, sales orders, invoices, payments, job work, and a separate provider workspace, with automated regression tests across them. It is not yet a verified, recoverable commercial service. The next priorities are a reliable receipt-to-collection flow, recoverable deployment and honest provider status, ahead of new features.
+EverGreen has a substantial operational core: receipts, production, stock and lots, sales orders, invoices, payments, job work, and a separate provider workspace. Delivery now includes source-built Windows installers and controlled container upgrades with synthetic recovery evidence. Connected provider authentication, production signing and host acceptance, representative off-site recovery and business/device acceptance remain release gates.
 
 The review covered every workspace, both database histories, scripts, CI, deployment recipes and documentation, and inspected the highest-risk paths directly. It did not include browser or device acceptance, live integrations, load tests, cloud deployment, restoring customer data, or legal and commercial approval.
 
@@ -24,14 +24,14 @@ A file, a passing unit suite or a generated document never moves a feature strai
 | --- | --- | --- | --- |
 | EG-01 | P1 | Provider recorded every remote action as executed, including unsupported ones | Fixed: unknown actions return 400 and unsupported ones 503; the maintenance flag and its record share a transaction |
 | EG-02 | P0 before connected rollout | Customer sync still has no tenant-scoped credential or billing-period usage contract | Response handling fixed on 15 October; opt-in transport, timeout, overlap protection and actual lifetime invoice counts fixed on 17 October; authentication and period metering remain open |
-| EG-03 | P0 before containers | Dockerfiles copy a missing root `tsconfig.json` and call a missing `db:generate` script | Open (REL-001) |
-| EG-04 | P0 before customer use | Backups were plain copies of a live SQLite file, and no restore had been demonstrated | Guidance corrected; online snapshot tooling, off-site copies and a measured restore still open |
+| EG-03 | P0 before containers | Old container recipes referenced missing files/scripts | Replaced by canonical multi-target builds; all five services pass local install/update/failed-update acceptance; production host acceptance remains |
+| EG-04 | P0 before customer use | Backups were plain copies of a live SQLite file | Consistent snapshot, integrity/count/hash manifests and synthetic restore/read-back verified; encrypted off-site retention and representative measured recovery remain |
 | EG-05 | P1 | The roadmap audit used stale paths and mixed source checks with completion claims | Fixed, with regression tests |
 | EG-07 | P1 | Architecture and commercial docs overstated what was delivered | Corrected; consolidated again on 15 October |
 | EG-08 | P1 scale gate | `stockTransaction` repeats full reconciliation inside a 60-second transaction, with queries in loops | Confirmed concern, not a measured incident; benchmark before refactoring |
 | EG-09 | P1 | Provider company handlers took untyped bodies, leaked fields into updates and returned enrollment keys | Fixed on 15 October with DTOs, atomic writes and 51 HTTP tests |
-| EG-10 | P1 | The customer migration endpoint runs `npx` synchronously with no approval, backup proof or acknowledgement | Open; keep remote execution unavailable |
-| EG-11 | P1 | Desktop ships a packaged backend and a template database outside the root build | Open; see [desktop delivery](DESKTOP_DELIVERY.md) |
+| EG-10 | P1 | Request-time migration and simulated deployment outcomes | HTTP/boot migration paths disabled; durable provider jobs, protected workflows and controlled candidate migration implemented; real target configuration/acceptance remains |
+| EG-11 | P1 | Desktop used stale runtime copies and a template database | Canonical builder, migrated first run, OS-protected secrets, signed updater and runtime upgrade/read-back implemented; supported-Windows/signed-release acceptance remains |
 | EG-12 | P1 | The weighbridge entry point is a simulation with fixed input and key | Open (INT-006) |
 | EG-13 | P1 | Marketing, desktop and several shared packages have no test script | Open; add tests where the risk is real |
 | EG-14 | P1 | License statements conflict between README and package metadata | MIT claim removed; the owner still has to choose a license |
@@ -56,6 +56,16 @@ P0 means a blocker for that rollout, not an active production incident.
 ## Validation record
 
 Every run is listed with its environment. A failed or unrun check stays visible, and no completion percentage is given.
+
+### 2026-10-19: delivery implementation and branch reconciliation
+
+Implemented [installation, deployment and updates](ONE_CLICK_DELIVERY.md): canonical Windows runtime preparation and NSIS packaging, first-run credentials, persistent OS-protected secrets, verified SQLite snapshot generations, controlled hosted maintenance updates, and durable provider jobs backed by protected GitHub workflows. Unsupported request-time migration now returns 503; boot auto-migration is rejected. Registry credentials and company-to-runner mapping stay on the provider server. Unknown dispatch acknowledgement is retained without duplicate execution.
+
+On Windows with Node 24.12.0 and Docker Desktop's Linux engine, all five canonical images built and booted with fresh volumes. Real Compose acceptance saved synthetic stock, an invoice and a partial payment, upgraded to another release, compared business read-back, then injected an API startup failure and verified automatic recovery of the previous release and data. Only uniquely named temporary databases/volumes were used and removed. A reused HTTP test socket initially reset after container replacement; the test now closes each connection across deployment phases. This was a fixture transport failure, not evidence of data loss.
+
+The prepared Windows runtime passed clean migration, login, stock/invoice/payment, online snapshot, candidate migration and read-back checks. NSIS packaging produced a local unsigned installer; release signing, public feed publication, supported-Windows GUI installation/uninstall and a signed end-to-end update remain external acceptance. The updater dependency was patched and the obsolete Electron runtime replaced. Neither GitHub workflow dispatch nor customer production deployment was performed.
+
+All 43 local/fetched non-main branch refs were ancestors of local main, including Claude branches. Ancestry alone missed two semantic integration problems: provider-sync code had reintroduced an unsafe demo URL and inconsistent merged logic, and a provider filter imported the customer Prisma client, failing a clean container build. The sync implementation was restored and all 77 sync regressions passed; the provider filter now uses its own client and its clean build passes. The final remote synchronization and repository checks are recorded with the delivery evidence below.
 
 ### 2026-10-18: documentation and architecture review
 

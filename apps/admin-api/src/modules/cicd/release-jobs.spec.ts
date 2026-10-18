@@ -18,18 +18,21 @@ type NewJob = Omit<
 function fixture() {
   const rows: ReleaseJob[] = [];
   const prisma = {
-    company: { findUnique: jest.fn(async () => ({ id: companyId })) },
+    company: { findUnique: jest.fn(() => Promise.resolve({ id: companyId })) },
     releaseJob: {
-      findUnique: jest.fn(
-        async ({ where }: { where: { requestKey: string } }) =>
+      findUnique: jest.fn(({ where }: { where: { requestKey: string } }) =>
+        Promise.resolve(
           rows.find((row) => row.requestKey === where.requestKey) || null,
+        ),
       ),
       findMany: jest.fn(
-        async (args: { where?: { activeTarget?: unknown; kind?: string } }) =>
-          rows.filter(
-            (row) =>
-              (!args.where?.activeTarget || row.activeTarget !== null) &&
-              (!args.where?.kind || row.kind === args.where.kind),
+        (args: { where?: { activeTarget?: unknown; kind?: string } }) =>
+          Promise.resolve(
+            rows.filter(
+              (row) =>
+                (!args.where?.activeTarget || row.activeTarget !== null) &&
+                (!args.where?.kind || row.kind === args.where.kind),
+            ),
           ),
       ),
       create: jest.fn(async ({ data }: { data: NewJob }) => {
@@ -40,7 +43,9 @@ function fixture() {
               row.activeTarget === data.activeTarget,
           )
         )
-          throw { code: 'P2002' };
+          throw Object.assign(new Error('Duplicate request'), {
+            code: 'P2002',
+          });
         const row: ReleaseJob = {
           ...data,
           id: randomUUID(),
@@ -51,7 +56,7 @@ function fixture() {
           updatedAt: new Date(),
         };
         rows.push(row);
-        return row;
+        return Promise.resolve(row);
       }),
       update: jest.fn(
         async ({
@@ -63,17 +68,18 @@ function fixture() {
         }) => {
           const row = rows.find((row) => row.id === where.id)!;
           Object.assign(row, data);
-          return row;
+          return Promise.resolve(row);
         },
       ),
     },
   };
   const calls: { url: string; options?: RequestInit }[] = [];
-  let dispatchResponse: () => Promise<Response> = async () =>
-    new Response(null, { status: 204 });
+  let dispatchResponse: () => Promise<Response> = () =>
+    Promise.resolve(new Response(null, { status: 204 }));
   let workflowRuns: unknown[] = [];
   global.fetch = jest.fn(async (url, options) => {
-    const route = String(url);
+    const route =
+      typeof url === 'string' ? url : url instanceof URL ? url.href : url.url;
     calls.push({ url: route, options });
     if (route.endsWith('/dispatches')) return dispatchResponse();
     const data = route.includes('/commits/')
@@ -126,7 +132,7 @@ describe('Release job execution', () => {
       triggeredBy: 'Release operator',
     });
     const dispatch = f.calls.find((call) => call.url.endsWith('/dispatches'))!;
-    expect(JSON.parse(String(dispatch.options?.body))).toEqual({
+    expect(JSON.parse(dispatch.options?.body as string)).toEqual({
       ref: 'main',
       inputs: {
         request_id: result.id,
@@ -177,9 +183,7 @@ describe('Release job execution', () => {
   });
   it('lost acknowledgement retains UNKNOWN and its target lock until workflow evidence arrives', async () => {
     const f = fixture();
-    f.dispatch(async () => {
-      throw new Error('network lost');
-    });
+    f.dispatch(() => Promise.reject(new Error('network lost')));
     const job = await f.service.deployPackage(f.input());
     expect(job.status).toBe('UNKNOWN');
     expect(f.rows[0].activeTarget).not.toBeNull();
@@ -197,7 +201,7 @@ describe('Release job execution', () => {
   });
   it('an explicit provider rejection is failed and permits a corrected future request', async () => {
     const f = fixture();
-    f.dispatch(async () => new Response('{}', { status: 422 }));
+    f.dispatch(() => Promise.resolve(new Response('{}', { status: 422 })));
     expect((await f.service.deployPackage(f.input())).status).toBe('FAILED');
     expect(f.rows[0].activeTarget).toBeNull();
   });
