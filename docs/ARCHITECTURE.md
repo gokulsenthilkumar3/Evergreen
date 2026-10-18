@@ -1,6 +1,6 @@
 ﻿# Architecture
 
-Reviewed against the source on 2026-10-18. This page explains how EverGreen is put together and which code owns each rule. The [architecture decision](decisions/0001-installation-and-data-boundaries.md) records the reasons, constraints and rollout gates. For what is finished and what is still open, see the [project status](PROJECT_AUDIT.md) and the [backlog](IMPLEMENTATION_BACKLOG.md).
+Reviewed against the source on 2026-10-19. This page explains how EverGreen is put together and which code owns each rule. The [architecture decision](decisions/0001-installation-and-data-boundaries.md) records the reasons, constraints and rollout gates. For what is finished and what is still open, see the [project status](PROJECT_AUDIT.md) and the [backlog](IMPLEMENTATION_BACKLOG.md).
 
 ## System overview
 
@@ -13,6 +13,9 @@ flowchart LR
   Tenant --> TenantDB[(Company database)]
   Operator[Provider browser :5174] --> Provider[Provider API :4300]
   Provider --> ProviderDB[(Provider database)]
+  Provider --> Jobs[Durable release jobs]
+  Jobs --> Actions[Protected GitHub workflows]
+  Actions --> Runner[Installation-scoped Docker runner]
   Tenant -. license and usage sync, not yet authenticated .-> Provider
   Desktop[Electron desktop] --> LocalAPI[Packaged customer API]
   LocalAPI --> LocalDB[(Local database)]
@@ -82,7 +85,7 @@ This is the posting contract. Read endpoints and ordinary master-data changes ca
 ### Operational exceptions
 
 - `/health` is a public JSON connectivity probe; `/status` requires `ADMIN` and includes reconciliation issues and operational detail. A healthy database connection does not establish balanced books.
-- `POST /admin-ops/migrate` still runs synchronous `npx prisma migrate deploy` inside the request after staff and provider guards. `AUTO_MIGRATE=true` invokes the same command during boot. These are existing exceptions to controlled deployment ownership, not an accepted migration workflow (API-005 / EG-10).
+- `POST /admin-ops/migrate` returns 503 and `AUTO_MIGRATE=true` is rejected. Explicit release helpers own migration, snapshot, locking and health verification; request handlers cannot run migration shell commands. See [deployment and recovery](ONE_CLICK_DELIVERY.md).
 - Startup reconciliation can change derived ledger state. Point startup and restore rehearsals at isolated copies, and keep outbound integrations disabled until reconciliation is accepted.
 
 ## Provider application (`apps/admin-web`, `apps/admin-api`)
@@ -92,6 +95,7 @@ The provider workspace stores company records, license settings, usage snapshots
 - `ProviderAccessGuard` requires the provider API key. That is one shared credential, not per-operator login (register SEC-003), and it must never be installed on a customer machine.
 - Company create, license and metrics routes validate input with DTOs, allowlist the fields they write and bound their numbers. Each license change is written in the same transaction as its audit record. Routine reads no longer return the enrollment API key.
 - Saving a license or maintenance flag changes provider configuration only. Nothing confirms that a customer installation applied it. Remote restart, sync and migration return HTTP 503 instead of recording fake success.
+- Release creation and installation deployment use persisted `ReleaseJob` records and protected GitHub workflows. Target mapping and credentials are server-owned, retries keep the same identity, and lost dispatch acknowledgement remains unknown. Success requires a matching completed workflow. GitHub credentials, signing, runner environments and host acceptance are deployment configuration, not fabricated defaults.
 - The customer sync job (`apps/api/src/services/admin-sync.service.ts`) is opt-in through `ADMIN_API_URL` and `COMPANY_ID`. It validates the endpoint, rejects redirects, limits the HTTP exchange to 10 seconds and prevents overlapping runs within one API process. It counts actual retained invoices, validates the full license response and keeps an explicit provider suspension. It still sends no credential and reports lifetime rather than billing-period counts, so connected rollout stays blocked (register SEP-002, API-006, BIZ-007). See [configuration and limits](../apps/api/README.md#optional-provider-sync).
 
 ## Integrations and adjacent apps
@@ -103,7 +107,7 @@ The provider workspace stores company records, license settings, usage snapshots
 | e-Way Bill / e-invoice | Disabled UI and a design contract | Provider credentials, sandbox tests, acknowledgements |
 | Weighbridge | Frame parser and HMAC signing library; the entry point is a simulation | Serial capture, device enrollment, replay protection, calibration (INT-006) |
 | Command Center | Authenticated Three.js view driven by operational API queries | Device performance; the scene is not sensor telemetry |
-| Desktop | Electron shell with a packaged API and local database | Reproducible build, upgrade and restore tests; no offline sync yet (REL-009) |
+| Desktop | Canonical source build, bundled Node/API/Prisma, first-run setup, OS-protected secrets and signed updater | Supported-Windows installer/signed-update acceptance; no offline sync (REL-009) |
 | Marketing | Separate Vite site | Claims must match accepted features (see the 15 October report) |
 
 Details are in [integrations](INTEGRATIONS.md), [weighbridge agent](WEIGHBRIDGE_AGENT_ARCHITECTURE.md) and [desktop delivery](DESKTOP_DELIVERY.md).
@@ -120,6 +124,8 @@ The 14 workspace manifests currently declare no dependency cycles. This is a man
 - `@evergreen/config`, `@evergreen/email`, `@evergreen/i18n`: configuration, email and localisation helpers.
 
 `npm run build` builds every workspace that has a build script. It does not produce a desktop installer or a container image. `npm run typecheck` covers the customer API (application source plus unit and HTTP tests) and web app only; the other workspaces type-check during their builds. The API check also runs independently with `npm run typecheck -w apps/api`.
+
+`npm run release:desktop` compiles and tests a complete Windows runtime before NSIS packaging. Hosted install/update uses one multi-target Dockerfile and Compose recipe, persistent per-installation secrets and new database generations. APIs migrate explicit candidate paths before accepting traffic. Pre-traffic failure restores the previous selection; possible post-traffic writes require reconciliation before rollback. See [installation, deployment and updates](ONE_CLICK_DELIVERY.md).
 
 ## Making a change
 

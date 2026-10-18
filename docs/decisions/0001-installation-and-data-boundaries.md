@@ -20,7 +20,7 @@ Retain the modular customer monolith and separate provider application. Keep cus
 | Provider communication | Explicit HTTP protocol with company binding | Current opt-in sync sends no credential and cannot complete against the protected provider |
 | Web | UI state, navigation and API calls; shared calculation helpers may be reused | UI preferences and hidden buttons confer no API permissions |
 | Shared packages | Types, calculation/layout helpers, database definitions and configuration | No dependency from a shared package into application internals |
-| Desktop | Packaged customer API, renderer and local database from one revision | Packaging reproducibility, recovery and upgrades need acceptance; no cloud sync |
+| Desktop | Source-built API/renderer, bundled Node/Prisma, local database and OS-protected secrets | Runtime upgrade/read-back checks exist; supported-Windows and signed-update acceptance remain; no cloud sync |
 | Sites | Future stable site ownership and balanced transfers within a customer | Warehouse names and business modes are not site authorization |
 
 Do not split stock, invoicing and finance into services without a measured requirement and a design preserving atomicity, retries and reconciliation. Do not add shared-table tenancy or bidirectional desktop sync as an incidental implementation detail.
@@ -31,7 +31,7 @@ Local transactions keep stock and financial effects together. Separate customer 
 
 Reconciliation currently runs repeatedly inside a transaction with a 60-second timeout. Retain correctness checks and measure their cost before changing projections. A PostgreSQL conversion does not by itself remove repeated queries or resolve duplicate commands.
 
-The existing request-time migration endpoint and optional boot migration are exceptions to deployment ownership. They need the EG-10 controlled worker design before remote execution is accepted. Container recipes and desktop copies are not proof that the reviewed source can be delivered reproducibly.
+The 19 October delivery work removed request-time migration execution and rejects optional boot migration. Locked release helpers select explicit schemas, snapshot candidates and verify health before traffic. Desktop uses the canonical source builder rather than tracked runtime copies. Provider requests are persisted and dispatched through protected GitHub workflows, with target mapping owned by the server. This implements the delivery boundary; it does not establish production signing, host provisioning or customer recovery acceptance. See [delivery and recovery](../ONE_CLICK_DELIVERY.md).
 
 ## Rollout gates
 

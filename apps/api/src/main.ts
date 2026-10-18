@@ -10,7 +10,9 @@ import { PrismaService } from './services/prisma.service';
 
 async function bootstrap() {
   if (process.env.AUTO_MIGRATE === 'true') {
-    throw new Error('AUTO_MIGRATE is no longer supported. Use the release deployment helper to snapshot and migrate the selected database.');
+    throw new Error(
+      'AUTO_MIGRATE is no longer supported. Use the release deployment helper to snapshot and migrate the selected database.',
+    );
   }
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -491,7 +493,8 @@ Authorize with your own staff bearer token for protected endpoints. Try it out e
       }
     });
     const address = app.getHttpServer().address();
-    if (!address || typeof address === 'string') throw new Error('Local API did not bind a TCP port');
+    if (!address || typeof address === 'string')
+      throw new Error('Local API did not bind a TCP port');
     process.send({ type: 'evergreen-ready', port: address.port });
   }
   console.log(`🚀 Application is listening on ${host}:${port}`);

@@ -11,6 +11,7 @@ Start with the [Quick Start](../QUICK_START.md). Inside the app, the searchable 
 | [Business flow](BUSINESS_FLOW.md) | How material and money move, who owns each handoff, and the end-to-end acceptance check |
 | [Integrations](INTEGRATIONS.md) | CSV import, Tally export, and the webhook and e-Way Bill designs |
 | [Desktop delivery](DESKTOP_DELIVERY.md) | Electron development, packaging and customer installation |
+| [Installation, deployment and updates](ONE_CLICK_DELIVERY.md) | Windows installer, hosted commands, provider runner setup and recovery |
 | [Weighbridge agent](WEIGHBRIDGE_AGENT_ARCHITECTURE.md) | Indicator protocols, receipt signing and label printing |
 | [Maintenance runbook](MAINTENANCE_RUNBOOK.md) | Verifying changes, refreshing generated docs, backup and restore |
 | [Test scenario catalogue](TEST_PLAN.md) | Functional, boundary and negative test cases by module |

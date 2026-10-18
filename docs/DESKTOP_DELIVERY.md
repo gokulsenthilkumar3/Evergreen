@@ -1,12 +1,16 @@
 # Desktop development and delivery
 
-Reviewed against `apps/desktop/main.js` and `apps/desktop/package.json` on 2026-10-15. This guide consolidates the root build, desktop and customer-distribution guides. Packaging exists; a current customer-ready artifact has not been established by this review.
+Reviewed against the canonical release builder and launcher on 2026-10-19. See [installation, deployment and updates](ONE_CLICK_DELIVERY.md) for commands, signing/feed setup and recovery.
 
 ## Runtime and data ownership
 
-Electron creates the window, loads `preload.js` with context isolation, and starts the packaged API outside development mode. The renderer loads `web-dist/index.html`; the API comes from the packaged `backend` directory. These copies can differ from active source.
+`apps/desktop/main.js` loads `launcher.cjs`. The release builder compiles the API, shared packages and renderer from active source. It materializes the locked dependency graph, generated Prisma client/engine, schema and migrations, and a separate bundled Node executable. Legacy `backend/` and `web-dist/` copies are excluded from the artifact.
 
-The launcher requests port 3001 and passes a SQLite URL under Electron's `userData` directory (`database.db`). API configuration and renderer routing must agree with that port. On first start it attempts to copy `backend/prisma/dev.db`. That copy is not a migration: a release must use an empty, reviewed schema and unique credentials.
+Electron's sandboxed renderer loads a loopback HTTP server serving web assets and proxying `/api/backend` to the private API. Both ports are dynamic. Host validation and traversal checks protect the server; the renderer has no Node integration and restricts navigation and external URL schemes. Setup exposes only the validated first-run action.
+
+First launch asks for administrator credentials, generates installation secrets once and stores them with OS-backed `safeStorage`. Databases are created through migrations without development records. Installation state identifies the active database generation and runtime/schema hashes. Upgrade snapshots the previous generation into a candidate, migrates it, waits for API health and commits the new selection. Previous files remain intact on failure.
+
+The Help menu checks the configured signed HTTPS feed. After confirmation it stops the API and takes a verified snapshot before replacement. Unsigned local builds have updates disabled. Uninstall preserves `userData`; restore must preserve the database and recoverable secrets. A populated legacy `database.db` without its original encryption configuration remains untouched and requires explicit migration.
 
 The local database is independent of any hosted installation. Bidirectional desktop/cloud synchronization is not implemented.
 
@@ -25,21 +29,21 @@ $env:ELECTRON_IS_DEV = 'true'
 npm.cmd run desktop
 ```
 
-The explicit flag loads `http://localhost:4000` and skips spawning the packaged backend. Without it, the launcher attempts packaged resources. See [Quick Start](../QUICK_START.md) for environment and bootstrap configuration.
+The explicit flag loads `http://localhost:4000` and skips the packaged API. See [Quick Start](../QUICK_START.md) for development configuration.
 
 ## Build and packaging contract
 
-`npm run dist:desktop` invokes `electron-builder`. It packages `main.js`, `preload.js`, `assets/`, `web-dist/` and `backend/` extra resources. It does **not** compile or refresh these copies. The old root `build-desktop.js` is absent.
+`npm run dist:desktop` and `npm run release:desktop` invoke the same builder. It compiles the runtime and tests a fresh temporary database with login, stock, invoice, partial payment, consistent snapshot, candidate migration and business read-back before packaging.
 
-Prepare and reconcile the API, renderer, shared runtime packages, Prisma client/engine, migrations and configuration from the same reviewed revision before packaging. Check renderer API routing and relative asset paths. Do not remove `web-dist/` or `backend/` as generic build clutter while packaging depends on them.
+Runtime/updater tests cover setup validation, persistent secrets, loopback/proxy boundaries, signing configuration and failure handling. These do not replace supported-Windows or customer acceptance.
 
-The configured Windows target is NSIS; the artifact pattern is `EverGreen-<version>-win.exe` under `apps/desktop/dist`. Once the prepared artifact contract is satisfied, run:
+The one-click per-user NSIS target creates `EverGreen-<version>-win.exe`, a runtime manifest and SHA-256 checksums under `apps/desktop/dist`:
 
 ```sh
-npm run dist:desktop
+npm run release:desktop
 ```
 
-A successful web build or an existing `win-unpacked` directory does not establish a supported installer. Reproducible artifact preparation remains EG-11 in the [backlog](IMPLEMENTATION_BACKLOG.md).
+Signed updates require a clean committed tree, matching publisher and signing certificate, and a public HTTPS feed. Packaging does not publish artifacts. OS installer, signed-update and customer acceptance remain in EG-11 in the [backlog](IMPLEMENTATION_BACKLOG.md).
 
 ## Customer acceptance
 
@@ -47,7 +51,7 @@ A successful web build or an existing `win-unpacked` directory does not establis
 2. Test a clean installation with synthetic data: writable paths, configuration, API startup failures, port conflicts, dependencies and renderer connectivity.
 3. Provision unique bootstrap administrator credentials. Do not ship populated development databases or historical example passwords.
 4. Exercise receipt, production, dispatch, invoice, payment, reports and printing; restart and reconcile persisted quantities and balances.
-5. Rehearse upgrade and restoration into a separate location. Disable outbound provider, email and device actions during restore tests. Confirm upgrade and uninstall behavior preserves customer records.
+5. Rehearse signed update, failure recovery and restoration into a separate location. Disable outbound provider, email and device actions. Confirm standard-user permissions and uninstall/reinstall preserve customer records.
 6. Deliver operating instructions, support contact, backup schedule and a demonstrated restore procedure with the accepted artifact.
 
 Use a consistent SQLite snapshot with checksum and schema/version metadata, retain an independent copy, and verify restoration. An ordinary copy of a live database is not guaranteed consistent. Follow [back up and restore](MAINTENANCE_RUNBOOK.md#back-up-and-restore) in the maintenance runbook.

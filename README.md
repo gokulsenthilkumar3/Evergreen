@@ -8,6 +8,7 @@ Built with React, NestJS and Prisma. Both databases use SQLite today; one Postgr
 - **How it works:** [Architecture](docs/ARCHITECTURE.md) and [business flow](docs/BUSINESS_FLOW.md).
 - **What's done and what's open:** [Project status](docs/PROJECT_AUDIT.md) and [backlog](docs/IMPLEMENTATION_BACKLOG.md).
 - **All documentation:** [docs/README.md](docs/README.md).
+- **Install or update:** [Windows installer and hosted deployment](docs/ONE_CLICK_DELIVERY.md).
 
 ## Applications
 

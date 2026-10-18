@@ -11,6 +11,8 @@ export class AdminOpsController {
   @Post('migrate')
   @UseGuards(ProviderAdminGuard)
   runMigration() {
-    throw new ServiceUnavailableException('Use the release deployment workflow for database migrations. No migration was started by this request.');
+    throw new ServiceUnavailableException(
+      'Use the release deployment workflow for database migrations. No migration was started by this request.',
+    );
   }
 }

@@ -1,5 +1,5 @@
 import { ArgumentsHost, BadRequestException, Catch, ExceptionFilter, ForbiddenException, HttpException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/admin-client';
 import { PrismaService } from '../services/prisma.service';
 
 /** Record denied writes outside their rolled-back transaction, without storing request bodies. */
