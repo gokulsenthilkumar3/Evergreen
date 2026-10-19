@@ -33,7 +33,7 @@ A file, a passing unit suite or a generated document never moves a feature strai
 | EG-10 | P1 | Request-time migration and simulated deployment outcomes | HTTP/boot migration paths disabled; durable provider jobs, protected workflows and controlled candidate migration implemented; real target configuration/acceptance remains |
 | EG-11 | P1 | Desktop used stale runtime copies and a template database | Canonical builder, migrated first run, OS-protected secrets, signed updater and runtime upgrade/read-back implemented; supported-Windows/signed-release acceptance remains |
 | EG-12 | P1 | The weighbridge entry point is a simulation with fixed input and key | Open (INT-006) |
-| EG-13 | P1 | Marketing, desktop and several shared packages have no test script | Open; add tests where the risk is real |
+| EG-13 | P1 | Marketing and several shared packages lack acceptance coverage | Desktop runtime/updater regression and actual runtime checks now exist; other gaps remain |
 | EG-14 | P1 | License statements conflict between README and package metadata | MIT claim removed; the owner still has to choose a license |
 | EG-28 | P1 CI gate | Non-modifying lint fails for the customer API, customer web and provider API | Open (TEST-005) |
 
@@ -66,6 +66,22 @@ On Windows with Node 24.12.0 and Docker Desktop's Linux engine, all five canonic
 The prepared Windows runtime passed clean migration, login, stock/invoice/payment, online snapshot, candidate migration and read-back checks. NSIS packaging produced a local unsigned installer; release signing, public feed publication, supported-Windows GUI installation/uninstall and a signed end-to-end update remain external acceptance. The updater dependency was patched and the obsolete Electron runtime replaced. Neither GitHub workflow dispatch nor customer production deployment was performed.
 
 All 43 local/fetched non-main branch refs were ancestors of local main, including Claude branches. Ancestry alone missed two semantic integration problems: provider-sync code had reintroduced an unsafe demo URL and inconsistent merged logic, and a provider filter imported the customer Prisma client, failing a clean container build. The sync implementation was restored and all 77 sync regressions passed; the provider filter now uses its own client and its clean build passes. The final remote synchronization and repository checks are recorded with the delivery evidence below.
+
+| Final local check | Result |
+| --- | --- |
+| Both migration/schema comparisons | No differences |
+| Customer API/web type-check, plus full provider API type-check | Passed |
+| Application, HTTP, agent, maintenance and release tests | 697 passed: provider API 94, provider web 11, customer API 300, customer web 205, device library 28, HTTP 22, agent 8, maintenance 6, release 23 |
+| Changed customer/provider API lint | Zero errors |
+| Generated documentation and source audits | Current; 3,436 local links checked |
+| Every workspace build | Completed |
+| Clean locked installation and production dependency audit | Installed successfully; zero production advisories |
+| Canonical Docker images | All five built and passed clean-install, populated update and failed-update rollback acceptance |
+| Windows runtime and NSIS package | Actual runtime business read-back passed; package inspection passed with explicit native exit 0; all recorded checksums match |
+
+The root verification chain ran through its final workspace build with every test/check stage passing. Windows PowerShell reported shell exit 1 because redirected native stderr creates `NativeCommandError` records; a harmless fixture reproduced exit 1 despite native exit 0, while explicitly forwarding the native status returned 0. This is a shell reporting issue, not a skipped verification stage. Installer packaging records the native exit explicitly. The local unsigned installer SHA-256 is `5cb2c564db5e07c0bf83749c65d9ed8cc35287a20775b51025ad2e96aa6d7eb0`; its manifest marks the test build as dirty and updates disabled. Production artifacts must be rebuilt from the final clean committed tree with signing configured.
+
+The workflow now rejects installation state inside its disposable checkout, with a regression proving rejection before Docker. Existing release versions are rejected before image publication, and the tested Node/nginx bases are pinned by digest. Production credentials, protected environments/runners, signed feed publication, supported-Windows GUI acceptance and independent off-site recovery remain unexecuted.
 
 ### 2026-10-18: documentation and architecture review
 
