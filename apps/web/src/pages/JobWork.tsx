@@ -135,7 +135,19 @@ const JobWork: React.FC = () => {
 
   const materials = items.filter((item) => item.type !== 'SERVICE');
 
-  const createWorker = async () => {
+  // One write at a time: a double click must not dispatch or receive the same material twice.
+  const [busy, setBusy] = useState(false);
+  const once = (work: () => Promise<unknown>) => async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      await work();
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const createWorker = once(async () => {
     try {
       if (!workerName.trim()) {
         return toast.error('Worker name is required');
@@ -149,9 +161,9 @@ const JobWork: React.FC = () => {
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Could not add worker');
     }
-  };
+  });
 
-  const dispatch = async () => {
+  const dispatch = once(async () => {
     try {
       if (!form.jobWorkerId) {
         return toast.error('Please select a job worker');
@@ -182,7 +194,7 @@ const JobWork: React.FC = () => {
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Could not dispatch material');
     }
-  };
+  });
 
   const openReceipt = (job: Job) => {
     setReceipt(job);
@@ -195,7 +207,7 @@ const JobWork: React.FC = () => {
     );
   };
 
-  const saveReceipt = async () => {
+  const saveReceipt = once(async () => {
     try {
       if (!receipt) return;
       const lines = receiptLines
@@ -217,7 +229,7 @@ const JobWork: React.FC = () => {
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Could not record receipt');
     }
-  };
+  });
 
   // Filtered jobs list
   const filteredJobs = useMemo(() => {
@@ -372,7 +384,7 @@ const JobWork: React.FC = () => {
             {['ALL', 'DISPATCHED', 'PART_RECEIVED', 'COMPLETED', 'CANCELLED'].map((status) => (
               <Chip
                 key={status}
-                label={status === 'ALL' ? 'All Challans' : status.replace('_', ' ')}
+                label={status === 'ALL' ? 'All Challans' : status.replaceAll('_', ' ')}
                 clickable
                 color={statusFilter === status ? 'primary' : 'default'}
                 variant={statusFilter === status ? 'filled' : 'outlined'}
@@ -488,7 +500,7 @@ const JobWork: React.FC = () => {
                       <Chip
                         size="small"
                         color={statusColorMap[job.status] || 'default'}
-                        label={job.status.replace('_', ' ')}
+                        label={job.status.replaceAll('_', ' ')}
                       />
                     </TableCell>
                     <TableCell align="right">
@@ -660,7 +672,7 @@ const JobWork: React.FC = () => {
         </DialogContent>
         <DialogActions sx={{ p: 2.5 }}>
           <Button onClick={() => setOpen(false)}>Cancel</Button>
-          <Button variant="contained" onClick={dispatch}>
+          <Button variant="contained" disabled={busy} onClick={dispatch}>
             Confirm Dispatch
           </Button>
         </DialogActions>
@@ -723,7 +735,7 @@ const JobWork: React.FC = () => {
         </DialogContent>
         <DialogActions sx={{ p: 2.5 }}>
           <Button onClick={() => setReceipt(null)}>Cancel</Button>
-          <Button variant="contained" onClick={saveReceipt}>
+          <Button variant="contained" disabled={busy} onClick={saveReceipt}>
             Record Receipt & Close
           </Button>
         </DialogActions>
@@ -745,7 +757,7 @@ const JobWork: React.FC = () => {
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
           <Button onClick={() => setWorkerOpen(false)}>Cancel</Button>
-          <Button variant="contained" onClick={createWorker}>
+          <Button variant="contained" disabled={busy} onClick={createWorker}>
             Save Worker
           </Button>
         </DialogActions>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useRef, lazy } from 'react';
 import {
     Box,
     Paper,
@@ -39,6 +39,7 @@ import {
 } from 'recharts';
 import api from '../utils/api';
 import GlassDatePicker from '../components/common/GlassDatePicker';
+import { SafeScene } from '../components/common/SceneFallback';
 const DashboardScene = lazy(() => import('../components/DashboardScene'));
 
 import {
@@ -472,9 +473,9 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                         <Button variant="outlined" onClick={() => navigate('inventory')} startIcon={<InventoryIcon />}>View Stock</Button>
                     </Box>
                 </Paper>
-                <Suspense fallback={<Paper sx={{ minHeight: 260, borderRadius: 4 }} />}>
+                <SafeScene height={260} label="Yarn cone illustration">
                     <DashboardScene />
-                </Suspense>
+                </SafeScene>
             </Box>
 
             {/* ── Cash Flow Recovery: Missing Invoice Alert ── */}

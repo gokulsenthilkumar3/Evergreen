@@ -456,7 +456,7 @@ const CommerceReports: React.FC = () => {
                         <TableCell>
                           <Chip
                             size="small"
-                            label={item.type.replace('_', ' ')}
+                            label={item.type.replaceAll('_', ' ')}
                             variant="outlined"
                           />
                         </TableCell>
@@ -631,7 +631,7 @@ const CommerceReports: React.FC = () => {
                       <TableCell>
                         <Chip
                           size="small"
-                          label={ord.status.replace('_', ' ')}
+                          label={ord.status.replaceAll('_', ' ')}
                           color={statusColorMap[ord.status] || 'default'}
                         />
                       </TableCell>

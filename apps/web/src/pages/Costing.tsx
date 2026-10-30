@@ -96,19 +96,15 @@ const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole 
         },
     });
 
-    const { data: totalProductionKg = 0 } = useQuery({
+    // Yarn produced in the same period; a failed read must not look like a period without production.
+    const { data: totalProductionKg = 0, isError: productionUnavailable } = useQuery({
         queryKey: ['productionKgForCosting', dateRange.from, dateRange.to],
         queryFn: async () => {
-            try {
-                const res = await api.get('/production/history', {
-                    params: { from: dateRange.from, to: dateRange.to }
-                });
-                const records = res.data || [];
-                return records.reduce((sum: number, r: any) => {
-                    const items = r.productionItems || r.items || [];
-                    return sum + items.reduce((s: number, it: any) => s + (parseFloat(it.weight) || 0), 0);
-                }, 0);
-            } catch { return 0; }
+            const res = await api.get('/production', {
+                params: { from: dateRange.from, to: dateRange.to }
+            });
+            const records: Array<{ totalProduced?: number }> = Array.isArray(res.data) ? res.data : [];
+            return records.reduce((sum, r) => sum + (Number(r.totalProduced) || 0), 0);
         },
     });
 
@@ -136,14 +132,14 @@ const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole 
             { 
                 label: 'Avg Cost/Kg', 
                 value: avgPerKg > 0 ? `₹${avgPerKg.toFixed(2)}/kg` : '—', 
-                subValue: totalProductionKg > 0 ? `${Number(totalProductionKg).toLocaleString('en-IN')} kg` : 'No production',
+                subValue: productionUnavailable ? 'Production data unavailable' : totalProductionKg > 0 ? `${Number(totalProductionKg).toLocaleString('en-IN')} kg` : 'No production',
                 color: 'secondary.main', 
                 hasData: avgPerKg > 0 
             },
             { label: 'Electricity Cost', value: `₹${ebCost.toLocaleString('en-IN')}`, color: 'warning.main', hasData: true },
             { label: 'Labor Cost', value: `₹${laborCost.toLocaleString('en-IN')}`, color: 'success.main', hasData: true },
         ];
-    }, [costingData, totalProductionKg]);
+    }, [costingData, totalProductionKg, productionUnavailable]);
 
     const chartData = React.useMemo(() => {
         if (!costingData.length) return [];
@@ -218,14 +214,14 @@ const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole 
     return (
         <Box sx={{ maxWidth: '100%', width: '100%' }}>
             {/* Header */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
                 <Typography variant="h4" fontWeight="bold">
                     Costing Module
                     {isLoading && <LinearProgress sx={{ mt: 1, borderRadius: 1 }} />}
                 </Typography>
 
-                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
                         <FormControl sx={{ minWidth: 200 }} size="small">
                             <InputLabel>Date Filter</InputLabel>
                             <Select

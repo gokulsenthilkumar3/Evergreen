@@ -429,9 +429,33 @@ export class ProductionService {
     }
   }
 
-  async findAll() {
+  /** Production history, optionally limited to local calendar days `from`..`to` (YYYY-MM-DD, inclusive). */
+  async findAll(from?: string, to?: string) {
+    const day = (value: string | undefined, end: boolean) => {
+      if (!value) return undefined;
+      const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+      const date = match
+        ? end
+          ? new Date(+match[1], +match[2] - 1, +match[3], 23, 59, 59, 999)
+          : new Date(+match[1], +match[2] - 1, +match[3])
+        : null;
+      if (!date || date.getDate() !== +match![3])
+        throw new BadRequestException('Dates must be valid YYYY-MM-DD days');
+      return date;
+    };
+    const gte = day(from, false);
+    const lte = day(to, true);
+    if (gte && lte && gte > lte)
+      throw new BadRequestException(
+        'The start date must not be after the end date',
+      );
     return this.prisma.production.findMany({
-      where: { createdBy: { not: 'SYSTEM_MERGE' } },
+      where: {
+        createdBy: { not: 'SYSTEM_MERGE' },
+        ...(gte || lte
+          ? { date: { ...(gte && { gte }), ...(lte && { lte }) } }
+          : {}),
+      },
       orderBy: { date: 'desc' },
       include: {
         consumedBatches: true,

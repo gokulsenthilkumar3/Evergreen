@@ -11,6 +11,8 @@
   color-scheme: light;
 }
 
+:root[data-theme-mode="dark"] { color-scheme: dark; }
+
 body {
   margin: 0;
   padding: 0;
@@ -121,7 +123,13 @@ a { text-decoration: none; color: inherit; }
   100% { transform: scale(1) translateY(0); opacity: 1; }
 }
 
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 /* ─── Animation utility classes ─────────────────────────── */
+.anim-page-in    { animation: pageIn     0.22s cubic-bezier(0.16,1,0.3,1) both; }
 .anim-float      { animation: floatY     3.5s ease-in-out infinite; }
 .anim-slide-up   { animation: slideInUp  0.45s cubic-bezier(0.16,1,0.3,1) both; }
 .anim-fade-scale { animation: fadeScale  0.35s ease both; }
@@ -130,6 +138,18 @@ a { text-decoration: none; color: inherit; }
 .anim-pulse-glow { animation: pulseGlow  2s ease-in-out infinite; }
 .anim-pop-in     { animation: popIn      0.4s cubic-bezier(0.16,1,0.3,1) both; }
 .spin-icon       { animation: spin       1s linear infinite; }
+
+/* Honour the operating-system request for less motion: keep state changes, drop movement. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .lazy-anim { opacity: 1; transform: none; }
+  .perspective-wrap:hover .perspective-inner { transform: none; }
+}
 
 /* Lazy animation: off by default, JS IntersectionObserver adds .in-view */
 .lazy-anim {
@@ -157,17 +177,15 @@ a { text-decoration: none; color: inherit; }
   border-radius: 16px;
 }
 
-/* Dark mode glass */
-@media (prefers-color-scheme: dark) {
-  .glass-card {
-    background: rgba(30, 41, 59, 0.75);
-    border-color: rgba(255,255,255,0.08);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06);
-  }
-  .clay-card {
-    background: linear-gradient(145deg, #1e293b, #0f172a);
-    box-shadow: 8px 8px 20px rgba(0,0,0,0.45), -4px -4px 12px rgba(255,255,255,0.04), inset 0 1px 2px rgba(255,255,255,0.06);
-  }
+/* Dark glass follows the theme chosen in the app (App sets data-theme-mode), not the OS setting. */
+:root[data-theme-mode="dark"] .glass-card {
+  background: rgba(30, 41, 59, 0.75);
+  border-color: rgba(255,255,255,0.08);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+:root[data-theme-mode="dark"] .clay-card {
+  background: linear-gradient(145deg, #1e293b, #0f172a);
+  box-shadow: 8px 8px 20px rgba(0,0,0,0.45), -4px -4px 12px rgba(255,255,255,0.04), inset 0 1px 2px rgba(255,255,255,0.06);
 }
 
 /* ─── Claymorphism ──────────────────────────────────────── */
@@ -271,13 +289,11 @@ a { text-decoration: none; color: inherit; }
   }
 }
 
-/* Dark mode floating nav */
-@media (prefers-color-scheme: dark) {
-  .floating-bottom-nav {
-    background: rgba(15, 23, 42, 0.88);
-    border-color: rgba(255,255,255,0.1);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.08);
-  }
+/* Dark floating nav follows the app theme */
+:root[data-theme-mode="dark"] .floating-bottom-nav {
+  background: rgba(15, 23, 42, 0.88);
+  border-color: rgba(255,255,255,0.1);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.08);
 }
 
 /* ─── Neumorphic calendar base (applied via sx overrides in GlassDatePicker) ── */

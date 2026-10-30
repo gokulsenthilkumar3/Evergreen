@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, lazy, Suspense } from 'react';
+import { useState, useMemo, useEffect, useRef, lazy, Suspense } from 'react';
 import { Toaster, toast } from 'sonner';
 import { SUCCESS_MESSAGES } from './utils/messages';
 import { ConfirmProvider } from './context/ConfirmContext';
@@ -28,6 +28,7 @@ import {
   InputAdornment,
   Paper,
   Chip,
+  useMediaQuery,
   type PaletteMode,
 } from '@mui/material';
 import {
@@ -127,6 +128,9 @@ const CommandCenter = lazy(() => import('./pages/CommandCenter'));
 const Integrations = lazy(() => import('./pages/Integrations'));
 const BookEllam = lazy(() => import('./pages/BookEllam'));
 
+/** Provider support number in international digits, e.g. 919800000000. Set VITE_SUPPORT_PHONE when packaging. */
+const SUPPORT_PHONE = /^\d{8,15}$/.test(String(import.meta.env.VITE_SUPPORT_PHONE ?? '')) ? String(import.meta.env.VITE_SUPPORT_PHONE) : '';
+
 const drawerWidth = 260;
 const drawerCollapsedWidth = 72;
 
@@ -165,9 +169,16 @@ const GlobalSearch = ({ onNavigate }: { onNavigate: (page: string) => void }) =>
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  // The query the current results (or failure) belong to; drives the "no matches" and error states.
+  const [searchedQuery, setSearchedQuery] = useState('');
+  const [searchFailed, setSearchFailed] = useState(false);
   const [searchHistory, setSearchHistory] = useState<string[]>(() => {
-    const saved = localStorage.getItem('searchHistory');
-    return saved ? JSON.parse(saved) : [];
+    try {
+      const saved = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+      return Array.isArray(saved) ? saved.filter((term): term is string => typeof term === 'string') : [];
+    } catch {
+      return [];
+    }
   });
 
   useEffect(() => {
@@ -184,25 +195,37 @@ const GlobalSearch = ({ onNavigate }: { onNavigate: (page: string) => void }) =>
   const debouncedQuery = useDebounce(query, 300);
 
   useEffect(() => {
+    // A slower earlier request must not replace the results of a newer query.
+    let current = true;
     const fetchResults = async () => {
       setSelectedIndex(-1);
       if (debouncedQuery.length < 2) {
         setResults([]);
+        setSearchedQuery('');
+        setSearchFailed(false);
         return;
       }
 
       setLoading(true);
       try {
-        const res = await api.get(`/search?q=${debouncedQuery}`);
-        setResults(res.data);
-      } catch (err) {
-        console.error(err);
+        const res = await api.get('/search', { params: { q: debouncedQuery } });
+        if (!current) return;
+        setResults(Array.isArray(res.data) ? res.data : []);
+        setSearchFailed(false);
+      } catch {
+        if (!current) return;
+        setResults([]);
+        setSearchFailed(true);
       } finally {
-        setLoading(false);
+        if (current) {
+          setSearchedQuery(debouncedQuery);
+          setLoading(false);
+        }
       }
     };
 
     fetchResults();
+    return () => { current = false; };
   }, [debouncedQuery]);
 
   const handleSearch = (val: string) => {
@@ -210,6 +233,10 @@ const GlobalSearch = ({ onNavigate }: { onNavigate: (page: string) => void }) =>
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      closeResults();
+      return;
+    }
     if (results.length === 0) return;
 
     switch (e.key) {
@@ -231,11 +258,9 @@ const GlobalSearch = ({ onNavigate }: { onNavigate: (page: string) => void }) =>
           setQuery('');
         }
         break;
-      case 'Escape':
-        setResults([]);
-        break;
     }
   };
+  const closeResults = () => { setResults([]); setSearchedQuery(''); setSearchFailed(false); };
 
   const addToHistory = (term: string) => {
     if (!term.trim()) return;
@@ -250,8 +275,9 @@ const GlobalSearch = ({ onNavigate }: { onNavigate: (page: string) => void }) =>
     const escapedQuery = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const regex = new RegExp(`(${escapedQuery})`, 'gi');
     const parts = text.split(regex);
+    // Compare text rather than calling regex.test: a global regex keeps lastIndex and skips every other match.
     return parts.map((part, i) =>
-      regex.test(part) ? <mark key={i} style={{ background: '#ffd700', fontWeight: 700 }}>{part}</mark> : part
+      part.toLowerCase() === q.toLowerCase() ? <mark key={i} style={{ background: '#ffd700', fontWeight: 700 }}>{part}</mark> : part
     );
   };
 
@@ -290,8 +316,22 @@ const GlobalSearch = ({ onNavigate }: { onNavigate: (page: string) => void }) =>
           }
         }}
       />
+      {results.length === 0 && !loading && query.length >= 2 && searchedQuery === query && (
+        <Paper
+          role="status"
+          className="anim-fade-scale"
+          sx={{ position: 'absolute', top: '120%', left: 0, right: 0, zIndex: 1500, borderRadius: '12px', p: 2, boxShadow: (theme: any) => theme.shadows[10] }}
+        >
+          <Typography variant="body2" color={searchFailed ? 'error' : 'text.secondary'}>
+            {searchFailed
+              ? 'Search is unavailable right now. Check the connection and try again.'
+              : `No invoices, stock or customers match “${query}”.`}
+          </Typography>
+        </Paper>
+      )}
       {results.length > 0 && query.length >= 2 && (
         <Paper
+          className="anim-fade-scale"
           sx={{
             position: 'absolute',
             top: '120%',
@@ -378,6 +418,7 @@ const App: React.FC = () => {
     setSettingsTab(settingsTabFor(page));
     page = canonicalPage(page);
     setPageState(page);
+    setMobileNavOpen(false);
     const targetPath = page === 'dashboard' ? '/' : `/${page}`;
     if (window.location.pathname !== targetPath) {
       window.history.pushState(null, '', targetPath);
@@ -395,6 +436,13 @@ const App: React.FC = () => {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
   const [drawerOpen, setDrawerOpen] = useState(true);
+  // Below 900px the navigation is an overlay that starts closed; a permanent 260px rail left phones about 130px of content.
+  const isCompact = useMediaQuery('(max-width:899.95px)');
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const navExpanded = isCompact || drawerOpen;
+  // Each screen opens at its top instead of the previous screen's scroll position.
+  const mainRef = useRef<HTMLElement | null>(null);
+  useEffect(() => { mainRef.current?.scrollTo?.({ top: 0 }); }, [currentPage]);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -417,7 +465,11 @@ const App: React.FC = () => {
 
   const theme = useMemo(() => getTheme(mode, themeName), [mode, themeName]);
 
-  useEffect(() => { localStorage.setItem('themeMode', mode); }, [mode]);
+  useEffect(() => {
+    localStorage.setItem('themeMode', mode);
+    // Global CSS (glass cards, floating nav, native controls) follows the app theme rather than the OS.
+    document.documentElement.dataset.themeMode = mode;
+  }, [mode]);
   useEffect(() => { localStorage.setItem('themeName', themeName); }, [themeName]);
   useEffect(() => { localStorage.setItem('floatingNav', String(floatingNav)); }, [floatingNav]);
   useEffect(() => { localStorage.setItem('language', language); }, [language]);
@@ -483,7 +535,8 @@ const App: React.FC = () => {
   };
 
   const handleDrawerToggle = () => {
-    setDrawerOpen(!drawerOpen);
+    if (isCompact) setMobileNavOpen(open => !open);
+    else setDrawerOpen(!drawerOpen);
   };
 
   // Get breadcrumb items based on current page
@@ -777,29 +830,35 @@ const App: React.FC = () => {
                       {settings.graceExpiresAt && ` Grace protection active until ${new Date(settings.graceExpiresAt).toLocaleDateString()}.`}
                     </Typography>
                   </Box>
-                  <Box sx={{ display: 'flex', gap: 1 }}>
-                    <Button 
-                      size="small" 
-                      variant="contained" 
-                      color="warning" 
-                      component="a" 
-                      href="https://wa.me/919876543210?text=Hello%20EverGreen%20Licensing%20Desk,%20I%20would%20like%20to%20renew%20our%20subscription." 
-                      target="_blank"
-                      sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.75rem', borderRadius: 1.5 }}
-                    >
-                      Connect with Licensing Desk (WhatsApp)
-                    </Button>
-                    <Button 
-                      size="small" 
-                      variant="outlined" 
-                      color="inherit" 
-                      component="a" 
-                      href="tel:+919876543210"
-                      sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.75rem', borderRadius: 1.5 }}
-                    >
-                      Call Support
-                    </Button>
-                  </Box>
+                  {/* The provider's real number is set at build time; without it, never offer a made-up contact. */}
+                  {SUPPORT_PHONE ? (
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                      <Button
+                        size="small"
+                        variant="contained"
+                        color="warning"
+                        component="a"
+                        href={`https://wa.me/${SUPPORT_PHONE}?text=${encodeURIComponent('Hello EverGreen licensing desk, I would like to renew our subscription.')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.75rem', borderRadius: 1.5 }}
+                      >
+                        Connect with Licensing Desk (WhatsApp)
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="inherit"
+                        component="a"
+                        href={`tel:+${SUPPORT_PHONE}`}
+                        sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.75rem', borderRadius: 1.5 }}
+                      >
+                        Call Support
+                      </Button>
+                    </Box>
+                  ) : (
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>Contact your EverGreen provider to renew.</Typography>
+                  )}
                 </Box>
               )}
               {/* Floating bottom nav pill */}
@@ -963,12 +1022,14 @@ const App: React.FC = () => {
                   </Toolbar>
                 </AppBar>
                 <Drawer
-                  variant="permanent"
+                  variant={isCompact ? 'temporary' : 'permanent'}
+                  open={isCompact ? mobileNavOpen : true}
+                  onClose={() => setMobileNavOpen(false)}
+                  ModalProps={{ keepMounted: true }}
                   sx={{
-                    width: drawerOpen ? drawerWidth : drawerCollapsedWidth,
-                    flexShrink: 0,
+                    ...(isCompact ? {} : { width: drawerOpen ? drawerWidth : drawerCollapsedWidth, flexShrink: 0 }),
                     [`& .MuiDrawer-paper`]: {
-                      width: drawerOpen ? drawerWidth : drawerCollapsedWidth,
+                      width: navExpanded ? drawerWidth : drawerCollapsedWidth,
                       boxSizing: 'border-box',
                       transition: (theme) => theme.transitions.create('width', {
                         easing: theme.transitions.easing.sharp,
@@ -980,7 +1041,7 @@ const App: React.FC = () => {
                 >
                   <Toolbar />
                   {/* Company Logo Header */}
-                  {drawerOpen && (
+                  {navExpanded && (
                     <Box sx={{ px: 3, py: 2, borderBottom: 1, borderColor: 'divider', mb: 1 }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                         <Avatar
@@ -1015,7 +1076,7 @@ const App: React.FC = () => {
                       if (filteredItems.length === 0) return null;
                       return (
                         <Box key={gIdx}>
-                          {drawerOpen && group.label && (
+                          {navExpanded && group.label && (
                             <Typography
                               variant="overline"
                               sx={{
@@ -1027,7 +1088,7 @@ const App: React.FC = () => {
                               {group.label}
                             </Typography>
                           )}
-                          {!drawerOpen && gIdx > 0 && (
+                          {!navExpanded && gIdx > 0 && (
                             <Divider sx={{ my: 1, mx: 1.5, opacity: 0.4 }} />
                           )}
                           <List disablePadding>
@@ -1055,7 +1116,7 @@ const App: React.FC = () => {
                                     onClick={() => navigateTo(item.page)}
                                     sx={{
                                       minHeight: 44,
-                                      justifyContent: drawerOpen ? 'initial' : 'center',
+                                      justifyContent: navExpanded ? 'initial' : 'center',
                                       px: 2,
                                       mx: 1,
                                       borderRadius: '12px',
@@ -1076,14 +1137,14 @@ const App: React.FC = () => {
                                       },
                                       '&:hover': {
                                         bgcolor: mode === 'dark' ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.03)',
-                                        transform: drawerOpen ? 'translateX(3px)' : 'none',
+                                        transform: navExpanded ? 'translateX(3px)' : 'none',
                                       }
                                     }}
                                   >
                                     <ListItemIcon
                                       sx={{
                                         minWidth: 0,
-                                        mr: drawerOpen ? 1.5 : 'auto',
+                                        mr: navExpanded ? 1.5 : 'auto',
                                         justifyContent: 'center',
                                         color: currentPage === item.page ? 'primary.main' : 'text.secondary',
                                         transition: 'color 0.2s ease',
@@ -1097,7 +1158,7 @@ const App: React.FC = () => {
                                         item.icon
                                       )}
                                     </ListItemIcon>
-                                    {drawerOpen && (
+                                    {navExpanded && (
                                       <ListItemText
                                         primary={labelFor(item.text)}
                                         primaryTypographyProps={{
@@ -1113,7 +1174,7 @@ const App: React.FC = () => {
                               </ListItem>
                             ))}
                           </List>
-                          {gIdx < navGroups.length - 1 && drawerOpen && (
+                          {gIdx < navGroups.length - 1 && navExpanded && (
                             <Divider sx={{ my: 1, mx: 2, opacity: 0.5 }} />
                           )}
                         </Box>
@@ -1122,7 +1183,7 @@ const App: React.FC = () => {
                   </Box>
 
                   {/* User info at bottom of sidebar */}
-                  {drawerOpen && (
+                  {navExpanded && (
                     <Box
                       onClick={() => setProfileModalOpen(true)}
                       sx={{
@@ -1148,10 +1209,12 @@ const App: React.FC = () => {
                 </Drawer>
                 <Box
                   component="main"
+                  ref={mainRef}
                   sx={{
                     flexGrow: 1,
                     p: { xs: 2.5, md: 4 },
-                    width: { sm: `calc(100% - ${drawerOpen ? drawerWidth : drawerCollapsedWidth}px)` },
+                    width: isCompact ? '100%' : `calc(100% - ${drawerOpen ? drawerWidth : drawerCollapsedWidth}px)`,
+                    minWidth: 0,
                     height: '100vh',
                     display: 'flex',
                     flexDirection: 'column',
@@ -1182,7 +1245,11 @@ const App: React.FC = () => {
                       m: 0
                     }}
                   >
+                    {/* Keyed by page: a crash stays inside that screen, and navigating away clears it. */}
+                    <ErrorBoundary key={currentPage}>
                     <Suspense fallback={<LinearProgress />}>
+                    {/* Page roots often use maxWidth with mx: auto; in a flex column that sizes them to their content, so pin them to the column width. */}
+                    <Box key={currentPage} className="anim-page-in" sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1, minWidth: 0, '& > *': { width: '100%', minWidth: 0 } }}>
                       {currentPage === 'workspace' && <UnifiedWorkspace onNavigate={navigateTo} profile={settings} />}
                       {currentPage === 'jobwork' && <JobWork />}
                       {currentPage === 'operations' && <OperationsDesk />}
@@ -1237,7 +1304,9 @@ const App: React.FC = () => {
                           <Typography color="text.secondary">This page is currently under development.</Typography>
                         </Box>
                       )}
+                    </Box>
                     </Suspense>
+                    </ErrorBoundary>
                   </Container>
                 </Box>
               </Box>
