@@ -1,6 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../services/prisma.service';
-import { BUSINESS_MODES, WORKSPACE_MODES } from '@evergreen/types';
+import {
+  BUSINESS_MODES,
+  WORKSPACE_MODES,
+  canonicalIndianState,
+  gstinStateName,
+} from '@evergreen/types';
 
 const EDITABLE_SETTINGS = new Set([
   'businessMode',
@@ -74,6 +79,27 @@ export class SettingsService {
     }
     if (updateData.language && !['en', 'ta'].includes(updateData.language)) {
       throw new BadRequestException('Language must be en or ta');
+    }
+    // Invoices take the seller's state from the GSTIN, so a different state here would mislead staff.
+    if (data.gstin !== undefined || data.sellerState !== undefined) {
+      const gstin = data.gstin !== undefined ? data.gstin : settings.gstin;
+      const state =
+        data.sellerState !== undefined
+          ? data.sellerState
+          : settings.sellerState;
+      if (data.sellerState) {
+        const canonical = canonicalIndianState(data.sellerState);
+        if (!canonical)
+          throw new BadRequestException(
+            'Choose an Indian state or union territory as the seller state',
+          );
+        updateData.sellerState = canonical;
+      }
+      const registered = gstinStateName(gstin);
+      if (registered && state && canonicalIndianState(state) !== registered)
+        throw new BadRequestException(
+          `GSTIN ${String(gstin).toUpperCase()} is registered in ${registered}, not ${state}. Correct the GSTIN or the seller state.`,
+        );
     }
     if (updateData.supportedCounts !== undefined) {
       const counts = String(updateData.supportedCounts)
