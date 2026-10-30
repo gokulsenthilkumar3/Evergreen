@@ -501,7 +501,7 @@ const App: React.FC = () => {
   const toggleLanguage = async () => {
     const next = language === 'en' ? 'ta' : 'en';
     setLanguage(next);
-    try { await api.put('/settings', { language: next }); } catch { toast.error('Language preference will be saved when the connection is restored.'); }
+    try { await api.put('/settings', { language: next }); } catch { toast.error('Language changed on this device only; it could not be saved to your account.'); }
   };
 
 
@@ -634,16 +634,16 @@ const App: React.FC = () => {
     {
       label: 'Operations & Job Work',
       items: [
-        { text: 'Store', icon: <StoreIcon />, page: 'store', description: 'Spares inventory, machine components, consumables, and store item tracking' },
+        { text: 'Store', icon: <StoreIcon />, page: 'store', description: 'Sell from the shared catalogue and reserve stock in a sales order' },
         { text: 'Inventory', icon: <InventoryIcon />, page: 'inventory', badge: lowStockCount > 0 ? lowStockCount : undefined, description: 'Stock ledger for cotton bales, yarn bags by count, and waste inventory' },
         { text: 'Inward / Batch', icon: <InwardIcon />, page: 'inward', description: 'Cotton gate receipts, batch lot creation, bale weights, and QR sticker generation' },
         { text: 'Production & Job Work', icon: <WasteIcon />, page: 'production', description: 'Bale consumption mixing, yarn count production, waste tracking, and material balance' },
         { text: 'Job Work Register', icon: <SyncIcon />, page: 'jobwork', description: 'External job work contracts, sent material, inward yarn returns, and reconciliation' },
-        { text: 'Operations Desk', icon: <InventoryIcon />, page: 'operations', description: 'Daily floor checklists, machine operational status, and shift supervisor notes' },
+        { text: 'Operations Desk', icon: <InventoryIcon />, page: 'operations', description: 'Catalogue inward receipts, stock by item and garment costing sheets' },
         { text: 'Business flows', icon: <SyncIcon />, page: 'workflows', description: 'Returns, procurement, conversion, quality holds and accounting' },
         { text: 'Outwards', icon: <OutwardIcon fontSize="small" />, page: 'outward', description: 'Customer yarn dispatch gate pass, vehicle/driver logging, and barcode tags' },
         { text: 'Costing', icon: <CostIcon />, page: 'costing', description: 'Per-kg spinning cost analysis: electricity, labor, packaging, and maintenance' },
-        { text: 'Business Desk', icon: <StoreIcon />, page: 'business', description: 'Customer sales orders, proforma generation, delivery tracking, and commercial orders' },
+        { text: 'Business Desk', icon: <StoreIcon />, page: 'business', description: 'Catalogue, customers, sales orders, GST invoices and invoice payments' },
       ]
     },
     {
@@ -657,22 +657,22 @@ const App: React.FC = () => {
     {
       label: 'Yarn ERP',
       items: [
-        { text: 'Yarn ERP Hub', icon: <FactoryIcon />, page: 'yarnerp', description: 'Complete spinning mill ERP overview linking machinery, quality, and logistics' },
-        { text: 'Machine Status Overview', icon: <SpeedIcon />, page: 'yarnlive', description: 'Live spindle speed, RPM, pneumatic pressure, running status, and power draw' },
+        { text: 'Yarn ERP Hub', icon: <FactoryIcon />, page: 'yarnerp', description: 'Opens Business Workspace, which links every mill module' },
+        { text: 'Machine Status Overview', icon: <SpeedIcon />, page: 'yarnlive', description: 'Registered machines and their saved status. Live sensor telemetry is not connected' },
         { text: 'Machine Management', icon: <MachineIcon />, page: 'yarnmachine', description: 'Machine registry, scheduled preventive maintenance, breakdown logs, and spares' },
         { text: 'Quality Control', icon: <QualityIcon />, page: 'yarnquality', description: 'Lab testing: CSP, count lea strength, evenness (U%), imperfections, and hairiness' },
-        { text: 'Shift Management', icon: <ShiftIcon />, page: 'yarnshift', description: 'Operator shift rostering, attendance records, machine allocations, and handovers' },
+        { text: 'Shift Management', icon: <ShiftIcon />, page: 'yarnshift', description: 'Saved shift schedules. Attendance and machine allocation are not recorded here' },
         { text: 'Warehouse', icon: <WarehouseIcon />, page: 'yarnwarehouse', description: 'Storage bay and bin rack locations for finished yarn bags and raw cotton' },
         { text: 'HR & Payroll', icon: <StaffIcon />, page: 'yarnhr', description: 'Staff directory, overtime calculations, piece-rate wages, and salary processing' },
-        { text: 'Demand Forecasting', icon: <ForecastIcon />, page: 'yarnforecast', description: 'Predictive yarn demand modeling, seasonality trends, and cotton purchase orders' },
-        { text: 'Supplier Activity', icon: <SupplierIcon />, page: 'yarnsupplier', description: 'Vendor performance ratings, cotton moisture test history, and lead-time tracking' },
-        { text: 'Compliance Readiness', icon: <ComplianceIcon />, page: 'yarncompliance', description: 'Industrial safety certificates, pollution control board audits, and legal compliance' },
+        { text: 'Demand Forecasting', icon: <ForecastIcon />, page: 'yarnforecast', description: 'Three-month moving average of sales orders, as a planning baseline' },
+        { text: 'Supplier Activity', icon: <SupplierIcon />, page: 'yarnsupplier', description: 'Supplier receipts and moisture readings from saved inward records' },
+        { text: 'Compliance Readiness', icon: <ComplianceIcon />, page: 'yarncompliance', description: 'Internal record counts for compliance review. No statutory filing is connected' },
       ]
     },
     {
       label: 'Support',
       items: [
-        { text: 'Helpdesk', icon: <HelpdeskIcon />, page: 'helpdesk', description: 'Internal support tickets, technical queries, and operational issue logs' },
+        { text: 'Helpdesk', icon: <HelpdeskIcon />, page: 'helpdesk', description: 'Frequently asked questions and ticket drafts kept in this browser' },
         { text: 'Tutorial', icon: <TutorialIcon />, page: 'tutorial', description: 'Step-by-step spinning mill workflows, standard operating procedures, and guides' },
       ]
     },
@@ -680,10 +680,10 @@ const App: React.FC = () => {
       label: 'Admin',
       items: [
         { text: 'Migration & integrations', icon: <SyncIcon />, page: 'integrations', requiredRole: 'ADMIN', description: 'Import customer and catalogue data with explicit column mapping and audit history' },
-        { text: 'User Management', icon: <UsersIcon />, page: 'users', requiredRole: 'ADMIN', description: 'Role-based access permissions for admin, manager, operator, and viewer roles' },
+        { text: 'User Management', icon: <UsersIcon />, page: 'users', requiredRole: 'ADMIN', description: 'Staff accounts and the VIEWER, MODIFIER and ADMIN roles' },
         // B-18: Sessions and Security had the same icon; Sessions now uses VpnKey
         { text: 'Sessions', icon: <SessionsIcon />, page: 'sessions', description: 'Active user login sessions, IP addresses, device types, and remote logout' },
-        { text: 'Security Settings', icon: <SecurityIcon />, page: 'security', description: 'Two-factor authentication, audit trails, and system access control policies' },
+        { text: 'Security Settings', icon: <SecurityIcon />, page: 'security', description: 'Password, two-factor sign-in and passkeys' },
         { text: 'Settings', icon: <SettingsIcon />, page: 'settings', description: 'Company details, count specifications, tare weights, and theme preferences' },
       ]
     },
