@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import type { Prisma } from '@prisma/client';
 import { createHash, randomUUID } from 'crypto';
 import { PrismaService } from '../../services/prisma.service';
 import { calculateInvoiceTotals } from './invoice-totals';
@@ -69,8 +70,21 @@ function assertCatalogueGstRate(
     );
 }
 
+/** Optional free text: absent or blank becomes null; anything other than text is rejected. */
+function optionalText(value: unknown, label: string, maxLength = 2000) {
+  if (value === undefined || value === null || value === '') return null;
+  if (typeof value !== 'string' || value.length > maxLength)
+    throw new BadRequestException(
+      `${label} must be text of at most ${maxLength} characters`,
+    );
+  return value;
+}
+
+/** Request fields are untrusted until each helper above has checked them. */
+type RequestBody = Record<string, unknown>;
+
 /** Customer tax and contact fields; GSTIN state and the customer state must agree. */
-function partyContact(body: any, currentState?: string | null) {
+function partyContact(body: RequestBody, currentState?: string | null) {
   const { value, error } = validatePartyContact(
     {
       gstin: body.gstin,
@@ -140,8 +154,8 @@ export class CommerceService {
     );
   }
 
-  async createItem(body: any) {
-    if (!body.name?.trim() || !body.sku?.trim() || !body.type)
+  async createItem(body: RequestBody) {
+    if (!body.name || !body.sku || !body.type)
       throw new BadRequestException('Name, SKU and item type are required');
     const type = catalogueType(body.type);
     if (
@@ -156,10 +170,10 @@ export class CommerceService {
         name: catalogueText(body.name, 'Item name', 200),
         sku: catalogueText(body.sku, 'SKU', 64).toUpperCase(),
         type,
-        description: body.description || null,
+        description: optionalText(body.description, 'Description'),
         uom:
           body.uom === undefined ? 'KG' : catalogueText(body.uom, 'Unit', 20),
-        hsnSac: body.hsnSac || null,
+        hsnSac: optionalText(body.hsnSac, 'HSN/SAC', 20),
         gstRate: catalogueNumber(body.gstRate, 'GST rate', 100),
         salePrice: catalogueNumber(
           body.salePrice,
@@ -176,7 +190,7 @@ export class CommerceService {
           'Cost price',
           CATALOGUE_AMOUNT_MAX,
         ),
-        imageUrl: body.imageUrl || null,
+        imageUrl: optionalText(body.imageUrl, 'Image reference'),
         shopVisible: body.shopVisible === true,
         brandId: optionalReference(body.brandId, 'brand'),
         categoryId: optionalReference(body.categoryId, 'category'),
@@ -184,7 +198,7 @@ export class CommerceService {
     });
   }
 
-  async updateItem(id: number, body: any) {
+  async updateItem(id: number, body: RequestBody) {
     const existing = await this.prisma.catalogueItem.findUniqueOrThrow({
       where: { id },
     });
@@ -211,15 +225,19 @@ export class CommerceService {
       throw new BadRequestException(
         'Only yarn, finished goods and services can be published in the shop',
       );
-    const data: any = {};
+    const data: Record<string, unknown> = {};
     if (body.name !== undefined)
       data.name = catalogueText(body.name, 'Item name', 200);
     if (body.sku !== undefined)
       data.sku = catalogueText(body.sku, 'SKU', 64).toUpperCase();
     if (body.uom !== undefined) data.uom = catalogueText(body.uom, 'Unit', 20);
     if (body.type !== undefined) data.type = nextType;
-    for (const key of ['description', 'hsnSac', 'imageUrl'])
-      if (body[key] !== undefined) data[key] = body[key] || null;
+    if (body.description !== undefined)
+      data.description = optionalText(body.description, 'Description');
+    if (body.hsnSac !== undefined)
+      data.hsnSac = optionalText(body.hsnSac, 'HSN/SAC', 20);
+    if (body.imageUrl !== undefined)
+      data.imageUrl = optionalText(body.imageUrl, 'Image reference');
     for (const key of ['active', 'shopVisible'])
       if (body[key] !== undefined) data[key] = body[key];
     const amounts: Array<[string, string, number]> = [
@@ -238,7 +256,10 @@ export class CommerceService {
       data.brandId = optionalReference(body.brandId, 'brand');
     if (body.categoryId !== undefined)
       data.categoryId = optionalReference(body.categoryId, 'category');
-    return this.prisma.catalogueItem.update({ where: { id }, data });
+    return this.prisma.catalogueItem.update({
+      where: { id },
+      data: data as Prisma.CatalogueItemUpdateInput,
+    });
   }
   archiveItem(id: number) {
     return this.prisma.catalogueItem.update({
@@ -344,8 +365,8 @@ export class CommerceService {
     );
   }
 
-  async createCustomer(body: any) {
-    if (!body.name?.trim())
+  async createCustomer(body: RequestBody) {
+    if (typeof body.name !== 'string' || !body.name.trim())
       throw new BadRequestException('Customer name is required');
     const contact = partyContact(body);
     // Without a GSTIN or state, assume a local customer of the company's own state.
@@ -361,11 +382,11 @@ export class CommerceService {
         email: contact.email ?? null,
         gstin: contact.gstin ?? null,
         state: contact.state || settings?.sellerState || 'Tamil Nadu',
-        address: body.address || null,
+        address: optionalText(body.address, 'Address'),
       },
     });
   }
-  async updateCustomer(id: number, body: any) {
+  async updateCustomer(id: number, body: RequestBody) {
     const existing = await this.prisma.customer.findUniqueOrThrow({
       where: { id },
     });
@@ -374,10 +395,13 @@ export class CommerceService {
       body.gstin === undefined && body.state !== undefined
         ? existing.gstin
         : body.gstin;
-    const data: any = partyContact({ ...body, gstin }, existing.state);
+    const data: Record<string, unknown> = {
+      ...partyContact({ ...body, gstin }, existing.state),
+    };
     if (body.name !== undefined)
       data.name = catalogueText(body.name, 'Customer name', 200);
-    if (body.address !== undefined) data.address = body.address || null;
+    if (body.address !== undefined)
+      data.address = optionalText(body.address, 'Address');
     if (body.active !== undefined) {
       if (typeof body.active !== 'boolean')
         throw new BadRequestException(
@@ -385,7 +409,10 @@ export class CommerceService {
         );
       data.active = body.active;
     }
-    return this.prisma.customer.update({ where: { id }, data });
+    return this.prisma.customer.update({
+      where: { id },
+      data: data as Prisma.CustomerUpdateInput,
+    });
   }
 
   async customerLedger(customerId: number) {
@@ -900,16 +927,17 @@ export class CommerceService {
         gstinStateName(sellerGSTIN) ||
         canonicalIndianState(settings?.sellerState) ||
         'Tamil Nadu';
+      const states = body as { sellerState?: unknown; buyerState?: unknown };
       if (
-        body.sellerState &&
-        canonicalIndianState(body.sellerState) !== sellerState
+        states.sellerState &&
+        canonicalIndianState(states.sellerState) !== sellerState
       )
         throw new BadRequestException(
           `Invoices are issued from ${sellerState}, the state of the company GSTIN`,
         );
       // Place of supply may differ from the customer's billing state, but it must be a real state.
-      const buyerState = body.buyerState
-        ? canonicalIndianState(body.buyerState)
+      const buyerState = states.buyerState
+        ? canonicalIndianState(states.buyerState)
         : customer.state || sellerState;
       if (!buyerState)
         throw new BadRequestException(
@@ -1185,11 +1213,12 @@ export class CommerceService {
     if (body.method && !['CASH', 'BANK', 'UPI', 'CHEQUE'].includes(body.method))
       throw new BadRequestException('Choose a valid receipt method');
     // Invoices call the retry key requestKey; payments accept that name as well as their original one.
-    const retryKey = body.idempotencyKey ?? body.requestKey;
+    const keys = body as { idempotencyKey?: unknown; requestKey?: unknown };
+    const retryKey = keys.idempotencyKey ?? keys.requestKey;
     if (
-      body.idempotencyKey &&
-      body.requestKey &&
-      body.idempotencyKey !== body.requestKey
+      keys.idempotencyKey &&
+      keys.requestKey &&
+      keys.idempotencyKey !== keys.requestKey
     )
       throw new BadRequestException('Send one payment retry key');
     const requestReference = retryKey

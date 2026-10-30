@@ -81,14 +81,13 @@ export class SettingsService {
       throw new BadRequestException('Language must be en or ta');
     }
     // Invoices take the seller's state from the GSTIN, so a different state here would mislead staff.
-    if (data.gstin !== undefined || data.sellerState !== undefined) {
-      const gstin = data.gstin !== undefined ? data.gstin : settings.gstin;
+    const tax = data as { gstin?: string | null; sellerState?: string | null };
+    if (tax.gstin !== undefined || tax.sellerState !== undefined) {
+      const gstin = tax.gstin !== undefined ? tax.gstin : settings.gstin;
       const state =
-        data.sellerState !== undefined
-          ? data.sellerState
-          : settings.sellerState;
-      if (data.sellerState) {
-        const canonical = canonicalIndianState(data.sellerState);
+        tax.sellerState !== undefined ? tax.sellerState : settings.sellerState;
+      if (tax.sellerState) {
+        const canonical = canonicalIndianState(tax.sellerState);
         if (!canonical)
           throw new BadRequestException(
             'Choose an Indian state or union territory as the seller state',

@@ -73,7 +73,7 @@ describe('password change', () => {
       },
       session: { updateMany: jest.fn(() => 'session-revoke') },
       activityLog: { create: jest.fn() },
-      $transaction: jest.fn(async () => [{}, { count: 2 }]),
+      $transaction: jest.fn(() => Promise.resolve([{}, { count: 2 }])),
     };
     const service = new AuthService(
       {} as JwtService,

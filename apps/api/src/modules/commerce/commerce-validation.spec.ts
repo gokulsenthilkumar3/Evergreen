@@ -1,5 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { CommerceService } from './commerce.service';
+import { PrismaService } from '../../services/prisma.service';
 
 /** Command-level validation that does not depend on stock or ledger state. */
 describe('CommerceService input validation', () => {
@@ -15,62 +16,67 @@ describe('CommerceService input validation', () => {
     shopVisible: false,
     legacySource: null,
   };
-  let prisma: any;
-  let service: CommerceService;
-
-  beforeEach(() => {
-    prisma = {
+  type Write = { data: Record<string, unknown> };
+  const resolves = <T>(value: T) => jest.fn(() => Promise.resolve(value));
+  const echo = (base: Record<string, unknown>) =>
+    jest.fn(({ data }: Write) => Promise.resolve({ ...base, ...data }));
+  const makePrisma = () => {
+    const client = {
       catalogueItem: {
-        create: jest.fn(async ({ data }) => ({ id: 1, ...data })),
-        update: jest.fn(async ({ data }) => ({ ...item, ...data })),
-        findUniqueOrThrow: jest.fn(async () => item),
-        findMany: jest.fn(async () => [item]),
+        create: echo({ id: 1 }),
+        update: echo(item),
+        findUniqueOrThrow: resolves(item),
+        findMany: resolves([item]),
       },
       stockMovement: {
-        count: jest.fn(async () => 0),
+        count: resolves(0),
         // 100 kg owned by the company; none held for customers.
-        aggregate: jest.fn(async ({ where }) => ({
-          _sum: { quantity: where.lot ? 0 : 100, reservedQty: 0 },
-        })),
+        aggregate: jest.fn(({ where }: { where: { lot?: unknown } }) =>
+          Promise.resolve({
+            _sum: { quantity: where.lot ? 0 : 100, reservedQty: 0 },
+          }),
+        ),
         create: jest.fn(),
       },
-      stockHold: {
-        aggregate: jest.fn(async () => ({ _sum: { quantity: 0 } })),
-      },
+      stockHold: { aggregate: resolves({ _sum: { quantity: 0 } }) },
       customer: {
-        create: jest.fn(async ({ data }) => ({ id: 3, ...data })),
-        update: jest.fn(async ({ data }) => ({ id: 3, ...data })),
-        findUniqueOrThrow: jest.fn(async () => ({
+        create: echo({ id: 3 }),
+        update: echo({ id: 3 }),
+        findUniqueOrThrow: resolves({
           id: 3,
           state: 'Kerala',
           gstin: '32ABCDE1234F1Z5',
-        })),
-        findUnique: jest.fn(async () => ({
-          id: 3,
-          state: 'Kerala',
-          active: true,
-        })),
+        }),
+        findUnique: resolves({ id: 3, state: 'Kerala', active: true }),
       },
-      systemSettings: {
-        findFirst: jest.fn(async () => ({ sellerState: 'Karnataka' })),
-      },
-      salesOrder: { create: jest.fn(async ({ data }) => ({ id: 9, ...data })) },
+      systemSettings: { findFirst: resolves({ sellerState: 'Karnataka' }) },
+      salesOrder: { create: echo({ id: 9 }) },
       payment: { findFirst: jest.fn() },
       invoice: { findUnique: jest.fn() },
     };
-    prisma.stockTransaction = jest.fn((work: (tx: any) => unknown) =>
-      work(prisma),
-    );
-    service = new CommerceService(prisma);
+    return {
+      ...client,
+      stockTransaction: jest.fn((work: (tx: typeof client) => unknown) =>
+        work(client),
+      ),
+    };
+  };
+  let prisma: ReturnType<typeof makePrisma>;
+  let service: CommerceService;
+
+  beforeEach(() => {
+    prisma = makePrisma();
+    service = new CommerceService(prisma as unknown as PrismaService);
   });
 
-  const rejects = (promise: Promise<unknown>, message: RegExp) =>
-    expect(promise).rejects.toThrow(
-      expect.objectContaining({
-        constructor: BadRequestException,
-        message: expect.stringMatching(message),
-      }),
+  const rejects = async (promise: Promise<unknown>, message: RegExp) => {
+    const error: unknown = await promise.then(
+      () => undefined,
+      (reason: unknown) => reason,
     );
+    expect(error).toBeInstanceOf(BadRequestException);
+    expect((error as Error).message).toMatch(message);
+  };
 
   describe('catalogue items', () => {
     const base = { name: 'Yarn 30s', sku: 'y30', type: 'YARN' };

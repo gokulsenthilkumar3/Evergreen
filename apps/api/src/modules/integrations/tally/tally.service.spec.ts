@@ -1,4 +1,5 @@
 import { TallyExportService, outputTaxLedgers } from './tally.service';
+import { PrismaService } from '../../../services/prisma.service';
 
 describe('outputTaxLedgers', () => {
   const line = (gstRate: number, quantity: number, rate: number) => ({
@@ -112,36 +113,52 @@ describe('TallyExportService.generateTallyXml', () => {
       invoice,
     },
   ];
-  let prisma: any;
-
-  beforeEach(() => {
-    prisma = {
-      systemSettings: {
-        findFirst: jest.fn(async () => ({ companyName: 'QA Mills' })),
-      },
-      invoice: {
-        findMany: jest.fn(async () => [invoice]),
-        count: jest.fn(async () => 2),
-      },
-      payment: {
-        findMany: jest.fn(async ({ where }) =>
-          where.method === 'REVERSAL'
+  type Query = {
+    where: {
+      status?: unknown;
+      method?: unknown;
+      amount?: unknown;
+      date?: { gte?: Date; lte?: Date };
+    };
+  };
+  const makePrisma = () => ({
+    systemSettings: {
+      findFirst: jest.fn(() => Promise.resolve({ companyName: 'QA Mills' })),
+    },
+    invoice: {
+      findMany: jest.fn((query: Query) => {
+        void query;
+        return Promise.resolve([invoice]);
+      }),
+      count: jest.fn(() => Promise.resolve(2)),
+    },
+    payment: {
+      findMany: jest.fn((query: Query) =>
+        Promise.resolve(
+          query.where.method === 'REVERSAL'
             ? [{ reference: 'PAYMENT-REVERSAL:12' }]
             : payments,
         ),
-      },
-    };
+      ),
+    },
+  });
+  let prisma: ReturnType<typeof makePrisma>;
+  const service = () =>
+    new TallyExportService(prisma as unknown as PrismaService);
+
+  beforeEach(() => {
+    prisma = makePrisma();
   });
 
   it('leaves out void invoices, internal rows and reversed receipts, and reports what it skipped', async () => {
-    const result = await new TallyExportService(prisma).generateTallyXml({
+    const result = await service().generateTallyXml({
       from: '2026-10-01',
       to: '2026-10-30',
     });
     const invoiceWhere = prisma.invoice.findMany.mock.calls[0][0].where;
     expect(invoiceWhere.status).toEqual({ not: 'VOID' });
     // The last day is included in full.
-    expect(invoiceWhere.date.lte).toEqual(
+    expect(invoiceWhere.date?.lte).toEqual(
       new Date(2026, 9, 30, 23, 59, 59, 999),
     );
     const receiptWhere = prisma.payment.findMany.mock.calls[0][0].where;
@@ -165,7 +182,7 @@ describe('TallyExportService.generateTallyXml', () => {
 
   it('adds a round-off line when the saved total differs from taxable value plus tax', async () => {
     prisma.invoice.findMany.mockResolvedValue([{ ...invoice, total: 1050.3 }]);
-    const { xml } = await new TallyExportService(prisma).generateTallyXml({
+    const { xml } = await service().generateTallyXml({
       voucherTypes: ['Sales'],
     });
     expect(xml).toMatch(
@@ -175,7 +192,7 @@ describe('TallyExportService.generateTallyXml', () => {
 
   it('rejects an impossible date', async () => {
     await expect(
-      new TallyExportService(prisma).generateTallyXml({ to: '2026-02-30' }),
+      service().generateTallyXml({ to: '2026-02-30' }),
     ).rejects.toThrow('YYYY-MM-DD');
   });
 });

@@ -6,10 +6,14 @@ import {
 
 describe('daily summary', () => {
   it('runs at 23:59 on the server clock, the clock that defines the business day', () => {
-    const options = Reflect.getMetadata(
-      'SCHEDULE_CRON_OPTIONS',
-      DailySummaryService.prototype.sendDailySummary,
-    );
+    const handler = Object.getOwnPropertyDescriptor(
+      DailySummaryService.prototype,
+      'sendDailySummary',
+    )?.value as object;
+    const options = Reflect.getMetadata('SCHEDULE_CRON_OPTIONS', handler) as {
+      cronTime: string;
+      timeZone?: string;
+    };
     expect(options.cronTime).toBe('59 23 * * *');
     expect(options.timeZone).toBeUndefined();
   });
