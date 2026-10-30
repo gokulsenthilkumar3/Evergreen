@@ -25,7 +25,8 @@ Start with the [Quick Start](../QUICK_START.md). Inside the app, the searchable 
 | [Project status](PROJECT_AUDIT.md) | Current findings, readiness by business flow, and the validation record |
 | [Implementation backlog](IMPLEMENTATION_BACKLOG.md) | Open work packages, their acceptance criteria and the register IDs they close |
 | [Shared issue register](audits/2026-10-11/issue-register.md) | Every individual defect, with severity, priority and the test to add |
-| [15 October review](audits/2026-10-15/REPORT.md) | The latest code, flow and UI review, plus the repository clean-up |
+| [30 October review](audits/2026-10-30/REPORT.md) | How the running application behaves: every screen in a browser at desktop and phone width, the business flow through the live API, and what was fixed |
+| [15 October review](audits/2026-10-15/REPORT.md) | The latest code, flow and architecture review, plus the repository clean-up |
 
 ## Product and business
 
@@ -58,6 +59,7 @@ The [Integrations operating guide](wiki/pages/Integrations.md) is the exception 
 | [2026-10-06](audits/2026-10-06/BUSINESS_FLOW_REVIEW.md) | Business-flow review and the [parity register](audits/2026-10-06/PARITY_REGISTER.md) for the merged source projects |
 | [2026-10-11](audits/2026-10-11/REPORT.md) | Production-readiness audit, the shared issue register, and the [gate workflow audit](audits/2026-10-11/GATE_WORKFLOW_AUDIT.md) |
 | [2026-10-15](audits/2026-10-15/REPORT.md) | Code, flow and UI review, documentation consolidation and repository clean-up |
+| [2026-10-30](audits/2026-10-30/REPORT.md) | Running-application review in a browser and against the live API, with fixes |
 
 ## Keeping docs honest
 

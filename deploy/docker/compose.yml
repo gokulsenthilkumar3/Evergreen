@@ -20,7 +20,7 @@ services:
     networks: [tenant]
   tenant-web:
     image: ${EVERGREEN_IMAGE_PREFIX:-evergreen}/tenant-web:${EVERGREEN_RELEASE:?Set a release tag}
-    build: { context: ../.., dockerfile: deploy/docker/Dockerfile, target: tenant-web }
+    build: { context: ../.., dockerfile: deploy/docker/Dockerfile, target: tenant-web, args: { VITE_SUPPORT_PHONE: "${EVERGREEN_SUPPORT_PHONE:-}" } }
     restart: unless-stopped
     ports: ['${EVERGREEN_BIND:-127.0.0.1}:${EVERGREEN_PUBLIC_PORT:-4000}:4000']
     depends_on:

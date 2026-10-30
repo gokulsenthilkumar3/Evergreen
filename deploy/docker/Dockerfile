@@ -61,6 +61,8 @@ HEALTHCHECK --interval=5s --timeout=3s --start-period=90s --retries=12 CMD node 
 CMD ["node", "apps/admin-api/dist/main.js"]
 
 FROM source AS tenant-web-build
+# Provider support number shown on licence notices (international digits, no +). Empty hides the contact buttons.
+ARG VITE_SUPPORT_PHONE=
 RUN npm run build -w @evergreen/types && npm run build -w apps/web
 FROM source AS admin-web-build
 RUN npm run build -w apps/admin-web

@@ -12,21 +12,21 @@ Sign in to the company installation. VIEWER reads records, MODIFIER performs ord
 
 ## Tabs
 
-- Dashboard ([apps/web/src/pages/Inventory.tsx:494](../../../apps/web/src/pages/Inventory.tsx))
-- Cotton Inventory ([apps/web/src/pages/Inventory.tsx:495](../../../apps/web/src/pages/Inventory.tsx))
-- Yarn Inventory ([apps/web/src/pages/Inventory.tsx:496](../../../apps/web/src/pages/Inventory.tsx))
-- Waste Logs ([apps/web/src/pages/Inventory.tsx:497](../../../apps/web/src/pages/Inventory.tsx))
-- All History ([apps/web/src/pages/Inventory.tsx:498](../../../apps/web/src/pages/Inventory.tsx))
+- Dashboard ([apps/web/src/pages/Inventory.tsx:500](../../../apps/web/src/pages/Inventory.tsx))
+- Cotton Inventory ([apps/web/src/pages/Inventory.tsx:501](../../../apps/web/src/pages/Inventory.tsx))
+- Yarn Inventory ([apps/web/src/pages/Inventory.tsx:502](../../../apps/web/src/pages/Inventory.tsx))
+- Waste Logs ([apps/web/src/pages/Inventory.tsx:503](../../../apps/web/src/pages/Inventory.tsx))
+- All History ([apps/web/src/pages/Inventory.tsx:504](../../../apps/web/src/pages/Inventory.tsx))
 
 ## Actions
 
 | Control / label | Handler | Source |
 | --- | --- | --- |
-| Manage Waste stock | `{() => { setWasteForm({ date: new Date().toLocaleDateString('en-CA'), quantity: '', buyer: '', price: '' }); setWasteAction('recycle'); setWasteModalOpen(true); }}` | [apps/web/src/pages/Inventory.tsx:616](../../../apps/web/src/pages/Inventory.tsx) |
-| <EditIcon fontSize="small" /> | `{() => { setWasteAction(row.type === 'EXPORT' ? 'export' : 'recycle'); setWasteForm({ date: new Date(row.date).toLocaleDateString('en-CA'), quantity: Math.abs(row.quantity).toString(), buyer: row.reference.startsWith('SOLD-') ? row.reference.replace('SOLD-', '') : '', price: '' // Price is not stored in inventory log currently }); // Since we don't have PUT, we'll suggest deleting and re-adding toast.info(INFO_MESSAGES.EDIT_WORKFLOW_DELETE_CREATE); setWasteModalOpen(true); // We could set editingWasteId here if we wanted to handle it in submit }}` | [apps/web/src/pages/Inventory.tsx:700](../../../apps/web/src/pages/Inventory.tsx) |
-| <DeleteIcon fontSize="small" /> | `{() => handleDeleteWaste(row.id)}` | [apps/web/src/pages/Inventory.tsx:720](../../../apps/web/src/pages/Inventory.tsx) |
-| Cancel | `{() => setWasteModalOpen(false)}` | [apps/web/src/pages/Inventory.tsx:897](../../../apps/web/src/pages/Inventory.tsx) |
-| Submit | `{handleWasteSubmit}` | [apps/web/src/pages/Inventory.tsx:898](../../../apps/web/src/pages/Inventory.tsx) |
+| Manage Waste stock | `{() => { setWasteForm({ date: new Date().toLocaleDateString('en-CA'), quantity: '', buyer: '', price: '' }); setWasteAction('recycle'); setWasteModalOpen(true); }}` | [apps/web/src/pages/Inventory.tsx:622](../../../apps/web/src/pages/Inventory.tsx) |
+| <EditIcon fontSize="small" /> | `{() => { setWasteAction(row.type === 'EXPORT' ? 'export' : 'recycle'); setWasteForm({ date: new Date(row.date).toLocaleDateString('en-CA'), quantity: Math.abs(row.quantity).toString(), buyer: row.reference.startsWith('SOLD-') ? row.reference.replace('SOLD-', '') : '', price: '' // Price is not stored in inventory log currently }); // Since we don't have PUT, we'll suggest deleting and re-adding toast.info(INFO_MESSAGES.EDIT_WORKFLOW_DELETE_CREATE); setWasteModalOpen(true); // We could set editingWasteId here if we wanted to handle it in submit }}` | [apps/web/src/pages/Inventory.tsx:706](../../../apps/web/src/pages/Inventory.tsx) |
+| <DeleteIcon fontSize="small" /> | `{() => handleDeleteWaste(row.id)}` | [apps/web/src/pages/Inventory.tsx:726](../../../apps/web/src/pages/Inventory.tsx) |
+| Cancel | `{() => setWasteModalOpen(false)}` | [apps/web/src/pages/Inventory.tsx:903](../../../apps/web/src/pages/Inventory.tsx) |
+| Submit | `{handleWasteSubmit}` | [apps/web/src/pages/Inventory.tsx:904](../../../apps/web/src/pages/Inventory.tsx) |
 
 ## API calls
 
@@ -35,9 +35,9 @@ Paths are relative to the client API base (`/api/backend` by default in the brow
 | Method | Path expression | Source |
 | --- | --- | --- |
 | DELETE | `'/inventory/waste/${id}'` | [apps/web/src/pages/Inventory.tsx:167](../../../apps/web/src/pages/Inventory.tsx) |
-| POST | `/inventory/waste/export` | [apps/web/src/pages/Inventory.tsx:182](../../../apps/web/src/pages/Inventory.tsx) |
-| POST | `/inventory/waste/recycle` | [apps/web/src/pages/Inventory.tsx:184](../../../apps/web/src/pages/Inventory.tsx) |
-| GET | `/inventory/history` | [apps/web/src/pages/Inventory.tsx:204](../../../apps/web/src/pages/Inventory.tsx) |
+| POST | `/inventory/waste/export` | [apps/web/src/pages/Inventory.tsx:186](../../../apps/web/src/pages/Inventory.tsx) |
+| POST | `/inventory/waste/recycle` | [apps/web/src/pages/Inventory.tsx:188](../../../apps/web/src/pages/Inventory.tsx) |
+| GET | `/inventory/history` | [apps/web/src/pages/Inventory.tsx:210](../../../apps/web/src/pages/Inventory.tsx) |
 
 ## Composed behavior
 
