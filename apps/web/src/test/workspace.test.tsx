@@ -53,4 +53,13 @@ describe('shared workflow guide', () => {
     expect(screen.getByText('Collect and review')).toBeInTheDocument();
     expect(screen.queryByText('Set up your business')).not.toBeInTheDocument();
   });
+
+  it('opens a step from its station and marks it as current', () => {
+    render(<BusinessFlowGuide />);
+    const invoice = screen.getByRole('button', { name: 'Step 6: Invoice' });
+    fireEvent.click(invoice);
+    expect(invoice).toHaveAttribute('aria-current', 'step');
+    expect(screen.getByRole('button', { name: 'Step 1: Set up' })).not.toHaveAttribute('aria-current');
+    expect(screen.getByText(/Select the saved customer and catalogue items/)).toBeVisible();
+  });
 });
