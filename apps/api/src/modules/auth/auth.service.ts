@@ -351,10 +351,15 @@ export class AuthService implements OnModuleInit {
     return updated;
   }
 
+  /**
+   * Change the caller's password and sign out every other session, so a session opened with the
+   * old password (for example by someone who learned it) stops working. The current session stays.
+   */
   async changePassword(
     userId: number,
     username: string,
     data: { currentPassword: string; newPassword: string },
+    currentSessionId?: string,
   ) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
@@ -379,19 +384,36 @@ export class AuthService implements OnModuleInit {
     }
 
     const hashedPassword = await bcrypt.hash(data.newPassword, SALT_ROUNDS);
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: {
-        password: hashedPassword,
-        updatedBy: username,
-      },
-    });
+    const [, revoked] = await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id: userId },
+        data: {
+          password: hashedPassword,
+          updatedBy: username,
+        },
+      }),
+      this.prisma.session.updateMany({
+        where: {
+          userId,
+          isValid: true,
+          ...(currentSessionId ? { id: { not: currentSessionId } } : {}),
+        },
+        data: { isValid: false },
+      }),
+    ]);
 
     await this.logActivity(
       username,
       'PASSWORD_CHANGE',
-      `User ${username} changed account password`,
+      `User ${username} changed account password and signed out ${revoked.count} other session(s)`,
     );
-    return { success: true, message: 'Password changed successfully' };
+    return {
+      success: true,
+      message:
+        revoked.count > 0
+          ? `Password changed. ${revoked.count} other session(s) were signed out.`
+          : 'Password changed successfully',
+      signedOutSessions: revoked.count,
+    };
   }
 }

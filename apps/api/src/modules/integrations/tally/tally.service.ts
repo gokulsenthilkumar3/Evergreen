@@ -1,5 +1,86 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../../services/prisma.service';
+import { dayRange } from '../../../utils/day-range';
+
+/** Methods that move real money. REVERSAL and ALLOCATION rows are internal settlement entries. */
+const RECEIPT_METHODS = ['CASH', 'BANK', 'UPI', 'CHEQUE'];
+
+const percent = (rate: number) => String(Number(rate.toFixed(3)));
+const paise = (amount: number) => Math.round(amount * 100) / 100;
+
+/**
+ * Output GST ledgers for one invoice, named by rate. The stored tax totals are split across rates in
+ * proportion to each rate's taxable value times the rate, with any paise residue on the largest share,
+ * so the ledger lines always add up to the saved invoice.
+ */
+export function outputTaxLedgers(invoice: {
+  subtotal: number;
+  discount?: number | null;
+  cgst: number;
+  sgst: number;
+  igst?: number | null;
+  items: Array<{
+    gstRate?: number | null;
+    rate: number;
+    quantity?: number | null;
+    weight?: number | null;
+    discount?: number | null;
+  }>;
+}): Array<{ name: string; amount: number }> {
+  const taxable = invoice.subtotal - (invoice.discount || 0);
+  const tax = (invoice.cgst || 0) + (invoice.sgst || 0) + (invoice.igst || 0);
+  if (tax <= 0) return [];
+  const groups = new Map<number, number>();
+  for (const item of invoice.items) {
+    const rate = Number(item.gstRate) || 0;
+    const value =
+      (item.quantity ?? item.weight ?? 0) * item.rate - (item.discount || 0);
+    if (rate > 0 && value > 0)
+      groups.set(rate, (groups.get(rate) || 0) + value);
+  }
+  // Older mill invoices kept the rate on the invoice only; infer it from the saved totals.
+  if (!groups.size && taxable > 0)
+    groups.set(Number(((tax / taxable) * 100).toFixed(2)), taxable);
+  const shares = [...groups].map(([rate, value]) => ({
+    rate,
+    weight: rate * value,
+  }));
+  const totalWeight = shares.reduce((sum, share) => sum + share.weight, 0);
+  const split = (amount: number) => {
+    const parts = shares.map((share) =>
+      paise((amount * share.weight) / totalWeight),
+    );
+    const largest = shares.reduce(
+      (best, share, index) =>
+        share.weight > shares[best].weight ? index : best,
+      0,
+    );
+    parts[largest] = paise(
+      parts[largest] + amount - parts.reduce((sum, part) => sum + part, 0),
+    );
+    return parts;
+  };
+  const ledgers: Array<{ name: string; amount: number }> = [];
+  if ((invoice.igst || 0) > 0)
+    split(invoice.igst!).forEach((amount, i) =>
+      ledgers.push({ name: `Output IGST ${percent(shares[i].rate)}%`, amount }),
+    );
+  else {
+    const cgst = split(invoice.cgst || 0);
+    const sgst = split(invoice.sgst || 0);
+    shares.forEach((share, i) => {
+      ledgers.push({
+        name: `Output CGST ${percent(share.rate / 2)}%`,
+        amount: cgst[i],
+      });
+      ledgers.push({
+        name: `Output SGST ${percent(share.rate / 2)}%`,
+        amount: sgst[i],
+      });
+    });
+  }
+  return ledgers.filter((ledger) => ledger.amount !== 0);
+}
 
 export interface TallyExportFilter {
   from?: string;
@@ -16,6 +97,10 @@ export interface TallyExportResult {
     salesCount: number;
     receiptCount: number;
     totalVouchers: number;
+    /** Voided invoices in the period, left out of the file. */
+    skippedVoidInvoices: number;
+    /** Receipts later reversed (for example a bounced cheque), left out with their reversal. */
+    skippedReversedReceipts: number;
   };
 }
 
@@ -63,8 +148,9 @@ export class TallyExportService {
         'Purchase export requires an approved supplier bill with agreed rate, tax treatment and ledger mapping. Inward weight alone cannot create a purchase voucher. Export Sales or Receipt vouchers separately.',
       );
     }
-    const fromDate = filter.from ? new Date(filter.from) : undefined;
-    const toDate = filter.to ? new Date(filter.to) : undefined;
+    // Whole local days: a `to` of 2026-10-30 includes documents saved later that day.
+    const range = dayRange(filter.from, filter.to);
+    const dateFilter = range.gte || range.lte ? { date: range } : {};
 
     const purchaseXml = '';
     let salesXml = '';
@@ -72,30 +158,26 @@ export class TallyExportService {
     const purchaseCount = 0;
     let salesCount = 0;
     let receiptCount = 0;
+    let skippedVoidInvoices = 0;
+    let skippedReversedReceipts = 0;
 
     // Purchase vouchers must come from approved purchase accounting, never inferred stock values.
 
     // 2. Yarn Sales Invoices (From Invoices)
     if (voucherTypes.includes('Sales')) {
+      // A voided invoice was never a sale; exporting it would double the turnover in Tally.
       const invoices = await this.prisma.invoice.findMany({
-        where: {
-          ...(fromDate || toDate
-            ? {
-                date: {
-                  ...(fromDate ? { gte: fromDate } : {}),
-                  ...(toDate ? { lte: toDate } : {}),
-                },
-              }
-            : {}),
-        },
+        where: { ...dateFilter, status: { not: 'VOID' } },
         include: { items: true, outward: true },
         orderBy: { date: 'asc' },
+      });
+      skippedVoidInvoices = await this.prisma.invoice.count({
+        where: { ...dateFilter, status: 'VOID' },
       });
 
       for (const inv of invoices) {
         salesCount++;
         const tallyDate = this.formatTallyDate(inv.date);
-        const isInterstate = (inv.igst || 0) > 0;
         const totalAmount = inv.total;
         const taxableAmount = inv.subtotal - (inv.discount || 0);
         const narration = `Yarn Tax Invoice - No: ${inv.invoiceNo}, Buyer: ${inv.customerName}, Vehicle: ${inv.vehicleNo || inv.outward?.vehicleNo || 'Self Gate Pass'}. Items: ${inv.items.map((i) => `${i.yarnCount || 'Yarn'} (${i.bags} bags, ${i.weight} kg)`).join('; ')}`;
@@ -122,29 +204,27 @@ export class TallyExportService {
               <AMOUNT>${taxableAmount.toFixed(2)}</AMOUNT>
             </ALLLEDGERENTRIES.LIST>`;
 
-        if (isInterstate) {
+        const taxLedgers = outputTaxLedgers(inv);
+        for (const ledger of taxLedgers)
           salesXml += `
-            <!-- Output IGST 5% -->
             <ALLLEDGERENTRIES.LIST>
-              <LEDGERNAME>Output IGST 5%</LEDGERNAME>
+              <LEDGERNAME>${this.escapeXml(ledger.name)}</LEDGERNAME>
               <ISDEEMEDPOSITIVE>No</ISDEEMEDPOSITIVE>
-              <AMOUNT>${inv.igst.toFixed(2)}</AMOUNT>
+              <AMOUNT>${ledger.amount.toFixed(2)}</AMOUNT>
             </ALLLEDGERENTRIES.LIST>`;
-        } else {
+        // Tally rejects a voucher whose debit and credits differ; carry any paise difference explicitly.
+        const roundOff = paise(
+          totalAmount -
+            taxableAmount -
+            taxLedgers.reduce((sum, ledger) => sum + ledger.amount, 0),
+        );
+        if (roundOff !== 0)
           salesXml += `
-            <!-- Output CGST 2.5% -->
             <ALLLEDGERENTRIES.LIST>
-              <LEDGERNAME>Output CGST 2.5%</LEDGERNAME>
-              <ISDEEMEDPOSITIVE>No</ISDEEMEDPOSITIVE>
-              <AMOUNT>${inv.cgst.toFixed(2)}</AMOUNT>
-            </ALLLEDGERENTRIES.LIST>
-            <!-- Output SGST 2.5% -->
-            <ALLLEDGERENTRIES.LIST>
-              <LEDGERNAME>Output SGST 2.5%</LEDGERNAME>
-              <ISDEEMEDPOSITIVE>No</ISDEEMEDPOSITIVE>
-              <AMOUNT>${inv.sgst.toFixed(2)}</AMOUNT>
+              <LEDGERNAME>Round Off</LEDGERNAME>
+              <ISDEEMEDPOSITIVE>${roundOff > 0 ? 'No' : 'Yes'}</ISDEEMEDPOSITIVE>
+              <AMOUNT>${roundOff.toFixed(2)}</AMOUNT>
             </ALLLEDGERENTRIES.LIST>`;
-        }
 
         salesXml += `
           </VOUCHER>
@@ -154,22 +234,30 @@ export class TallyExportService {
 
     // 3. Receipt Vouchers (Payments)
     if (voucherTypes.includes('Receipt')) {
+      // Only money actually received. A reversed receipt and its reversal cancel out, so neither is sent.
       const payments = await this.prisma.payment.findMany({
         where: {
-          ...(fromDate || toDate
-            ? {
-                date: {
-                  ...(fromDate ? { gte: fromDate } : {}),
-                  ...(toDate ? { lte: toDate } : {}),
-                },
-              }
-            : {}),
+          ...dateFilter,
+          method: { in: RECEIPT_METHODS },
+          amount: { gt: 0 },
         },
         include: { invoice: true },
         orderBy: { date: 'asc' },
       });
+      const reversed = new Set(
+        (
+          await this.prisma.payment.findMany({
+            where: { method: 'REVERSAL' },
+            select: { reference: true },
+          })
+        ).map((row) => row.reference),
+      );
 
       for (const pay of payments) {
+        if (reversed.has(`PAYMENT-REVERSAL:${pay.id}`)) {
+          skippedReversedReceipts++;
+          continue;
+        }
         receiptCount++;
         const tallyDate = this.formatTallyDate(pay.date);
         const customerName = pay.invoice?.customerName || 'Sundry Debtor';
@@ -233,6 +321,8 @@ export class TallyExportService {
         salesCount,
         receiptCount,
         totalVouchers: purchaseCount + salesCount + receiptCount,
+        skippedVoidInvoices,
+        skippedReversedReceipts,
       },
     };
   }

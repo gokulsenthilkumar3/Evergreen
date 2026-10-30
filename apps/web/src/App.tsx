@@ -73,6 +73,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from './utils/api';
 import { isCompanyPageVisible } from '@evergreen/types';
 import { canonicalPage, settingsTabFor } from './utils/navigation';
+import { lowStockThreshold } from './utils/alerts';
 import getTheme from './theme';
 import type { ThemeName } from './theme';
 import Login from './components/Login';
@@ -609,7 +610,7 @@ const App: React.FC = () => {
       try {
         const response = await api.get('/inventory/yarn-stock');
         const stock = response.data;
-        const threshold = settings?.lowStockThreshold || 10;
+        const threshold = lowStockThreshold(settings);
         // Count how many count-types are below the threshold (the badge shows
         // the number of distinct yarn counts that need restocking)
         return Object.values(stock).filter((qty: any) => typeof qty === 'number' && qty < threshold).length;
