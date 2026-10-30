@@ -51,6 +51,8 @@ async function serveWeb(webRoot) {
       req.pipe(proxy); return;
     }
     if (!['GET', 'HEAD'].includes(req.method)) { res.writeHead(405).end(); return; }
+    // Backslash is a separator on Windows only; refuse it (and NUL) everywhere so every platform behaves alike.
+    if (/[\\\0]/.test(pathname)) { res.writeHead(403).end(); return; }
     const target = path.resolve(webRoot, '.' + pathname);
     if (!target.startsWith(path.resolve(webRoot) + path.sep) && target !== path.resolve(webRoot)) { res.writeHead(403).end(); return; }
     const file = fs.existsSync(target) && fs.statSync(target).isFile() ? target : path.join(webRoot, 'index.html');
