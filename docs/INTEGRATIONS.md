@@ -78,18 +78,23 @@ Source: [tally.service.ts](../apps/api/src/modules/integrations/tally/tally.serv
 | Endpoint | Behaviour |
 | --- | --- |
 | GET `/integrations/tally/export` | Downloads an `<ENVELOPE>` XML file for the chosen date range and voucher types |
-| GET `/integrations/tally/summary` | Returns voucher counts and a preview as JSON |
+| GET `/integrations/tally/summary` | Returns voucher counts, the number of void invoices left out, and a preview as JSON |
+
+`from` and `to` are calendar days (`YYYY-MM-DD`). The range covers both days in full, from 00:00 on `from` to 23:59:59 on `to`, by the server clock. Any other format returns 400.
 
 | Voucher | Built from | Ledger lines |
 | --- | --- | --- |
-| Sales | Invoices | Debit the customer for the total; credit `Cotton Yarn Sales` with the taxable amount; credit `Output IGST 5%`, or `Output CGST 2.5%` plus `Output SGST 2.5%` |
-| Receipt | Payments | Debit `Cash` or `Bank Account (Current)`; credit the customer |
+| Sales | Invoices, except void ones | Debit the customer for the total; credit `Cotton Yarn Sales` with the taxable amount; credit one output tax ledger per GST rate on the invoice, named by that rate: `Output IGST 18%`, or `Output CGST 9%` plus `Output SGST 9%`. If the saved total ever differs from taxable value plus tax, a `Round Off` line carries the difference so the voucher balances |
+| Receipt | Cash, bank, UPI and cheque payments | Debit `Cash` or `Bank Account (Current)`; credit the customer. Allocation rows are internal settlement entries and are never exported. Original receipts remain in their payment period. Reversals export as balanced Journal vouchers on the reversal date, crediting the original cash/bank ledger and debiting the customer |
 | Purchase | Not exported | Rejected on purpose: a purchase voucher needs an approved supplier bill, agreed rate, tax treatment and ledger mapping, not just an inward weight |
 
-Known gaps before an accountant should rely on the file:
+Create the tax ledgers in Tally with exactly these names before importing, one per rate you sell at. When an invoice has several rates, the saved tax is split across them in proportion to each rate's taxable value, with any paisa difference on the largest share, so the lines always add up to the saved invoice. Invoices saved before line rates were recorded use the rate implied by their saved totals.
 
-- Void invoices and internal payment rows (allocations, reversals) are exported, and negative amounts can produce `--` in the XML (INT-001).
-- Ledger names are fixed and ignore the invoice's actual GST rate and the customer's Tally mapping. Vouchers have no stable integration ID, Tally's import response is not read, and an end date at midnight can drop that day's later transactions (INT-002).
+Known gaps before an accountant should rely on the file (INT-002):
+
+- The sales, cash and bank ledger names are fixed and ignore the customer's Tally ledger mapping.
+- Vouchers have no stable integration ID, and Tally's import response is not read, so importing the same period twice creates duplicates. Export each period once and keep the file.
+- The Receipt selection includes reversal Journal vouchers; receiptCount includes both event types. skippedReversedReceipts is retained as zero for response compatibility.
 
 To import: open the matching company in TallyPrime, choose Import → Vouchers, and select the file. Compare voucher counts, balances and tax totals against EverGreen afterwards.
 

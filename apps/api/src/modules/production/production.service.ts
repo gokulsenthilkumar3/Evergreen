@@ -10,6 +10,7 @@ import {
   throwProductionHasBilledBags,
   throwProductionHasSoldWaste,
 } from '../../utils/delete-guard';
+import { dayRange } from '../../utils/day-range';
 
 @Injectable()
 export class ProductionService {
@@ -429,9 +430,14 @@ export class ProductionService {
     }
   }
 
-  async findAll() {
+  /** Production history, optionally limited to local calendar days `from`..`to` (YYYY-MM-DD, inclusive). */
+  async findAll(from?: string, to?: string) {
+    const date = dayRange(from, to);
     return this.prisma.production.findMany({
-      where: { createdBy: { not: 'SYSTEM_MERGE' } },
+      where: {
+        createdBy: { not: 'SYSTEM_MERGE' },
+        ...(date.gte || date.lte ? { date } : {}),
+      },
       orderBy: { date: 'desc' },
       include: {
         consumedBatches: true,

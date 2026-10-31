@@ -1,9 +1,102 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import type { Prisma } from '@prisma/client';
 import { createHash, randomUUID } from 'crypto';
 import { PrismaService } from '../../services/prisma.service';
 import { calculateInvoiceTotals } from './invoice-totals';
 import { stockEventDate } from '../../utils/stock-event-date';
 import { assertOpenPeriod, money } from '../../services/business-ledger';
+import {
+  CATALOGUE_ITEM_TYPES,
+  canonicalIndianState,
+  gstinStateName,
+  validatePartyContact,
+} from '@evergreen/types';
+
+const CATALOGUE_AMOUNT_MAX = 1_000_000_000;
+
+/** Prices, stock levels and GST rates must be finite and non-negative. A blank form field means zero. */
+function catalogueNumber(value: unknown, label: string, max: number) {
+  if (value === undefined || value === '') return 0;
+  const amount =
+    typeof value === 'number' || typeof value === 'string'
+      ? Number(value)
+      : NaN;
+  if (!Number.isFinite(amount) || amount < 0 || amount > max)
+    throw new BadRequestException(
+      `${label} must be a number from 0 to ${max.toLocaleString('en-IN')}`,
+    );
+  return amount;
+}
+
+function catalogueText(value: unknown, label: string, maxLength: number) {
+  const text = typeof value === 'string' ? value.trim() : '';
+  if (!text || text.length > maxLength)
+    throw new BadRequestException(
+      `${label} is required and must be at most ${maxLength} characters`,
+    );
+  return text;
+}
+
+function catalogueType(value: unknown) {
+  if (!(CATALOGUE_ITEM_TYPES as readonly unknown[]).includes(value))
+    throw new BadRequestException(
+      `Item type must be one of ${CATALOGUE_ITEM_TYPES.join(', ')}`,
+    );
+  return value as string;
+}
+
+function optionalReference(value: unknown, label: string) {
+  if (value === undefined || value === null || value === '') return null;
+  const id = Number(value);
+  if (!Number.isInteger(id) || id <= 0)
+    throw new BadRequestException(`Choose a valid ${label}`);
+  return id;
+}
+
+/** GST comes from the catalogue item. A caller may restate the rate but not change it. */
+function assertCatalogueGstRate(
+  line: { gstRate?: unknown },
+  item: { name: string; gstRate: number },
+) {
+  if (
+    line.gstRate === undefined ||
+    line.gstRate === null ||
+    line.gstRate === ''
+  )
+    return;
+  if (!(Math.abs(Number(line.gstRate) - item.gstRate) <= 0.000001))
+    throw new BadRequestException(
+      `GST for ${item.name} is ${item.gstRate}% in the catalogue. Change the catalogue item to use a different rate.`,
+    );
+}
+
+/** Optional free text: absent or blank becomes null; anything other than text is rejected. */
+function optionalText(value: unknown, label: string, maxLength = 2000) {
+  if (value === undefined || value === null || value === '') return null;
+  if (typeof value !== 'string' || value.length > maxLength)
+    throw new BadRequestException(
+      `${label} must be text of at most ${maxLength} characters`,
+    );
+  return value;
+}
+
+/** Request fields are untrusted until each helper above has checked them. */
+type RequestBody = Record<string, unknown>;
+
+/** Customer tax and contact fields; GSTIN state and the customer state must agree. */
+function partyContact(body: RequestBody, currentState?: string | null) {
+  const { value, error } = validatePartyContact(
+    {
+      gstin: body.gstin,
+      state: body.state,
+      email: body.email,
+      phone: body.phone,
+    },
+    { currentState },
+  );
+  if (error) throw new BadRequestException(error);
+  return value;
+}
 
 type OrderLineInput = {
   itemId: number;
@@ -61,37 +154,51 @@ export class CommerceService {
     );
   }
 
-  async createItem(body: any) {
-    if (!body.name?.trim() || !body.sku?.trim() || !body.type)
+  async createItem(body: RequestBody) {
+    if (!body.name || !body.sku || !body.type)
       throw new BadRequestException('Name, SKU and item type are required');
+    const type = catalogueType(body.type);
     if (
       body.shopVisible &&
-      !['YARN', 'FINISHED_GOOD', 'SERVICE'].includes(body.type)
+      !['YARN', 'FINISHED_GOOD', 'SERVICE'].includes(type)
     )
       throw new BadRequestException(
         'Only yarn, finished goods and services can be published in the shop',
       );
     return this.prisma.catalogueItem.create({
       data: {
-        name: body.name.trim(),
-        sku: body.sku.trim().toUpperCase(),
-        type: body.type,
-        description: body.description || null,
-        uom: body.uom || 'KG',
-        hsnSac: body.hsnSac || null,
-        gstRate: Number(body.gstRate || 0),
-        salePrice: Number(body.salePrice || 0),
-        reorderLevel: Number(body.reorderLevel || 0),
-        costPrice: Number(body.costPrice || 0),
-        imageUrl: body.imageUrl || null,
+        name: catalogueText(body.name, 'Item name', 200),
+        sku: catalogueText(body.sku, 'SKU', 64).toUpperCase(),
+        type,
+        description: optionalText(body.description, 'Description'),
+        uom:
+          body.uom === undefined ? 'KG' : catalogueText(body.uom, 'Unit', 20),
+        hsnSac: optionalText(body.hsnSac, 'HSN/SAC', 20),
+        gstRate: catalogueNumber(body.gstRate, 'GST rate', 100),
+        salePrice: catalogueNumber(
+          body.salePrice,
+          'Sale price',
+          CATALOGUE_AMOUNT_MAX,
+        ),
+        reorderLevel: catalogueNumber(
+          body.reorderLevel,
+          'Reorder level',
+          CATALOGUE_AMOUNT_MAX,
+        ),
+        costPrice: catalogueNumber(
+          body.costPrice,
+          'Cost price',
+          CATALOGUE_AMOUNT_MAX,
+        ),
+        imageUrl: optionalText(body.imageUrl, 'Image reference'),
         shopVisible: body.shopVisible === true,
-        brandId: body.brandId ? Number(body.brandId) : null,
-        categoryId: body.categoryId ? Number(body.categoryId) : null,
+        brandId: optionalReference(body.brandId, 'brand'),
+        categoryId: optionalReference(body.categoryId, 'category'),
       },
     });
   }
 
-  async updateItem(id: number, body: any) {
+  async updateItem(id: number, body: RequestBody) {
     const existing = await this.prisma.catalogueItem.findUniqueOrThrow({
       where: { id },
     });
@@ -108,39 +215,51 @@ export class CommerceService {
           'Stock items keep their original type, unit and inventory SKU. Create a new item for a different unit or material.',
         );
     }
-    const nextType = body.type ?? existing.type;
+    const nextType =
+      body.type === undefined ? existing.type : catalogueType(body.type);
+    for (const key of ['active', 'shopVisible'])
+      if (body[key] !== undefined && typeof body[key] !== 'boolean')
+        throw new BadRequestException(`${key} must be true or false`);
     const nextVisible = body.shopVisible ?? existing.shopVisible;
     if (nextVisible && !['YARN', 'FINISHED_GOOD', 'SERVICE'].includes(nextType))
       throw new BadRequestException(
         'Only yarn, finished goods and services can be published in the shop',
       );
-    const allowed = [
-      'name',
-      'sku',
-      'type',
-      'description',
-      'uom',
-      'hsnSac',
-      'imageUrl',
-      'active',
-      'shopVisible',
+    const data: Record<string, unknown> = {};
+    if (body.name !== undefined)
+      data.name = catalogueText(body.name, 'Item name', 200);
+    if (body.sku !== undefined)
+      data.sku = catalogueText(body.sku, 'SKU', 64).toUpperCase();
+    if (body.uom !== undefined) data.uom = catalogueText(body.uom, 'Unit', 20);
+    if (body.type !== undefined) data.type = nextType;
+    if (body.description !== undefined)
+      data.description = optionalText(body.description, 'Description');
+    if (body.hsnSac !== undefined)
+      data.hsnSac = optionalText(body.hsnSac, 'HSN/SAC', 20);
+    if (body.imageUrl !== undefined)
+      data.imageUrl = optionalText(body.imageUrl, 'Image reference');
+    for (const key of ['active', 'shopVisible'])
+      if (body[key] !== undefined) data[key] = body[key];
+    const amounts: Array<[string, string, number]> = [
+      ['gstRate', 'GST rate', 100],
+      ['salePrice', 'Sale price', CATALOGUE_AMOUNT_MAX],
+      ['costPrice', 'Cost price', CATALOGUE_AMOUNT_MAX],
+      ['reorderLevel', 'Reorder level', CATALOGUE_AMOUNT_MAX],
     ];
-    const data: any = {};
-    for (const key of allowed)
-      if (body[key] !== undefined)
-        data[key] = key === 'sku' ? String(body[key]).toUpperCase() : body[key];
-    for (const key of [
-      'gstRate',
-      'salePrice',
-      'costPrice',
-      'reorderLevel',
-      'brandId',
-      'categoryId',
-    ])
-      if (body[key] !== undefined)
-        data[key] =
-          body[key] === '' || body[key] === null ? null : Number(body[key]);
-    return this.prisma.catalogueItem.update({ where: { id }, data });
+    for (const [key, label, max] of amounts)
+      if (body[key] !== undefined) {
+        if (body[key] === null)
+          throw new BadRequestException(`${label} cannot be cleared; enter 0`);
+        data[key] = catalogueNumber(body[key], label, max);
+      }
+    if (body.brandId !== undefined)
+      data.brandId = optionalReference(body.brandId, 'brand');
+    if (body.categoryId !== undefined)
+      data.categoryId = optionalReference(body.categoryId, 'category');
+    return this.prisma.catalogueItem.update({
+      where: { id },
+      data: data as Prisma.CatalogueItemUpdateInput,
+    });
   }
   archiveItem(id: number) {
     return this.prisma.catalogueItem.update({
@@ -246,24 +365,43 @@ export class CommerceService {
     );
   }
 
-  createCustomer(body: any) {
-    if (!body.name?.trim())
+  async createCustomer(body: RequestBody) {
+    if (typeof body.name !== 'string' || !body.name.trim())
       throw new BadRequestException('Customer name is required');
+    const contact = partyContact(body);
+    // Without a GSTIN or state, assume a local customer of the company's own state.
+    const settings = contact.state
+      ? null
+      : await this.prisma.systemSettings.findFirst({
+          select: { sellerState: true },
+        });
     return this.prisma.customer.create({
       data: {
-        name: body.name.trim(),
-        phone: body.phone || null,
-        email: body.email || null,
-        gstin: body.gstin || null,
-        state: body.state || 'Tamil Nadu',
-        address: body.address || null,
+        name: catalogueText(body.name, 'Customer name', 200),
+        phone: contact.phone ?? null,
+        email: contact.email ?? null,
+        gstin: contact.gstin ?? null,
+        state: contact.state || settings?.sellerState || 'Tamil Nadu',
+        address: optionalText(body.address, 'Address'),
       },
     });
   }
-  updateCustomer(id: number, body: any) {
-    const data: any = {};
-    for (const key of ['name', 'phone', 'email', 'gstin', 'state', 'address'])
-      if (body[key] !== undefined) data[key] = body[key] || null;
+  async updateCustomer(id: number, body: RequestBody) {
+    const existing = await this.prisma.customer.findUniqueOrThrow({
+      where: { id },
+    });
+    // A state change is checked against the GSTIN already on file.
+    const gstin =
+      body.gstin === undefined && body.state !== undefined
+        ? existing.gstin
+        : body.gstin;
+    const data: Record<string, unknown> = {
+      ...partyContact({ ...body, gstin }, existing.state),
+    };
+    if (body.name !== undefined)
+      data.name = catalogueText(body.name, 'Customer name', 200);
+    if (body.address !== undefined)
+      data.address = optionalText(body.address, 'Address');
     if (body.active !== undefined) {
       if (typeof body.active !== 'boolean')
         throw new BadRequestException(
@@ -271,7 +409,10 @@ export class CommerceService {
         );
       data.active = body.active;
     }
-    return this.prisma.customer.update({ where: { id }, data });
+    return this.prisma.customer.update({
+      where: { id },
+      data: data as Prisma.CustomerUpdateInput,
+    });
   }
 
   async customerLedger(customerId: number) {
@@ -322,6 +463,7 @@ export class CommerceService {
           throw new BadRequestException(
             'Order rates and discounts must be valid non-negative amounts',
           );
+        assertCatalogueGstRate(line, item);
         if (item.type === 'SERVICE') continue;
         const stock = await this.stockSummary(tx, Number(line.itemId));
         if (stock.available + 0.0001 < Number(line.quantity))
@@ -780,15 +922,35 @@ export class CommerceService {
           'Configure the company legal name, address, and valid GSTIN in Settings before issuing invoices',
         );
       }
+      // One GSTIN per installation: the seller's state is where that GSTIN is registered.
       const sellerState =
-        body.sellerState || settings?.sellerState || 'Tamil Nadu';
-      const buyerState = body.buyerState || customer.state || sellerState;
+        gstinStateName(sellerGSTIN) ||
+        canonicalIndianState(settings?.sellerState) ||
+        'Tamil Nadu';
+      const states = body as { sellerState?: unknown; buyerState?: unknown };
+      if (
+        states.sellerState &&
+        canonicalIndianState(states.sellerState) !== sellerState
+      )
+        throw new BadRequestException(
+          `Invoices are issued from ${sellerState}, the state of the company GSTIN`,
+        );
+      // Place of supply may differ from the customer's billing state, but it must be a real state.
+      const buyerState = states.buyerState
+        ? canonicalIndianState(states.buyerState)
+        : customer.state || sellerState;
+      if (!buyerState)
+        throw new BadRequestException(
+          'Choose an Indian state or union territory as the place of supply',
+        );
       for (const line of lines) {
         const item = itemMap.get(Number(line.itemId));
         if (!item)
           throw new BadRequestException(
             `Catalogue item ${line.itemId} not found`,
           );
+        // Order lines above carry the saved contract rate, even after catalogue changes.
+        if (!salesOrder) assertCatalogueGstRate(line, item);
         if (item.type !== 'SERVICE' && line.uom && line.uom !== item.uom)
           throw new BadRequestException(
             'Invoice stock quantities must use the catalogue unit',
@@ -1051,8 +1213,17 @@ export class CommerceService {
       throw new BadRequestException('Enter a valid payment date');
     if (body.method && !['CASH', 'BANK', 'UPI', 'CHEQUE'].includes(body.method))
       throw new BadRequestException('Choose a valid receipt method');
-    const requestReference = body.idempotencyKey
-      ? `PAYMENT-REQUEST:${String(body.idempotencyKey)}`
+    // Invoices call the retry key requestKey; payments accept that name as well as their original one.
+    const keys = body as { idempotencyKey?: unknown; requestKey?: unknown };
+    const retryKey = keys.idempotencyKey ?? keys.requestKey;
+    if (
+      keys.idempotencyKey &&
+      keys.requestKey &&
+      keys.idempotencyKey !== keys.requestKey
+    )
+      throw new BadRequestException('Send one payment retry key');
+    const requestReference = retryKey
+      ? `PAYMENT-REQUEST:${String(retryKey)}`
       : null;
     return this.prisma.stockTransaction(async (tx) => {
       const invoice = await tx.invoice.findUnique({ where: { id: invoiceId } });

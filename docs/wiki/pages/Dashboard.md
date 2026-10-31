@@ -18,14 +18,14 @@ No literal Tab controls in this file. Check composed components and dynamic navi
 
 | Control / label | Handler | Source |
 | --- | --- | --- |
-| {label} | `{onClick}` | [apps/web/src/pages/Dashboard.tsx:365](../../../apps/web/src/pages/Dashboard.tsx) |
-| Record Production | `{() => navigate('production')}` | [apps/web/src/pages/Dashboard.tsx:412](../../../apps/web/src/pages/Dashboard.tsx) |
-| Add Inward | `{() => navigate('inward')}` | [apps/web/src/pages/Dashboard.tsx:415](../../../apps/web/src/pages/Dashboard.tsx) |
-| Record Production | `{() => navigate('production')}` | [apps/web/src/pages/Dashboard.tsx:470](../../../apps/web/src/pages/Dashboard.tsx) |
-| Add Inward | `{() => navigate('inward')}` | [apps/web/src/pages/Dashboard.tsx:471](../../../apps/web/src/pages/Dashboard.tsx) |
-| View Stock | `{() => navigate('inventory')}` | [apps/web/src/pages/Dashboard.tsx:472](../../../apps/web/src/pages/Dashboard.tsx) |
-| Review Challans &amp; Generate Invoices | `{() => navigate('outward')}` | [apps/web/src/pages/Dashboard.tsx:510](../../../apps/web/src/pages/Dashboard.tsx) |
-| View all logs | `{() => navigate('logs')}` | [apps/web/src/pages/Dashboard.tsx:901](../../../apps/web/src/pages/Dashboard.tsx) |
+| {label} | `{onClick}` | [apps/web/src/pages/Dashboard.tsx:366](../../../apps/web/src/pages/Dashboard.tsx) |
+| Record Production | `{() => navigate('production')}` | [apps/web/src/pages/Dashboard.tsx:413](../../../apps/web/src/pages/Dashboard.tsx) |
+| Add Inward | `{() => navigate('inward')}` | [apps/web/src/pages/Dashboard.tsx:416](../../../apps/web/src/pages/Dashboard.tsx) |
+| Record Production | `{() => navigate('production')}` | [apps/web/src/pages/Dashboard.tsx:471](../../../apps/web/src/pages/Dashboard.tsx) |
+| Add Inward | `{() => navigate('inward')}` | [apps/web/src/pages/Dashboard.tsx:472](../../../apps/web/src/pages/Dashboard.tsx) |
+| View Stock | `{() => navigate('inventory')}` | [apps/web/src/pages/Dashboard.tsx:473](../../../apps/web/src/pages/Dashboard.tsx) |
+| Review Challans &amp; Generate Invoices | `{() => navigate('outward')}` | [apps/web/src/pages/Dashboard.tsx:511](../../../apps/web/src/pages/Dashboard.tsx) |
+| View all logs | `{() => navigate('logs')}` | [apps/web/src/pages/Dashboard.tsx:902](../../../apps/web/src/pages/Dashboard.tsx) |
 
 ## API calls
 
@@ -33,17 +33,18 @@ Paths are relative to the client API base (`/api/backend` by default in the brow
 
 | Method | Path expression | Source |
 | --- | --- | --- |
-| GET | `'/dashboard/summary?from=${dateRange.from}&to=${dateRange.to}'` | [apps/web/src/pages/Dashboard.tsx:255](../../../apps/web/src/pages/Dashboard.tsx) |
-| GET | `'/dashboard/charts?from=${dateRange.from}&to=${dateRange.to}'` | [apps/web/src/pages/Dashboard.tsx:263](../../../apps/web/src/pages/Dashboard.tsx) |
-| GET | `/dashboard/recent-activity` | [apps/web/src/pages/Dashboard.tsx:271](../../../apps/web/src/pages/Dashboard.tsx) |
-| GET | `/commerce/un-invoiced-challans` | [apps/web/src/pages/Dashboard.tsx:281](../../../apps/web/src/pages/Dashboard.tsx) |
-| GET | `/settings` | [apps/web/src/pages/Dashboard.tsx:292](../../../apps/web/src/pages/Dashboard.tsx) |
+| GET | `'/dashboard/summary?from=${dateRange.from}&to=${dateRange.to}'` | [apps/web/src/pages/Dashboard.tsx:256](../../../apps/web/src/pages/Dashboard.tsx) |
+| GET | `'/dashboard/charts?from=${dateRange.from}&to=${dateRange.to}'` | [apps/web/src/pages/Dashboard.tsx:264](../../../apps/web/src/pages/Dashboard.tsx) |
+| GET | `/dashboard/recent-activity` | [apps/web/src/pages/Dashboard.tsx:272](../../../apps/web/src/pages/Dashboard.tsx) |
+| GET | `/commerce/un-invoiced-challans` | [apps/web/src/pages/Dashboard.tsx:282](../../../apps/web/src/pages/Dashboard.tsx) |
+| GET | `/settings` | [apps/web/src/pages/Dashboard.tsx:293](../../../apps/web/src/pages/Dashboard.tsx) |
 
 ## Composed behavior
 
 - [dateFilters.ts](../../../apps/web/src/utils/dateFilters.ts)
 - [api.ts](../../../apps/web/src/utils/api.ts)
 - [GlassDatePicker.tsx](../../../apps/web/src/components/common/GlassDatePicker.tsx)
+- [SceneFallback.tsx](../../../apps/web/src/components/common/SceneFallback.tsx)
 
 ## Verify the workflow
 

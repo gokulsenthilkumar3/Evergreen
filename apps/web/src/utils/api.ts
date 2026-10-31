@@ -4,7 +4,8 @@ let onMutation: (() => void) | undefined;
 export const setMutationListener = (listener: () => void) => { onMutation = listener; };
 
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || (window.location.protocol === 'file:' ? 'http://localhost:3001' : '/api/backend'),
+    // The web server and the desktop launcher both serve the app over HTTP with the API behind /api/backend.
+    baseURL: import.meta.env.VITE_API_URL || '/api/backend',
 });
 
 // ─── Request Interceptor ──────────────────────────────────────────────────────

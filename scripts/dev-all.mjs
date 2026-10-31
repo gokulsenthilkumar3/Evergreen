@@ -21,12 +21,14 @@ const __dirname = path.dirname(__filename);
 const root = path.resolve(__dirname, '..');
 const require = createRequire(import.meta.url);
 
-// Locate npm CLI
-const npmCli = (process.env.npm_execpath && fs.existsSync(process.env.npm_execpath))
-  ? process.env.npm_execpath
-  : (fs.existsSync('C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js'))
-    ? 'C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js'
-    : path.join(root, 'node_modules', 'npm', 'bin', 'npm-cli.js');
+// Locate npm CLI: beside the running Node (node_modules/npm on Windows, ../lib/node_modules/npm on Linux and macOS).
+const npmCli = [
+  process.env.npm_execpath,
+  path.join(path.dirname(process.execPath), 'node_modules', 'npm', 'bin', 'npm-cli.js'),
+  path.join(path.dirname(process.execPath), '..', 'lib', 'node_modules', 'npm', 'bin', 'npm-cli.js'),
+  path.join(root, 'node_modules', 'npm', 'bin', 'npm-cli.js'),
+].find(candidate => candidate && fs.existsSync(candidate));
+if (!npmCli) throw new Error('npm was not found next to Node.js. Start EverGreen with npm run dev:all.');
 
 // Locate vite binary
 let viteBin = path.join(root, 'node_modules', 'vite', 'bin', 'vite.js');

@@ -28,3 +28,7 @@ test_signup.js
 decode_token.js
 test.json
 test2.json
+
+# Obsolete generated desktop copies; release packaging builds from the shared sources.
+apps/desktop/backend/
+apps/desktop/web-dist/

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useEffect, lazy } from 'react';
 import {
     Box,
     Paper,
@@ -30,6 +30,7 @@ import {
 } from '@mui/icons-material';
 import api from '../utils/api';
 import { startAuthentication } from '@simplewebauthn/browser';
+import { SafeScene } from './common/SceneFallback';
 
 const LoginAvatar = lazy(() => import('./LoginAvatar'));
 
@@ -250,13 +251,13 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings, onSwitchToSignu
                         </Box>
 
                         <Box sx={{ width: '100%', maxWidth: 320, mb: 2, display: { xs: 'none', sm: 'block' } }}>
-                            <Suspense fallback={<Box sx={{ height: 240, borderRadius: 4, bgcolor: alpha(theme.palette.background.paper, 0.2) }} />}>
+                            <SafeScene height={240} label="EverGreen sign-in illustration">
                                 <LoginAvatar
                                     compact
                                     isPasswordFocused={showPassword}
                                     isTyping={isTyping}
                                 />
-                            </Suspense>
+                            </SafeScene>
                         </Box>
 
                         <Box sx={{ textAlign: 'center', mb: 3 }}>
@@ -376,7 +377,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings, onSwitchToSignu
                                         },
                                         endAdornment: (
                                             <InputAdornment position="end">
-                                                <IconButton onClick={() => setShowPassword(!showPassword)} edge="end" size="small">
+                                                <IconButton onClick={() => setShowPassword(!showPassword)} edge="end" size="small" aria-label={showPassword ? 'Hide password' : 'Show password'}>
                                                     {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
                                                 </IconButton>
                                             </InputAdornment>
