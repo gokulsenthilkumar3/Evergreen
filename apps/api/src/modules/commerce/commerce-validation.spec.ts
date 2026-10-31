@@ -205,6 +205,74 @@ describe('CommerceService input validation', () => {
     });
   });
 
+  it('invoices an existing order at its saved GST rate after a catalogue change', async () => {
+    const date = new Date(2026, 9, 1);
+    const contract = {
+      id: 1,
+      itemId: 7,
+      quantity: 10,
+      rate: 250,
+      gstRate: 5,
+      discount: 0,
+      invoicedQty: 0,
+      dispatchedQty: 0,
+    };
+    const tx = {
+      ...prisma,
+      accountingPeriod: { findFirst: jest.fn(async () => null) },
+      catalogueItem: {
+        findMany: jest.fn(async () => [{ ...item, gstRate: 18 }]),
+      },
+      systemSettings: {
+        findFirst: jest.fn(async () => ({
+          companyName: 'Mill',
+          address: 'Address',
+          gstin: '29ABCDE1234F1Z5',
+          sellerState: 'Karnataka',
+        })),
+      },
+      salesOrder: {
+        findUnique: jest.fn(async () => ({
+          id: 9,
+          customerId: 3,
+          status: 'CONFIRMED',
+          date,
+          lines: [contract],
+          invoices: [],
+          subtotal: 2500,
+          discount: 0,
+        })),
+        update: jest.fn(),
+      },
+      salesOrderLine: {
+        update: jest.fn(),
+        findMany: jest.fn(async () => [{ ...contract, invoicedQty: 10 }]),
+      },
+      invoice: {
+        create: jest.fn(async ({ data }: Write) => ({ id: 5, ...data })),
+      },
+      customerLedgerEntry: { create: jest.fn() },
+    };
+    const service = new CommerceService({
+      stockTransaction: (work: (client: typeof tx) => unknown) => work(tx),
+    } as unknown as PrismaService);
+    await expect(
+      service.createInvoice({
+        customerId: 3,
+        salesOrderId: 9,
+        date: '2026-10-02',
+        lines: [{ itemId: 7, quantity: 10, gstRate: 99 }],
+      }),
+    ).resolves.toMatchObject({ total: 2625, igst: 125 });
+    expect(tx.invoice.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          items: { create: [expect.objectContaining({ gstRate: 5 })] },
+        }),
+      }),
+    );
+  });
+
   describe('payment retry key', () => {
     it('treats requestKey like idempotencyKey and returns the earlier receipt', async () => {
       const invoice = { id: 4, customerId: 3, status: 'PARTIAL' };

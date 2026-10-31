@@ -949,7 +949,8 @@ export class CommerceService {
           throw new BadRequestException(
             `Catalogue item ${line.itemId} not found`,
           );
-        assertCatalogueGstRate(line, item);
+        // Order lines above carry the saved contract rate, even after catalogue changes.
+        if (!salesOrder) assertCatalogueGstRate(line, item);
         if (item.type !== 'SERVICE' && line.uom && line.uom !== item.uom)
           throw new BadRequestException(
             'Invoice stock quantities must use the catalogue unit',

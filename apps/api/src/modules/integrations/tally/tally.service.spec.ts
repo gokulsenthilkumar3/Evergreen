@@ -118,6 +118,7 @@ describe('TallyExportService.generateTallyXml', () => {
       status?: unknown;
       method?: unknown;
       amount?: unknown;
+      OR?: unknown;
       date?: { gte?: Date; lte?: Date };
     };
   };
@@ -133,12 +134,28 @@ describe('TallyExportService.generateTallyXml', () => {
       count: jest.fn(() => Promise.resolve(2)),
     },
     payment: {
-      findMany: jest.fn((query: Query) =>
-        Promise.resolve(
-          query.where.method === 'REVERSAL'
-            ? [{ reference: 'PAYMENT-REVERSAL:12' }]
-            : payments,
-        ),
+      findMany: jest.fn((query: Query) => {
+        const rows = [
+          ...payments,
+          {
+            ...payments[1],
+            id: 13,
+            date: new Date(2026, 10, 2),
+            amount: -550,
+            method: 'REVERSAL',
+            reference: 'PAYMENT-REVERSAL:12',
+          },
+        ];
+        return Promise.resolve(
+          rows.filter(
+            (row) =>
+              (!query.where.date?.gte || row.date >= query.where.date.gte) &&
+              (!query.where.date?.lte || row.date <= query.where.date.lte),
+          ),
+        );
+      }),
+      findUnique: jest.fn(({ where }: { where: { id: number } }) =>
+        Promise.resolve(payments.find((row) => row.id === where.id) || null),
       ),
     },
   });
@@ -150,7 +167,7 @@ describe('TallyExportService.generateTallyXml', () => {
     prisma = makePrisma();
   });
 
-  it('leaves out void invoices, internal rows and reversed receipts, and reports what it skipped', async () => {
+  it('preserves October receipts even when reversed in November', async () => {
     const result = await service().generateTallyXml({
       from: '2026-10-01',
       to: '2026-10-30',
@@ -162,23 +179,50 @@ describe('TallyExportService.generateTallyXml', () => {
       new Date(2026, 9, 30, 23, 59, 59, 999),
     );
     const receiptWhere = prisma.payment.findMany.mock.calls[0][0].where;
-    expect(receiptWhere.method).toEqual({
-      in: ['CASH', 'BANK', 'UPI', 'CHEQUE'],
-    });
-    expect(receiptWhere.amount).toEqual({ gt: 0 });
+    expect(receiptWhere.OR).toEqual([
+      { method: { in: ['CASH', 'BANK', 'UPI', 'CHEQUE'] }, amount: { gt: 0 } },
+      { method: 'REVERSAL', amount: { lt: 0 } },
+    ]);
     expect(result.stats).toMatchObject({
       salesCount: 1,
-      receiptCount: 1,
+      receiptCount: 2,
       skippedVoidInvoices: 2,
-      skippedReversedReceipts: 1,
+      skippedReversedReceipts: 0,
     });
     expect(result.xml).toContain('REC-11');
-    expect(result.xml).not.toContain('REC-12');
+    expect(result.xml).toContain('REC-12');
     expect(result.xml).not.toMatch(/<AMOUNT>--/);
     expect(result.xml).toContain('Output CGST 2.5%');
     expect(result.xml).toContain('Buyer &amp; Co');
     expect(result.xml).not.toContain('Round Off');
   });
+
+  it.each(['BANK', 'CASH'])(
+    'exports a later reversal against the original %s ledger',
+    async (method) => {
+      prisma.payment.findUnique.mockResolvedValue({ ...payments[1], method });
+      const result = await service().generateTallyXml({
+        from: '2026-11-01',
+        to: '2026-11-30',
+        voucherTypes: ['Receipt'],
+      });
+      expect(result.stats.receiptCount).toBe(1);
+      expect(result.xml).toContain('REC-13');
+      expect(result.xml).not.toContain('REC-12');
+      expect(result.xml).toContain(
+        '<VOUCHERTYPENAME>Journal</VOUCHERTYPENAME>',
+      );
+      expect(result.xml).toContain('<DATE>20261102</DATE>');
+      expect(result.xml).toContain(
+        method === 'CASH'
+          ? '<LEDGERNAME>Cash</LEDGERNAME>'
+          : '<LEDGERNAME>Bank Account (Current)</LEDGERNAME>',
+      );
+      expect(result.xml).toContain('<AMOUNT>550.00</AMOUNT>');
+      expect(result.xml).toContain('<AMOUNT>-550.00</AMOUNT>');
+      expect(result.xml).not.toMatch(/<AMOUNT>--/);
+    },
+  );
 
   it('adds a round-off line when the saved total differs from taxable value plus tax', async () => {
     prisma.invoice.findMany.mockResolvedValue([{ ...invoice, total: 1050.3 }]);

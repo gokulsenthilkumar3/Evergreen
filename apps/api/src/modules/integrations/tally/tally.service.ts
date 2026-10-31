@@ -99,7 +99,7 @@ export interface TallyExportResult {
     totalVouchers: number;
     /** Voided invoices in the period, left out of the file. */
     skippedVoidInvoices: number;
-    /** Receipts later reversed (for example a bounced cheque), left out with their reversal. */
+    /** Retained for response compatibility; receipts and reversals now export on their own dates. */
     skippedReversedReceipts: number;
   };
 }
@@ -159,7 +159,7 @@ export class TallyExportService {
     let salesCount = 0;
     let receiptCount = 0;
     let skippedVoidInvoices = 0;
-    let skippedReversedReceipts = 0;
+    const skippedReversedReceipts = 0;
 
     // Purchase vouchers must come from approved purchase accounting, never inferred stock values.
 
@@ -234,55 +234,64 @@ export class TallyExportService {
 
     // 3. Receipt Vouchers (Payments)
     if (voucherTypes.includes('Receipt')) {
-      // Only money actually received. A reversed receipt and its reversal cancel out, so neither is sent.
+      // Preserve cash events on their own dates, including reversals in later periods.
       const payments = await this.prisma.payment.findMany({
         where: {
           ...dateFilter,
-          method: { in: RECEIPT_METHODS },
-          amount: { gt: 0 },
+          OR: [
+            { method: { in: RECEIPT_METHODS }, amount: { gt: 0 } },
+            { method: 'REVERSAL', amount: { lt: 0 } },
+          ],
         },
         include: { invoice: true },
         orderBy: { date: 'asc' },
       });
-      const reversed = new Set(
-        (
-          await this.prisma.payment.findMany({
-            where: { method: 'REVERSAL' },
-            select: { reference: true },
-          })
-        ).map((row) => row.reference),
-      );
-
       for (const pay of payments) {
-        if (reversed.has(`PAYMENT-REVERSAL:${pay.id}`)) {
-          skippedReversedReceipts++;
-          continue;
+        const isReversal = pay.method === 'REVERSAL';
+        let method = pay.method;
+        if (isReversal) {
+          const match = /^PAYMENT-REVERSAL:(\d+)$/.exec(pay.reference || '');
+          const original = match
+            ? await this.prisma.payment.findUnique({
+                where: { id: Number(match[1]) },
+              })
+            : null;
+          if (
+            !original ||
+            original.invoiceId !== pay.invoiceId ||
+            !RECEIPT_METHODS.includes(original.method)
+          )
+            throw new BadRequestException(
+              'A receipt reversal must reference its original cash or bank payment',
+            );
+          method = original.method;
         }
+        const voucherType = isReversal ? 'Journal' : 'Receipt';
         receiptCount++;
         const tallyDate = this.formatTallyDate(pay.date);
         const customerName = pay.invoice?.customerName || 'Sundry Debtor';
         const bankLedger =
-          pay.method === 'CASH' ? 'Cash' : 'Bank Account (Current)';
-        const narration = `Payment received against Inv #${pay.invoice?.invoiceNo || pay.invoiceId} via ${pay.method}. Ref: ${pay.reference || 'Direct Deposit'}.`;
+          method === 'CASH' ? 'Cash' : 'Bank Account (Current)';
+        const narration = `${isReversal ? 'Payment reversed' : 'Payment received'} against Inv #${pay.invoice?.invoiceNo || pay.invoiceId} via ${pay.method}. Ref: ${pay.reference || 'Direct Deposit'}.`;
 
         receiptXml += `
         <TALLYMESSAGE xmlns:UDF="TallyUDF">
-          <VOUCHER VCHTYPE="Receipt" ACTION="Create" OBJVIEW="Accounting Voucher View">
+          <VOUCHER VCHTYPE="${voucherType}" ACTION="Create" OBJVIEW="Accounting Voucher View">
             <DATE>${tallyDate}</DATE>
-            <VOUCHERTYPENAME>Receipt</VOUCHERTYPENAME>
+            <VOUCHERTYPENAME>${voucherType}</VOUCHERTYPENAME>
             <VOUCHERNUMBER>REC-${pay.id}</VOUCHERNUMBER>
             <PARTYLEDGERNAME>${this.escapeXml(customerName)}</PARTYLEDGERNAME>
             <NARRATION>${this.escapeXml(narration)}</NARRATION>
             <!-- Bank/Cash Ledger Debit -->
             <ALLLEDGERENTRIES.LIST>
               <LEDGERNAME>${this.escapeXml(bankLedger)}</LEDGERNAME>
-              <ISDEEMEDPOSITIVE>Yes</ISDEEMEDPOSITIVE>
-              <AMOUNT>-${pay.amount.toFixed(2)}</AMOUNT>
+              <ISDEEMEDPOSITIVE>${isReversal ? 'No' : 'Yes'}</ISDEEMEDPOSITIVE>
+              <AMOUNT>${(-pay.amount).toFixed(2)}</AMOUNT>
             </ALLLEDGERENTRIES.LIST>
             <!-- Customer Ledger Credit -->
             <ALLLEDGERENTRIES.LIST>
               <LEDGERNAME>${this.escapeXml(customerName)}</LEDGERNAME>
-              <ISDEEMEDPOSITIVE>No</ISDEEMEDPOSITIVE>
+              <ISDEEMEDPOSITIVE>${isReversal ? 'Yes' : 'No'}</ISDEEMEDPOSITIVE>
               <AMOUNT>${pay.amount.toFixed(2)}</AMOUNT>
             </ALLLEDGERENTRIES.LIST>
           </VOUCHER>
