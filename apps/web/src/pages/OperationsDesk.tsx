@@ -120,7 +120,19 @@ const OperationsDesk: React.FC = () => {
       )
     );
 
-  const saveInward = async () => {
+  // One write at a time: a double click must not post the same receipt to stock twice.
+  const [busy, setBusy] = useState(false);
+  const once = (work: () => Promise<unknown>) => async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      await work();
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const saveInward = once(async () => {
     try {
       if (!inward.supplierName.trim()) {
         return toast.error('Supplier name is required');
@@ -154,9 +166,9 @@ const OperationsDesk: React.FC = () => {
     } catch (e: any) {
       toast.error(e.response?.data?.message || 'Could not save receipt');
     }
-  };
+  });
 
-  const saveCost = async () => {
+  const saveCost = once(async () => {
     try {
       if (!costing.styleCode.trim()) {
         return toast.error('Style code is required');
@@ -181,7 +193,7 @@ const OperationsDesk: React.FC = () => {
     } catch (e: any) {
       toast.error(e.response?.data?.message || 'Could not save costing');
     }
-  };
+  });
 
   const print = () => window.print();
 
@@ -754,7 +766,7 @@ const OperationsDesk: React.FC = () => {
         </DialogContent>
         <DialogActions sx={{ p: 2.5 }}>
           <Button onClick={() => setInwardOpen(false)}>Cancel</Button>
-          <Button variant="contained" onClick={saveInward}>
+          <Button variant="contained" disabled={busy} onClick={saveInward}>
             Post Receipt to Stock
           </Button>
         </DialogActions>
@@ -902,7 +914,7 @@ const OperationsDesk: React.FC = () => {
         </DialogContent>
         <DialogActions sx={{ p: 2.5 }}>
           <Button onClick={() => setCostOpen(false)}>Cancel</Button>
-          <Button variant="contained" onClick={saveCost}>
+          <Button variant="contained" disabled={busy} onClick={saveCost}>
             Save Costing Sheet
           </Button>
         </DialogActions>

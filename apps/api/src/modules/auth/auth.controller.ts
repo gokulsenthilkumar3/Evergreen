@@ -156,6 +156,7 @@ export class AuthController {
       req.user.userId,
       req.user.username,
       body,
+      req.user.sessionId,
     );
   }
 

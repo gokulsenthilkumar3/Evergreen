@@ -1,6 +1,4 @@
-import InstallationGate from './components/InstallationGate';
-import { getStoredUser, saveUser, clearAuth } from './utils/authStorage';
-import { useState, useMemo, useEffect, lazy, Suspense } from 'react';
+import { useState, useMemo, useEffect, useRef, lazy, Suspense } from 'react';
 import { Toaster, toast } from 'sonner';
 import { SUCCESS_MESSAGES } from './utils/messages';
 import { ConfirmProvider } from './context/ConfirmContext';
@@ -30,6 +28,7 @@ import {
   InputAdornment,
   Paper,
   Chip,
+  useMediaQuery,
   type PaletteMode,
 } from '@mui/material';
 import {
@@ -74,6 +73,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from './utils/api';
 import { isCompanyPageVisible } from '@evergreen/types';
 import { canonicalPage, settingsTabFor } from './utils/navigation';
+import { lowStockThreshold } from './utils/alerts';
 import getTheme from './theme';
 import type { ThemeName } from './theme';
 import Login from './components/Login';
@@ -129,6 +129,9 @@ const CommandCenter = lazy(() => import('./pages/CommandCenter'));
 const Integrations = lazy(() => import('./pages/Integrations'));
 const BookEllam = lazy(() => import('./pages/BookEllam'));
 
+/** Provider support number in international digits, e.g. 919800000000. Set VITE_SUPPORT_PHONE when packaging. */
+const SUPPORT_PHONE = /^\d{8,15}$/.test(String(import.meta.env.VITE_SUPPORT_PHONE ?? '')) ? String(import.meta.env.VITE_SUPPORT_PHONE) : '';
+
 const drawerWidth = 260;
 const drawerCollapsedWidth = 72;
 
@@ -167,9 +170,16 @@ const GlobalSearch = ({ onNavigate }: { onNavigate: (page: string) => void }) =>
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  // The query the current results (or failure) belong to; drives the "no matches" and error states.
+  const [searchedQuery, setSearchedQuery] = useState('');
+  const [searchFailed, setSearchFailed] = useState(false);
   const [searchHistory, setSearchHistory] = useState<string[]>(() => {
-    const saved = localStorage.getItem('searchHistory');
-    return saved ? JSON.parse(saved) : [];
+    try {
+      const saved = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+      return Array.isArray(saved) ? saved.filter((term): term is string => typeof term === 'string') : [];
+    } catch {
+      return [];
+    }
   });
 
   useEffect(() => {
@@ -186,25 +196,37 @@ const GlobalSearch = ({ onNavigate }: { onNavigate: (page: string) => void }) =>
   const debouncedQuery = useDebounce(query, 300);
 
   useEffect(() => {
+    // A slower earlier request must not replace the results of a newer query.
+    let current = true;
     const fetchResults = async () => {
       setSelectedIndex(-1);
       if (debouncedQuery.length < 2) {
         setResults([]);
+        setSearchedQuery('');
+        setSearchFailed(false);
         return;
       }
 
       setLoading(true);
       try {
-        const res = await api.get(`/search?q=${debouncedQuery}`);
-        setResults(res.data);
-      } catch (err) {
-        console.error(err);
+        const res = await api.get('/search', { params: { q: debouncedQuery } });
+        if (!current) return;
+        setResults(Array.isArray(res.data) ? res.data : []);
+        setSearchFailed(false);
+      } catch {
+        if (!current) return;
+        setResults([]);
+        setSearchFailed(true);
       } finally {
-        setLoading(false);
+        if (current) {
+          setSearchedQuery(debouncedQuery);
+          setLoading(false);
+        }
       }
     };
 
     fetchResults();
+    return () => { current = false; };
   }, [debouncedQuery]);
 
   const handleSearch = (val: string) => {
@@ -212,6 +234,10 @@ const GlobalSearch = ({ onNavigate }: { onNavigate: (page: string) => void }) =>
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      closeResults();
+      return;
+    }
     if (results.length === 0) return;
 
     switch (e.key) {
@@ -233,11 +259,9 @@ const GlobalSearch = ({ onNavigate }: { onNavigate: (page: string) => void }) =>
           setQuery('');
         }
         break;
-      case 'Escape':
-        setResults([]);
-        break;
     }
   };
+  const closeResults = () => { setResults([]); setSearchedQuery(''); setSearchFailed(false); };
 
   const addToHistory = (term: string) => {
     if (!term.trim()) return;
@@ -252,8 +276,9 @@ const GlobalSearch = ({ onNavigate }: { onNavigate: (page: string) => void }) =>
     const escapedQuery = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const regex = new RegExp(`(${escapedQuery})`, 'gi');
     const parts = text.split(regex);
+    // Compare text rather than calling regex.test: a global regex keeps lastIndex and skips every other match.
     return parts.map((part, i) =>
-      regex.test(part) ? <mark key={i} style={{ background: '#ffd700', fontWeight: 700 }}>{part}</mark> : part
+      part.toLowerCase() === q.toLowerCase() ? <mark key={i} style={{ background: '#ffd700', fontWeight: 700 }}>{part}</mark> : part
     );
   };
 
@@ -292,8 +317,22 @@ const GlobalSearch = ({ onNavigate }: { onNavigate: (page: string) => void }) =>
           }
         }}
       />
+      {results.length === 0 && !loading && query.length >= 2 && searchedQuery === query && (
+        <Paper
+          role="status"
+          className="anim-fade-scale"
+          sx={{ position: 'absolute', top: '120%', left: 0, right: 0, zIndex: 1500, borderRadius: '12px', p: 2, boxShadow: (theme: any) => theme.shadows[10] }}
+        >
+          <Typography variant="body2" color={searchFailed ? 'error' : 'text.secondary'}>
+            {searchFailed
+              ? 'Search is unavailable right now. Check the connection and try again.'
+              : `No invoices, stock or customers match “${query}”.`}
+          </Typography>
+        </Paper>
+      )}
       {results.length > 0 && query.length >= 2 && (
         <Paper
+          className="anim-fade-scale"
           sx={{
             position: 'absolute',
             top: '120%',
@@ -380,6 +419,7 @@ const App: React.FC = () => {
     setSettingsTab(settingsTabFor(page));
     page = canonicalPage(page);
     setPageState(page);
+    setMobileNavOpen(false);
     const targetPath = page === 'dashboard' ? '/' : `/${page}`;
     if (window.location.pathname !== targetPath) {
       window.history.pushState(null, '', targetPath);
@@ -397,6 +437,13 @@ const App: React.FC = () => {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
   const [drawerOpen, setDrawerOpen] = useState(true);
+  // Below 900px the navigation is an overlay that starts closed; a permanent 260px rail left phones about 130px of content.
+  const isCompact = useMediaQuery('(max-width:899.95px)');
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const navExpanded = isCompact || drawerOpen;
+  // Each screen opens at its top instead of the previous screen's scroll position.
+  const mainRef = useRef<HTMLElement | null>(null);
+  useEffect(() => { mainRef.current?.scrollTo?.({ top: 0 }); }, [currentPage]);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -419,7 +466,11 @@ const App: React.FC = () => {
 
   const theme = useMemo(() => getTheme(mode, themeName), [mode, themeName]);
 
-  useEffect(() => { localStorage.setItem('themeMode', mode); }, [mode]);
+  useEffect(() => {
+    localStorage.setItem('themeMode', mode);
+    // Global CSS (glass cards, floating nav, native controls) follows the app theme rather than the OS.
+    document.documentElement.dataset.themeMode = mode;
+  }, [mode]);
   useEffect(() => { localStorage.setItem('themeName', themeName); }, [themeName]);
   useEffect(() => { localStorage.setItem('floatingNav', String(floatingNav)); }, [floatingNav]);
   useEffect(() => { localStorage.setItem('language', language); }, [language]);
@@ -450,7 +501,7 @@ const App: React.FC = () => {
   const toggleLanguage = async () => {
     const next = language === 'en' ? 'ta' : 'en';
     setLanguage(next);
-    try { await api.put('/settings', { language: next }); } catch { toast.error('Language preference will be saved when the connection is restored.'); }
+    try { await api.put('/settings', { language: next }); } catch { toast.error('Language changed on this device only; it could not be saved to your account.'); }
   };
 
 
@@ -484,7 +535,8 @@ const App: React.FC = () => {
   };
 
   const handleDrawerToggle = () => {
-    setDrawerOpen(!drawerOpen);
+    if (isCompact) setMobileNavOpen(open => !open);
+    else setDrawerOpen(!drawerOpen);
   };
 
   // Get breadcrumb items based on current page
@@ -557,7 +609,7 @@ const App: React.FC = () => {
       try {
         const response = await api.get('/inventory/yarn-stock');
         const stock = response.data;
-        const threshold = settings?.lowStockThreshold || 10;
+        const threshold = lowStockThreshold(settings);
         // Count how many count-types are below the threshold (the badge shows
         // the number of distinct yarn counts that need restocking)
         return Object.values(stock).filter((qty: any) => typeof qty === 'number' && qty < threshold).length;
@@ -581,16 +633,16 @@ const App: React.FC = () => {
     {
       label: 'Operations & Job Work',
       items: [
-        { text: 'Store', icon: <StoreIcon />, page: 'store', description: 'Spares inventory, machine components, consumables, and store item tracking' },
+        { text: 'Store', icon: <StoreIcon />, page: 'store', description: 'Sell from the shared catalogue and reserve stock in a sales order' },
         { text: 'Inventory', icon: <InventoryIcon />, page: 'inventory', badge: lowStockCount > 0 ? lowStockCount : undefined, description: 'Stock ledger for cotton bales, yarn bags by count, and waste inventory' },
         { text: 'Inward / Batch', icon: <InwardIcon />, page: 'inward', description: 'Cotton gate receipts, batch lot creation, bale weights, and QR sticker generation' },
         { text: 'Production & Job Work', icon: <WasteIcon />, page: 'production', description: 'Bale consumption mixing, yarn count production, waste tracking, and material balance' },
         { text: 'Job Work Register', icon: <SyncIcon />, page: 'jobwork', description: 'External job work contracts, sent material, inward yarn returns, and reconciliation' },
-        { text: 'Operations Desk', icon: <InventoryIcon />, page: 'operations', description: 'Daily floor checklists, machine operational status, and shift supervisor notes' },
+        { text: 'Operations Desk', icon: <InventoryIcon />, page: 'operations', description: 'Catalogue inward receipts, stock by item and garment costing sheets' },
         { text: 'Business flows', icon: <SyncIcon />, page: 'workflows', description: 'Returns, procurement, conversion, quality holds and accounting' },
         { text: 'Outwards', icon: <OutwardIcon fontSize="small" />, page: 'outward', description: 'Customer yarn dispatch gate pass, vehicle/driver logging, and barcode tags' },
         { text: 'Costing', icon: <CostIcon />, page: 'costing', description: 'Per-kg spinning cost analysis: electricity, labor, packaging, and maintenance' },
-        { text: 'Business Desk', icon: <StoreIcon />, page: 'business', description: 'Customer sales orders, proforma generation, delivery tracking, and commercial orders' },
+        { text: 'Business Desk', icon: <StoreIcon />, page: 'business', description: 'Catalogue, customers, sales orders, GST invoices and invoice payments' },
       ]
     },
     {
@@ -604,22 +656,22 @@ const App: React.FC = () => {
     {
       label: 'Yarn ERP',
       items: [
-        { text: 'Yarn ERP Hub', icon: <FactoryIcon />, page: 'yarnerp', description: 'Complete spinning mill ERP overview linking machinery, quality, and logistics' },
-        { text: 'Machine Status Overview', icon: <SpeedIcon />, page: 'yarnlive', description: 'Live spindle speed, RPM, pneumatic pressure, running status, and power draw' },
+        { text: 'Yarn ERP Hub', icon: <FactoryIcon />, page: 'yarnerp', description: 'Opens Business Workspace, which links every mill module' },
+        { text: 'Machine Status Overview', icon: <SpeedIcon />, page: 'yarnlive', description: 'Registered machines and their saved status. Live sensor telemetry is not connected' },
         { text: 'Machine Management', icon: <MachineIcon />, page: 'yarnmachine', description: 'Machine registry, scheduled preventive maintenance, breakdown logs, and spares' },
         { text: 'Quality Control', icon: <QualityIcon />, page: 'yarnquality', description: 'Lab testing: CSP, count lea strength, evenness (U%), imperfections, and hairiness' },
-        { text: 'Shift Management', icon: <ShiftIcon />, page: 'yarnshift', description: 'Operator shift rostering, attendance records, machine allocations, and handovers' },
+        { text: 'Shift Management', icon: <ShiftIcon />, page: 'yarnshift', description: 'Saved shift schedules. Attendance and machine allocation are not recorded here' },
         { text: 'Warehouse', icon: <WarehouseIcon />, page: 'yarnwarehouse', description: 'Storage bay and bin rack locations for finished yarn bags and raw cotton' },
         { text: 'HR & Payroll', icon: <StaffIcon />, page: 'yarnhr', description: 'Staff directory, overtime calculations, piece-rate wages, and salary processing' },
-        { text: 'Demand Forecasting', icon: <ForecastIcon />, page: 'yarnforecast', description: 'Predictive yarn demand modeling, seasonality trends, and cotton purchase orders' },
-        { text: 'Supplier Activity', icon: <SupplierIcon />, page: 'yarnsupplier', description: 'Vendor performance ratings, cotton moisture test history, and lead-time tracking' },
-        { text: 'Compliance Readiness', icon: <ComplianceIcon />, page: 'yarncompliance', description: 'Industrial safety certificates, pollution control board audits, and legal compliance' },
+        { text: 'Demand Forecasting', icon: <ForecastIcon />, page: 'yarnforecast', description: 'Three-month moving average of sales orders, as a planning baseline' },
+        { text: 'Supplier Activity', icon: <SupplierIcon />, page: 'yarnsupplier', description: 'Supplier receipts and moisture readings from saved inward records' },
+        { text: 'Compliance Readiness', icon: <ComplianceIcon />, page: 'yarncompliance', description: 'Internal record counts for compliance review. No statutory filing is connected' },
       ]
     },
     {
       label: 'Support',
       items: [
-        { text: 'Helpdesk', icon: <HelpdeskIcon />, page: 'helpdesk', description: 'Internal support tickets, technical queries, and operational issue logs' },
+        { text: 'Helpdesk', icon: <HelpdeskIcon />, page: 'helpdesk', description: 'Frequently asked questions and ticket drafts kept in this browser' },
         { text: 'Tutorial', icon: <TutorialIcon />, page: 'tutorial', description: 'Step-by-step spinning mill workflows, standard operating procedures, and guides' },
       ]
     },
@@ -627,10 +679,10 @@ const App: React.FC = () => {
       label: 'Admin',
       items: [
         { text: 'Migration & integrations', icon: <SyncIcon />, page: 'integrations', requiredRole: 'ADMIN', description: 'Import customer and catalogue data with explicit column mapping and audit history' },
-        { text: 'User Management', icon: <UsersIcon />, page: 'users', requiredRole: 'ADMIN', description: 'Role-based access permissions for admin, manager, operator, and viewer roles' },
+        { text: 'User Management', icon: <UsersIcon />, page: 'users', requiredRole: 'ADMIN', description: 'Staff accounts and the VIEWER, MODIFIER and ADMIN roles' },
         // B-18: Sessions and Security had the same icon; Sessions now uses VpnKey
         { text: 'Sessions', icon: <SessionsIcon />, page: 'sessions', description: 'Active user login sessions, IP addresses, device types, and remote logout' },
-        { text: 'Security Settings', icon: <SecurityIcon />, page: 'security', description: 'Two-factor authentication, audit trails, and system access control policies' },
+        { text: 'Security Settings', icon: <SecurityIcon />, page: 'security', description: 'Password, two-factor sign-in and passkeys' },
         { text: 'Settings', icon: <SettingsIcon />, page: 'settings', description: 'Company details, count specifications, tare weights, and theme preferences' },
       ]
     },
@@ -778,29 +830,35 @@ const App: React.FC = () => {
                       {settings.graceExpiresAt && ` Grace protection active until ${new Date(settings.graceExpiresAt).toLocaleDateString()}.`}
                     </Typography>
                   </Box>
-                  <Box sx={{ display: 'flex', gap: 1 }}>
-                    <Button 
-                      size="small" 
-                      variant="contained" 
-                      color="warning" 
-                      component="a" 
-                      href="https://wa.me/919876543210?text=Hello%20EverGreen%20Licensing%20Desk,%20I%20would%20like%20to%20renew%20our%20subscription." 
-                      target="_blank"
-                      sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.75rem', borderRadius: 1.5 }}
-                    >
-                      Connect with Licensing Desk (WhatsApp)
-                    </Button>
-                    <Button 
-                      size="small" 
-                      variant="outlined" 
-                      color="inherit" 
-                      component="a" 
-                      href="tel:+919876543210"
-                      sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.75rem', borderRadius: 1.5 }}
-                    >
-                      Call Support
-                    </Button>
-                  </Box>
+                  {/* The provider's real number is set at build time; without it, never offer a made-up contact. */}
+                  {SUPPORT_PHONE ? (
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                      <Button
+                        size="small"
+                        variant="contained"
+                        color="warning"
+                        component="a"
+                        href={`https://wa.me/${SUPPORT_PHONE}?text=${encodeURIComponent('Hello EverGreen licensing desk, I would like to renew our subscription.')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.75rem', borderRadius: 1.5 }}
+                      >
+                        Connect with Licensing Desk (WhatsApp)
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="inherit"
+                        component="a"
+                        href={`tel:+${SUPPORT_PHONE}`}
+                        sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.75rem', borderRadius: 1.5 }}
+                      >
+                        Call Support
+                      </Button>
+                    </Box>
+                  ) : (
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>Contact your EverGreen provider to renew.</Typography>
+                  )}
                 </Box>
               )}
               {/* Floating bottom nav pill */}
@@ -964,12 +1022,14 @@ const App: React.FC = () => {
                   </Toolbar>
                 </AppBar>
                 <Drawer
-                  variant="permanent"
+                  variant={isCompact ? 'temporary' : 'permanent'}
+                  open={isCompact ? mobileNavOpen : true}
+                  onClose={() => setMobileNavOpen(false)}
+                  ModalProps={{ keepMounted: true }}
                   sx={{
-                    width: drawerOpen ? drawerWidth : drawerCollapsedWidth,
-                    flexShrink: 0,
+                    ...(isCompact ? {} : { width: drawerOpen ? drawerWidth : drawerCollapsedWidth, flexShrink: 0 }),
                     [`& .MuiDrawer-paper`]: {
-                      width: drawerOpen ? drawerWidth : drawerCollapsedWidth,
+                      width: navExpanded ? drawerWidth : drawerCollapsedWidth,
                       boxSizing: 'border-box',
                       transition: (theme) => theme.transitions.create('width', {
                         easing: theme.transitions.easing.sharp,
@@ -981,7 +1041,7 @@ const App: React.FC = () => {
                 >
                   <Toolbar />
                   {/* Company Logo Header */}
-                  {drawerOpen && (
+                  {navExpanded && (
                     <Box sx={{ px: 3, py: 2, borderBottom: 1, borderColor: 'divider', mb: 1 }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                         <Avatar
@@ -1016,7 +1076,7 @@ const App: React.FC = () => {
                       if (filteredItems.length === 0) return null;
                       return (
                         <Box key={gIdx}>
-                          {drawerOpen && group.label && (
+                          {navExpanded && group.label && (
                             <Typography
                               variant="overline"
                               sx={{
@@ -1028,7 +1088,7 @@ const App: React.FC = () => {
                               {group.label}
                             </Typography>
                           )}
-                          {!drawerOpen && gIdx > 0 && (
+                          {!navExpanded && gIdx > 0 && (
                             <Divider sx={{ my: 1, mx: 1.5, opacity: 0.4 }} />
                           )}
                           <List disablePadding>
@@ -1056,7 +1116,7 @@ const App: React.FC = () => {
                                     onClick={() => navigateTo(item.page)}
                                     sx={{
                                       minHeight: 44,
-                                      justifyContent: drawerOpen ? 'initial' : 'center',
+                                      justifyContent: navExpanded ? 'initial' : 'center',
                                       px: 2,
                                       mx: 1,
                                       borderRadius: '12px',
@@ -1077,14 +1137,14 @@ const App: React.FC = () => {
                                       },
                                       '&:hover': {
                                         bgcolor: mode === 'dark' ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.03)',
-                                        transform: drawerOpen ? 'translateX(3px)' : 'none',
+                                        transform: navExpanded ? 'translateX(3px)' : 'none',
                                       }
                                     }}
                                   >
                                     <ListItemIcon
                                       sx={{
                                         minWidth: 0,
-                                        mr: drawerOpen ? 1.5 : 'auto',
+                                        mr: navExpanded ? 1.5 : 'auto',
                                         justifyContent: 'center',
                                         color: currentPage === item.page ? 'primary.main' : 'text.secondary',
                                         transition: 'color 0.2s ease',
@@ -1098,7 +1158,7 @@ const App: React.FC = () => {
                                         item.icon
                                       )}
                                     </ListItemIcon>
-                                    {drawerOpen && (
+                                    {navExpanded && (
                                       <ListItemText
                                         primary={labelFor(item.text)}
                                         primaryTypographyProps={{
@@ -1114,7 +1174,7 @@ const App: React.FC = () => {
                               </ListItem>
                             ))}
                           </List>
-                          {gIdx < navGroups.length - 1 && drawerOpen && (
+                          {gIdx < navGroups.length - 1 && navExpanded && (
                             <Divider sx={{ my: 1, mx: 2, opacity: 0.5 }} />
                           )}
                         </Box>
@@ -1123,7 +1183,7 @@ const App: React.FC = () => {
                   </Box>
 
                   {/* User info at bottom of sidebar */}
-                  {drawerOpen && (
+                  {navExpanded && (
                     <Box
                       onClick={() => setProfileModalOpen(true)}
                       sx={{
@@ -1149,10 +1209,12 @@ const App: React.FC = () => {
                 </Drawer>
                 <Box
                   component="main"
+                  ref={mainRef}
                   sx={{
                     flexGrow: 1,
                     p: { xs: 2.5, md: 4 },
-                    width: { sm: `calc(100% - ${drawerOpen ? drawerWidth : drawerCollapsedWidth}px)` },
+                    width: isCompact ? '100%' : `calc(100% - ${drawerOpen ? drawerWidth : drawerCollapsedWidth}px)`,
+                    minWidth: 0,
                     height: '100vh',
                     display: 'flex',
                     flexDirection: 'column',
@@ -1183,7 +1245,11 @@ const App: React.FC = () => {
                       m: 0
                     }}
                   >
+                    {/* Keyed by page: a crash stays inside that screen, and navigating away clears it. */}
+                    <ErrorBoundary key={currentPage}>
                     <Suspense fallback={<LinearProgress />}>
+                    {/* Page roots often use maxWidth with mx: auto; in a flex column that sizes them to their content, so pin them to the column width. */}
+                    <Box key={currentPage} className="anim-page-in" sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1, minWidth: 0, '& > *': { width: '100%', minWidth: 0 } }}>
                       {currentPage === 'workspace' && <UnifiedWorkspace onNavigate={navigateTo} profile={settings} />}
                       {currentPage === 'jobwork' && <JobWork />}
                       {currentPage === 'operations' && <OperationsDesk />}
@@ -1238,7 +1304,9 @@ const App: React.FC = () => {
                           <Typography color="text.secondary">This page is currently under development.</Typography>
                         </Box>
                       )}
+                    </Box>
                     </Suspense>
+                    </ErrorBoundary>
                   </Container>
                 </Box>
               </Box>

@@ -59,3 +59,42 @@ describe('MFA verification', () => {
     });
   });
 });
+
+describe('password change', () => {
+  it('signs out every other session in the same transaction and keeps the current one', async () => {
+    const bcrypt = await import('bcrypt');
+    const prisma = {
+      user: {
+        findUnique: jest.fn(async () => ({
+          id: 7,
+          password: await bcrypt.hash('Old-Password-123', 4),
+        })),
+        update: jest.fn(() => 'user-update'),
+      },
+      session: { updateMany: jest.fn(() => 'session-revoke') },
+      activityLog: { create: jest.fn() },
+      $transaction: jest.fn(() => Promise.resolve([{}, { count: 2 }])),
+    };
+    const service = new AuthService(
+      {} as JwtService,
+      prisma as unknown as PrismaService,
+      {} as EmailService,
+      {} as ConfigService,
+    );
+    const result = await service.changePassword(
+      7,
+      'staff',
+      { currentPassword: 'Old-Password-123', newPassword: 'New-Password-456' },
+      'current-session',
+    );
+    expect(prisma.session.updateMany).toHaveBeenCalledWith({
+      where: { userId: 7, isValid: true, id: { not: 'current-session' } },
+      data: { isValid: false },
+    });
+    expect(prisma.$transaction).toHaveBeenCalledWith([
+      'user-update',
+      'session-revoke',
+    ]);
+    expect(result).toMatchObject({ success: true, signedOutSessions: 2 });
+  });
+});

@@ -67,10 +67,10 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `disableTotp` | MethodDeclaration | [apps/api/src/modules/auth/auth.controller.ts:136](../../apps/api/src/modules/auth/auth.controller.ts) |
 | `updateProfile` | MethodDeclaration | [apps/api/src/modules/auth/auth.controller.ts:142](../../apps/api/src/modules/auth/auth.controller.ts) |
 | `changePassword` | MethodDeclaration | [apps/api/src/modules/auth/auth.controller.ts:152](../../apps/api/src/modules/auth/auth.controller.ts) |
-| `generatePasskeyRegistrationOptions` | MethodDeclaration | [apps/api/src/modules/auth/auth.controller.ts:164](../../apps/api/src/modules/auth/auth.controller.ts) |
-| `verifyPasskeyRegistration` | MethodDeclaration | [apps/api/src/modules/auth/auth.controller.ts:173](../../apps/api/src/modules/auth/auth.controller.ts) |
-| `generatePasskeyAuthenticationOptions` | MethodDeclaration | [apps/api/src/modules/auth/auth.controller.ts:179](../../apps/api/src/modules/auth/auth.controller.ts) |
-| `verifyPasskeyAuthentication` | MethodDeclaration | [apps/api/src/modules/auth/auth.controller.ts:188](../../apps/api/src/modules/auth/auth.controller.ts) |
+| `generatePasskeyRegistrationOptions` | MethodDeclaration | [apps/api/src/modules/auth/auth.controller.ts:165](../../apps/api/src/modules/auth/auth.controller.ts) |
+| `verifyPasskeyRegistration` | MethodDeclaration | [apps/api/src/modules/auth/auth.controller.ts:174](../../apps/api/src/modules/auth/auth.controller.ts) |
+| `generatePasskeyAuthenticationOptions` | MethodDeclaration | [apps/api/src/modules/auth/auth.controller.ts:180](../../apps/api/src/modules/auth/auth.controller.ts) |
+| `verifyPasskeyAuthentication` | MethodDeclaration | [apps/api/src/modules/auth/auth.controller.ts:189](../../apps/api/src/modules/auth/auth.controller.ts) |
 | `LoginDto` | ClassDeclaration | [apps/api/src/modules/auth/auth.dto.ts:11](../../apps/api/src/modules/auth/auth.dto.ts) |
 | `TotpCodeDto` | ClassDeclaration | [apps/api/src/modules/auth/auth.dto.ts:28](../../apps/api/src/modules/auth/auth.dto.ts) |
 | `UpdateProfileDto` | ClassDeclaration | [apps/api/src/modules/auth/auth.dto.ts:34](../../apps/api/src/modules/auth/auth.dto.ts) |
@@ -86,7 +86,7 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `verifyAndEnableTotp` | MethodDeclaration | [apps/api/src/modules/auth/auth.service.ts:273](../../apps/api/src/modules/auth/auth.service.ts) |
 | `disableTotp` | MethodDeclaration | [apps/api/src/modules/auth/auth.service.ts:294](../../apps/api/src/modules/auth/auth.service.ts) |
 | `updateProfile` | MethodDeclaration | [apps/api/src/modules/auth/auth.service.ts:313](../../apps/api/src/modules/auth/auth.service.ts) |
-| `changePassword` | MethodDeclaration | [apps/api/src/modules/auth/auth.service.ts:354](../../apps/api/src/modules/auth/auth.service.ts) |
+| `changePassword` | MethodDeclaration | [apps/api/src/modules/auth/auth.service.ts:358](../../apps/api/src/modules/auth/auth.service.ts) |
 | `EmailService` | ClassDeclaration | [apps/api/src/modules/auth/email.service.ts:4](../../apps/api/src/modules/auth/email.service.ts) |
 | `sendLoginNotification` | MethodDeclaration | [apps/api/src/modules/auth/email.service.ts:21](../../apps/api/src/modules/auth/email.service.ts) |
 | `requireJwtSecret` | FunctionDeclaration | [apps/api/src/modules/auth/jwt-secret.ts:3](../../apps/api/src/modules/auth/jwt-secret.ts) |
@@ -142,53 +142,60 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `report` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.controller.ts:181](../../apps/api/src/modules/commerce/commerce.controller.ts) |
 | `unInvoicedChallans` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.controller.ts:184](../../apps/api/src/modules/commerce/commerce.controller.ts) |
 | `CommerceModule` | ClassDeclaration | [apps/api/src/modules/commerce/commerce.module.ts:9](../../apps/api/src/modules/commerce/commerce.module.ts) |
-| `CommerceService` | ClassDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:21](../../apps/api/src/modules/commerce/commerce.service.ts) |
-| `stockSummary` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:25](../../apps/api/src/modules/commerce/commerce.service.ts) |
-| `listItems` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:51](../../apps/api/src/modules/commerce/commerce.service.ts) |
-| `createItem` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:64](../../apps/api/src/modules/commerce/commerce.service.ts) |
-| `updateItem` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:94](../../apps/api/src/modules/commerce/commerce.service.ts) |
-| `archiveItem` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:145](../../apps/api/src/modules/commerce/commerce.service.ts) |
-| `itemMovements` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:151](../../apps/api/src/modules/commerce/commerce.service.ts) |
-| `listBrands` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:158](../../apps/api/src/modules/commerce/commerce.service.ts) |
-| `createBrand` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:161](../../apps/api/src/modules/commerce/commerce.service.ts) |
-| `updateBrand` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:166](../../apps/api/src/modules/commerce/commerce.service.ts) |
-| `archiveBrand` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:174](../../apps/api/src/modules/commerce/commerce.service.ts) |
-| `listCategories` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:177](../../apps/api/src/modules/commerce/commerce.service.ts) |
-| `createCategory` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:180](../../apps/api/src/modules/commerce/commerce.service.ts) |
-| `updateCategory` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:187](../../apps/api/src/modules/commerce/commerce.service.ts) |
-| `archiveCategory` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:195](../../apps/api/src/modules/commerce/commerce.service.ts) |
-| `adjustStock` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:202](../../apps/api/src/modules/commerce/commerce.service.ts) |
-| `listCustomers` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:230](../../apps/api/src/modules/commerce/commerce.service.ts) |
-| `createCustomer` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:249](../../apps/api/src/modules/commerce/commerce.service.ts) |
-| `updateCustomer` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:263](../../apps/api/src/modules/commerce/commerce.service.ts) |
-| `customerLedger` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:277](../../apps/api/src/modules/commerce/commerce.service.ts) |
-| `createOrder` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:285](../../apps/api/src/modules/commerce/commerce.service.ts) |
-| `listOrders` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:397](../../apps/api/src/modules/commerce/commerce.service.ts) |
-| `cancelOrder` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:408](../../apps/api/src/modules/commerce/commerce.service.ts) |
-| `createInwardReceipt` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:463](../../apps/api/src/modules/commerce/commerce.service.ts) |
-| `listInwardReceipts` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:519](../../apps/api/src/modules/commerce/commerce.service.ts) |
-| `createCostingSheet` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:526](../../apps/api/src/modules/commerce/commerce.service.ts) |
-| `listCostingSheets` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:547](../../apps/api/src/modules/commerce/commerce.service.ts) |
-| `updateCostingSheet` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:552](../../apps/api/src/modules/commerce/commerce.service.ts) |
-| `createInvoice` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:573](../../apps/api/src/modules/commerce/commerce.service.ts) |
-| `listInvoices` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:1026](../../apps/api/src/modules/commerce/commerce.service.ts) |
-| `recordInvoicePayment` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:1040](../../apps/api/src/modules/commerce/commerce.service.ts) |
-| `reverseInvoicePayment` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:1128](../../apps/api/src/modules/commerce/commerce.service.ts) |
-| `voidInvoice` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:1199](../../apps/api/src/modules/commerce/commerce.service.ts) |
-| `verifyInvoice` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:1318](../../apps/api/src/modules/commerce/commerce.service.ts) |
-| `report` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:1336](../../apps/api/src/modules/commerce/commerce.service.ts) |
-| `getUninvoicedChallans` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:1370](../../apps/api/src/modules/commerce/commerce.service.ts) |
+| `catalogueNumber` | FunctionDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:18](../../apps/api/src/modules/commerce/commerce.service.ts) |
+| `catalogueText` | FunctionDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:31](../../apps/api/src/modules/commerce/commerce.service.ts) |
+| `catalogueType` | FunctionDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:40](../../apps/api/src/modules/commerce/commerce.service.ts) |
+| `optionalReference` | FunctionDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:48](../../apps/api/src/modules/commerce/commerce.service.ts) |
+| `assertCatalogueGstRate` | FunctionDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:57](../../apps/api/src/modules/commerce/commerce.service.ts) |
+| `optionalText` | FunctionDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:74](../../apps/api/src/modules/commerce/commerce.service.ts) |
+| `partyContact` | FunctionDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:87](../../apps/api/src/modules/commerce/commerce.service.ts) |
+| `CommerceService` | ClassDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:114](../../apps/api/src/modules/commerce/commerce.service.ts) |
+| `stockSummary` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:118](../../apps/api/src/modules/commerce/commerce.service.ts) |
+| `listItems` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:144](../../apps/api/src/modules/commerce/commerce.service.ts) |
+| `createItem` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:157](../../apps/api/src/modules/commerce/commerce.service.ts) |
+| `updateItem` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:201](../../apps/api/src/modules/commerce/commerce.service.ts) |
+| `archiveItem` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:264](../../apps/api/src/modules/commerce/commerce.service.ts) |
+| `itemMovements` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:270](../../apps/api/src/modules/commerce/commerce.service.ts) |
+| `listBrands` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:277](../../apps/api/src/modules/commerce/commerce.service.ts) |
+| `createBrand` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:280](../../apps/api/src/modules/commerce/commerce.service.ts) |
+| `updateBrand` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:285](../../apps/api/src/modules/commerce/commerce.service.ts) |
+| `archiveBrand` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:293](../../apps/api/src/modules/commerce/commerce.service.ts) |
+| `listCategories` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:296](../../apps/api/src/modules/commerce/commerce.service.ts) |
+| `createCategory` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:299](../../apps/api/src/modules/commerce/commerce.service.ts) |
+| `updateCategory` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:306](../../apps/api/src/modules/commerce/commerce.service.ts) |
+| `archiveCategory` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:314](../../apps/api/src/modules/commerce/commerce.service.ts) |
+| `adjustStock` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:321](../../apps/api/src/modules/commerce/commerce.service.ts) |
+| `listCustomers` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:349](../../apps/api/src/modules/commerce/commerce.service.ts) |
+| `createCustomer` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:368](../../apps/api/src/modules/commerce/commerce.service.ts) |
+| `updateCustomer` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:389](../../apps/api/src/modules/commerce/commerce.service.ts) |
+| `customerLedger` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:418](../../apps/api/src/modules/commerce/commerce.service.ts) |
+| `createOrder` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:426](../../apps/api/src/modules/commerce/commerce.service.ts) |
+| `listOrders` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:539](../../apps/api/src/modules/commerce/commerce.service.ts) |
+| `cancelOrder` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:550](../../apps/api/src/modules/commerce/commerce.service.ts) |
+| `createInwardReceipt` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:605](../../apps/api/src/modules/commerce/commerce.service.ts) |
+| `listInwardReceipts` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:661](../../apps/api/src/modules/commerce/commerce.service.ts) |
+| `createCostingSheet` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:668](../../apps/api/src/modules/commerce/commerce.service.ts) |
+| `listCostingSheets` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:689](../../apps/api/src/modules/commerce/commerce.service.ts) |
+| `updateCostingSheet` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:694](../../apps/api/src/modules/commerce/commerce.service.ts) |
+| `createInvoice` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:715](../../apps/api/src/modules/commerce/commerce.service.ts) |
+| `listInvoices` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:1187](../../apps/api/src/modules/commerce/commerce.service.ts) |
+| `recordInvoicePayment` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:1201](../../apps/api/src/modules/commerce/commerce.service.ts) |
+| `reverseInvoicePayment` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:1298](../../apps/api/src/modules/commerce/commerce.service.ts) |
+| `voidInvoice` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:1369](../../apps/api/src/modules/commerce/commerce.service.ts) |
+| `verifyInvoice` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:1488](../../apps/api/src/modules/commerce/commerce.service.ts) |
+| `report` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:1506](../../apps/api/src/modules/commerce/commerce.service.ts) |
+| `getUninvoicedChallans` | MethodDeclaration | [apps/api/src/modules/commerce/commerce.service.ts:1540](../../apps/api/src/modules/commerce/commerce.service.ts) |
 | `calculateInvoiceTotals` | FunctionDeclaration | [apps/api/src/modules/commerce/invoice-totals.ts:11](../../apps/api/src/modules/commerce/invoice-totals.ts) |
 | `InvoiceVerificationController` | ClassDeclaration | [apps/api/src/modules/commerce/invoice-verification.controller.ts:5](../../apps/api/src/modules/commerce/invoice-verification.controller.ts) |
 | `verify` | MethodDeclaration | [apps/api/src/modules/commerce/invoice-verification.controller.ts:8](../../apps/api/src/modules/commerce/invoice-verification.controller.ts) |
 | `StorefrontController` | ClassDeclaration | [apps/api/src/modules/commerce/storefront.controller.ts:6](../../apps/api/src/modules/commerce/storefront.controller.ts) |
 | `products` | MethodDeclaration | [apps/api/src/modules/commerce/storefront.controller.ts:9](../../apps/api/src/modules/commerce/storefront.controller.ts) |
 | `order` | MethodDeclaration | [apps/api/src/modules/commerce/storefront.controller.ts:14](../../apps/api/src/modules/commerce/storefront.controller.ts) |
-| `roundMoney` | Function binding | [apps/api/src/modules/commerce/storefront.service.ts:8](../../apps/api/src/modules/commerce/storefront.service.ts) |
-| `clean` | Function binding | [apps/api/src/modules/commerce/storefront.service.ts:10](../../apps/api/src/modules/commerce/storefront.service.ts) |
-| `StorefrontService` | ClassDeclaration | [apps/api/src/modules/commerce/storefront.service.ts:13](../../apps/api/src/modules/commerce/storefront.service.ts) |
-| `products` | MethodDeclaration | [apps/api/src/modules/commerce/storefront.service.ts:17](../../apps/api/src/modules/commerce/storefront.service.ts) |
-| `placeOrder` | MethodDeclaration | [apps/api/src/modules/commerce/storefront.service.ts:64](../../apps/api/src/modules/commerce/storefront.service.ts) |
+| `roundMoney` | Function binding | [apps/api/src/modules/commerce/storefront.service.ts:13](../../apps/api/src/modules/commerce/storefront.service.ts) |
+| `clean` | Function binding | [apps/api/src/modules/commerce/storefront.service.ts:15](../../apps/api/src/modules/commerce/storefront.service.ts) |
+| `StorefrontService` | ClassDeclaration | [apps/api/src/modules/commerce/storefront.service.ts:18](../../apps/api/src/modules/commerce/storefront.service.ts) |
+| `products` | MethodDeclaration | [apps/api/src/modules/commerce/storefront.service.ts:22](../../apps/api/src/modules/commerce/storefront.service.ts) |
+| `placeOrder` | MethodDeclaration | [apps/api/src/modules/commerce/storefront.service.ts:69](../../apps/api/src/modules/commerce/storefront.service.ts) |
 | `WhatsAppStatementResult` | InterfaceDeclaration | [apps/api/src/modules/commerce/whatsapp-collections.service.ts:4](../../apps/api/src/modules/commerce/whatsapp-collections.service.ts) |
 | `WhatsAppCollectionsService` | ClassDeclaration | [apps/api/src/modules/commerce/whatsapp-collections.service.ts:15](../../apps/api/src/modules/commerce/whatsapp-collections.service.ts) |
 | `generateStatement` | MethodDeclaration | [apps/api/src/modules/commerce/whatsapp-collections.service.ts:22](../../apps/api/src/modules/commerce/whatsapp-collections.service.ts) |
@@ -226,8 +233,9 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `getCostSummary` | MethodDeclaration | [apps/api/src/modules/costing/costing.service.ts:318](../../apps/api/src/modules/costing/costing.service.ts) |
 | `getHistoryByCategory` | MethodDeclaration | [apps/api/src/modules/costing/costing.service.ts:351](../../apps/api/src/modules/costing/costing.service.ts) |
 | `getDailyCostSummary` | MethodDeclaration | [apps/api/src/modules/costing/costing.service.ts:388](../../apps/api/src/modules/costing/costing.service.ts) |
-| `DailySummaryService` | ClassDeclaration | [apps/api/src/modules/dashboard/daily-summary.service.ts:11](../../apps/api/src/modules/dashboard/daily-summary.service.ts) |
-| `sendDailySummary` | MethodDeclaration | [apps/api/src/modules/dashboard/daily-summary.service.ts:36](../../apps/api/src/modules/dashboard/daily-summary.service.ts) |
+| `summarizeProduction` | FunctionDeclaration | [apps/api/src/modules/dashboard/daily-summary.service.ts:14](../../apps/api/src/modules/dashboard/daily-summary.service.ts) |
+| `DailySummaryService` | ClassDeclaration | [apps/api/src/modules/dashboard/daily-summary.service.ts:45](../../apps/api/src/modules/dashboard/daily-summary.service.ts) |
+| `sendDailySummary` | MethodDeclaration | [apps/api/src/modules/dashboard/daily-summary.service.ts:67](../../apps/api/src/modules/dashboard/daily-summary.service.ts) |
 | `DashboardController` | ClassDeclaration | [apps/api/src/modules/dashboard/dashboard.controller.ts:6](../../apps/api/src/modules/dashboard/dashboard.controller.ts) |
 | `getSummary` | MethodDeclaration | [apps/api/src/modules/dashboard/dashboard.controller.ts:14](../../apps/api/src/modules/dashboard/dashboard.controller.ts) |
 | `getCharts` | MethodDeclaration | [apps/api/src/modules/dashboard/dashboard.controller.ts:95](../../apps/api/src/modules/dashboard/dashboard.controller.ts) |
@@ -376,15 +384,15 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `createMachine` | MethodDeclaration | [apps/api/src/modules/machines/machine.service.ts:15](../../apps/api/src/modules/machines/machine.service.ts) |
 | `listInspections` | MethodDeclaration | [apps/api/src/modules/machines/machine.service.ts:36](../../apps/api/src/modules/machines/machine.service.ts) |
 | `createInspection` | MethodDeclaration | [apps/api/src/modules/machines/machine.service.ts:45](../../apps/api/src/modules/machines/machine.service.ts) |
-| `ProductionController` | ClassDeclaration | [apps/api/src/modules/production/production.controller.ts:12](../../apps/api/src/modules/production/production.controller.ts) |
-| `createProductionEntry` | MethodDeclaration | [apps/api/src/modules/production/production.controller.ts:16](../../apps/api/src/modules/production/production.controller.ts) |
-| `getProductionHistory` | MethodDeclaration | [apps/api/src/modules/production/production.controller.ts:22](../../apps/api/src/modules/production/production.controller.ts) |
-| `deleteProduction` | MethodDeclaration | [apps/api/src/modules/production/production.controller.ts:27](../../apps/api/src/modules/production/production.controller.ts) |
+| `ProductionController` | ClassDeclaration | [apps/api/src/modules/production/production.controller.ts:13](../../apps/api/src/modules/production/production.controller.ts) |
+| `createProductionEntry` | MethodDeclaration | [apps/api/src/modules/production/production.controller.ts:17](../../apps/api/src/modules/production/production.controller.ts) |
+| `getProductionHistory` | MethodDeclaration | [apps/api/src/modules/production/production.controller.ts:23](../../apps/api/src/modules/production/production.controller.ts) |
+| `deleteProduction` | MethodDeclaration | [apps/api/src/modules/production/production.controller.ts:28](../../apps/api/src/modules/production/production.controller.ts) |
 | `ProductionModule` | ClassDeclaration | [apps/api/src/modules/production/production.module.ts:5](../../apps/api/src/modules/production/production.module.ts) |
-| `ProductionService` | ClassDeclaration | [apps/api/src/modules/production/production.service.ts:14](../../apps/api/src/modules/production/production.service.ts) |
-| `create` | MethodDeclaration | [apps/api/src/modules/production/production.service.ts:18](../../apps/api/src/modules/production/production.service.ts) |
-| `findAll` | MethodDeclaration | [apps/api/src/modules/production/production.service.ts:432](../../apps/api/src/modules/production/production.service.ts) |
-| `delete` | MethodDeclaration | [apps/api/src/modules/production/production.service.ts:443](../../apps/api/src/modules/production/production.service.ts) |
+| `ProductionService` | ClassDeclaration | [apps/api/src/modules/production/production.service.ts:15](../../apps/api/src/modules/production/production.service.ts) |
+| `create` | MethodDeclaration | [apps/api/src/modules/production/production.service.ts:19](../../apps/api/src/modules/production/production.service.ts) |
+| `findAll` | MethodDeclaration | [apps/api/src/modules/production/production.service.ts:434](../../apps/api/src/modules/production/production.service.ts) |
+| `delete` | MethodDeclaration | [apps/api/src/modules/production/production.service.ts:449](../../apps/api/src/modules/production/production.service.ts) |
 | `QualityController` | ClassDeclaration | [apps/api/src/modules/quality/quality.controller.ts:6](../../apps/api/src/modules/quality/quality.controller.ts) |
 | `listInspections` | MethodDeclaration | [apps/api/src/modules/quality/quality.controller.ts:10](../../apps/api/src/modules/quality/quality.controller.ts) |
 | `createInspection` | MethodDeclaration | [apps/api/src/modules/quality/quality.controller.ts:19](../../apps/api/src/modules/quality/quality.controller.ts) |
@@ -409,9 +417,9 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `supplied` | Function binding | [apps/api/src/modules/settings/settings.dto.ts:16](../../apps/api/src/modules/settings/settings.dto.ts) |
 | `UpdateSettingsDto` | ClassDeclaration | [apps/api/src/modules/settings/settings.dto.ts:18](../../apps/api/src/modules/settings/settings.dto.ts) |
 | `SettingsModule` | ClassDeclaration | [apps/api/src/modules/settings/settings.module.ts:5](../../apps/api/src/modules/settings/settings.module.ts) |
-| `SettingsService` | ClassDeclaration | [apps/api/src/modules/settings/settings.service.ts:29](../../apps/api/src/modules/settings/settings.service.ts) |
-| `getSettings` | MethodDeclaration | [apps/api/src/modules/settings/settings.service.ts:33](../../apps/api/src/modules/settings/settings.service.ts) |
-| `updateSettings` | MethodDeclaration | [apps/api/src/modules/settings/settings.service.ts:44](../../apps/api/src/modules/settings/settings.service.ts) |
+| `SettingsService` | ClassDeclaration | [apps/api/src/modules/settings/settings.service.ts:34](../../apps/api/src/modules/settings/settings.service.ts) |
+| `getSettings` | MethodDeclaration | [apps/api/src/modules/settings/settings.service.ts:38](../../apps/api/src/modules/settings/settings.service.ts) |
+| `updateSettings` | MethodDeclaration | [apps/api/src/modules/settings/settings.service.ts:49](../../apps/api/src/modules/settings/settings.service.ts) |
 | `UsersController` | ClassDeclaration | [apps/api/src/modules/users/users.controller.ts:20](../../apps/api/src/modules/users/users.controller.ts) |
 | `register` | MethodDeclaration | [apps/api/src/modules/users/users.controller.ts:26](../../apps/api/src/modules/users/users.controller.ts) |
 | `getUsers` | MethodDeclaration | [apps/api/src/modules/users/users.controller.ts:35](../../apps/api/src/modules/users/users.controller.ts) |
@@ -450,36 +458,36 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `close` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.controller.ts:53](../../apps/api/src/modules/workflows/workflows.controller.ts) |
 | `amend` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.controller.ts:59](../../apps/api/src/modules/workflows/workflows.controller.ts) |
 | `WorkflowsModule` | ClassDeclaration | [apps/api/src/modules/workflows/workflows.module.ts:4](../../apps/api/src/modules/workflows/workflows.module.ts) |
-| `positive` | Function binding | [apps/api/src/modules/workflows/workflows.service.ts:16](../../apps/api/src/modules/workflows/workflows.service.ts) |
-| `nonnegative` | Function binding | [apps/api/src/modules/workflows/workflows.service.ts:22](../../apps/api/src/modules/workflows/workflows.service.ts) |
-| `cash` | Function binding | [apps/api/src/modules/workflows/workflows.service.ts:28](../../apps/api/src/modules/workflows/workflows.service.ts) |
-| `WorkflowsService` | ClassDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:35](../../apps/api/src/modules/workflows/workflows.service.ts) |
-| `document` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:38](../../apps/api/src/modules/workflows/workflows.service.ts) |
-| `overview` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:48](../../apps/api/src/modules/workflows/workflows.service.ts) |
-| `supplier` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:146](../../apps/api/src/modules/workflows/workflows.service.ts) |
-| `post` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:166](../../apps/api/src/modules/workflows/workflows.service.ts) |
-| `line` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:480](../../apps/api/src/modules/workflows/workflows.service.ts) |
-| `inputs` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:523](../../apps/api/src/modules/workflows/workflows.service.ts) |
-| `total` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:543](../../apps/api/src/modules/workflows/workflows.service.ts) |
-| `move` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:554](../../apps/api/src/modules/workflows/workflows.service.ts) |
-| `origin` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:591](../../apps/api/src/modules/workflows/workflows.service.ts) |
-| `salesReturn` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:617](../../apps/api/src/modules/workflows/workflows.service.ts) |
-| `setPaid` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:844](../../apps/api/src/modules/workflows/workflows.service.ts) |
-| `customerFunds` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:880](../../apps/api/src/modules/workflows/workflows.service.ts) |
-| `procurement` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:1031](../../apps/api/src/modules/workflows/workflows.service.ts) |
-| `supplierFunds` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:1312](../../apps/api/src/modules/workflows/workflows.service.ts) |
-| `linkCottonReceipt` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:1448](../../apps/api/src/modules/workflows/workflows.service.ts) |
-| `hold` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:1557](../../apps/api/src/modules/workflows/workflows.service.ts) |
-| `releaseHold` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:1581](../../apps/api/src/modules/workflows/workflows.service.ts) |
-| `reclassify` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:1616](../../apps/api/src/modules/workflows/workflows.service.ts) |
-| `completeWip` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:1661](../../apps/api/src/modules/workflows/workflows.service.ts) |
-| `transform` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:1768](../../apps/api/src/modules/workflows/workflows.service.ts) |
-| `used` | Function binding | [apps/api/src/modules/workflows/workflows.service.ts:1825](../../apps/api/src/modules/workflows/workflows.service.ts) |
-| `orderDispatch` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:2013](../../apps/api/src/modules/workflows/workflows.service.ts) |
-| `pick` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:2118](../../apps/api/src/modules/workflows/workflows.service.ts) |
-| `valueOpening` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:2184](../../apps/api/src/modules/workflows/workflows.service.ts) |
-| `closePeriod` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:2241](../../apps/api/src/modules/workflows/workflows.service.ts) |
-| `amendOrder` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:2282](../../apps/api/src/modules/workflows/workflows.service.ts) |
+| `positive` | Function binding | [apps/api/src/modules/workflows/workflows.service.ts:17](../../apps/api/src/modules/workflows/workflows.service.ts) |
+| `nonnegative` | Function binding | [apps/api/src/modules/workflows/workflows.service.ts:23](../../apps/api/src/modules/workflows/workflows.service.ts) |
+| `cash` | Function binding | [apps/api/src/modules/workflows/workflows.service.ts:29](../../apps/api/src/modules/workflows/workflows.service.ts) |
+| `WorkflowsService` | ClassDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:36](../../apps/api/src/modules/workflows/workflows.service.ts) |
+| `document` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:39](../../apps/api/src/modules/workflows/workflows.service.ts) |
+| `overview` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:49](../../apps/api/src/modules/workflows/workflows.service.ts) |
+| `supplier` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:147](../../apps/api/src/modules/workflows/workflows.service.ts) |
+| `post` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:172](../../apps/api/src/modules/workflows/workflows.service.ts) |
+| `line` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:486](../../apps/api/src/modules/workflows/workflows.service.ts) |
+| `inputs` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:529](../../apps/api/src/modules/workflows/workflows.service.ts) |
+| `total` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:549](../../apps/api/src/modules/workflows/workflows.service.ts) |
+| `move` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:560](../../apps/api/src/modules/workflows/workflows.service.ts) |
+| `origin` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:597](../../apps/api/src/modules/workflows/workflows.service.ts) |
+| `salesReturn` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:623](../../apps/api/src/modules/workflows/workflows.service.ts) |
+| `setPaid` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:850](../../apps/api/src/modules/workflows/workflows.service.ts) |
+| `customerFunds` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:886](../../apps/api/src/modules/workflows/workflows.service.ts) |
+| `procurement` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:1037](../../apps/api/src/modules/workflows/workflows.service.ts) |
+| `supplierFunds` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:1318](../../apps/api/src/modules/workflows/workflows.service.ts) |
+| `linkCottonReceipt` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:1454](../../apps/api/src/modules/workflows/workflows.service.ts) |
+| `hold` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:1563](../../apps/api/src/modules/workflows/workflows.service.ts) |
+| `releaseHold` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:1587](../../apps/api/src/modules/workflows/workflows.service.ts) |
+| `reclassify` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:1622](../../apps/api/src/modules/workflows/workflows.service.ts) |
+| `completeWip` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:1667](../../apps/api/src/modules/workflows/workflows.service.ts) |
+| `transform` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:1774](../../apps/api/src/modules/workflows/workflows.service.ts) |
+| `used` | Function binding | [apps/api/src/modules/workflows/workflows.service.ts:1831](../../apps/api/src/modules/workflows/workflows.service.ts) |
+| `orderDispatch` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:2019](../../apps/api/src/modules/workflows/workflows.service.ts) |
+| `pick` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:2124](../../apps/api/src/modules/workflows/workflows.service.ts) |
+| `valueOpening` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:2190](../../apps/api/src/modules/workflows/workflows.service.ts) |
+| `closePeriod` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:2247](../../apps/api/src/modules/workflows/workflows.service.ts) |
+| `amendOrder` | MethodDeclaration | [apps/api/src/modules/workflows/workflows.service.ts:2288](../../apps/api/src/modules/workflows/workflows.service.ts) |
 | `AdminSyncResponseDto` | ClassDeclaration | [apps/api/src/services/admin-sync-response.dto.ts:19](../../apps/api/src/services/admin-sync-response.dto.ts) |
 | `parseAdminSyncResponse` | FunctionDeclaration | [apps/api/src/services/admin-sync-response.dto.ts:70](../../apps/api/src/services/admin-sync-response.dto.ts) |
 | `AdminSyncService` | ClassDeclaration | [apps/api/src/services/admin-sync.service.ts:6](../../apps/api/src/services/admin-sync.service.ts) |
@@ -534,45 +542,41 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `normalizeRole` | Function binding | [apps/api/src/utils/roles.ts:7](../../apps/api/src/utils/roles.ts) |
 | `stockEventDate` | FunctionDeclaration | [apps/api/src/utils/stock-event-date.ts:5](../../apps/api/src/utils/stock-event-date.ts) |
 | `NotificationSyncRunner` | Function binding | [apps/web/src/App.tsx:91](../../apps/web/src/App.tsx) |
-| `NavItem` | InterfaceDeclaration | [apps/web/src/App.tsx:135](../../apps/web/src/App.tsx) |
-| `NavGroup` | InterfaceDeclaration | [apps/web/src/App.tsx:144](../../apps/web/src/App.tsx) |
-| `SearchResultItem` | InterfaceDeclaration | [apps/web/src/App.tsx:149](../../apps/web/src/App.tsx) |
-| `PrintStyles` | Function binding | [apps/web/src/App.tsx:160](../../apps/web/src/App.tsx) |
-| `GlobalSearch` | Function binding | [apps/web/src/App.tsx:165](../../apps/web/src/App.tsx) |
-| `handleKeyDown` | Function binding | [apps/web/src/App.tsx:176](../../apps/web/src/App.tsx) |
-| `fetchResults` | Function binding | [apps/web/src/App.tsx:189](../../apps/web/src/App.tsx) |
-| `handleSearch` | Function binding | [apps/web/src/App.tsx:210](../../apps/web/src/App.tsx) |
-| `handleKeyDown` | Function binding | [apps/web/src/App.tsx:214](../../apps/web/src/App.tsx) |
-| `addToHistory` | Function binding | [apps/web/src/App.tsx:242](../../apps/web/src/App.tsx) |
-| `highlightMatch` | Function binding | [apps/web/src/App.tsx:249](../../apps/web/src/App.tsx) |
-| `App` | Function binding | [apps/web/src/App.tsx:357](../../apps/web/src/App.tsx) |
-| `getInitialPage` | Function binding | [apps/web/src/App.tsx:371](../../apps/web/src/App.tsx) |
-| `setCurrentPage` | Function binding | [apps/web/src/App.tsx:379](../../apps/web/src/App.tsx) |
-| `handlePopState` | Function binding | [apps/web/src/App.tsx:391](../../apps/web/src/App.tsx) |
-| `handleNavigate` | Function binding | [apps/web/src/App.tsx:436](../../apps/web/src/App.tsx) |
-| `toggleTheme` | Function binding | [apps/web/src/App.tsx:446](../../apps/web/src/App.tsx) |
-| `toggleLanguage` | Function binding | [apps/web/src/App.tsx:450](../../apps/web/src/App.tsx) |
-| `handleProfileClick` | Function binding | [apps/web/src/App.tsx:457](../../apps/web/src/App.tsx) |
-| `handleProfileClose` | Function binding | [apps/web/src/App.tsx:461](../../apps/web/src/App.tsx) |
-| `handleLogout` | Function binding | [apps/web/src/App.tsx:465](../../apps/web/src/App.tsx) |
-| `handleLogin` | Function binding | [apps/web/src/App.tsx:480](../../apps/web/src/App.tsx) |
-| `handleDrawerToggle` | Function binding | [apps/web/src/App.tsx:486](../../apps/web/src/App.tsx) |
-| `getBreadcrumbItems` | Function binding | [apps/web/src/App.tsx:491](../../apps/web/src/App.tsx) |
-| `handleSync` | Function binding | [apps/web/src/App.tsx:538](../../apps/web/src/App.tsx) |
-| `labelFor` | Function binding | [apps/web/src/App.tsx:672](../../apps/web/src/App.tsx) |
-| `LicensedApp` | FunctionDeclaration | [apps/web/src/App.tsx:1275](../../apps/web/src/App.tsx) |
-| `BusinessFlowGuide` | FunctionDeclaration | [apps/web/src/components/BusinessFlowGuide.tsx:16](../../apps/web/src/components/BusinessFlowGuide.tsx) |
+| `NavItem` | InterfaceDeclaration | [apps/web/src/App.tsx:138](../../apps/web/src/App.tsx) |
+| `NavGroup` | InterfaceDeclaration | [apps/web/src/App.tsx:147](../../apps/web/src/App.tsx) |
+| `SearchResultItem` | InterfaceDeclaration | [apps/web/src/App.tsx:152](../../apps/web/src/App.tsx) |
+| `PrintStyles` | Function binding | [apps/web/src/App.tsx:163](../../apps/web/src/App.tsx) |
+| `GlobalSearch` | Function binding | [apps/web/src/App.tsx:168](../../apps/web/src/App.tsx) |
+| `handleKeyDown` | Function binding | [apps/web/src/App.tsx:186](../../apps/web/src/App.tsx) |
+| `fetchResults` | Function binding | [apps/web/src/App.tsx:201](../../apps/web/src/App.tsx) |
+| `handleSearch` | Function binding | [apps/web/src/App.tsx:232](../../apps/web/src/App.tsx) |
+| `handleKeyDown` | Function binding | [apps/web/src/App.tsx:236](../../apps/web/src/App.tsx) |
+| `closeResults` | Function binding | [apps/web/src/App.tsx:264](../../apps/web/src/App.tsx) |
+| `addToHistory` | Function binding | [apps/web/src/App.tsx:266](../../apps/web/src/App.tsx) |
+| `highlightMatch` | Function binding | [apps/web/src/App.tsx:273](../../apps/web/src/App.tsx) |
+| `App` | Function binding | [apps/web/src/App.tsx:396](../../apps/web/src/App.tsx) |
+| `getInitialPage` | Function binding | [apps/web/src/App.tsx:410](../../apps/web/src/App.tsx) |
+| `setCurrentPage` | Function binding | [apps/web/src/App.tsx:418](../../apps/web/src/App.tsx) |
+| `handlePopState` | Function binding | [apps/web/src/App.tsx:431](../../apps/web/src/App.tsx) |
+| `handleNavigate` | Function binding | [apps/web/src/App.tsx:487](../../apps/web/src/App.tsx) |
+| `toggleTheme` | Function binding | [apps/web/src/App.tsx:497](../../apps/web/src/App.tsx) |
+| `toggleLanguage` | Function binding | [apps/web/src/App.tsx:501](../../apps/web/src/App.tsx) |
+| `handleProfileClick` | Function binding | [apps/web/src/App.tsx:508](../../apps/web/src/App.tsx) |
+| `handleProfileClose` | Function binding | [apps/web/src/App.tsx:512](../../apps/web/src/App.tsx) |
+| `handleLogout` | Function binding | [apps/web/src/App.tsx:516](../../apps/web/src/App.tsx) |
+| `handleLogin` | Function binding | [apps/web/src/App.tsx:532](../../apps/web/src/App.tsx) |
+| `handleDrawerToggle` | Function binding | [apps/web/src/App.tsx:538](../../apps/web/src/App.tsx) |
+| `getBreadcrumbItems` | Function binding | [apps/web/src/App.tsx:544](../../apps/web/src/App.tsx) |
+| `handleSync` | Function binding | [apps/web/src/App.tsx:591](../../apps/web/src/App.tsx) |
+| `labelFor` | Function binding | [apps/web/src/App.tsx:725](../../apps/web/src/App.tsx) |
+| `BusinessFlowGuide` | FunctionDeclaration | [apps/web/src/components/BusinessFlowGuide.tsx:24](../../apps/web/src/components/BusinessFlowGuide.tsx) |
 | `YarnCore` | Function binding | [apps/web/src/components/DashboardScene.tsx:7](../../apps/web/src/components/DashboardScene.tsx) |
 | `DashboardScene` | Function binding | [apps/web/src/components/DashboardScene.tsx:50](../../apps/web/src/components/DashboardScene.tsx) |
-| `InstallationGate` | FunctionDeclaration | [apps/web/src/components/InstallationGate.tsx:8](../../apps/web/src/components/InstallationGate.tsx) |
-| `cancel` | Function binding | [apps/web/src/components/InstallationGate.tsx:23](../../apps/web/src/components/InstallationGate.tsx) |
-| `focus` | Function binding | [apps/web/src/components/InstallationGate.tsx:51](../../apps/web/src/components/InstallationGate.tsx) |
-| `LoginProps` | InterfaceDeclaration | [apps/web/src/components/Login.tsx:34](../../apps/web/src/components/Login.tsx) |
-| `Login` | FunctionDeclaration | [apps/web/src/components/Login.tsx:39](../../apps/web/src/components/Login.tsx) |
-| `finish` | Function binding | [apps/web/src/components/Login.tsx:60](../../apps/web/src/components/Login.tsx) |
-| `report` | Function binding | [apps/web/src/components/Login.tsx:68](../../apps/web/src/components/Login.tsx) |
-| `submit` | Function binding | [apps/web/src/components/Login.tsx:96](../../apps/web/src/components/Login.tsx) |
-| `passkey` | Function binding | [apps/web/src/components/Login.tsx:120](../../apps/web/src/components/Login.tsx) |
+| `LoginProps` | InterfaceDeclaration | [apps/web/src/components/Login.tsx:63](../../apps/web/src/components/Login.tsx) |
+| `Login` | Function binding | [apps/web/src/components/Login.tsx:69](../../apps/web/src/components/Login.tsx) |
+| `handleTyping` | Function binding | [apps/web/src/components/Login.tsx:89](../../apps/web/src/components/Login.tsx) |
+| `handleSubmit` | Function binding | [apps/web/src/components/Login.tsx:103](../../apps/web/src/components/Login.tsx) |
+| `handlePasskeyLogin` | Function binding | [apps/web/src/components/Login.tsx:137](../../apps/web/src/components/Login.tsx) |
 | `IntrinsicElements` | InterfaceDeclaration | [apps/web/src/components/LoginAvatar.tsx:11](../../apps/web/src/components/LoginAvatar.tsx) |
 | `LoginAvatarProps` | InterfaceDeclaration | [apps/web/src/components/LoginAvatar.tsx:15](../../apps/web/src/components/LoginAvatar.tsx) |
 | `IridescentMaterial` | Function binding | [apps/web/src/components/LoginAvatar.tsx:24](../../apps/web/src/components/LoginAvatar.tsx) |
@@ -688,6 +692,10 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `ProductionTimingAlert` | FunctionDeclaration | [apps/web/src/components/common/ProductionTimingAlert.tsx:6](../../apps/web/src/components/common/ProductionTimingAlert.tsx) |
 | `RequiredLabelProps` | InterfaceDeclaration | [apps/web/src/components/common/RequiredLabel.tsx:4](../../apps/web/src/components/common/RequiredLabel.tsx) |
 | `RequiredLabel` | Function binding | [apps/web/src/components/common/RequiredLabel.tsx:14](../../apps/web/src/components/common/RequiredLabel.tsx) |
+| `canUseWebGL` | FunctionDeclaration | [apps/web/src/components/common/SceneFallback.tsx:19](../../apps/web/src/components/common/SceneFallback.tsx) |
+| `SceneFallbackProps` | InterfaceDeclaration | [apps/web/src/components/common/SceneFallback.tsx:30](../../apps/web/src/components/common/SceneFallback.tsx) |
+| `SceneFallback` | FunctionDeclaration | [apps/web/src/components/common/SceneFallback.tsx:39](../../apps/web/src/components/common/SceneFallback.tsx) |
+| `SafeScene` | FunctionDeclaration | [apps/web/src/components/common/SceneFallback.tsx:103](../../apps/web/src/components/common/SceneFallback.tsx) |
 | `useScreenReaderAnnouncer` | Function binding | [apps/web/src/components/common/ScreenReaderAnnouncer.tsx:7](../../apps/web/src/components/common/ScreenReaderAnnouncer.tsx) |
 | `announce` | Function binding | [apps/web/src/components/common/ScreenReaderAnnouncer.tsx:11](../../apps/web/src/components/common/ScreenReaderAnnouncer.tsx) |
 | `ScreenReaderAnnouncerProps` | InterfaceDeclaration | [apps/web/src/components/common/ScreenReaderAnnouncer.tsx:19](../../apps/web/src/components/common/ScreenReaderAnnouncer.tsx) |
@@ -727,7 +735,7 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `useFullscreen` | FunctionDeclaration | [apps/web/src/hooks/useFullscreen.ts:4](../../apps/web/src/hooks/useFullscreen.ts) |
 | `sync` | Function binding | [apps/web/src/hooks/useFullscreen.ts:8](../../apps/web/src/hooks/useFullscreen.ts) |
 | `toggle` | Function binding | [apps/web/src/hooks/useFullscreen.ts:13](../../apps/web/src/hooks/useFullscreen.ts) |
-| `useNotificationSync` | FunctionDeclaration | [apps/web/src/hooks/useNotificationSync.ts:20](../../apps/web/src/hooks/useNotificationSync.ts) |
+| `useNotificationSync` | FunctionDeclaration | [apps/web/src/hooks/useNotificationSync.ts:21](../../apps/web/src/hooks/useNotificationSync.ts) |
 | `usePersist` | FunctionDeclaration | [apps/web/src/hooks/usePersist.ts:4](../../apps/web/src/hooks/usePersist.ts) |
 | `persist` | Function binding | [apps/web/src/hooks/usePersist.ts:14](../../apps/web/src/hooks/usePersist.ts) |
 | `add` | Function binding | [apps/web/src/hooks/usePersist.ts:19](../../apps/web/src/hooks/usePersist.ts) |
@@ -755,20 +763,19 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `MachineDetailDialog` | Function binding | [apps/web/src/pages/CommandCenter.tsx:250](../../apps/web/src/pages/CommandCenter.tsx) |
 | `CommandCenterProps` | InterfaceDeclaration | [apps/web/src/pages/CommandCenter.tsx:426](../../apps/web/src/pages/CommandCenter.tsx) |
 | `CommandCenter` | Function binding | [apps/web/src/pages/CommandCenter.tsx:430](../../apps/web/src/pages/CommandCenter.tsx) |
-| `CommerceDesk` | Function binding | [apps/web/src/pages/CommerceDesk.tsx:16](../../apps/web/src/pages/CommerceDesk.tsx) |
-| `refresh` | Function binding | [apps/web/src/pages/CommerceDesk.tsx:40](../../apps/web/src/pages/CommerceDesk.tsx) |
-| `emptyItem` | Function binding | [apps/web/src/pages/CommerceDesk.tsx:41](../../apps/web/src/pages/CommerceDesk.tsx) |
-| `emptyCustomer` | Function binding | [apps/web/src/pages/CommerceDesk.tsx:42](../../apps/web/src/pages/CommerceDesk.tsx) |
-| `emptySales` | Function binding | [apps/web/src/pages/CommerceDesk.tsx:45](../../apps/web/src/pages/CommerceDesk.tsx) |
-| `saveItem` | Function binding | [apps/web/src/pages/CommerceDesk.tsx:47](../../apps/web/src/pages/CommerceDesk.tsx) |
-| `saveCustomer` | Function binding | [apps/web/src/pages/CommerceDesk.tsx:48](../../apps/web/src/pages/CommerceDesk.tsx) |
-| `editItem` | Function binding | [apps/web/src/pages/CommerceDesk.tsx:49](../../apps/web/src/pages/CommerceDesk.tsx) |
-| `editCustomer` | Function binding | [apps/web/src/pages/CommerceDesk.tsx:50](../../apps/web/src/pages/CommerceDesk.tsx) |
-| `submitAdjustment` | Function binding | [apps/web/src/pages/CommerceDesk.tsx:51](../../apps/web/src/pages/CommerceDesk.tsx) |
-| `submitOrder` | Function binding | [apps/web/src/pages/CommerceDesk.tsx:52](../../apps/web/src/pages/CommerceDesk.tsx) |
-| `submitInvoice` | Function binding | [apps/web/src/pages/CommerceDesk.tsx:53](../../apps/web/src/pages/CommerceDesk.tsx) |
-| `convertOrder` | Function binding | [apps/web/src/pages/CommerceDesk.tsx:83](../../apps/web/src/pages/CommerceDesk.tsx) |
-| `lineEditor` | Function binding | [apps/web/src/pages/CommerceDesk.tsx:85](../../apps/web/src/pages/CommerceDesk.tsx) |
+| `CommerceDesk` | Function binding | [apps/web/src/pages/CommerceDesk.tsx:17](../../apps/web/src/pages/CommerceDesk.tsx) |
+| `refresh` | Function binding | [apps/web/src/pages/CommerceDesk.tsx:41](../../apps/web/src/pages/CommerceDesk.tsx) |
+| `emptyItem` | Function binding | [apps/web/src/pages/CommerceDesk.tsx:42](../../apps/web/src/pages/CommerceDesk.tsx) |
+| `emptyCustomer` | Function binding | [apps/web/src/pages/CommerceDesk.tsx:43](../../apps/web/src/pages/CommerceDesk.tsx) |
+| `emptySales` | Function binding | [apps/web/src/pages/CommerceDesk.tsx:46](../../apps/web/src/pages/CommerceDesk.tsx) |
+| `guarded` | Function binding | [apps/web/src/pages/CommerceDesk.tsx:50](../../apps/web/src/pages/CommerceDesk.tsx) |
+| `amountError` | Function binding | [apps/web/src/pages/CommerceDesk.tsx:52](../../apps/web/src/pages/CommerceDesk.tsx) |
+| `customerField` | Function binding | [apps/web/src/pages/CommerceDesk.tsx:57](../../apps/web/src/pages/CommerceDesk.tsx) |
+| `editItem` | Function binding | [apps/web/src/pages/CommerceDesk.tsx:60](../../apps/web/src/pages/CommerceDesk.tsx) |
+| `editCustomer` | Function binding | [apps/web/src/pages/CommerceDesk.tsx:61](../../apps/web/src/pages/CommerceDesk.tsx) |
+| `submitInvoice` | Function binding | [apps/web/src/pages/CommerceDesk.tsx:64](../../apps/web/src/pages/CommerceDesk.tsx) |
+| `convertOrder` | Function binding | [apps/web/src/pages/CommerceDesk.tsx:94](../../apps/web/src/pages/CommerceDesk.tsx) |
+| `lineEditor` | Function binding | [apps/web/src/pages/CommerceDesk.tsx:96](../../apps/web/src/pages/CommerceDesk.tsx) |
 | `CommerceReports` | Function binding | [apps/web/src/pages/CommerceReports.tsx:54](../../apps/web/src/pages/CommerceReports.tsx) |
 | `handleRefresh` | Function binding | [apps/web/src/pages/CommerceReports.tsx:79](../../apps/web/src/pages/CommerceReports.tsx) |
 | `handlePrint` | Function binding | [apps/web/src/pages/CommerceReports.tsx:88](../../apps/web/src/pages/CommerceReports.tsx) |
@@ -776,42 +783,38 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `TabPanel` | FunctionDeclaration | [apps/web/src/pages/Costing.tsx:55](../../apps/web/src/pages/Costing.tsx) |
 | `CostingKPI` | InterfaceDeclaration | [apps/web/src/pages/Costing.tsx:64](../../apps/web/src/pages/Costing.tsx) |
 | `Costing` | Function binding | [apps/web/src/pages/Costing.tsx:73](../../apps/web/src/pages/Costing.tsx) |
-| `getFilteredEntries` | Function binding | [apps/web/src/pages/Costing.tsx:117](../../apps/web/src/pages/Costing.tsx) |
-| `handleSuccess` | Function binding | [apps/web/src/pages/Costing.tsx:197](../../apps/web/src/pages/Costing.tsx) |
-| `handleItemSaved` | Function binding | [apps/web/src/pages/Costing.tsx:202](../../apps/web/src/pages/Costing.tsx) |
-| `handleDeleteEntry` | Function binding | [apps/web/src/pages/Costing.tsx:206](../../apps/web/src/pages/Costing.tsx) |
+| `getFilteredEntries` | Function binding | [apps/web/src/pages/Costing.tsx:113](../../apps/web/src/pages/Costing.tsx) |
+| `handleSuccess` | Function binding | [apps/web/src/pages/Costing.tsx:193](../../apps/web/src/pages/Costing.tsx) |
+| `handleItemSaved` | Function binding | [apps/web/src/pages/Costing.tsx:198](../../apps/web/src/pages/Costing.tsx) |
+| `handleDeleteEntry` | Function binding | [apps/web/src/pages/Costing.tsx:202](../../apps/web/src/pages/Costing.tsx) |
 | `TabPanelProps` | InterfaceDeclaration | [apps/web/src/pages/CostingEntry.tsx:23](../../apps/web/src/pages/CostingEntry.tsx) |
 | `TabPanel` | FunctionDeclaration | [apps/web/src/pages/CostingEntry.tsx:29](../../apps/web/src/pages/CostingEntry.tsx) |
 | `CostingEntryProps` | InterfaceDeclaration | [apps/web/src/pages/CostingEntry.tsx:38](../../apps/web/src/pages/CostingEntry.tsx) |
 | `CostingEntry` | Function binding | [apps/web/src/pages/CostingEntry.tsx:47](../../apps/web/src/pages/CostingEntry.tsx) |
 | `handleDelete` | Function binding | [apps/web/src/pages/CostingEntry.tsx:235](../../apps/web/src/pages/CostingEntry.tsx) |
-| `handleEBSubmit` | Function binding | [apps/web/src/pages/CostingEntry.tsx:246](../../apps/web/src/pages/CostingEntry.tsx) |
-| `handleEmployeeSubmit` | Function binding | [apps/web/src/pages/CostingEntry.tsx:269](../../apps/web/src/pages/CostingEntry.tsx) |
-| `handlePackagingSubmit` | Function binding | [apps/web/src/pages/CostingEntry.tsx:292](../../apps/web/src/pages/CostingEntry.tsx) |
-| `handleMaintenanceSubmit` | Function binding | [apps/web/src/pages/CostingEntry.tsx:315](../../apps/web/src/pages/CostingEntry.tsx) |
-| `handleExpenseSubmit` | Function binding | [apps/web/src/pages/CostingEntry.tsx:338](../../apps/web/src/pages/CostingEntry.tsx) |
-| `KPI` | InterfaceDeclaration | [apps/web/src/pages/Dashboard.tsx:60](../../apps/web/src/pages/Dashboard.tsx) |
-| `DashboardSummary` | InterfaceDeclaration | [apps/web/src/pages/Dashboard.tsx:70](../../apps/web/src/pages/Dashboard.tsx) |
-| `DashboardProps` | InterfaceDeclaration | [apps/web/src/pages/Dashboard.tsx:75](../../apps/web/src/pages/Dashboard.tsx) |
-| `useCountUp` | FunctionDeclaration | [apps/web/src/pages/Dashboard.tsx:81](../../apps/web/src/pages/Dashboard.tsx) |
-| `step` | Function binding | [apps/web/src/pages/Dashboard.tsx:88](../../apps/web/src/pages/Dashboard.tsx) |
-| `Sparkline` | Function binding | [apps/web/src/pages/Dashboard.tsx:105](../../apps/web/src/pages/Dashboard.tsx) |
-| `ActivityIcon` | Function binding | [apps/web/src/pages/Dashboard.tsx:129](../../apps/web/src/pages/Dashboard.tsx) |
-| `groupByDay` | FunctionDeclaration | [apps/web/src/pages/Dashboard.tsx:144](../../apps/web/src/pages/Dashboard.tsx) |
-| `CustomTooltip` | Function binding | [apps/web/src/pages/Dashboard.tsx:163](../../apps/web/src/pages/Dashboard.tsx) |
-| `CostTooltip` | Function binding | [apps/web/src/pages/Dashboard.tsx:182](../../apps/web/src/pages/Dashboard.tsx) |
-| `DonutCentreLabel` | Function binding | [apps/web/src/pages/Dashboard.tsx:203](../../apps/web/src/pages/Dashboard.tsx) |
-| `EfficiencyStat` | Function binding | [apps/web/src/pages/Dashboard.tsx:217](../../apps/web/src/pages/Dashboard.tsx) |
-| `Dashboard` | Function binding | [apps/web/src/pages/Dashboard.tsx:243](../../apps/web/src/pages/Dashboard.tsx) |
-| `navigate` | Function binding | [apps/web/src/pages/Dashboard.tsx:244](../../apps/web/src/pages/Dashboard.tsx) |
-| `getDateRange` | Function binding | [apps/web/src/pages/Dashboard.tsx:249](../../apps/web/src/pages/Dashboard.tsx) |
-| `handleDateFilterChange` | Function binding | [apps/web/src/pages/Dashboard.tsx:301](../../apps/web/src/pages/Dashboard.tsx) |
-| `formatDate` | Function binding | [apps/web/src/pages/Dashboard.tsx:305](../../apps/web/src/pages/Dashboard.tsx) |
-| `formatRelativeTime` | Function binding | [apps/web/src/pages/Dashboard.tsx:309](../../apps/web/src/pages/Dashboard.tsx) |
-| `KpiSkeleton` | Function binding | [apps/web/src/pages/Dashboard.tsx:356](../../apps/web/src/pages/Dashboard.tsx) |
-| `QuickAction` | Function binding | [apps/web/src/pages/Dashboard.tsx:364](../../apps/web/src/pages/Dashboard.tsx) |
-| `failureMessage` | Function binding | [apps/web/src/pages/Helpdesk.tsx:78](../../apps/web/src/pages/Helpdesk.tsx) |
-| `Helpdesk` | FunctionDeclaration | [apps/web/src/pages/Helpdesk.tsx:87](../../apps/web/src/pages/Helpdesk.tsx) |
+| `once` | Function binding | [apps/web/src/pages/CostingEntry.tsx:248](../../apps/web/src/pages/CostingEntry.tsx) |
+| `KPI` | InterfaceDeclaration | [apps/web/src/pages/Dashboard.tsx:61](../../apps/web/src/pages/Dashboard.tsx) |
+| `DashboardSummary` | InterfaceDeclaration | [apps/web/src/pages/Dashboard.tsx:71](../../apps/web/src/pages/Dashboard.tsx) |
+| `DashboardProps` | InterfaceDeclaration | [apps/web/src/pages/Dashboard.tsx:76](../../apps/web/src/pages/Dashboard.tsx) |
+| `useCountUp` | FunctionDeclaration | [apps/web/src/pages/Dashboard.tsx:82](../../apps/web/src/pages/Dashboard.tsx) |
+| `step` | Function binding | [apps/web/src/pages/Dashboard.tsx:89](../../apps/web/src/pages/Dashboard.tsx) |
+| `Sparkline` | Function binding | [apps/web/src/pages/Dashboard.tsx:106](../../apps/web/src/pages/Dashboard.tsx) |
+| `ActivityIcon` | Function binding | [apps/web/src/pages/Dashboard.tsx:130](../../apps/web/src/pages/Dashboard.tsx) |
+| `groupByDay` | FunctionDeclaration | [apps/web/src/pages/Dashboard.tsx:145](../../apps/web/src/pages/Dashboard.tsx) |
+| `CustomTooltip` | Function binding | [apps/web/src/pages/Dashboard.tsx:164](../../apps/web/src/pages/Dashboard.tsx) |
+| `CostTooltip` | Function binding | [apps/web/src/pages/Dashboard.tsx:183](../../apps/web/src/pages/Dashboard.tsx) |
+| `DonutCentreLabel` | Function binding | [apps/web/src/pages/Dashboard.tsx:204](../../apps/web/src/pages/Dashboard.tsx) |
+| `EfficiencyStat` | Function binding | [apps/web/src/pages/Dashboard.tsx:218](../../apps/web/src/pages/Dashboard.tsx) |
+| `Dashboard` | Function binding | [apps/web/src/pages/Dashboard.tsx:244](../../apps/web/src/pages/Dashboard.tsx) |
+| `navigate` | Function binding | [apps/web/src/pages/Dashboard.tsx:245](../../apps/web/src/pages/Dashboard.tsx) |
+| `getDateRange` | Function binding | [apps/web/src/pages/Dashboard.tsx:250](../../apps/web/src/pages/Dashboard.tsx) |
+| `handleDateFilterChange` | Function binding | [apps/web/src/pages/Dashboard.tsx:302](../../apps/web/src/pages/Dashboard.tsx) |
+| `formatDate` | Function binding | [apps/web/src/pages/Dashboard.tsx:306](../../apps/web/src/pages/Dashboard.tsx) |
+| `formatRelativeTime` | Function binding | [apps/web/src/pages/Dashboard.tsx:310](../../apps/web/src/pages/Dashboard.tsx) |
+| `KpiSkeleton` | Function binding | [apps/web/src/pages/Dashboard.tsx:357](../../apps/web/src/pages/Dashboard.tsx) |
+| `QuickAction` | Function binding | [apps/web/src/pages/Dashboard.tsx:365](../../apps/web/src/pages/Dashboard.tsx) |
+| `Helpdesk` | Function binding | [apps/web/src/pages/Helpdesk.tsx:98](../../apps/web/src/pages/Helpdesk.tsx) |
+| `handleSubmitTicket` | Function binding | [apps/web/src/pages/Helpdesk.tsx:121](../../apps/web/src/pages/Helpdesk.tsx) |
 | `TabPanelProps` | InterfaceDeclaration | [apps/web/src/pages/Insights.tsx:34](../../apps/web/src/pages/Insights.tsx) |
 | `TabPanel` | Function binding | [apps/web/src/pages/Insights.tsx:40](../../apps/web/src/pages/Insights.tsx) |
 | `ReportsTab` | Function binding | [apps/web/src/pages/Insights.tsx:77](../../apps/web/src/pages/Insights.tsx) |
@@ -837,10 +840,10 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `formatRef` | FunctionDeclaration | [apps/web/src/pages/Inventory.tsx:125](../../apps/web/src/pages/Inventory.tsx) |
 | `Inventory` | Function binding | [apps/web/src/pages/Inventory.tsx:143](../../apps/web/src/pages/Inventory.tsx) |
 | `handleDeleteWaste` | Function binding | [apps/web/src/pages/Inventory.tsx:157](../../apps/web/src/pages/Inventory.tsx) |
-| `handleWasteSubmit` | Function binding | [apps/web/src/pages/Inventory.tsx:175](../../apps/web/src/pages/Inventory.tsx) |
-| `handleDateFilterChange` | Function binding | [apps/web/src/pages/Inventory.tsx:195](../../apps/web/src/pages/Inventory.tsx) |
-| `handleExport` | Function binding | [apps/web/src/pages/Inventory.tsx:250](../../apps/web/src/pages/Inventory.tsx) |
-| `renderMovementTable` | Function binding | [apps/web/src/pages/Inventory.tsx:277](../../apps/web/src/pages/Inventory.tsx) |
+| `handleWasteSubmit` | Function binding | [apps/web/src/pages/Inventory.tsx:176](../../apps/web/src/pages/Inventory.tsx) |
+| `handleDateFilterChange` | Function binding | [apps/web/src/pages/Inventory.tsx:201](../../apps/web/src/pages/Inventory.tsx) |
+| `handleExport` | Function binding | [apps/web/src/pages/Inventory.tsx:256](../../apps/web/src/pages/Inventory.tsx) |
+| `renderMovementTable` | Function binding | [apps/web/src/pages/Inventory.tsx:283](../../apps/web/src/pages/Inventory.tsx) |
 | `BatchEntry` | InterfaceDeclaration | [apps/web/src/pages/InwardEntry.tsx:77](../../apps/web/src/pages/InwardEntry.tsx) |
 | `InwardEntryProps` | InterfaceDeclaration | [apps/web/src/pages/InwardEntry.tsx:92](../../apps/web/src/pages/InwardEntry.tsx) |
 | `InwardEntry` | Function binding | [apps/web/src/pages/InwardEntry.tsx:97](../../apps/web/src/pages/InwardEntry.tsx) |
@@ -855,10 +858,8 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `handleExport` | Function binding | [apps/web/src/pages/InwardEntry.tsx:268](../../apps/web/src/pages/InwardEntry.tsx) |
 | `JobWork` | Function binding | [apps/web/src/pages/JobWork.tsx:89](../../apps/web/src/pages/JobWork.tsx) |
 | `refresh` | Function binding | [apps/web/src/pages/JobWork.tsx:128](../../apps/web/src/pages/JobWork.tsx) |
-| `createWorker` | Function binding | [apps/web/src/pages/JobWork.tsx:138](../../apps/web/src/pages/JobWork.tsx) |
-| `dispatch` | Function binding | [apps/web/src/pages/JobWork.tsx:154](../../apps/web/src/pages/JobWork.tsx) |
-| `openReceipt` | Function binding | [apps/web/src/pages/JobWork.tsx:187](../../apps/web/src/pages/JobWork.tsx) |
-| `saveReceipt` | Function binding | [apps/web/src/pages/JobWork.tsx:198](../../apps/web/src/pages/JobWork.tsx) |
+| `once` | Function binding | [apps/web/src/pages/JobWork.tsx:140](../../apps/web/src/pages/JobWork.tsx) |
+| `openReceipt` | Function binding | [apps/web/src/pages/JobWork.tsx:199](../../apps/web/src/pages/JobWork.tsx) |
 | `LogEntry` | InterfaceDeclaration | [apps/web/src/pages/Logs.tsx:36](../../apps/web/src/pages/Logs.tsx) |
 | `LogsProps` | InterfaceDeclaration | [apps/web/src/pages/Logs.tsx:47](../../apps/web/src/pages/Logs.tsx) |
 | `Logs` | Function binding | [apps/web/src/pages/Logs.tsx:79](../../apps/web/src/pages/Logs.tsx) |
@@ -866,9 +867,8 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `newRow` | Function binding | [apps/web/src/pages/OperationsDesk.tsx:58](../../apps/web/src/pages/OperationsDesk.tsx) |
 | `OperationsDesk` | Function binding | [apps/web/src/pages/OperationsDesk.tsx:60](../../apps/web/src/pages/OperationsDesk.tsx) |
 | `refresh` | Function binding | [apps/web/src/pages/OperationsDesk.tsx:116](../../apps/web/src/pages/OperationsDesk.tsx) |
-| `saveInward` | Function binding | [apps/web/src/pages/OperationsDesk.tsx:123](../../apps/web/src/pages/OperationsDesk.tsx) |
-| `saveCost` | Function binding | [apps/web/src/pages/OperationsDesk.tsx:159](../../apps/web/src/pages/OperationsDesk.tsx) |
-| `print` | Function binding | [apps/web/src/pages/OperationsDesk.tsx:186](../../apps/web/src/pages/OperationsDesk.tsx) |
+| `once` | Function binding | [apps/web/src/pages/OperationsDesk.tsx:125](../../apps/web/src/pages/OperationsDesk.tsx) |
+| `print` | Function binding | [apps/web/src/pages/OperationsDesk.tsx:198](../../apps/web/src/pages/OperationsDesk.tsx) |
 | `OutwardItem` | InterfaceDeclaration | [apps/web/src/pages/OutwardEntry.tsx:62](../../apps/web/src/pages/OutwardEntry.tsx) |
 | `OutwardEntryProps` | InterfaceDeclaration | [apps/web/src/pages/OutwardEntry.tsx:69](../../apps/web/src/pages/OutwardEntry.tsx) |
 | `OutwardEntry` | Function binding | [apps/web/src/pages/OutwardEntry.tsx:74](../../apps/web/src/pages/OutwardEntry.tsx) |
@@ -997,12 +997,11 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `Matchers` | InterfaceDeclaration | [apps/web/src/test/setup.ts:9](../../apps/web/src/test/setup.ts) |
 | `ThemePalette` | InterfaceDeclaration | [apps/web/src/theme.ts:5](../../apps/web/src/theme.ts) |
 | `getTheme` | Function binding | [apps/web/src/theme.ts:63](../../apps/web/src/theme.ts) |
-| `setMutationListener` | Function binding | [apps/web/src/utils/api.ts:5](../../apps/web/src/utils/api.ts) |
-| `getToken` | Function binding | [apps/web/src/utils/authStorage.ts:2](../../apps/web/src/utils/authStorage.ts) |
-| `getStoredUser` | Function binding | [apps/web/src/utils/authStorage.ts:4](../../apps/web/src/utils/authStorage.ts) |
-| `clearAuth` | FunctionDeclaration | [apps/web/src/utils/authStorage.ts:6](../../apps/web/src/utils/authStorage.ts) |
-| `saveSession` | FunctionDeclaration | [apps/web/src/utils/authStorage.ts:12](../../apps/web/src/utils/authStorage.ts) |
-| `saveUser` | FunctionDeclaration | [apps/web/src/utils/authStorage.ts:18](../../apps/web/src/utils/authStorage.ts) |
+| `lowStockThreshold` | FunctionDeclaration | [apps/web/src/utils/alerts.ts:5](../../apps/web/src/utils/alerts.ts) |
+| `InvoiceForAlert` | InterfaceDeclaration | [apps/web/src/utils/alerts.ts:10](../../apps/web/src/utils/alerts.ts) |
+| `overdueInvoices` | FunctionDeclaration | [apps/web/src/utils/alerts.ts:21](../../apps/web/src/utils/alerts.ts) |
+| `hasProductionOn` | FunctionDeclaration | [apps/web/src/utils/alerts.ts:34](../../apps/web/src/utils/alerts.ts) |
+| `setMutationListener` | Function binding | [apps/web/src/utils/api.ts:4](../../apps/web/src/utils/api.ts) |
 | `padZero` | FunctionDeclaration | [apps/web/src/utils/codeFormatters.ts:10](../../apps/web/src/utils/codeFormatters.ts) |
 | `formatDateCompact` | FunctionDeclaration | [apps/web/src/utils/codeFormatters.ts:16](../../apps/web/src/utils/codeFormatters.ts) |
 | `generateRandomSuffix` | FunctionDeclaration | [apps/web/src/utils/codeFormatters.ts:24](../../apps/web/src/utils/codeFormatters.ts) |
@@ -1082,14 +1081,7 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `hasErrors` | Function binding | [apps/web/src/utils/validators.ts:256](../../apps/web/src/utils/validators.ts) |
 | `downloadWorkflowDocument` | FunctionDeclaration | [apps/web/src/utils/workflowDocument.ts:4](../../apps/web/src/utils/workflowDocument.ts) |
 | `amount` | Function binding | [apps/web/src/utils/workflowDocument.ts:6](../../apps/web/src/utils/workflowDocument.ts) |
-| `ownerGroqEnvironment` | FunctionDeclaration | [packages/types/ai-server.ts:7](../../packages/types/ai-server.ts) |
-| `AgentError` | ClassDeclaration | [packages/types/ai-server.ts:28](../../packages/types/ai-server.ts) |
-| `systemPrompt` | Function binding | [packages/types/ai-server.ts:66](../../packages/types/ai-server.ts) |
-| `GroqAgents` | ClassDeclaration | [packages/types/ai-server.ts:73](../../packages/types/ai-server.ts) |
-| `key` | MethodDeclaration | [packages/types/ai-server.ts:81](../../packages/types/ai-server.ts) |
-| `status` | MethodDeclaration | [packages/types/ai-server.ts:88](../../packages/types/ai-server.ts) |
-| `limit` | MethodDeclaration | [packages/types/ai-server.ts:97](../../packages/types/ai-server.ts) |
-| `chat` | MethodDeclaration | [packages/types/ai-server.ts:120](../../packages/types/ai-server.ts) |
+| `ImportMetaEnv` | InterfaceDeclaration | [apps/web/src/vite-env.d.ts:6](../../apps/web/src/vite-env.d.ts) |
 | `CompanyProfile` | InterfaceDeclaration | [packages/types/company-profile.ts:7](../../packages/types/company-profile.ts) |
 | `normalizeCompanyProfile` | FunctionDeclaration | [packages/types/company-profile.ts:48](../../packages/types/company-profile.ts) |
 | `isCompanyPageVisible` | FunctionDeclaration | [packages/types/company-profile.ts:66](../../packages/types/company-profile.ts) |
@@ -1119,31 +1111,13 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `InvoiceTotals` | InterfaceDeclaration | [packages/types/index.ts:67](../../packages/types/index.ts) |
 | `CustomerSummary` | InterfaceDeclaration | [packages/types/index.ts:78](../../packages/types/index.ts) |
 | `TodayDashboardSummary` | InterfaceDeclaration | [packages/types/index.ts:87](../../packages/types/index.ts) |
-| `LeaseRequest` | InterfaceDeclaration | [packages/types/licensing-online.ts:26](../../packages/types/licensing-online.ts) |
-| `OnlineGrant` | InterfaceDeclaration | [packages/types/licensing-online.ts:33](../../packages/types/licensing-online.ts) |
-| `message` | Function binding | [packages/types/licensing-online.ts:38](../../packages/types/licensing-online.ts) |
-| `renewalClaims` | FunctionDeclaration | [packages/types/licensing-online.ts:42](../../packages/types/licensing-online.ts) |
-| `validateLeaseRequest` | FunctionDeclaration | [packages/types/licensing-online.ts:67](../../packages/types/licensing-online.ts) |
-| `sealLease` | FunctionDeclaration | [packages/types/licensing-online.ts:111](../../packages/types/licensing-online.ts) |
-| `issueOnlineLease` | FunctionDeclaration | [packages/types/licensing-online.ts:149](../../packages/types/licensing-online.ts) |
-| `refreshInstallationLease` | FunctionDeclaration | [packages/types/licensing-online.ts:207](../../packages/types/licensing-online.ts) |
-| `InstallationLicence` | InterfaceDeclaration | [packages/types/licensing.ts:16](../../packages/types/licensing.ts) |
-| `installationId` | FunctionDeclaration | [packages/types/licensing.ts:30](../../packages/types/licensing.ts) |
-| `verifyInstallationLicence` | FunctionDeclaration | [packages/types/licensing.ts:36](../../packages/types/licensing.ts) |
-| `unprotectOwnerData` | FunctionDeclaration | [packages/types/licensing.ts:111](../../packages/types/licensing.ts) |
-| `readInstallationPrivateKey` | FunctionDeclaration | [packages/types/licensing.ts:131](../../packages/types/licensing.ts) |
-| `decodeEncryptedLicence` | FunctionDeclaration | [packages/types/licensing.ts:151](../../packages/types/licensing.ts) |
-| `readProtectedLicence` | FunctionDeclaration | [packages/types/licensing.ts:198](../../packages/types/licensing.ts) |
-| `readLicenceEnvelope` | FunctionDeclaration | [packages/types/licensing.ts:213](../../packages/types/licensing.ts) |
-| `requireInstallationLicence` | FunctionDeclaration | [packages/types/licensing.ts:221](../../packages/types/licensing.ts) |
-| `ownerHostEnvironment` | FunctionDeclaration | [packages/types/licensing.ts:240](../../packages/types/licensing.ts) |
-| `ImportInput` | InterfaceDeclaration | [packages/types/migration.ts:8](../../packages/types/migration.ts) |
-| `ImportIssue` | InterfaceDeclaration | [packages/types/migration.ts:9](../../packages/types/migration.ts) |
-| `ImportPreview` | InterfaceDeclaration | [packages/types/migration.ts:10](../../packages/types/migration.ts) |
-| `parseImportCsv` | FunctionDeclaration | [packages/types/migration.ts:14](../../packages/types/migration.ts) |
-| `pushRow` | Function binding | [packages/types/migration.ts:18](../../packages/types/migration.ts) |
-| `previewImport` | FunctionDeclaration | [packages/types/migration.ts:44](../../packages/types/migration.ts) |
-| `issue` | Function binding | [packages/types/migration.ts:60](../../packages/types/migration.ts) |
+| `ImportInput` | InterfaceDeclaration | [packages/types/migration.ts:9](../../packages/types/migration.ts) |
+| `ImportIssue` | InterfaceDeclaration | [packages/types/migration.ts:10](../../packages/types/migration.ts) |
+| `ImportPreview` | InterfaceDeclaration | [packages/types/migration.ts:11](../../packages/types/migration.ts) |
+| `parseImportCsv` | FunctionDeclaration | [packages/types/migration.ts:15](../../packages/types/migration.ts) |
+| `pushRow` | Function binding | [packages/types/migration.ts:19](../../packages/types/migration.ts) |
+| `previewImport` | FunctionDeclaration | [packages/types/migration.ts:45](../../packages/types/migration.ts) |
+| `issue` | Function binding | [packages/types/migration.ts:61](../../packages/types/migration.ts) |
 | `WeighbridgeMeasurement` | InterfaceDeclaration | [packages/types/weighbridge.ts:3](../../packages/types/weighbridge.ts) |
 | `WeighbridgeReceipt` | InterfaceDeclaration | [packages/types/weighbridge.ts:12](../../packages/types/weighbridge.ts) |
 | `calculateWeighbridge` | FunctionDeclaration | [packages/types/weighbridge.ts:24](../../packages/types/weighbridge.ts) |

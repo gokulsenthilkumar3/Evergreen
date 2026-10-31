@@ -1,4 +1,5 @@
-import { validatePartyContact } from './gst';
+import { CATALOGUE_ITEM_TYPES, GSTIN_PATTERN, canonicalIndianState, gstinStateName } from './gst';
+
 /** Explicit column mapping for master data. Never imports stock or accounting balances. */
 export const IMPORT_FIELDS = {
   customers: ['name', 'phone', 'email', 'gstin', 'state', 'address'],
@@ -8,7 +9,7 @@ export type ImportEntity = keyof typeof IMPORT_FIELDS;
 export interface ImportInput { entity: ImportEntity; headers: string[]; rows: string[][]; mapping: Record<string, number>; }
 export interface ImportIssue { row: number; field: string; message: string; }
 export interface ImportPreview { records: Record<string, string | number>[]; issues: ImportIssue[]; ignoredHeaders: string[]; }
-const ITEM_TYPES = ['RAW_MATERIAL', 'YARN', 'FINISHED_GOOD', 'JOB_WORK_MATERIAL', 'SERVICE'];
+const ITEM_TYPES: readonly string[] = CATALOGUE_ITEM_TYPES;
 
 /** CSV supports quoted commas, embedded newlines, CRLF, escaped quotes and UTF-8 BOM. */
 export function parseImportCsv(text: string): { headers: string[]; rows: string[][] } {
@@ -71,10 +72,20 @@ export function previewImport(input: ImportInput): ImportPreview {
         record[field] = Number(value);
       }
     } else {
-      const contact = validatePartyContact(record);
-      if (contact.error) issue('contact', contact.error);
-      else Object.assign(record, Object.fromEntries(Object.entries(contact.value).map(([key, value]) => [key, value ?? ''])));
-
+      if (record.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(record.email))) issue('email', 'Invalid email.');
+      if (record.gstin) {
+        record.gstin = String(record.gstin).toUpperCase();
+        if (!GSTIN_PATTERN.test(String(record.gstin))) issue('gstin', 'Invalid GSTIN format.');
+      }
+      // The state decides CGST/SGST or IGST on every invoice, so it must be a real state that matches the GSTIN.
+      if (record.state) {
+        const state = canonicalIndianState(record.state);
+        if (state) record.state = state;
+        else issue('state', 'Use the full name of an Indian state or union territory.');
+      }
+      const registered = gstinStateName(record.gstin);
+      if (registered && !record.state) record.state = registered;
+      else if (registered && record.state !== registered && canonicalIndianState(record.state)) issue('state', `The GSTIN is registered in ${registered}.`);
     }
     const identity = String(input.entity === 'items' ? record.sku : record.name).toLowerCase();
     if (identities.has(identity)) issue(input.entity === 'items' ? 'sku' : 'name', 'Duplicate identity within this batch.');

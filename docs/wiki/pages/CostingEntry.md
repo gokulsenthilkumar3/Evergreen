@@ -12,22 +12,22 @@ Sign in to the company installation. VIEWER reads records, MODIFIER performs ord
 
 ## Tabs
 
-- EB (Electricity) ([apps/web/src/pages/CostingEntry.tsx:380](../../../apps/web/src/pages/CostingEntry.tsx))
-- Employee Costs ([apps/web/src/pages/CostingEntry.tsx:381](../../../apps/web/src/pages/CostingEntry.tsx))
-- Packaging ([apps/web/src/pages/CostingEntry.tsx:382](../../../apps/web/src/pages/CostingEntry.tsx))
-- Maintenance ([apps/web/src/pages/CostingEntry.tsx:383](../../../apps/web/src/pages/CostingEntry.tsx))
-- Expenses ([apps/web/src/pages/CostingEntry.tsx:384](../../../apps/web/src/pages/CostingEntry.tsx))
+- EB (Electricity) ([apps/web/src/pages/CostingEntry.tsx:392](../../../apps/web/src/pages/CostingEntry.tsx))
+- Employee Costs ([apps/web/src/pages/CostingEntry.tsx:393](../../../apps/web/src/pages/CostingEntry.tsx))
+- Packaging ([apps/web/src/pages/CostingEntry.tsx:394](../../../apps/web/src/pages/CostingEntry.tsx))
+- Maintenance ([apps/web/src/pages/CostingEntry.tsx:395](../../../apps/web/src/pages/CostingEntry.tsx))
+- Expenses ([apps/web/src/pages/CostingEntry.tsx:396](../../../apps/web/src/pages/CostingEntry.tsx))
 
 ## Actions
 
 | Control / label | Handler | Source |
 | --- | --- | --- |
-| {existingEB ? (existingEB.posted ? 'Posted' : 'Update') : 'Save'} | `{handleEBSubmit}` | [apps/web/src/pages/CostingEntry.tsx:413](../../../apps/web/src/pages/CostingEntry.tsx) |
-| {existingEmployee ? (existingEmployee.posted ? 'Posted' : 'Update') : 'Save'} | `{handleEmployeeSubmit}` | [apps/web/src/pages/CostingEntry.tsx:440](../../../apps/web/src/pages/CostingEntry.tsx) |
-| {existingPackaging ? (existingPackaging.posted ? 'Posted' : 'Update') : 'Confirm'} | `{handlePackagingSubmit}` | [apps/web/src/pages/CostingEntry.tsx:483](../../../apps/web/src/pages/CostingEntry.tsx) |
-| Apply Formula | `{() => setMaintenanceData({ ...maintenanceData, totalCost: maintenanceFormulaCost.toFixed(2) })}` | [apps/web/src/pages/CostingEntry.tsx:523](../../../apps/web/src/pages/CostingEntry.tsx) |
-| {existingMaintenance ? (existingMaintenance.posted ? 'Posted' : 'Update') : 'Save'} | `{handleMaintenanceSubmit}` | [apps/web/src/pages/CostingEntry.tsx:526](../../../apps/web/src/pages/CostingEntry.tsx) |
-| Save Expense | `{handleExpenseSubmit}` | [apps/web/src/pages/CostingEntry.tsx:541](../../../apps/web/src/pages/CostingEntry.tsx) |
+| {existingEB ? (existingEB.posted ? 'Posted' : 'Update') : 'Save'} | `{handleEBSubmit}` | [apps/web/src/pages/CostingEntry.tsx:425](../../../apps/web/src/pages/CostingEntry.tsx) |
+| {existingEmployee ? (existingEmployee.posted ? 'Posted' : 'Update') : 'Save'} | `{handleEmployeeSubmit}` | [apps/web/src/pages/CostingEntry.tsx:452](../../../apps/web/src/pages/CostingEntry.tsx) |
+| {existingPackaging ? (existingPackaging.posted ? 'Posted' : 'Update') : 'Confirm'} | `{handlePackagingSubmit}` | [apps/web/src/pages/CostingEntry.tsx:495](../../../apps/web/src/pages/CostingEntry.tsx) |
+| Apply Formula | `{() => setMaintenanceData({ ...maintenanceData, totalCost: maintenanceFormulaCost.toFixed(2) })}` | [apps/web/src/pages/CostingEntry.tsx:535](../../../apps/web/src/pages/CostingEntry.tsx) |
+| {existingMaintenance ? (existingMaintenance.posted ? 'Posted' : 'Update') : 'Save'} | `{handleMaintenanceSubmit}` | [apps/web/src/pages/CostingEntry.tsx:538](../../../apps/web/src/pages/CostingEntry.tsx) |
+| Save Expense | `{handleExpenseSubmit}` | [apps/web/src/pages/CostingEntry.tsx:553](../../../apps/web/src/pages/CostingEntry.tsx) |
 
 ## API calls
 
@@ -39,15 +39,15 @@ Paths are relative to the client API base (`/api/backend` by default in the brow
 | GET | `/costing/entries` | [apps/web/src/pages/CostingEntry.tsx:138](../../../apps/web/src/pages/CostingEntry.tsx) |
 | GET | `/settings` | [apps/web/src/pages/CostingEntry.tsx:152](../../../apps/web/src/pages/CostingEntry.tsx) |
 | DELETE | `'/costing/${id}'` | [apps/web/src/pages/CostingEntry.tsx:238](../../../apps/web/src/pages/CostingEntry.tsx) |
-| PUT | `'/costing/${existingEB.id}'` | [apps/web/src/pages/CostingEntry.tsx:259](../../../apps/web/src/pages/CostingEntry.tsx) |
-| POST | `/costing/eb` | [apps/web/src/pages/CostingEntry.tsx:260](../../../apps/web/src/pages/CostingEntry.tsx) |
-| PUT | `'/costing/${existingEmployee.id}'` | [apps/web/src/pages/CostingEntry.tsx:282](../../../apps/web/src/pages/CostingEntry.tsx) |
-| POST | `/costing/employee` | [apps/web/src/pages/CostingEntry.tsx:283](../../../apps/web/src/pages/CostingEntry.tsx) |
-| PUT | `'/costing/${existingPackaging.id}'` | [apps/web/src/pages/CostingEntry.tsx:305](../../../apps/web/src/pages/CostingEntry.tsx) |
-| POST | `/costing/packaging` | [apps/web/src/pages/CostingEntry.tsx:306](../../../apps/web/src/pages/CostingEntry.tsx) |
-| PUT | `'/costing/${existingMaintenance.id}'` | [apps/web/src/pages/CostingEntry.tsx:328](../../../apps/web/src/pages/CostingEntry.tsx) |
-| POST | `/costing/maintenance` | [apps/web/src/pages/CostingEntry.tsx:329](../../../apps/web/src/pages/CostingEntry.tsx) |
-| POST | `/costing/expense` | [apps/web/src/pages/CostingEntry.tsx:348](../../../apps/web/src/pages/CostingEntry.tsx) |
+| PUT | `'/costing/${existingEB.id}'` | [apps/web/src/pages/CostingEntry.tsx:271](../../../apps/web/src/pages/CostingEntry.tsx) |
+| POST | `/costing/eb` | [apps/web/src/pages/CostingEntry.tsx:272](../../../apps/web/src/pages/CostingEntry.tsx) |
+| PUT | `'/costing/${existingEmployee.id}'` | [apps/web/src/pages/CostingEntry.tsx:294](../../../apps/web/src/pages/CostingEntry.tsx) |
+| POST | `/costing/employee` | [apps/web/src/pages/CostingEntry.tsx:295](../../../apps/web/src/pages/CostingEntry.tsx) |
+| PUT | `'/costing/${existingPackaging.id}'` | [apps/web/src/pages/CostingEntry.tsx:317](../../../apps/web/src/pages/CostingEntry.tsx) |
+| POST | `/costing/packaging` | [apps/web/src/pages/CostingEntry.tsx:318](../../../apps/web/src/pages/CostingEntry.tsx) |
+| PUT | `'/costing/${existingMaintenance.id}'` | [apps/web/src/pages/CostingEntry.tsx:340](../../../apps/web/src/pages/CostingEntry.tsx) |
+| POST | `/costing/maintenance` | [apps/web/src/pages/CostingEntry.tsx:341](../../../apps/web/src/pages/CostingEntry.tsx) |
+| POST | `/costing/expense` | [apps/web/src/pages/CostingEntry.tsx:360](../../../apps/web/src/pages/CostingEntry.tsx) |
 
 ## Composed behavior
 

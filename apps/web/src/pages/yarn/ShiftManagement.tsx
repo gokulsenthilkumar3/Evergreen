@@ -79,7 +79,7 @@ const ShiftManagement: React.FC = () => {
             Shift schedules from the shared HR records.
           </Typography>
         </Box>
-        <Stack direction="row" spacing={1}>
+        <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
           <Button
             startIcon={<RefreshIcon />}
             onClick={() => queryClient.invalidateQueries({ queryKey: ['hr-shifts'] })}

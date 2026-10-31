@@ -172,7 +172,11 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
         }
     };
 
+    const [wasteSaving, setWasteSaving] = useState(false);
     const handleWasteSubmit = async () => {
+        // A double click must not sell or recycle the same waste twice.
+        if (wasteSaving) return;
+        setWasteSaving(true);
         try {
             if (!wasteForm.quantity || parseFloat(wasteForm.quantity) <= 0) {
                 toast.error(ERROR_MESSAGES.INVALID_QUANTITY);
@@ -189,6 +193,8 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
             refetch();
         } catch (error: any) {
             toast.error(formatApiError(error, ERROR_MESSAGES.GENERIC));
+        } finally {
+            setWasteSaving(false);
         }
     };
 
@@ -567,7 +573,7 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
 
                     {/* ─── Charts ─────────────────────────────────────────────── */}
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
-                        <Box sx={{ flex: '1 1 100%', minWidth: 500 }}>
+                        <Box sx={{ flex: '1 1 100%', minWidth: { xs: 0, md: 500 } }}>
                             <Paper className="glass-card" sx={{ p: 3, borderRadius: 3, height: 380 }}>
                                 <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>🧶 Yarn Inventory by Count</Typography>
                                 <ResponsiveContainer width="100%" height="100%">
@@ -587,7 +593,7 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
                                 </ResponsiveContainer>
                             </Paper>
                         </Box>
-                        <Box sx={{ flex: '1 1 calc(50% - 12px)', minWidth: 400 }}>
+                        <Box sx={{ flex: '1 1 calc(50% - 12px)', minWidth: { xs: '100%', md: 400 } }}>
                             <Paper className="glass-card" sx={{ p: 3, borderRadius: 3, height: 380 }}>
                                 <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>📈 Inward vs Outward Trends</Typography>
                                 <ResponsiveContainer width="100%" height="100%">
@@ -895,7 +901,7 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setWasteModalOpen(false)}>Cancel</Button>
-                    <Button onClick={handleWasteSubmit} variant="contained" color="primary">
+                    <Button onClick={handleWasteSubmit} variant="contained" color="primary" disabled={wasteSaving}>
                         Submit
                     </Button>
                 </DialogActions>

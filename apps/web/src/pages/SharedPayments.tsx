@@ -11,5 +11,5 @@ export default function SharedPayments() {
     const url = URL.createObjectURL(new Blob([JSON.stringify({ exportedAt: new Date().toISOString(), status: 'UNRECONCILED_DRAFTS', records: drafts }, null, 2)], { type: 'application/json' }));
     const link = document.createElement('a'); link.href = url; link.download = 'evergreen-payment-drafts.json'; link.click(); URL.revokeObjectURL(url);
   };
-  return <Stack spacing={2}>{Object.keys(drafts).length > 0 && <Alert severity="info" action={<Button onClick={download}>Download drafts</Button>}>Earlier payment drafts are retained on this device. Reconcile them before posting them into the shared accounts.</Alert>}<WorkflowDesk initialTab={2} /></Stack>;
+  return <Stack spacing={2}>{Object.keys(drafts).length > 0 && <Alert severity="info" action={<Button onClick={download}>Download drafts</Button>}>Earlier payment drafts are retained on this device. Reconcile them before posting them into the shared accounts.</Alert>}<WorkflowDesk initialTab={2} title="Payment operations" subtitle="Customer receipts, supplier payments and allocations, posted to the same ledgers as Business flows." /></Stack>;
 }

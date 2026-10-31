@@ -1,10 +1,12 @@
 ﻿# Project status
 
-Assessed on 2026-10-14 and updated on 2026-10-19. This is the current engineering view of EverGreen. Work packages are in the [backlog](IMPLEMENTATION_BACKLOG.md), individual defects are in the [shared issue register](audits/2026-10-11/issue-register.md), and the latest full review is the [15 October report](audits/2026-10-15/REPORT.md).
+Assessed on 2026-10-14 and updated on 2026-10-30. This is the current engineering view of EverGreen. Work packages are in the [backlog](IMPLEMENTATION_BACKLOG.md), individual defects are in the [shared issue register](audits/2026-10-11/issue-register.md), and the latest review is the [30 October running-application report](audits/2026-10-30/REPORT.md). The [15 October report](audits/2026-10-15/REPORT.md) remains the latest code and architecture review.
 
 ## Summary
 
 EverGreen has a substantial operational core: receipts, production, stock and lots, sales orders, invoices, payments, job work, and a separate provider workspace. Delivery now includes source-built Windows installers and controlled container upgrades with synthetic recovery evidence. Connected provider authentication, production signing and host acceptance, representative off-site recovery and business/device acceptance remain release gates.
+
+On 30 October the application was run for the first time in a browser review: every staff screen at desktop and phone width, plus the business flow and adversarial inputs against the live API on a disposable database. That found and fixed an unusable phone layout, offline failures in the sign-in and dashboard scenes, unchecked catalogue and customer input, caller-controlled GST rate and seller state, an incorrect Tally export, overdue alerts that could never fire, and the desktop test that had failed every recent hosted CI run on `main`.
 
 The review covered every workspace, both database histories, scripts, CI, deployment recipes and documentation, and inspected the highest-risk paths directly. It did not include browser or device acceptance, live integrations, load tests, cloud deployment, restoring customer data, or legal and commercial approval.
 
@@ -35,7 +37,7 @@ A file, a passing unit suite or a generated document never moves a feature strai
 | EG-12 | P1 | The weighbridge entry point is a simulation with fixed input and key | Open (INT-006) |
 | EG-13 | P1 | Marketing and several shared packages lack acceptance coverage | Desktop runtime/updater regression and actual runtime checks now exist; other gaps remain |
 | EG-14 | P1 | License statements conflict between README and package metadata | MIT claim removed; the owner still has to choose a license |
-| EG-28 | P1 CI gate | Non-modifying lint fails for the customer API, customer web and provider API | Open (TEST-005) |
+| EG-28 | P1 CI gate | Non-modifying lint fails for the customer API, customer web and provider API | Open (TEST-005): 1,496, 428 and 211 errors on 30 October |
 
 P0 means a blocker for that rollout, not an active production incident.
 
@@ -43,19 +45,44 @@ P0 means a blocker for that rollout, not an active production incident.
 
 | Flow | What exists | Acceptance still needed |
 | --- | --- | --- |
-| Company and staff onboarding | Per-installation settings, bootstrap admin, sessions, JWT and role guards | Fresh install, expiry and revocation, last-admin protection, company identity on prints |
+| Company and staff onboarding | Per-installation settings, bootstrap admin, sessions, JWT and role guards; seller state must match the company GSTIN; a password change signs out other sessions | Fresh install, expiry and revocation, last-admin protection, company identity on prints |
 | Cotton receipt and weighbridge | Receipt snapshots, contract-specific moisture handling, parser library | Gross/tare/net consistency, pending settlement, duplicate saves, calibrated equipment |
 | Production and costing | Consumption, output, waste, WIP, costing and ledger projection | Mass balance, backdating, partial WIP, posted-cost corrections, period locks |
 | Stock control | Catalogue movements, lots, holds and warehouse movements | Ownership, negative stock, reservations, quarantine, transfers, concurrent dispatch |
-| Order to invoice | Order and fulfilment links, invoice snapshots, shared PDF totals | Partial fulfilment and invoicing, duplicate requests, rounding, void handling |
-| Collection | Invoice-linked payments, customer ledger, journal projection | Partial payments, reversals, settlement totals, closed periods, bank evidence |
+| Order to invoice | Order and fulfilment links, invoice snapshots, shared PDF totals; GST rate from the catalogue and tax state from GSTINs; partial invoice from an order verified through the API on 30 October | Partial fulfilment, server retry keys on orders, rounding, void handling, compliant document numbers |
+| Collection | Invoice-linked payments, customer ledger, journal projection; partial and full payment, replay and rejection cases verified through the API on 30 October | Reversals in the accounts, settlement totals, closed periods, bank evidence |
 | Job work | Dispatch and return lines with loss tracking | Multiple partial returns, outstanding material, fee reconciliation |
 | Operations and recovery | Health and status endpoints, migration checks, separate provider DB | Restore from an off-site snapshot, upgrade rehearsal, alert ownership |
-| Integrations | CSV master import, Tally sales/receipt export, provider registry | Acknowledged delivery, tenant isolation, exact usage accounting |
+| Integrations | CSV master import, Tally sales/receipt export (void and internal rows excluded, ledgers by rate since 30 October), provider registry | Tally ledger mapping and acknowledgement, tenant isolation, exact usage accounting |
 
 ## Validation record
 
 Every run is listed with its environment. A failed or unrun check stays visible, and no completion percentage is given.
+
+### 2026-10-30: running-application review
+
+Linux container, Node 22.22.0, branch `claude/trusting-archimedes-wnea6j` based on `6388b96`. Details and the defect list are in the [30 October report](audits/2026-10-30/REPORT.md).
+
+The sandbox network policy blocks `cdn.sheetjs.com`, the source of the pinned `xlsx` tarball, so `npm ci` could not complete. Dependencies were installed with the npm-registry `xlsx@0.18.5` for this run only, and the lockfile and `apps/web/package.json` were restored unchanged. Excel export therefore ran on a different `xlsx` version here; no Excel output was inspected.
+
+Before any change, both migration/schema comparisons, the root type-check and every unit suite passed: provider API 94, provider web 11, customer API 300, customer web 205 and the weighbridge library.
+
+The application was started with `npm run dev` against a newly migrated SQLite file in a scratch directory, with a generated JWT secret and a one-time bootstrap administrator. Scripts then exercised the live API, and Playwright with the pre-installed Chromium opened all 35 staff routes at 1440 × 900 and 390 × 844. The first phone crawl found all 34 in-app routes overflowing. The final crawl, run after restarting on the finished code, recorded 72 page visits with no page errors, no failed API calls and no horizontal overflow. One React warning remains on Operations Command when its 3D canvas unmounts. The Tally export was checked on live data after voiding an invoice and reversing a receipt: both were left out, no amount began with `--`, and all 14 vouchers balanced.
+
+| Final check | Result |
+| --- | --- |
+| Both migration/schema comparisons | No differences |
+| `npm run typecheck` | Passed |
+| Unit suites | 705 passed: provider API 94, provider web 11, customer API 353, customer web 219, weighbridge library 28 |
+| Customer HTTP suite | 22 passed in 2 suites |
+| `npm run agent:check` | Passed; 8 planner tests |
+| `npm run test:maintenance` | 6 passed |
+| `npm run test:release` | 23 passed. Before the desktop fix, one test failed on Linux because a backslash path was refused only on Windows. GitHub Actions shows the same failure (`runtime.test.cjs:40`) on the last five `main` runs, including `6388b96`, so hosted CI had not passed its verify step |
+| Generated references and audits | `docs:check` current with 3,472 local links; `audit:check` current; maintenance 6 passed |
+| `npm run build` | Every workspace built; Vite still warns about chunks over 500 kB (PERF-002) |
+| Read-only lint | Still failing (TEST-005): customer API 1,496 errors (1,580 before), provider API 211, customer web 428 (431 before). Files changed here add no errors |
+
+Not done: no operator, accountant or physical device took part; no screen reader, physical phone or low-end PC was used; production, dispatch and PDF download were not exercised end to end; no deployment, container build, desktop installer, restore or external integration was run.
 
 ### 2026-10-19: delivery implementation and branch reconciliation
 
@@ -161,7 +188,7 @@ Unit tests cover the implemented contracts and known regressions. They do not pr
 
 ### Still needs acceptance
 
-- Real browser and device checks of responsive forms, file pickers, fullscreen, WebGL fallback, reduced motion and TV readability.
+- Real browser and device checks of file pickers, fullscreen, screen readers and TV readability. Headless Chromium at 1440 and 390 px, the WebGL fallback and reduced-motion rules were checked on 30 October; physical phones, tablets and low-end PCs were not.
 - A full customer restore rehearsal, with large and messy source data and historical balances.
 - Multi-site accounting, provider provisioning, signed entitlements, billing and support access.
 - Scoped integration credentials, durable webhooks, offline desktop sync and connector monitoring.

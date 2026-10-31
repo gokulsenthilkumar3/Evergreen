@@ -243,7 +243,19 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
         }
     };
 
-    const handleEBSubmit = async () => {
+    // One save at a time: a double click must not record the same expense twice.
+    const [saving, setSaving] = useState(false);
+    const once = (work: () => Promise<unknown>) => async () => {
+        if (saving) return;
+        setSaving(true);
+        try {
+            await work();
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleEBSubmit = once(async () => {
         const units = parseFloat(ebData.unitsConsumed);
         const rate = parseFloat(ebData.ratePerUnit);
         if (isNaN(units) || units <= 0) {
@@ -264,9 +276,9 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
         } catch (error: any) {
             toast.error(formatApiError(error, ERROR_MESSAGES.SAVE_FAILED));
         }
-    };
+    });
 
-    const handleEmployeeSubmit = async () => {
+    const handleEmployeeSubmit = once(async () => {
         try {
             const workers = parseFloat(employeeData.workers) || 0;
             const rate = parseFloat(employeeData.workerRate) || 0;
@@ -287,9 +299,9 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
         } catch (error: any) {
             toast.error(formatApiError(error, ERROR_MESSAGES.SAVE_FAILED));
         }
-    };
+    });
 
-    const handlePackagingSubmit = async () => {
+    const handlePackagingSubmit = once(async () => {
         const yarnKg = productionData?.totalProduced || 0;
         const rate = parseFloat(packagingData.rate);
         if (yarnKg <= 0) {
@@ -310,9 +322,9 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
         } catch (error: any) {
             toast.error(formatApiError(error, ERROR_MESSAGES.SAVE_FAILED));
         }
-    };
+    });
 
-    const handleMaintenanceSubmit = async () => {
+    const handleMaintenanceSubmit = once(async () => {
         if (yarnProduction <= 0) {
             toast.warning('No production records found for the selected date. Maintenance costs cannot be calculated without production data.');
             return;
@@ -333,9 +345,9 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
         } catch (error: any) {
             toast.error(formatApiError(error, ERROR_MESSAGES.SAVE_FAILED));
         }
-    };
+    });
 
-    const handleExpenseSubmit = async () => {
+    const handleExpenseSubmit = once(async () => {
         if (!expenseData.title) {
             toast.error(ERROR_MESSAGES.REQUIRED_FIELD('Title'));
             return;
@@ -353,7 +365,7 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
         } catch (error: any) {
             toast.error(formatApiError(error, ERROR_MESSAGES.SAVE_FAILED));
         }
-    };
+    });
 
     // UI Calcs
     const ebTotal = (parseFloat(ebData.unitsConsumed) || 0) * (parseFloat(ebData.ratePerUnit) || 0) * (parseFloat(ebData.noOfShifts) || 1);
@@ -410,7 +422,7 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
                             <Typography variant="h6" align="center">Total: ₹{ebTotal.toFixed(2)}</Typography>
                         </Paper>
                         <Box sx={{ display: 'flex', gap: 2 }}>
-                            <Button variant="contained" fullWidth startIcon={<SaveIcon />} onClick={handleEBSubmit} disabled={Boolean(existingEB?.posted)}>{existingEB ? (existingEB.posted ? 'Posted' : 'Update') : 'Save'}</Button>
+                            <Button variant="contained" fullWidth startIcon={<SaveIcon />} onClick={handleEBSubmit} disabled={saving || Boolean(existingEB?.posted)}>{existingEB ? (existingEB.posted ? 'Posted' : 'Update') : 'Save'}</Button>
                         </Box>
                     </Box>
                 </TabPanel>
@@ -437,7 +449,7 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
                             <Typography variant="h6" align="center">Total: ₹{employeeTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Typography>
                         </Paper>
                         <Box sx={{ display: 'flex', gap: 2 }}>
-                            <Button variant="contained" fullWidth startIcon={<SaveIcon />} onClick={handleEmployeeSubmit} disabled={Boolean(existingEmployee?.posted)}>{existingEmployee ? (existingEmployee.posted ? 'Posted' : 'Update') : 'Save'}</Button>
+                            <Button variant="contained" fullWidth startIcon={<SaveIcon />} onClick={handleEmployeeSubmit} disabled={saving || Boolean(existingEmployee?.posted)}>{existingEmployee ? (existingEmployee.posted ? 'Posted' : 'Update') : 'Save'}</Button>
                         </Box>
                     </Box>
                 </TabPanel>
@@ -480,7 +492,7 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
                         </Box>
                         <Typography variant="h4" color="primary" sx={{ mb: 3 }}>₹{packageCost.toFixed(2)}</Typography>
                         <Box sx={{ display: 'flex', gap: 2 }}>
-                            <Button variant="contained" fullWidth startIcon={<SaveIcon />} onClick={handlePackagingSubmit} disabled={Boolean(existingPackaging?.posted)}>{existingPackaging ? (existingPackaging.posted ? 'Posted' : 'Update') : 'Confirm'}</Button>
+                            <Button variant="contained" fullWidth startIcon={<SaveIcon />} onClick={handlePackagingSubmit} disabled={saving || Boolean(existingPackaging?.posted)}>{existingPackaging ? (existingPackaging.posted ? 'Posted' : 'Update') : 'Confirm'}</Button>
                         </Box>
                     </Box>
                 </TabPanel>
@@ -523,7 +535,7 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
                             <Button variant="outlined" onClick={() => setMaintenanceData({ ...maintenanceData, totalCost: maintenanceFormulaCost.toFixed(2) })}>Apply Formula</Button>
                         </Box>
                         <Box sx={{ display: 'flex', gap: 2 }}>
-                            <Button variant="contained" fullWidth startIcon={<SaveIcon />} onClick={handleMaintenanceSubmit} disabled={Boolean(existingMaintenance?.posted)}>{existingMaintenance ? (existingMaintenance.posted ? 'Posted' : 'Update') : 'Save'}</Button>
+                            <Button variant="contained" fullWidth startIcon={<SaveIcon />} onClick={handleMaintenanceSubmit} disabled={saving || Boolean(existingMaintenance?.posted)}>{existingMaintenance ? (existingMaintenance.posted ? 'Posted' : 'Update') : 'Save'}</Button>
                         </Box>
                     </Box>
                 </TabPanel>
@@ -538,7 +550,7 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
                         </TextField>
                         <TextField label="Amount" type="number" value={expenseData.amount} onChange={(e) => setExpenseData({ ...expenseData, amount: e.target.value })} />
                         <TextField label="Description" multiline rows={3} value={expenseData.description} onChange={(e) => setExpenseData({ ...expenseData, description: e.target.value })} />
-                        <Button variant="contained" color="success" startIcon={<SaveIcon />} onClick={handleExpenseSubmit}>Save Expense</Button>
+                        <Button variant="contained" color="success" startIcon={<SaveIcon />} onClick={handleExpenseSubmit} disabled={saving}>Save Expense</Button>
                     </Box>
                 </TabPanel>
             </Paper>

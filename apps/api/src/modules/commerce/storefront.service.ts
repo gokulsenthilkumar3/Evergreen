@@ -3,6 +3,11 @@ import { randomUUID } from 'crypto';
 import { PrismaService } from '../../services/prisma.service';
 import { calculateInvoiceTotals } from './invoice-totals';
 import { unavailableStock } from '../../services/business-ledger';
+import {
+  canonicalIndianState,
+  gstinStateName,
+  isValidGstin,
+} from '@evergreen/types';
 
 const publicTypes = ['YARN', 'FINISHED_GOOD', 'SERVICE'];
 const roundMoney = (value: number) =>
@@ -92,7 +97,7 @@ export class StorefrontService {
       state.length > 80
     )
       throw new BadRequestException('Enter a delivery address and state');
-    if (gstin && !/^[0-9]{2}[A-Z0-9]{10}[0-9A-Z]{3}$/.test(gstin))
+    if (gstin && !isValidGstin(gstin))
       throw new BadRequestException('Enter a valid GSTIN');
     if (notes.length > 500)
       throw new BadRequestException('Order notes are too long');
@@ -158,7 +163,14 @@ export class StorefrontService {
           gstRate: item.gstRate,
         };
       });
-      const estimate = calculateInvoiceTotals(taxLines, 0, 'Tamil Nadu', state);
+      const settings = await tx.systemSettings.findFirst({
+        select: { gstin: true, sellerState: true },
+      });
+      const sellerState =
+        gstinStateName(settings?.gstin) ||
+        canonicalIndianState(settings?.sellerState) ||
+        'Tamil Nadu';
+      const estimate = calculateInvoiceTotals(taxLines, 0, sellerState, state);
       const customer = await tx.customer.create({
         data: {
           name,

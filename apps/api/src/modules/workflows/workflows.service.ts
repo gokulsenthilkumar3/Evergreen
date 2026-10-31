@@ -11,6 +11,7 @@ import {
 } from '../../services/business-ledger';
 import { stockEventDate } from '../../utils/stock-event-date';
 import { calculateInvoiceTotals } from '../commerce/invoice-totals';
+import { isValidGstin, normalizeGstin } from '@evergreen/types';
 
 type Tx = Prisma.TransactionClient;
 const positive = (value: unknown, label = 'Quantity') => {
@@ -153,11 +154,16 @@ export class WorkflowsService {
         typeof body[key] !== 'string'
       )
         throw new BadRequestException(`${key} must be text`);
+    const gstin = body.gstin?.trim() ? normalizeGstin(body.gstin) : null;
+    if (gstin && !isValidGstin(gstin))
+      throw new BadRequestException(
+        'Enter a valid 15-character GSTIN, for example 33ABCDE1234F1Z5',
+      );
     return this.prisma.supplier.create({
       data: {
         name: body.name.trim(),
         code: body.code?.trim() || `SUP-${randomUUID().slice(0, 8)}`,
-        gstin: body.gstin || null,
+        gstin,
         address: body.address || null,
       },
     });
