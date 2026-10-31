@@ -1,0 +1,327 @@
+/* ==========================================================================
+   EVERGREEN PROVIDER & INSTALLATION GATE — ULTRA-SHARP OBSIDIAN STYLES
+   ========================================================================== */
+
+.gate-root {
+  min-height: 100dvh;
+  position: relative;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  box-sizing: border-box;
+  background-color: #060a12;
+  background-image:
+    radial-gradient(ellipse 70% 50% at 50% 0%, rgba(16, 185, 129, 0.09) 0%, transparent 65%),
+    radial-gradient(ellipse 55% 45% at 85% 85%, rgba(56, 189, 248, 0.06) 0%, transparent 60%),
+    radial-gradient(circle at 15% 75%, rgba(124, 58, 237, 0.04) 0%, transparent 45%);
+  color: #f1f5f9;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.gate-card {
+  position: relative;
+  max-width: 460px;
+  width: 100%;
+  background: rgba(10, 16, 32, 0.88);
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 18px;
+  padding: 36px 32px;
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.7),
+    0 0 1px 1px rgba(255, 255, 255, 0.06) inset,
+    0 0 40px rgba(16, 185, 129, 0.05);
+  box-sizing: border-box;
+  z-index: 2;
+  animation: gateCardFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes gateCardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.gate-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.28);
+  border-radius: 9999px;
+  font-family: 'JetBrains Mono', 'Cascadia Code', monospace;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #34d399;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+.gate-badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+  animation: gatePulseDot 2s ease-in-out infinite;
+}
+
+@keyframes gatePulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+.gate-title {
+  font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: #ffffff;
+  margin: 0 0 10px;
+  line-height: 1.2;
+}
+
+.gate-subtitle {
+  font-size: 0.86rem;
+  line-height: 1.6;
+  color: #94a3b8;
+  margin: 0 0 24px;
+}
+
+.gate-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gate-label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #cbd5e1;
+}
+
+.gate-input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 13px 15px;
+  margin-top: 6px;
+  background: rgba(5, 9, 18, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  color: #f8fafc;
+  font-family: 'JetBrains Mono', 'Cascadia Code', monospace;
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.gate-input:focus {
+  outline: none;
+  background: rgba(7, 12, 24, 0.98);
+  border-color: #10b981;
+  box-shadow:
+    0 0 0 3px rgba(16, 185, 129, 0.25),
+    0 0 20px rgba(16, 185, 129, 0.15);
+}
+
+.gate-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.gate-input::placeholder {
+  color: #475569;
+  font-family: inherit;
+}
+
+.gate-alert {
+  margin: 10px 0 2px;
+  padding: 10px 14px;
+  background: rgba(244, 63, 94, 0.12);
+  border: 1px solid rgba(244, 63, 94, 0.35);
+  border-radius: 8px;
+  color: #fecdd3;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  font-weight: 500;
+}
+
+.gate-submit-btn {
+  margin-top: 18px;
+  width: 100%;
+  padding: 14px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #021a11;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  box-shadow:
+    0 8px 24px rgba(16, 185, 129, 0.35),
+    0 1px 0 rgba(255, 255, 255, 0.3) inset;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease, opacity 0.15s ease;
+}
+
+.gate-submit-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+  box-shadow:
+    0 12px 28px rgba(16, 185, 129, 0.45),
+    0 1px 0 rgba(255, 255, 255, 0.4) inset;
+}
+
+.gate-submit-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+}
+
+.gate-submit-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.gate-details {
+  margin-top: 24px;
+  padding: 14px 16px;
+  background: rgba(5, 9, 18, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  font-size: 0.8rem;
+}
+
+.gate-summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: #38bdf8;
+  font-size: 0.82rem;
+  user-select: none;
+  outline: none;
+  transition: color 0.15s ease;
+}
+
+.gate-summary:hover {
+  color: #7dd3fc;
+}
+
+.gate-details p {
+  color: #94a3b8;
+  line-height: 1.5;
+  margin: 10px 0 6px;
+  font-size: 0.78rem;
+}
+
+.gate-code {
+  display: block;
+  overflow-wrap: anywhere;
+  padding: 12px 14px;
+  background: #030712;
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  border-radius: 8px;
+  font-family: 'JetBrains Mono', 'Cascadia Code', monospace;
+  font-size: 0.75rem;
+  color: #7dd3fc;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.6);
+  margin: 10px 0;
+  line-height: 1.5;
+  user-select: all;
+}
+
+.gate-footer {
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: #64748b;
+  margin-top: 22px;
+  margin-bottom: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 16px;
+}
+
+/* Floating Lock button when authenticated */
+.gate-lock-btn {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 10000;
+  padding: 10px 18px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(10, 16, 32, 0.88);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  color: #cbd5e1;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.09);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gate-lock-btn:hover:not(:disabled) {
+  background: rgba(244, 63, 94, 0.14);
+  border-color: rgba(244, 63, 94, 0.45);
+  color: #fda4af;
+  transform: translateY(-2px);
+  box-shadow:
+    0 12px 28px rgba(244, 63, 94, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.gate-lock-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Checking Status Screen */
+.gate-checking-root {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 40px;
+  box-sizing: border-box;
+  background-color: #060a12;
+  color: #94a3b8;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 0.95rem;
+}
+
+.gate-checking-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(16, 185, 129, 0.15);
+  border-top-color: #10b981;
+  border-radius: 50%;
+  animation: gateSpin 0.8s linear infinite;
+}
+
+@keyframes gateSpin {
+  to { transform: rotate(360deg); }
+}

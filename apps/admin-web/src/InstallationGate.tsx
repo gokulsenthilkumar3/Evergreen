@@ -5,6 +5,7 @@ import {
   useRef,
   type ReactNode,
 } from "react";
+import "./gate.css";
 export default function InstallationGate({
   url,
   children,
@@ -60,36 +61,18 @@ export default function InstallationGate({
   }, [check]);
   if (state === "active") return children;
   return (
-    <main
-      style={{
-        minHeight: "100dvh",
-        display: "grid",
-        placeItems: "center",
-        padding: 24,
-        boxSizing: "border-box",
-        background: "#f3f7f5",
-        color: "#153c32",
-        fontFamily: "system-ui, sans-serif",
-      }}
-    >
-      <section
-        style={{
-          maxWidth: 460,
-          width: "100%",
-          padding: 32,
-          border: "1px solid #ceded6",
-          borderRadius: 20,
-          background: "#fff",
-        }}
-        aria-live="polite"
-      >
-        <p style={{ letterSpacing: 2, fontWeight: 800 }}>EVERGREEN</p>
-        <h1>
+    <main className="gate-root">
+      <section className="gate-card" aria-live="polite">
+        <div className="gate-badge">
+          <span className="gate-badge-dot" />
+          EVERGREEN
+        </div>
+        <h1 className="gate-title">
           {state === "checking"
             ? "Checking installation access"
             : "Installation authorization required"}
         </h1>
-        <p>
+        <p className="gate-subtitle">
           {state === "checking"
             ? "Verifying this workspace before opening your data."
             : "A valid owner-issued licence is required. Contact the EverGreen owner to activate or renew this installation. If already activated, check that the API is running."}
@@ -100,15 +83,7 @@ export default function InstallationGate({
               setState("checking");
               void check();
             }}
-            style={{
-              padding: "12px 20px",
-              borderRadius: 8,
-              border: 0,
-              background: "#08654e",
-              color: "white",
-              font: "inherit",
-              cursor: "pointer",
-            }}
+            className="gate-submit-btn"
           >
             Check again
           </button>
