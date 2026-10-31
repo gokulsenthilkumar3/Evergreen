@@ -1,6 +1,7 @@
 import type { TabId } from "./App";
 
 const paths: Record<TabId, string> = {
+  MARKETING_SETTINGS: 'M3 4h18v16H3zM3 9h18M8 9v11m4-7h6m-6 3h4',
   DASHBOARD: "M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h7v7h-7z",
   TENANTS: "M3 21V8l6 3V8l6 3V3h5v18H3 M6 16h1m4 0h1m4 0h1",
   TASKS: "M9 5h11M9 12h11M9 19h11M3 5l1 1 2-3M3 12l1 1 2-3M3 19l1 1 2-3",

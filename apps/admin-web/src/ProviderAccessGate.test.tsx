@@ -1,0 +1,31 @@
+import * as matchers from '@testing-library/jest-dom/matchers';
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import ProviderAccessGate from './ProviderAccessGate';
+expect.extend(matchers);
+beforeEach(() => { sessionStorage.clear(); localStorage.clear(); });
+afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
+it('keeps private data hidden, exchanges the key once, and never stores it in browser storage', async () => {
+  const fetcher = vi.fn(async (_url: string, options?: RequestInit) => ({ ok: options?.method === 'POST' || options?.method === 'DELETE', status: options?.method ? 201 : 401, json: async () => ({ authenticated: options?.method === 'POST' }) }));
+  vi.stubGlobal('fetch', fetcher);
+  render(<ProviderAccessGate><p>Private provider data</p></ProviderAccessGate>);
+  const input = await screen.findByLabelText('Owner access key');
+  expect(screen.queryByText('Private provider data')).not.toBeInTheDocument();
+  fireEvent.change(input, { target: { value: 'owner-test-secret' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Open provider console' }));
+  expect(await screen.findByText('Private provider data')).toBeInTheDocument();
+  expect(fetcher).toHaveBeenCalledWith('/admin-api/auth/provider/session', expect.objectContaining({ method: 'POST', credentials: 'same-origin', headers: { Authorization: 'Bearer owner-test-secret' } }));
+  expect(localStorage.getItem('evergreen_provider_key')).toBeNull();
+  expect(sessionStorage.getItem('evergreen_provider_key')).toBeNull();
+  fireEvent.click(screen.getByRole('button', { name: 'Lock provider console' }));
+  await waitFor(() => expect(screen.queryByText('Private provider data')).not.toBeInTheDocument());
+  expect(fetcher).toHaveBeenCalledWith('/admin-api/auth/provider/session', expect.objectContaining({ method: 'DELETE' }));
+});
+it('restores a protected server session and hides data when it is rejected', async () => {
+  vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, json: async () => ({ authenticated: true }) })));
+  render(<ProviderAccessGate><p>Private provider data</p></ProviderAccessGate>);
+  expect(await screen.findByText('Private provider data')).toBeInTheDocument();
+  fireEvent(window, new Event('evergreen:provider-locked'));
+  expect(screen.queryByText('Private provider data')).not.toBeInTheDocument();
+  expect(await screen.findByLabelText('Owner access key')).toBeInTheDocument();
+});

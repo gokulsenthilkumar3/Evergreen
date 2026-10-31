@@ -1,537 +1,483 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
-    Box,
-    Paper,
-    Typography,
-    TextField,
-    Button,
-    Link,
-    Alert,
-    CircularProgress,
-    IconButton,
-    InputAdornment,
-    Checkbox,
-    FormControlLabel,
-    useTheme,
-    alpha,
-    Collapse,
-    keyframes,
-    Fade,
-    Zoom
-} from '@mui/material';
+  Alert,
+  Box,
+  Button,
+  Checkbox,
+  Chip,
+  CircularProgress,
+  Collapse,
+  Divider,
+  FormControlLabel,
+  IconButton,
+  InputAdornment,
+  Paper,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
 import {
-    Visibility,
-    VisibilityOff,
-    ArrowForward as ArrowIcon,
-    ErrorOutline as ErrorIcon,
-    CheckCircle as CheckCircleIcon,
-    LockOutlined as LockIcon,
-    AutoAwesome as SparkleIcon
-} from '@mui/icons-material';
-import api from '../utils/api';
-import { startAuthentication } from '@simplewebauthn/browser';
-
-const LoginAvatar = lazy(() => import('./LoginAvatar'));
-
-// --- Animations ---
-const shake = keyframes`
-  0% { transform: translateX(0); }
-  25% { transform: translateX(-10px); }
-  50% { transform: translateX(10px); }
-  75% { transform: translateX(-5px); }
-  100% { transform: translateX(0); }
-`;
-
-const float = keyframes`
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-20px); }
-  100% { transform: translateY(0px); }
-`;
-
-const floatReverse = keyframes`
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(20px); }
-  100% { transform: translateY(0px); }
-`;
-
-const fadeInUp = keyframes`
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-`;
+  ArrowForward,
+  Fingerprint,
+  LockOutlined,
+  Visibility,
+  VisibilityOff,
+  CheckCircleOutline,
+  Inventory2Outlined,
+  HubOutlined,
+  ShieldOutlined,
+} from "@mui/icons-material";
+import { startAuthentication } from "@simplewebauthn/browser";
+import api from "../utils/api";
+import { saveSession } from "../utils/authStorage";
 
 interface LoginProps {
-    onLoginSuccess: (user: any) => void;
-    settings?: any;
-    onSwitchToSignup?: () => void;
+  onLoginSuccess: (user: unknown) => void;
+  settings?: { companyName?: string };
+  onSwitchToSignup?: () => void;
 }
-
-const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings, onSwitchToSignup }) => {
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
-    const [totpCode, setTotpCode] = useState('');
-    const [requiresTotp, setRequiresTotp] = useState(false);
-    const [showPassword, setShowPassword] = useState(false);
-    const [rememberMe, setRememberMe] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [loading, setLoading] = useState(false);
-    const [success, setSuccess] = useState(false);
-    const [shakeAnimation, setShakeAnimation] = useState(false);
-
-    // Avatar Interaction States
-    const [isTyping, setIsTyping] = useState(false);
-
-    // Typing timeout ref
-    const typingTimeoutRef = React.useRef<any>(null);
-
-    const theme = useTheme();
-
-    const handleTyping = () => {
-        setIsTyping(true);
-        if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-        typingTimeoutRef.current = setTimeout(() => setIsTyping(false), 300);
+export default function Login({ onLoginSuccess, settings }: LoginProps) {
+  const [username, setUsername] = useState(""),
+    [password, setPassword] = useState("");
+  const [code, setCode] = useState(""),
+    [mfa, setMfa] = useState(false);
+  const [visible, setVisible] = useState(false),
+    [remember, setRemember] = useState(false);
+  const [busy, setBusy] = useState(false),
+    [error, setError] = useState("");
+  const [help, setHelp] = useState(false),
+    [caps, setCaps] = useState(false);
+  const lock = useRef(false),
+    codeRef = useRef<HTMLInputElement>(null);
+  const passkeySupported =
+    typeof window.PublicKeyCredential !== "undefined" && window.isSecureContext;
+  useEffect(() => {
+    if (mfa) codeRef.current?.focus();
+  }, [mfa]);
+  useEffect(() => {
+    document.title = "Sign in | EverGreen";
+  }, []);
+  const finish = (data: { access_token: string; user: unknown }) => {
+    if (!data.access_token || !data.user)
+      throw new Error(
+        "The server returned an incomplete sign-in response. Please try again.",
+      );
+    saveSession(data.access_token, data.user, remember);
+    onLoginSuccess(data.user);
+  };
+  const report = (e: unknown) => {
+    const err = e as {
+      response?: { status?: number; data?: { message?: string | string[] } };
+      name?: string;
     };
-
-    useEffect(() => {
-        if (error) {
-            setShakeAnimation(true);
-            const timer = setTimeout(() => setShakeAnimation(false), 500);
-            return () => clearTimeout(timer);
-        }
-    }, [error]);
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (success) return;
-
-        setLoading(true);
-        setError(null);
-
-        const startTime = Date.now();
-
-        try {
-            const payload = { username, password, ...(totpCode ? { totpCode } : {}) };
-            const response = await api.post('/auth/login', payload);
-
-            const elapsed = Date.now() - startTime;
-            if (elapsed < 800) await new Promise(r => setTimeout(r, 800 - elapsed));
-
-            setSuccess(true);
-            localStorage.setItem('token', response.data.access_token);
-
-            setTimeout(() => {
-                onLoginSuccess(response.data.user);
-            }, 1200);
-
-        } catch (err: any) {
-            if (err.response?.data?.message === 'TOTP_REQUIRED') {
-                setRequiresTotp(true);
-                setError(null);
-            } else {
-                setError(err.response?.data?.message || 'Invalid credentials');
-            }
-            setLoading(false);
-        }
-    };
-
-    const handlePasskeyLogin = async () => {
-        if (!username) {
-            setError('Please enter your username first to use Passkey.');
-            return;
-        }
-
-        setError(null);
-        setLoading(true);
-        try {
-            const optsRes = await api.post('/auth/passkey/auth-options', { username });
-            const asseResp = await startAuthentication({ optionsJSON: optsRes.data });
-            
-            const verifyRes = await api.post('/auth/passkey/auth-verify', { username, response: asseResp });
-            
-            setSuccess(true);
-            localStorage.setItem('token', verifyRes.data.access_token);
-            setTimeout(() => {
-                onLoginSuccess(verifyRes.data.user);
-            }, 1200);
-
-        } catch (err: any) {
-            console.error(err);
-            setError(err.message || 'Passkey authentication failed');
-            setLoading(false);
-        }
-    };
-
-    return (
-        <Box
+    const message = err.response?.data?.message;
+    if (message === "TOTP_REQUIRED") {
+      setMfa(true);
+      setCode("");
+      return;
+    }
+    if (err.name === "NotAllowedError" || err.name === "AbortError")
+      setError(
+        "Passkey sign-in was cancelled. Try again or use your password.",
+      );
+    else if (err.response?.status === 429)
+      setError("Too many attempts. Please wait a minute before trying again.");
+    else if (!err.response)
+      setError(
+        "Could not complete sign-in. Check your connection and try again.",
+      );
+    else
+      setError(
+        Array.isArray(message)
+          ? message.join(" ")
+          : message || "Sign-in failed. Check your details and try again.",
+      );
+  };
+  const submit = async (event: FormEvent) => {
+    event.preventDefault();
+    if (lock.current) return;
+    if (!username.trim() || !password || (mfa && !/^\d{6}$/.test(code))) return;
+    lock.current = true;
+    setBusy(true);
+    setError("");
+    try {
+      finish(
+        (
+          await api.post("/auth/login", {
+            username: username.trim(),
+            password,
+            ...(mfa ? { totpCode: code } : {}),
+          })
+        ).data,
+      );
+    } catch (e) {
+      report(e);
+    } finally {
+      lock.current = false;
+      setBusy(false);
+    }
+  };
+  const passkey = async () => {
+    if (lock.current) return;
+    if (!username.trim()) {
+      setError("Enter your username to find your passkey.");
+      return;
+    }
+    lock.current = true;
+    setBusy(true);
+    setError("");
+    try {
+      const options = (
+        await api.post("/auth/passkey/auth-options", {
+          username: username.trim(),
+        })
+      ).data;
+      const response = await startAuthentication({ optionsJSON: options });
+      finish(
+        (
+          await api.post("/auth/passkey/auth-verify", {
+            username: username.trim(),
+            response,
+          })
+        ).data,
+      );
+    } catch (e) {
+      report(e);
+    } finally {
+      lock.current = false;
+      setBusy(false);
+    }
+  };
+  return (
+    <Box
+      component="main"
+      sx={{
+        minHeight: "100dvh",
+        width: "100%",
+        display: "grid",
+        gridTemplateColumns: { xs: "1fr", md: "1.05fr 1fr" },
+        bgcolor: "background.default",
+      }}
+    >
+      <Box
+        sx={{
+          display: { xs: "none", md: "flex" },
+          flexDirection: "column",
+          justifyContent: "space-between",
+          p: { md: 5, lg: 8 },
+          color: "#ecfdf5",
+          bgcolor: "#062f2a",
+          backgroundImage:
+            "radial-gradient(ellipse at 0% 100%, #115e59 0%, transparent 65%)",
+          overflow: "hidden",
+        }}
+      >
+        <Stack direction="row" spacing={1.5} alignItems="center">
+          <Box
             sx={{
-                minHeight: '100vh',
-                width: '100vw',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                position: 'relative',
-                overflow: 'hidden',
-                px: 2,
-                background: theme.palette.mode === 'dark'
-                    ? `radial-gradient(circle at 50% 50%, #1e293b 0%, #0f172a 100%)`
-                    : `radial-gradient(circle at 50% 50%, #f1f5f9 0%, #e2e8f0 100%)`,
+              width: 42,
+              height: 42,
+              border: "1px solid #5eead4",
+              borderRadius: 2,
+              display: "grid",
+              placeItems: "center",
+              fontWeight: 900,
             }}
-        >
-            {/* Animated Background Blobs */}
-            <Box sx={{
-                position: 'absolute',
-                top: '-10%',
-                left: '-10%',
-                width: '60vw',
-                height: '60vw',
-                borderRadius: '50%',
-                background: `radial-gradient(circle, ${alpha(theme.palette.primary.main, 0.2)} 0%, transparent 70%)`,
-                filter: 'blur(60px)',
-                animation: `${float} 10s ease-in-out infinite`,
-                zIndex: 0,
-            }} />
-            <Box sx={{
-                position: 'absolute',
-                bottom: '-10%',
-                right: '-10%',
-                width: '50vw',
-                height: '50vw',
-                borderRadius: '50%',
-                background: `radial-gradient(circle, ${alpha(theme.palette.secondary.main, 0.15)} 0%, transparent 70%)`,
-                filter: 'blur(60px)',
-                animation: `${floatReverse} 15s ease-in-out infinite`,
-                zIndex: 0,
-            }} />
-
-            <Zoom in={true} style={{ transitionDelay: '100ms' }}>
-                <Paper
-                    elevation={0}
-                    sx={{
-                        p: { xs: 4, sm: 6 },
-                        width: '100%',
-                        maxWidth: 450,
-                        borderRadius: 4,
-                        zIndex: 1,
-                        position: 'relative',
-                        backdropFilter: 'blur(20px)',
-                        overflow: 'hidden',
-                        bgcolor: theme.palette.mode === 'dark'
-                            ? alpha(theme.palette.background.paper, 0.6)
-                            : alpha('#ffffff', 0.65),
-                        border: '1px solid',
-                        borderColor: theme.palette.mode === 'dark'
-                            ? alpha('#ffffff', 0.1)
-                            : alpha('#ffffff', 0.4),
-                        boxShadow: `0 8px 32px 0 ${alpha(theme.palette.common.black, 0.1)}`,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        animation: shakeAnimation ? `${shake} 0.5s cubic-bezier(.36,.07,.19,.97) both` : 'none',
-                        transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                        '&:hover': {
-                            transform: 'translateY(-5px)',
-                            boxShadow: `0 12px 40px 0 ${alpha(theme.palette.common.black, 0.15)}`,
-                        }
-                    }}
-                >
-                    <Box sx={{ animation: `${fadeInUp} 0.6s ease-out forwards`, opacity: 0, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-
-                        <Box sx={{
-                            width: 64,
-                            height: 64,
-                            borderRadius: '20px',
-                            display: 'grid',
-                            placeItems: 'center',
-                            mb: 2,
-                            bgcolor: alpha(theme.palette.primary.main, 0.1),
-                            color: 'primary.main',
-                            border: `1px solid ${alpha(theme.palette.primary.main, 0.16)}`
-                        }}>
-                            <LockIcon />
-                        </Box>
-
-                        <Box sx={{ width: '100%', maxWidth: 320, mb: 2, display: { xs: 'none', sm: 'block' } }}>
-                            <Suspense fallback={<Box sx={{ height: 240, borderRadius: 4, bgcolor: alpha(theme.palette.background.paper, 0.2) }} />}>
-                                <LoginAvatar
-                                    compact
-                                    isPasswordFocused={showPassword}
-                                    isTyping={isTyping}
-                                />
-                            </Suspense>
-                        </Box>
-
-                        <Box sx={{ textAlign: 'center', mb: 3 }}>
-                            {settings?.logo ? (
-                                <Box
-                                    component="img"
-                                    src={settings.logo}
-                                    alt="Logo"
-                                    sx={{
-                                        height: 80,
-                                        width: 'auto',
-                                        mb: 2,
-                                        objectFit: 'contain'
-                                    }}
-                                />
-                            ) : null}
-                            <Typography variant="h4" sx={{ fontWeight: 800, color: 'primary.main', letterSpacing: '-0.5px', mb: 0.5 }}>
-                                {settings?.companyName?.toUpperCase() || 'EVER GREEN'}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, opacity: 0.8 }}>
-                                Yarn Management Solution
-                            </Typography>
-                        </Box>
-                    </Box>
-
-                    <Box sx={{ width: '100%', mb: 2, animation: `${fadeInUp} 0.6s ease-out 0.2s forwards`, opacity: 0 }}>
-                        <Typography component="h1" variant="h5" sx={{ mb: 0.5, fontWeight: 800, ml: 1 }}>
-                            Sign In
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2, ml: 1 }}>
-                            Welcome back. Let’s pick up where you left off.
-                        </Typography>
-                        <Collapse in={!!error}>
-                            <Alert
-                                severity="error"
-                                icon={<ErrorIcon fontSize="inherit" />}
-                                sx={{
-                                    borderRadius: 2,
-                                    bgcolor: alpha(theme.palette.error.main, 0.1),
-                                    color: theme.palette.error.main,
-                                    border: `1px solid ${alpha(theme.palette.error.main, 0.2)}`,
-                                    '& .MuiAlert-icon': {
-                                        color: theme.palette.error.main
-                                    }
-                                }}
-                            >
-                                {error}
-                            </Alert>
-                        </Collapse>
-                    </Box>
-
-                    <Box
-                        component="form"
-                        onSubmit={handleSubmit}
-                        sx={{
-                            width: '100%',
-                            animation: `${fadeInUp} 0.6s ease-out 0.4s forwards`,
-                            opacity: 0,
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: 2
-                        }}
-                    >
-                        {!requiresTotp ? (
-                            <>
-                                <TextField
-                                    required
-                                    fullWidth
-                                    id="username"
-                                    label="Username"
-                                    name="username"
-                                    autoComplete="username"
-                                    autoFocus
-                                    value={username}
-                                    onChange={(e) => {
-                                        setUsername(e.target.value);
-                                        if (error) setError(null);
-                                        handleTyping();
-                                    }}
-                                    variant="outlined"
-                                    InputProps={{
-                                        sx: {
-                                            borderRadius: 2,
-                                            bgcolor: alpha(theme.palette.background.paper, 0.4),
-                                            transition: 'background-color 0.2s, box-shadow 0.2s',
-                                            '&.Mui-focused': {
-                                                bgcolor: alpha(theme.palette.background.paper, 0.8),
-                                                boxShadow: `0 0 0 4px ${alpha(theme.palette.primary.main, 0.1)}`
-                                            }
-                                        }
-                                    }}
-                                />
-                                <TextField
-                                    required
-                                    fullWidth
-                                    name="password"
-                                    label="Password"
-                                    type={showPassword ? 'text' : 'password'}
-                                    id="password"
-                                    autoComplete="current-password"
-                                    value={password}
-                                    onChange={(e) => {
-                                        setPassword(e.target.value);
-                                        if (error) setError(null);
-                                        handleTyping();
-                                    }}
-                                    variant="outlined"
-                                    InputProps={{
-                                        sx: {
-                                            borderRadius: 2,
-                                            bgcolor: alpha(theme.palette.background.paper, 0.4),
-                                            transition: 'background-color 0.2s, box-shadow 0.2s',
-                                            '&.Mui-focused': {
-                                                bgcolor: alpha(theme.palette.background.paper, 0.8),
-                                                boxShadow: `0 0 0 4px ${alpha(theme.palette.primary.main, 0.1)}`
-                                            }
-                                        },
-                                        endAdornment: (
-                                            <InputAdornment position="end">
-                                                <IconButton onClick={() => setShowPassword(!showPassword)} edge="end" size="small">
-                                                    {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
-                                                </IconButton>
-                                            </InputAdornment>
-                                        )
-                                    }}
-                                />
-                            </>
-                        ) : (
-                            <TextField
-                                required
-                                fullWidth
-                                label="6-Digit Authenticator Code"
-                                value={totpCode}
-                                  onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                                  variant="outlined"
-                                  autoFocus
-                                  slotProps={{ htmlInput: { inputMode: 'numeric', pattern: '[0-9]{6}', maxLength: 6 } }}
-                            />
-                        )}
-
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <FormControlLabel
-                                control={
-                                    <Checkbox
-                                        checked={rememberMe}
-                                        onChange={(e) => setRememberMe(e.target.checked)}
-                                        color="primary"
-                                        size="small"
-                                    />
-                                }
-                                label={<Typography variant="body2" color="text.secondary">Remember me</Typography>}
-                            />
-                            <Link
-                                href="#"
-                                variant="body2"
-                                color="primary"
-                                sx={{
-                                    fontWeight: 600,
-                                    textDecoration: 'none',
-                                    transition: 'color 0.2s',
-                                    '&:hover': { color: theme.palette.primary.dark }
-                                }}
-                            >
-                                Forgot password?
-                            </Link>
-                        </Box>
-
-                        <Button
-                            type="submit"
-                            fullWidth
-                            variant="contained"
-                              disabled={loading || success || (requiresTotp && !/^\d{6}$/.test(totpCode))}
-                            color={success ? "success" : "primary"}
-                            sx={{
-                                py: 1.5,
-                                mt: 2,
-                                borderRadius: 2,
-                                fontSize: '1rem',
-                                fontWeight: 'bold',
-                                textTransform: 'none',
-                                boxShadow: success
-                                    ? `0 8px 20px ${alpha(theme.palette.success.main, 0.4)}`
-                                    : `0 8px 16px ${alpha(theme.palette.primary.main, 0.25)}`,
-                                transition: 'all 0.3s ease',
-                                '&:hover': {
-                                    transform: 'translateY(-2px)',
-                                    boxShadow: success
-                                        ? `0 12px 24px ${alpha(theme.palette.success.main, 0.5)}`
-                                        : `0 12px 20px ${alpha(theme.palette.primary.main, 0.35)}`,
-                                },
-                                '&:active': {
-                                    transform: 'translateY(0)',
-                                }
-                            }}
-                        >
-                            <Box sx={{ display: 'flex', alignItems: 'center', height: 24 }}>
-                                {loading && !success && <CircularProgress size={20} color="inherit" sx={{ mr: 1 }} />}
-                                {success ? (
-                                    <Fade in timeout={500}>
-                                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                            <CheckCircleIcon sx={{ mr: 1 }} />
-                                            Success! Redirecting...
-                                        </Box>
-                                    </Fade>
-                                ) : (
-                                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                        {!loading && 'Sign In To Dashboard'}
-                                        {loading && 'Verifying...'}
-                                        {!loading && <ArrowIcon sx={{ ml: 1, fontSize: 20 }} />}
-                                    </Box>
-                                )}
-                            </Box>
-                        </Button>
-                        {!requiresTotp && (
-                            <>
-                                <Button
-                                    fullWidth
-                                    variant="outlined"
-                                    onClick={handlePasskeyLogin}
-                                    disabled={loading || success}
-                                    sx={{ mt: 1, borderRadius: 2, py: 1.1 }}
-                                >
-                                    Sign in with Passkey
-                                </Button>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, justifyContent: 'center' }}>
-                                    <SparkleIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
-                                    <Typography variant="caption" color="text.secondary">
-                                        Secure login with biometrics or device passkey
-                                    </Typography>
-                                </Box>
-                            </>
-                        )}
-                    </Box>
-
-                    {onSwitchToSignup && (
-                        <Box sx={{ mt: 2, textAlign: 'center', animation: `${fadeInUp} 0.6s ease-out 0.4s forwards`, opacity: 0 }}>
-                            <Typography variant="body2" color="text.secondary">
-                                Don't have an account?{' '}
-                                <Link
-                                    component="button"
-                                    variant="body2"
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        onSwitchToSignup();
-                                    }}
-                                    sx={{ fontWeight: 600, cursor: 'pointer', textDecoration: 'none' }}
-                                >
-                                    Sign up
-                                </Link>
-                            </Typography>
-                        </Box>
-                    )}
-
-                </Paper>
-            </Zoom>
-
-            {/* Footer Branding - Hidden for now */}
-            {/* 
-            <Typography
-                variant="caption"
-                align="center"
-                sx={{
-                    position: 'absolute',
-                    bottom: 24,
-                    color: 'text.secondary',
-                    opacity: 0,
-                    fontWeight: 500,
-                    animation: `${fadeInUp} 0.6s ease-out 0.8s forwards`
-                }}
-            >
-                © {new Date().getFullYear()} Ever Green Yarn Mills. All rights reserved.
-            </Typography>
-            */}
+          >
+            E
+          </Box>
+          <Typography fontWeight={800} letterSpacing={2}>
+            EVERGREEN
+          </Typography>
+        </Stack>
+        <Box sx={{ py: 8, maxWidth: 550 }}>
+          <Chip
+            label="YOUR BUSINESS, CONNECTED"
+            sx={{
+              color: "#99f6e4",
+              bgcolor: "#ffffff10",
+              mb: 3,
+              letterSpacing: 1,
+            }}
+          />
+          <Typography
+            component="h2"
+            sx={{
+              fontSize: { md: 44, lg: 58 },
+              lineHeight: 1.08,
+              fontWeight: 800,
+              letterSpacing: -2,
+            }}
+          >
+            From the factory floor.
+            <br />
+            To the bigger picture.
+          </Typography>
+          <Typography
+            sx={{ color: "#b8d9d2", fontSize: 18, mt: 3, lineHeight: 1.8 }}
+          >
+            A shared workspace for your inventory, production, customers and
+            accounts.
+          </Typography>
+          <Stack spacing={2.5} sx={{ mt: 5 }}>
+            {[
+              [
+                <Inventory2Outlined key="stock" />,
+                "Follow every movement",
+                "Stock, batches and production in one place.",
+              ],
+              [
+                <HubOutlined key="flows" />,
+                "Keep your teams connected",
+                "Move from orders to invoices with a shared record.",
+              ],
+              [
+                <ShieldOutlined key="access" />,
+                "Access with accountability",
+                "Individual staff accounts and role-based permissions.",
+              ],
+            ].map(([icon, title, detail], i) => (
+              <Stack key={i} direction="row" spacing={2}>
+                <Box sx={{ color: "#5eead4", pt: 0.5 }}>{icon}</Box>
+                <Box>
+                  <Typography fontWeight={700}>{title}</Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{ color: "#b8d9d2", mt: 0.5 }}
+                  >
+                    {detail}
+                  </Typography>
+                </Box>
+              </Stack>
+            ))}
+          </Stack>
         </Box>
-    );
-};
-
-export default Login;
+        <Typography variant="caption" sx={{ color: "#b8d9d2" }}>
+          EverGreen - Built for the work behind your business
+        </Typography>
+      </Box>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          p: { xs: 3, sm: 5 },
+          py: 6,
+        }}
+      >
+        <Box sx={{ width: "100%", maxWidth: 420 }}>
+          <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 5 }}>
+            <LockOutlined color="primary" />
+            <Typography fontWeight={800}>
+              {settings?.companyName || "EverGreen workspace"}
+            </Typography>
+          </Stack>
+          <Typography
+            component="h1"
+            variant="h3"
+            sx={{ fontWeight: 800, letterSpacing: -1.5 }}
+          >
+            {mfa ? "Verify it's you" : "Welcome back."}
+          </Typography>
+          <Typography color="text.secondary" sx={{ mt: 1.5, mb: 3 }}>
+            {mfa
+              ? "Enter the six-digit code from your authenticator app."
+              : "Sign in to continue to your business workspace."}
+          </Typography>
+          <Paper
+            variant="outlined"
+            sx={{
+              p: 1.5,
+              mb: 3,
+              borderRadius: 2,
+              bgcolor: "background.default",
+            }}
+          >
+            <Stack direction="row" spacing={1} alignItems="center">
+              <CheckCircleOutline color="primary" fontSize="small" />
+              <Typography variant="caption" sx={{ overflowWrap: "anywhere" }}>
+                Workspace: {window.location.host}
+              </Typography>
+            </Stack>
+          </Paper>
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
+          <Box component="form" onSubmit={submit} aria-busy={busy}>
+            <Stack spacing={2.5}>
+              {!mfa ? (
+                <>
+                  <TextField
+                    label="Username"
+                    name="username"
+                    autoComplete="username"
+                    autoFocus
+                    required
+                    fullWidth
+                    disabled={busy}
+                    value={username}
+                    onChange={(e) => {
+                      setUsername(e.target.value);
+                      setError("");
+                    }}
+                    slotProps={{ htmlInput: { maxLength: 200 } }}
+                  />
+                  <TextField
+                    label="Password"
+                    name="password"
+                    autoComplete="current-password"
+                    required
+                    fullWidth
+                    disabled={busy}
+                    type={visible ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    onKeyUp={(e) => setCaps(e.getModifierState("CapsLock"))}
+                    helperText={caps ? "Caps Lock is on" : undefined}
+                    slotProps={{
+                      input: {
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              aria-label={
+                                visible ? "Hide password" : "Show password"
+                              }
+                              onClick={() => setVisible(!visible)}
+                              edge="end"
+                            >
+                              <>
+                                {visible ? <VisibilityOff /> : <Visibility />}
+                              </>
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      },
+                    }}
+                  />
+                </>
+              ) : (
+                <>
+                  <Typography variant="body2">
+                    Signing in as <strong>{username}</strong>
+                  </Typography>
+                  <TextField
+                    inputRef={codeRef}
+                    label="Authenticator code"
+                    autoComplete="one-time-code"
+                    required
+                    value={code}
+                    disabled={busy}
+                    onChange={(e) =>
+                      setCode(e.target.value.replace(/\D/g, "").slice(0, 6))
+                    }
+                    slotProps={{
+                      htmlInput: {
+                        inputMode: "numeric",
+                        pattern: "[0-9]{6}",
+                        maxLength: 6,
+                      },
+                    }}
+                  />
+                </>
+              )}
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={remember}
+                    disabled={busy}
+                    onChange={(e) => setRemember(e.target.checked)}
+                  />
+                }
+                label={
+                  <Typography variant="body2">
+                    Keep me signed in on this device
+                  </Typography>
+                }
+              />
+              <Button
+                type="submit"
+                size="large"
+                variant="contained"
+                disabled={
+                  busy ||
+                  !username.trim() ||
+                  !password ||
+                  (mfa && code.length !== 6)
+                }
+                endIcon={
+                  busy ? (
+                    <CircularProgress size={18} color="inherit" />
+                  ) : (
+                    <ArrowForward />
+                  )
+                }
+                sx={{ py: 1.6, borderRadius: 2 }}
+              >
+                {busy ? "Signing in..." : mfa ? "Verify and sign in" : "Sign in"}
+              </Button>
+              {mfa ? (
+                <Button
+                  disabled={busy}
+                  onClick={() => {
+                    setMfa(false);
+                    setCode("");
+                    setPassword("");
+                    setError("");
+                  }}
+                >
+                  Use a different sign-in
+                </Button>
+              ) : (
+                <>
+                  <Divider>
+                    <Typography variant="caption" color="text.secondary">
+                      OR
+                    </Typography>
+                  </Divider>
+                  <Button
+                    variant="outlined"
+                    size="large"
+                    disabled={busy || !passkeySupported}
+                    startIcon={<Fingerprint />}
+                    onClick={passkey}
+                    sx={{ py: 1.4, borderRadius: 2 }}
+                  >
+                    Sign in with a passkey
+                  </Button>
+                  {!passkeySupported && (
+                    <Typography variant="caption" color="text.secondary">
+                      Passkeys need a supported browser on HTTPS or localhost.
+                    </Typography>
+                  )}
+                </>
+              )}
+            </Stack>
+          </Box>
+          <Button
+            onClick={() => setHelp(!help)}
+            aria-expanded={help}
+            sx={{ mt: 3 }}
+          >
+            Need help signing in?
+          </Button>
+          <Collapse in={help}>
+            <Alert severity="info" sx={{ mt: 1 }}>
+              Contact your company administrator to recover access or reset your
+              authenticator. Staff accounts are created by your administrator.
+            </Alert>
+          </Collapse>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ display: "block", mt: 4 }}
+          >
+            On a shared computer, leave Keep me signed in unchecked and sign
+            out when you finish.
+          </Typography>
+        </Box>
+      </Box>
+    </Box>
+  );
+}

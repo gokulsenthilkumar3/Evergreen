@@ -1,5 +1,6 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../services/prisma.service';
+import { Prisma } from '@prisma/admin-client';
 export const STATES: Record<string, string[]> = {
  TASK: ['OPEN','IN_PROGRESS','BLOCKED','DONE'], MAINTENANCE: ['SCHEDULED','IN_PROGRESS','COMPLETED','CANCELLED'],
  DATABASE: ['REQUESTED','IN_PROGRESS','COMPLETED','FAILED'], API: ['DRAFT','ACTIVE','DISABLED'],
@@ -65,6 +66,15 @@ export class ControlService {
  }
  async database() {
   const [companies, records, auditEvents] = await Promise.all([this.prisma.company.count(),this.prisma.controlRecord.count(),this.prisma.controlAudit.count()]);
-  return { engine:'SQLite', scope:'Provider database', companies, records, auditEvents, tenantDatabaseAccess:false };
+  const [check, journal] = await Promise.all([
+   this.prisma.$queryRawUnsafe<Array<{ quick_check: string }>>('PRAGMA quick_check'),
+   this.prisma.$queryRawUnsafe<Array<{ journal_mode: string }>>('PRAGMA journal_mode'),
+  ]);
+  return { engine:'SQLite', scope:'Provider database', companies, records, auditEvents, tenantDatabaseAccess:false,
+   checkedAt: new Date().toISOString(), integrity: check.length === 1 && check[0].quick_check === 'ok' ? 'ok' : 'Needs investigation',
+   journalMode: journal[0]?.journal_mode || 'Unknown', encryption: 'Not verified - use encrypted host storage',
+   prismaVersion: Prisma.prismaVersion.client,
+   models: Prisma.dmmf.datamodel.models.map(model => ({ name: model.name, fields: model.fields.map(field => ({ name:field.name, type:field.type, required:field.isRequired, relation:field.kind === 'object' })) })),
+  };
  }
 }

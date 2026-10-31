@@ -8,6 +8,7 @@ if [ "$(id -u)" = 0 ]; then
 fi
 # A compose run command is used for snapshots and checks, never implicit migrations.
 if [ "$#" -eq 2 ] && [ "$1" = node ] && { [ "$2" = apps/api/dist/main.js ] || [ "$2" = apps/admin-api/dist/main.js ]; }; then
+  node -e "require('@evergreen/types/licensing').requireInstallationLicence(process.env.EVERGREEN_PLANE)"
   if [ "$EVERGREEN_PLANE" = tenant ]; then
     : "${JWT_SECRET:?JWT_SECRET is required}"
     : "${ENCRYPTION_SECRET:?ENCRYPTION_SECRET is required}"

@@ -1,4 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
+import AiAssistant from '../../../packages/portal-ui/AiAssistant';
+import TextileScene from './TextileScene';
 import './App.css';
 import { TRANSLATIONS, Language } from './data/translations';
 import { InteractiveFactorySimulator } from './components/InteractiveFactorySimulator';
@@ -62,10 +64,10 @@ const FEATURES = [
     items: ['Rolling / Blue-Green / Canary', 'Isolated SQLite per tenant', 'Zero vendor lock-in', 'Air-gapped factory support'],
   },
   {
-    icon: '🛡️', tag: 'COMPLIANCE', title: '30-Day Active Grace Quota',
-    desc: 'Your mill never stops on expired licenses. 30 full days of uninterrupted operation with licensing team proactively engaging renewal. Reactivate in under 3 minutes.',
+    icon: '🛡️', tag: 'COMPLIANCE', title: 'Owner-Controlled Licence Periods',
+    desc: 'The owner defines activation periods and signed offline deadlines. Renew before expiry; an expired activation blocks access until a valid licence is installed.',
     color: 'amber',
-    items: ['Never blocked on expiry', 'Sales & support SLA alerts', 'UTR-verified 3-min reactivation', 'Cryptographic audit log'],
+    items: ['Signed offline validity', 'Sales & support SLA alerts', 'UTR-verified 3-min reactivation', 'Cryptographic audit log'],
   },
 ];
 
@@ -74,7 +76,7 @@ const TIERS = [
     name: 'Gatekeeper P0', badge: 'ANTI-FRAUD ENTRY', price: 3999, period: 'month',
     desc: 'Weighbridge + Tally Prime XML integration for mills who want fraud prevention first.',
     color: 'amber', popular: false,
-    features: ['TareZero Weighbridge Gateway', 'Tally Prime XML Auto-Sync', 'Anti-tamper moisture log', '1 Weighbridge station', '30-Day Active Grace', '< 3 min reactivation'],
+    features: ['TareZero Weighbridge Gateway', 'Tally XML export', 'Anti-tamper moisture log', '1 Weighbridge station', '30-Day Active Grace', '< 3 min reactivation'],
     cta: 'Start Gatekeeper',
   },
   {
@@ -107,7 +109,7 @@ export interface IntegrationConnector {
   desc: string;
   category: 'India Payments' | 'Global Payments' | 'Multi-Cloud' | 'CI/CD & Dev' | 'AI Providers' | 'Business Suites' | 'Comms & Alerts' | 'Hardware & ERP';
   protocol: string;
-  status: 'CERTIFIED' | 'PLUG_AND_PLAY' | 'CONFIGURABLE';
+  status: 'CERTIFIED' | 'PLUG_AND_PLAY' | 'CONFIGURABLE' | 'PLANNED';
   latencyMs: number;
   supportedEvents: string[];
   snippet: string;
@@ -122,7 +124,7 @@ const INTEGRATIONS: IntegrationConnector[] = [
     desc: 'Instant settlement UPI, Netbanking, corporate credit cards & auto-reconciliation',
     category: 'India Payments',
     protocol: 'REST API + HMAC SHA-256 Webhook',
-    status: 'PLUG_AND_PLAY',
+    status: 'PLANNED',
     latencyMs: 38,
     supportedEvents: ['payment.captured', 'payment.failed', 'order.paid', 'refund.processed'],
     snippet: '{\n  "event": "payment.captured",\n  "entity": "payment",\n  "amount": 799900,\n  "currency": "INR",\n  "method": "upi",\n  "utr": "428190218821"\n}',
@@ -134,7 +136,7 @@ const INTEGRATIONS: IntegrationConnector[] = [
     desc: 'Instant UPI Intent, Merchant Dynamic QR & Fast Automated Settlement',
     category: 'India Payments',
     protocol: 'Server-to-Server SHA-256 Checksum (X-VERIFY)',
-    status: 'PLUG_AND_PLAY',
+    status: 'PLANNED',
     latencyMs: 32,
     supportedEvents: ['PAYMENT_SUCCESS', 'PAYMENT_ERROR', 'REFUND_PENDING'],
     snippet: '{\n  "responseCode": "SUCCESS",\n  "merchantTransactionId": "TXN_EVE_9921",\n  "amount": 1499900,\n  "providerReferenceId": "T241011142918"\n}',
@@ -146,7 +148,7 @@ const INTEGRATIONS: IntegrationConnector[] = [
     desc: 'All-in-one QR, Soundbox callbacks, netbanking & card checkout',
     category: 'India Payments',
     protocol: 'Paytm Checksum Hash + Callback Webhook',
-    status: 'PLUG_AND_PLAY',
+    status: 'PLANNED',
     latencyMs: 40,
     supportedEvents: ['TXN_SUCCESS', 'TXN_FAILURE', 'REFUND_SUCCESS'],
     snippet: '{\n  "STATUS": "TXN_SUCCESS",\n  "ORDERID": "ORDER_EVE_1042",\n  "TXNAMOUNT": "3999.00",\n  "BANKTXNID": "981248012"\n}',
@@ -159,7 +161,7 @@ const INTEGRATIONS: IntegrationConnector[] = [
     desc: 'Multi-currency credit cards, SEPA, and recurring automated SaaS billing',
     category: 'Global Payments',
     protocol: 'REST API + Stripe-Signature Webhooks',
-    status: 'CONFIGURABLE',
+    status: 'PLANNED',
     latencyMs: 65,
     supportedEvents: ['invoice.paid', 'payment_intent.succeeded', 'customer.subscription.updated'],
     snippet: '{\n  "id": "evt_1P8x...",\n  "type": "invoice.paid",\n  "data": { "amount_paid": 18000, "currency": "usd" }\n}',
@@ -171,7 +173,7 @@ const INTEGRATIONS: IntegrationConnector[] = [
     desc: 'Cross-border merchant payouts & European cotton/yarn export trade FX',
     category: 'Global Payments',
     protocol: 'Revolut Merchant API + Webhook Secret',
-    status: 'CONFIGURABLE',
+    status: 'PLANNED',
     latencyMs: 72,
     supportedEvents: ['ORDER_COMPLETED', 'PAYOUT_SENT'],
     snippet: '{\n  "event": "ORDER_COMPLETED",\n  "order_id": "rev_ord_882",\n  "currency": "EUR"\n}',
@@ -184,7 +186,7 @@ const INTEGRATIONS: IntegrationConnector[] = [
     desc: 'Cloud Run & GKE low-latency Mumbai (asia-south1) and Delhi clusters',
     category: 'Multi-Cloud',
     protocol: 'gcloud CLI / Terraform / OCI Container Registry',
-    status: 'CERTIFIED',
+    status: 'PLANNED',
     latencyMs: 14,
     supportedEvents: ['cloud_run.revision_ready', 'artifact_registry.image_pushed'],
     snippet: 'gcloud run deploy evergreen-mill \\\n  --image gcr.io/evergreen-os/tenant:v1.2.4-lts \\\n  --region asia-south1 --min-instances 1',
@@ -196,7 +198,7 @@ const INTEGRATIONS: IntegrationConnector[] = [
     desc: 'ECS Fargate container tasks with S3 encrypted immutable backups',
     category: 'Multi-Cloud',
     protocol: 'AWS CLI / CloudFormation / ECR Registry',
-    status: 'CERTIFIED',
+    status: 'PLANNED',
     latencyMs: 18,
     supportedEvents: ['ecs.task_running', 's3.backup_written'],
     snippet: 'aws ecs update-service \\\n  --cluster evergreen-prod \\\n  --service mill-tenant \\\n  --force-new-deployment',
@@ -208,7 +210,7 @@ const INTEGRATIONS: IntegrationConnector[] = [
     desc: 'Azure Container Apps & Virtual Networks with Entra ID security',
     category: 'Multi-Cloud',
     protocol: 'Azure CLI / Bicep / ACR',
-    status: 'CERTIFIED',
+    status: 'PLANNED',
     latencyMs: 20,
     supportedEvents: ['containerapp.provisioning_state', 'acr.image_push'],
     snippet: 'az containerapp update \\\n  --name evergreen-tenant \\\n  --resource-group EvergreenRG \\\n  --image evergreenos/tenant:v1.2.4-lts',
@@ -220,10 +222,10 @@ const INTEGRATIONS: IntegrationConnector[] = [
     desc: 'Factory-floor edge appliance running offline with zero cloud dependency',
     category: 'Multi-Cloud',
     protocol: 'Docker Compose / Systemd / SQLite WAL',
-    status: 'CERTIFIED',
+    status: 'PLANNED',
     latencyMs: 1,
     supportedEvents: ['edge.heartbeat_ok', 'sqlite.wal_checkpoint'],
-    snippet: 'curl -sSL https://get.evergreen-os.com/install.sh | \\\n  sudo bash -s -- --target=local-vm --port=4000',
+    snippet: 'Use the reviewed owner-hosted deployment guide. Configure licensing, hosting and backups before starting the services.',
   },
   // CI/CD & Dev
   {
@@ -233,7 +235,7 @@ const INTEGRATIONS: IntegrationConnector[] = [
     desc: 'Continuous delivery workflow runs, semantic release tags & OCI packages',
     category: 'CI/CD & Dev',
     protocol: 'GitHub App / PAT Token / Octokit API',
-    status: 'CERTIFIED',
+    status: 'PLANNED',
     latencyMs: 28,
     supportedEvents: ['workflow_run.completed', 'release.published', 'push.main'],
     snippet: 'gh workflow run deploy-tenant.yml \\\n  -f version=v1.2.4-lts \\\n  -f cluster=gcp-mumbai-01',
@@ -245,7 +247,7 @@ const INTEGRATIONS: IntegrationConnector[] = [
     desc: 'Enterprise multi-stage release pipelines, work items & artifact feeds',
     category: 'CI/CD & Dev',
     protocol: 'Service Connection / Personal Access Token',
-    status: 'CONFIGURABLE',
+    status: 'PLANNED',
     latencyMs: 32,
     supportedEvents: ['build.complete', 'release.deployment.succeeded'],
     snippet: 'az pipelines run --name "Evergreen-MultiCloud-CD" \\\n  --variables ReleaseVersion=1.2.4',
@@ -257,7 +259,7 @@ const INTEGRATIONS: IntegrationConnector[] = [
     desc: 'Self-hosted and private cloud runners with container image vulnerability scans',
     category: 'CI/CD & Dev',
     protocol: 'GitLab Webhooks + Pipeline Trigger Tokens',
-    status: 'CONFIGURABLE',
+    status: 'PLANNED',
     latencyMs: 30,
     supportedEvents: ['pipeline.status', 'job.failed'],
     snippet: 'curl -X POST \\\n  --form token=GL_TRIGGER_TOKEN \\\n  --form ref=main \\\n  https://gitlab.com/api/v4/projects/12/trigger/pipeline',
@@ -270,7 +272,7 @@ const INTEGRATIONS: IntegrationConnector[] = [
     desc: 'Deep spindle yield anomaly analysis, moisture triage & contract extraction',
     category: 'AI Providers',
     protocol: 'Anthropic REST API (Messages API v1)',
-    status: 'CONFIGURABLE',
+    status: 'PLANNED',
     latencyMs: 780,
     supportedEvents: ['claude.analysis_completed', 'claude.triage_alert'],
     snippet: 'anthropic.messages.create({\n  model: "claude-3-5-sonnet-20241022",\n  messages: [{ role: "user", content: "Analyze Tirupur weighbridge variance..." }]\n})',
@@ -282,7 +284,7 @@ const INTEGRATIONS: IntegrationConnector[] = [
     desc: 'Multi-modal cotton lot slip OCR, natural language queries & multilingual support',
     category: 'AI Providers',
     protocol: 'OpenAI Chat Completions API v1',
-    status: 'CONFIGURABLE',
+    status: 'PLANNED',
     latencyMs: 620,
     supportedEvents: ['chat.completion.chunk', 'vision.ocr_extracted'],
     snippet: 'openai.chat.completions.create({\n  model: "gpt-4o",\n  messages: [{ role: "user", content: "Audit Book-Ellam inward discrepancy..." }]\n})',
@@ -294,7 +296,7 @@ const INTEGRATIONS: IntegrationConnector[] = [
     desc: 'Real-time cotton index trend analysis, MCX candy market sentiment & price forecasting',
     category: 'AI Providers',
     protocol: 'xAI REST API SDK',
-    status: 'CONFIGURABLE',
+    status: 'PLANNED',
     latencyMs: 580,
     supportedEvents: ['grok.completion', 'market.sentiment_alert'],
     snippet: 'xai.chat.create({\n  model: "grok-2",\n  prompt: "Predict Gujarat S-6 cotton candy trend next 14 days..."\n})',
@@ -306,7 +308,7 @@ const INTEGRATIONS: IntegrationConnector[] = [
     desc: '100% private, on-premise Llama 3.3 / Mistral LLM running inside the mill LAN with zero data leaks',
     category: 'AI Providers',
     protocol: 'Local HTTP REST endpoint (http://localhost:11434)',
-    status: 'CERTIFIED',
+    status: 'PLANNED',
     latencyMs: 42,
     supportedEvents: ['ollama.generate_stream', 'local_inference.done'],
     snippet: 'curl http://localhost:11434/api/generate -d \'{\n  "model": "llama3.3",\n  "prompt": "Summarize shift A ring frame CSP scores"\n}\'',
@@ -319,7 +321,7 @@ const INTEGRATIONS: IntegrationConnector[] = [
     desc: 'Bi-directional sync with Zoho Books, Zoho Desk, Zoho CRM, Zoho Sign & Flow',
     category: 'Business Suites',
     protocol: 'Zoho OAuth 2.0 + Webhooks',
-    status: 'CONFIGURABLE',
+    status: 'PLANNED',
     latencyMs: 50,
     supportedEvents: ['zoho.invoice_created', 'zoho.desk_ticket_opened', 'zoho.sign_completed'],
     snippet: '{\n  "operation": "SYNC_INVOICE",\n  "zoho_module": "books",\n  "customer_id": "ZCUST_9918",\n  "status": "APPROVED"\n}',
@@ -331,7 +333,7 @@ const INTEGRATIONS: IntegrationConnector[] = [
     desc: 'Automated dispatch PDF delivery via Gmail, Google Sheets live export & Drive archival',
     category: 'Business Suites',
     protocol: 'Google Workspace API / Service Account',
-    status: 'CONFIGURABLE',
+    status: 'PLANNED',
     latencyMs: 45,
     supportedEvents: ['gmail.message_dispatched', 'sheets.append_row'],
     snippet: 'sheets.spreadsheets.values.append({\n  spreadsheetId: "1X9...",\n  range: "BaleLog!A:F",\n  valueInputOption: "RAW"\n})',
@@ -343,7 +345,7 @@ const INTEGRATIONS: IntegrationConnector[] = [
     desc: 'Outlook executive digests, Excel PowerQuery connectivity & SharePoint invoice archives',
     category: 'Business Suites',
     protocol: 'Microsoft Graph API + Entra ID',
-    status: 'CONFIGURABLE',
+    status: 'PLANNED',
     latencyMs: 48,
     supportedEvents: ['graph.mail_sent', 'sharepoint.file_archived'],
     snippet: 'graphClient.api("/users/cfo@mill.com/sendMail").post({\n  message: { subject: "EverGreen Daily Shift P&L Summary" }\n})',
@@ -356,7 +358,7 @@ const INTEGRATIONS: IntegrationConnector[] = [
     desc: 'Bilingual payment reminders in Tamil & English with instant UTR confirmation & dispatch slips',
     category: 'Comms & Alerts',
     protocol: 'Meta Cloud API / Gupshup / Twilio',
-    status: 'CERTIFIED',
+    status: 'PLANNED',
     latencyMs: 80,
     supportedEvents: ['messages.delivered', 'messages.read', 'messages.inbound_utr'],
     snippet: '{\n  "messaging_product": "whatsapp",\n  "to": "+919842755200",\n  "type": "template",\n  "template": { "name": "yarn_dispatch_tamil_v2" }\n}',
@@ -368,7 +370,7 @@ const INTEGRATIONS: IntegrationConnector[] = [
     desc: 'Real-time weighbridge fraud alerts, deployment notifications & engineer incident rooms',
     category: 'Comms & Alerts',
     protocol: 'Slack Incoming Webhooks & Bot OAuth',
-    status: 'PLUG_AND_PLAY',
+    status: 'PLANNED',
     latencyMs: 35,
     supportedEvents: ['weighbridge.moisture_alert', 'deploy.completed', 'license.grace_warning'],
     snippet: '{\n  "channel": "#mill-alerts",\n  "text": "🚨 TareZero Alert: 180 kg excess moisture detected on Lot #4492"\n}',
@@ -380,7 +382,7 @@ const INTEGRATIONS: IntegrationConnector[] = [
     desc: 'Adaptive Cards for morning production summaries, spindle variance & mill owner executive approvals',
     category: 'Comms & Alerts',
     protocol: 'Teams Connector Webhook / Power Automate',
-    status: 'PLUG_AND_PLAY',
+    status: 'PLANNED',
     latencyMs: 44,
     supportedEvents: ['teams.adaptive_card_submitted', 'incident.escalated'],
     snippet: '{\n  "type": "message",\n  "attachments": [{ "contentType": "application/vnd.microsoft.card.adaptive" }]\n}',
@@ -393,7 +395,7 @@ const INTEGRATIONS: IntegrationConnector[] = [
     desc: 'Zero-duplicate purchase, sales & receipt vouchers auto-generated as valid Tally XML. Your accountant stays in Tally forever.',
     category: 'Hardware & ERP',
     protocol: 'Direct XML HTTP Post / Local Folder Sync',
-    status: 'CERTIFIED',
+    status: 'PLANNED',
     latencyMs: 8,
     supportedEvents: ['tally.voucher_exported', 'tally.ledger_sync_ok'],
     snippet: '<ENVELOPE>\n  <HEADER><TALLYREQUEST>Import Data</TALLYREQUEST></HEADER>\n  <BODY><IMPORTDATA><REQUESTDATA><VOUCHER VCHTYPE="Purchase">...</VOUCHER></REQUESTDATA></IMPORTDATA></BODY>\n</ENVELOPE>',
@@ -405,7 +407,7 @@ const INTEGRATIONS: IntegrationConnector[] = [
     desc: 'RS-232 serial hardware integration with Avery E1105 / E1205. Hardware-level tare locking catches weight fraud in real time.',
     category: 'Hardware & ERP',
     protocol: 'RS-232 Serial (Baud 9600, 8-N-1) + TareZero Driver',
-    status: 'CERTIFIED',
+    status: 'PLANNED',
     latencyMs: 1,
     supportedEvents: ['scale.stable_gross_locked', 'scale.tare_confirmed'],
     snippet: 'SERIAL STREAM >> ST,GS,+034280kg\\r\\n\n[TareZero Cryptographic Signature: SHA256(34280 + Timestamp + HardwareID)]',
@@ -417,7 +419,7 @@ const INTEGRATIONS: IntegrationConnector[] = [
     desc: 'Automatic gross/tare weight capture for factory weighbridges and yarn bag dispatch scales',
     category: 'Hardware & ERP',
     protocol: 'RS-232 / RS-485 Continuous Stream',
-    status: 'CERTIFIED',
+    status: 'PLANNED',
     latencyMs: 1,
     supportedEvents: ['scale.weight_captured', 'scale.moisture_deduction_logged'],
     snippet: 'SERIAL STREAM >> =021450\\r\\n\n[Essae Indicator 501: Gross 21,450 kg verified]',
@@ -429,7 +431,7 @@ const INTEGRATIONS: IntegrationConnector[] = [
     desc: 'High-precision QC laboratory scales for CSP lea testing and moisture regain determination',
     category: 'Hardware & ERP',
     protocol: 'SICS Protocol / Ethernet TCP Socket',
-    status: 'CERTIFIED',
+    status: 'PLANNED',
     latencyMs: 1,
     supportedEvents: ['lab.csp_lea_recorded', 'lab.moisture_regain_pct'],
     snippet: 'SICS CMD >> S\\r\\n\nSICS RSP >> S S      120.45 g\\r\\n',
@@ -441,7 +443,7 @@ const INTEGRATIONS: IntegrationConnector[] = [
     desc: 'Automated 1-click E-Way Bill generation, vehicle number update & IRN QR Code embedding on tax invoices',
     category: 'Hardware & ERP',
     protocol: 'NIC E-Way Bill REST GSP API',
-    status: 'CERTIFIED',
+    status: 'PLANNED',
     latencyMs: 110,
     supportedEvents: ['eway.bill_generated', 'einvoice.irn_generated'],
     snippet: '{\n  "Irn": "a1b2c3d4...",\n  "EwbNo": 181092819201,\n  "EwbDt": "11/10/2026 03:20:00",\n  "Status": "ACT"\n}',
@@ -453,7 +455,7 @@ const INTEGRATIONS: IntegrationConnector[] = [
     desc: 'Real-time bank statement UTR cross-check for buyer remittances & automated ledger balance updating',
     category: 'Hardware & ERP',
     protocol: 'Corporate Banking Webhook & MT940 / CAMT.053 Feed',
-    status: 'CERTIFIED',
+    status: 'PLANNED',
     latencyMs: 90,
     supportedEvents: ['bank.utr_credit_verified', 'bank.statement_reconciled'],
     snippet: '{\n  "AccountNo": "0019283746",\n  "UTR": "HDFCN261011882",\n  "CreditAmount": 240000,\n  "Party": "SRI MURUGAN HANDLOOMS"\n}',
@@ -513,7 +515,13 @@ const SUPPORT_CHANNELS = [
 ];
 
 /* ─── COMPONENT ───────────────────────────────────────────────────────────── */
+function downloadEnquiry(name: string, value: Record<string, string>) {
+  const content = 'EverGreen enquiry draft - not submitted\n\n' + Object.entries(value).map(([field, answer]) => field + ': ' + answer).join('\n');
+  const url = URL.createObjectURL(new Blob([content], { type: 'text/plain;charset=utf-8' }));
+  const link = document.createElement('a'); link.href = url; link.download = name + '.txt'; document.body.appendChild(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
 export default function App() {
+  const tenantPortalUrl = import.meta.env.VITE_TENANT_PORTAL_URL || (import.meta.env.DEV ? 'http://localhost:4001/' : null);
   const [lang, setLang] = useState<Language>('en');
   const [currency, setCurrency] = useState<'INR' | 'USD'>('INR');
   const [showTourModal, setShowTourModal] = useState(false);
@@ -533,11 +541,6 @@ export default function App() {
   const [activeIntegCategory, setActiveIntegCategory] = useState('All');
   const [integSearch, setIntegSearch] = useState('');
   const [selectedInteg, setSelectedInteg] = useState<IntegrationConnector | null>(null);
-  const [activeChatMsg, setActiveChatMsg] = useState('');
-  const [chatMessages, setChatMessages] = useState<{ role: 'user' | 'bot'; text: string }[]>([
-    { role: 'bot', text: 'வணக்கம்! I am the EverGreen AI textile assistant. Ask me anything about spinning mill ERP, weighbridge anti-fraud, Tally integration, or pricing. 🧵' },
-  ]);
-  const chatEndRef = useRef<HTMLDivElement>(null);
   const [contactForm, setContactForm] = useState({ name: '', email: '', phone: '', company: '', message: '', type: 'Sales Enquiry' });
   const [contactSent, setContactSent] = useState(false);
 
@@ -549,9 +552,6 @@ export default function App() {
     return () => window.removeEventListener('scroll', handler);
   }, []);
 
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [chatMessages]);
 
   const copyScript = () => {
     const scripts: Record<string, string> = {
@@ -564,28 +564,6 @@ export default function App() {
     setCopied(true);
     setToastMsg(`${deployTarget} install command copied to clipboard!`);
     setTimeout(() => setCopied(false), 2500);
-  };
-
-  const sendChat = () => {
-    if (!activeChatMsg.trim()) return;
-    const userMsg = activeChatMsg;
-    setChatMessages(prev => [...prev, { role: 'user', text: userMsg }]);
-    setActiveChatMsg('');
-    setTimeout(() => {
-      const botReply = getBotReply(userMsg.toLowerCase());
-      setChatMessages(prev => [...prev, { role: 'bot', text: botReply }]);
-    }, 900);
-  };
-
-  const getBotReply = (msg: string): string => {
-    if (msg.includes('price') || msg.includes('cost') || msg.includes('pricing')) return 'Our plans start at ₹3,999/month for Gatekeeper (Weighbridge + Tally XML). Growth (full Spinning ERP) is ₹7,999/month. We also offer Pay-As-You-Go at ₹12/bale. Annual billing saves 20%! Would you like a custom quote?';
-    if (msg.includes('tally')) return 'EverGreen feeds Tally Prime directly! Our Tally XML Bridge auto-generates purchase, sales & receipt vouchers with CGST/SGST/IGST tax splits. Your accountant continues working inside Tally with zero manual re-entry.';
-    if (msg.includes('weighbridge') || msg.includes('weight') || msg.includes('fraud')) return 'TareZero connects directly to Avery, Essae, or Mettler indicators via RS-232 serial. It captures stable gross & tare weights at the hardware level, enforces SIMA/CCI moisture deduction standards, and generates a cryptographic audit log.';
-    if (msg.includes('deploy') || msg.includes('install') || msg.includes('setup')) return 'Deployment takes under 8 minutes! Single-command bash install for local Ubuntu Linux VM or 1-click cloud templates for GCP, AWS, or Azure. We provide complete migration assistance.';
-    if (msg.includes('grace') || msg.includes('expir') || msg.includes('renew')) return 'Our 30-Day Active Grace Quota ensures your mill NEVER stops on license expiry. Weighbridges, dispatches, and invoices continue running. Once UTR is verified, reactivation happens in under 3 minutes.';
-    if (msg.includes('tamil') || msg.includes('book-ellam') || msg.includes('புக்')) return 'Book-Ellam (புக் எல்லாம்) is our traditional textile all-books research engine — search across Day Book, Cotton Inward, Yarn Outward, and Party Ledger in Tamil and English simultaneously!';
-    if (msg.includes('trial') || msg.includes('poc') || msg.includes('demo')) return 'We offer a free 30-day POC at your spinning mill with real cotton and yarn lots. Our engineer visits your mill in Tirupur, Coimbatore, Erode, or Karur. WhatsApp us at +91 98427 55200!';
-    return 'Thank you! Our textile ERP engineering team is ready to assist. You can WhatsApp us directly at +91 98427 55200 or email sales@evergreen-os.com. What are your mill\'s key requirements?';
   };
 
   const filteredFaqs = FAQS.filter(f => {
@@ -640,7 +618,7 @@ export default function App() {
             </div>
           </a>
 
-          <nav className={`nav-links ${mobileMenuOpen ? 'open' : ''}`}>
+          <nav className={`nav-links ${mobileMenuOpen ? 'open' : ''}`} aria-label="Main navigation">
             {NAV_LINKS.map(l => {
               const label = t.nav[l.labelKey as keyof typeof t.nav] || l.fallback;
               return (
@@ -649,35 +627,73 @@ export default function App() {
                 </a>
               );
             })}
+            <a href="#scout" className="nav-link" onClick={() => setMobileMenuOpen(false)}>Ask Scout</a>
+            <div className="mobile-nav-extra">
+              <button
+                className="lang-toggle-btn mobile-extra-btn"
+                onClick={() => {
+                  const nextLang = lang === 'en' ? 'ta' : 'en';
+                  setLang(nextLang);
+                  setToastMsg(nextLang === 'ta' ? 'தமிழ் மொழிக்கு மாற்றப்பட்டது' : 'Switched to English');
+                  setMobileMenuOpen(false);
+                }}
+                aria-label="Switch Language"
+              >
+                <span>🌐</span>
+                <span>{lang === 'en' ? 'தமிழ்' : 'English'}</span>
+              </button>
+              <button
+                className={`currency-toggle-btn mobile-extra-btn ${currency === 'USD' ? 'active' : ''}`}
+                onClick={() => {
+                  const nextCur = currency === 'INR' ? 'USD' : 'INR';
+                  setCurrency(nextCur);
+                  setToastMsg(`Currency display updated to ${nextCur}`);
+                  setMobileMenuOpen(false);
+                }}
+                aria-label="Toggle Currency"
+              >
+                {currency === 'INR' ? '₹ INR' : '$ USD'}
+              </button>
+              <a href={tenantPortalUrl || "#contact"} target="_blank" rel="noreferrer" className="nav-link-ghost mobile-extra-btn" onClick={() => setMobileMenuOpen(false)}>
+                {tenantPortalUrl ? t.nav.millApp : 'Request portal access'} ↗
+              </a>
+            </div>
           </nav>
 
           <div className="nav-actions">
             <button
-              className="lang-toggle-btn"
+              className="lang-toggle-btn desktop-utility"
               onClick={() => {
                 const nextLang = lang === 'en' ? 'ta' : 'en';
                 setLang(nextLang);
                 setToastMsg(nextLang === 'ta' ? 'தமிழ் மொழிக்கு மாற்றப்பட்டது' : 'Switched to English');
               }}
               title="Switch Language / மொழியை மாற்றவும்"
+              aria-label="Switch Language"
             >
               <span>🌐</span>
               <span>{lang === 'en' ? 'தமிழ்' : 'English'}</span>
             </button>
             <button
-              className={`currency-toggle-btn ${currency === 'USD' ? 'active' : ''}`}
+              className={`currency-toggle-btn desktop-utility ${currency === 'USD' ? 'active' : ''}`}
               onClick={() => {
                 const nextCur = currency === 'INR' ? 'USD' : 'INR';
                 setCurrency(nextCur);
                 setToastMsg(`Currency display updated to ${nextCur}`);
               }}
               title="Toggle Currency"
+              aria-label="Toggle Currency"
             >
               {currency === 'INR' ? '₹ INR' : '$ USD'}
             </button>
-            <a href="http://localhost:4000/" target="_blank" rel="noreferrer" className="nav-link-ghost">{t.nav.millApp}</a>
+            <a href={tenantPortalUrl || "#contact"} target="_blank" rel="noreferrer" className="nav-link-ghost desktop-utility">{tenantPortalUrl ? t.nav.millApp : 'Request portal access'}</a>
             <button className="btn-primary" onClick={() => setShowPocModal(true)}>{t.nav.startPoc}</button>
-            <button className="mobile-menu-btn" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+            <button
+              className="mobile-menu-btn"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label={mobileMenuOpen ? 'Close Navigation Menu' : 'Open Navigation Menu'}
+              aria-expanded={mobileMenuOpen}
+            >
               {mobileMenuOpen ? '✕' : '☰'}
             </button>
           </div>
@@ -718,6 +734,7 @@ export default function App() {
             <a href="#simulator" className="btn-ghost btn-xl">{t.hero.exploreBtn}</a>
           </div>
 
+          <TextileScene />
           {/* STATS TICKER */}
           <div className="stats-strip">
             {STATS.map((s, i) => (
@@ -732,7 +749,7 @@ export default function App() {
           <div className="arch-card glass-card">
             <div className="arch-card-header">
               <span className="arch-label">⚡ Hub & Spoke Multi-Cloud Architecture</span>
-              <span className="arch-badge">ZERO DATA LEAKAGE</span>
+              <span className="arch-badge">SEPARATE DATA PLANES</span>
             </div>
             <div className="arch-nodes">
               <div className="arch-node node-mill">
@@ -741,7 +758,7 @@ export default function App() {
                 <div className="node-desc">Local VM / GCP / AWS / Azure</div>
                 <div className="node-tags">
                   <span>Isolated SQLite DB</span>
-                  <span>Port 4000/4301</span>
+                  <span>Mill operations</span>
                   <span>Book-Ellam Engine</span>
                 </div>
               </div>
@@ -753,10 +770,10 @@ export default function App() {
               <div className="arch-node node-provider">
                 <div className="node-icon">🛡️</div>
                 <div className="node-name">Provider Hub</div>
-                <div className="node-desc">Mission Control (Port 5174/4300)</div>
+                <div className="node-desc">Owner control plane</div>
                 <div className="node-tags">
                   <span>Central Admin DB</span>
-                  <span>1-Min Reactivate</span>
+                  <span>Signed activation</span>
                   <span>CI/CD Orchestrator</span>
                 </div>
               </div>
@@ -981,7 +998,7 @@ export default function App() {
       </section>
 
       {/* ── PRICING ── */}
-      <section id="pricing" className="mkt-section bg-alt">
+      <section id="pricing" className="mkt-section bg-alt"><div className="mkt-container product-readiness-note">Illustrative plan options. Confirm commercial terms, quotas and support in writing before purchase.</div>
         <div className="mkt-container">
           <div className="section-head">
             <span className="eyebrow">{t.sections.pricingEyebrow}</span>
@@ -1079,7 +1096,7 @@ export default function App() {
       </section>
 
       {/* ── INTEGRATIONS ── */}
-      <section id="integrations" className="mkt-section">
+      <section id="integrations" className="mkt-section"><div className="mkt-container product-readiness-note">Integration directory: these are planned connector profiles and illustrative payloads. Tally XML export is available in the app; live posting, payment providers and regional compliance require separate configuration and validation.</div>
         <div className="mkt-container">
           <div className="section-head">
             <span className="eyebrow">ECOSYSTEM & HARDWARE CONNECTORS</span>
@@ -1122,7 +1139,7 @@ export default function App() {
                 <div className="integ-info">
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.4rem' }}>
                     <div className="integ-name">{integ.name}</div>
-                    <span className="integ-latency">{integ.latencyMs}ms</span>
+                    <span className="integ-latency">Setup required</span>
                   </div>
                   <div className="integ-desc">{integ.desc}</div>
                   <div className="integ-badge-row">
@@ -1131,7 +1148,7 @@ export default function App() {
                     </span>
                     <span className="integ-category">{integ.category}</span>
                   </div>
-                  <div className="integ-inspect-hint">Click to inspect payload & SLA ↗</div>
+                  <div className="integ-inspect-hint">Inspect illustrative payload ↗</div>
                 </div>
               </div>
             ))}
@@ -1140,7 +1157,7 @@ export default function App() {
       </section>
 
       {/* ── DEPLOYMENT TERMINAL ── */}
-      <section id="deployment" className="mkt-section bg-alt">
+      <section id="deployment" className="mkt-section bg-alt"><div className="mkt-container product-readiness-note">Deployment examples show the intended workflow. A cloud account, domain, secrets and environment validation are required; this page does not provision infrastructure.</div>
         <div className="mkt-container">
           <div className="section-head">
             <span className="eyebrow">1-CLICK DEPLOYMENT</span>
@@ -1290,7 +1307,7 @@ export default function App() {
         <div className="mkt-container">
           <div className="section-head">
             <span className="eyebrow">SUPPORT & CUSTOMER SUCCESS</span>
-            <h2>We Answer. Always. In Under 30 Minutes.</h2>
+            <h2>Plan your rollout with the right support</h2>
             <p>South India-based team. Tamil & English support. Engineers who understand spinning mills — not just software.</p>
           </div>
           <div className="support-grid">
@@ -1305,36 +1322,7 @@ export default function App() {
             ))}
           </div>
 
-          {/* AI CHAT WIDGET */}
-          <div className="chat-widget glass-card">
-            <div className="chat-header">
-              <span className="chat-avatar">🤖</span>
-              <div>
-                <div className="chat-title">EverGreen AI Assistant</div>
-                <div className="chat-subtitle">Answers pricing, deployment, and features instantly</div>
-              </div>
-              <span className="chat-online">● Online</span>
-            </div>
-            <div className="chat-messages">
-              {chatMessages.map((m, i) => (
-                <div key={i} className={`chat-bubble ${m.role}`}>
-                  {m.role === 'bot' && <span className="chat-bubble-bot-icon">🤖</span>}
-                  <span>{m.text}</span>
-                </div>
-              ))}
-              <div ref={chatEndRef} />
-            </div>
-            <div className="chat-input-row">
-              <input
-                className="chat-input"
-                placeholder="Ask about pricing, Tally integration, weighbridge..."
-                value={activeChatMsg}
-                onChange={e => setActiveChatMsg(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && sendChat()}
-              />
-              <button className="chat-send" onClick={sendChat}>Send ↑</button>
-            </div>
-          </div>
+          <div id="scout"><AiAssistant endpoint={(import.meta.env.VITE_MARKETING_API_URL || '/marketing-api') + '/ai/marketing'} title="Scout" purpose="Explore EverGreen and prepare your product demo" prompts={['Is EverGreen suitable for my textile business?', 'What is ready today and what needs configuration?', 'Help me prepare a demo checklist.']} /></div>
         </div>
       </section>
 
@@ -1407,9 +1395,9 @@ export default function App() {
               </div>
 
               <div className="office-hours" style={{ marginTop: '1.25rem' }}>
-                <strong>Support Desk SLA</strong>
+                <strong>Support arrangements</strong>
                 <span>Mon–Sat: 8:00 AM – 9:00 PM IST · &lt; 30 min SLA</span>
-                <span>Emergency 24/7 Hotline for Production Weighbridges</span>
+                <span>Use a verified support contact for urgent operational issues.</span>
               </div>
             </div>
 
@@ -1417,14 +1405,15 @@ export default function App() {
               {contactSent ? (
                 <div className="contact-success">
                   <div className="contact-success-icon">✅</div>
-                  <h3>Message Received!</h3>
-                  <p>Our textile solutions engineer will contact you within 2 business hours. For urgent response, WhatsApp our team at <strong>+91 98427 55200</strong>.</p>
+                  <h3>Enquiry draft prepared</h3>
+                  <p>Your enquiry was downloaded as a text file. This site has no connected enquiry-delivery service. Share the draft through a verified business contact when ready.</p>
                 </div>
               ) : (
                 <form className="contact-form" onSubmit={e => {
                   e.preventDefault();
+                  downloadEnquiry('evergreen-enquiry', contactForm);
                   setContactSent(true);
-                  setToastMsg('✅ Message received! Our textile specialist will reach out within 2 hours.');
+                  setToastMsg('Enquiry draft downloaded. It has not been sent to a support team.');
                 }}>
                   <h3>Talk to an Engineer</h3>
                   <div className="cf-row-2">
@@ -1584,10 +1573,10 @@ export default function App() {
                   <div className="integ-modal-val">{selectedInteg.category}</div>
                 </div>
                 <div className="integ-modal-field">
-                  <div className="integ-modal-label">Network Latency / Stream</div>
+                  <div className="integ-modal-label">Connection readiness</div>
                   <div className="integ-modal-val" style={{ color: 'var(--emerald)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                     <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--emerald)' }} />
-                    {selectedInteg.latencyMs} ms (Active Heartbeat)
+                    Not measured - planned connector
                   </div>
                 </div>
               </div>
@@ -1644,20 +1633,21 @@ export default function App() {
             {pocSubmitted ? (
               <div className="poc-success">
                 <div className="poc-success-icon">🎉</div>
-                <h3>POC Request Received!</h3>
-                <p>Our South India deployment team will contact you within 2 hours. For immediate assistance, WhatsApp our engineering desk at <strong>+91 98427 55200</strong>.</p>
+                <h3>Demo request prepared</h3>
+                <p>Your demo request was downloaded for you to review. No message has been sent and no appointment or deployment has been booked.</p>
                 <button className="btn-primary" onClick={() => { setShowPocModal(false); setPocSubmitted(false); }}>Done</button>
               </div>
             ) : (
               <>
                 <div className="modal-header">
-                  <h3>🚀 Start Your Free 30-Day POC</h3>
-                  <p>Full deployment at your mill. Real yarn lots. Zero cost. Field engineer visits your mill in Tirupur, Coimbatore, Erode, or Karur.</p>
+                  <h3>🚀 Prepare your product demo</h3>
+                  <p>Describe your mill and the workflows you want to evaluate. Download a request draft and confirm demo arrangements with your business contact.</p>
                 </div>
                 <form className="poc-form" onSubmit={e => {
                   e.preventDefault();
+                  downloadEnquiry('evergreen-demo-request', pocForm);
                   setPocSubmitted(true);
-                  setToastMsg('🎉 POC Request Submitted! Our South India engineering team will contact you within 2 hours.');
+                  setToastMsg('Demo request draft downloaded. No booking or deployment has been made.');
                 }}>
                   <div className="cf-row-2">
                     <div className="cf-field">

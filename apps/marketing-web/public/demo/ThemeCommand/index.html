@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="robots" content="noindex,nofollow" />
+    <title>EverGreen — Command Cinema</title>
+    <link rel="stylesheet" href="./theme.css" />
+    <script type="module" src="./theme.js"></script>
+  </head>
+  <body>
+    <a class="skip" href="#story">Skip to presentation</a>
+    <header>
+      <a class="brand" href="../"
+        >▧ <strong>EverGreen</strong><span>COMMAND CINEMA</span></a
+      >
+      <nav aria-label="Main navigation">
+        <a href="../">All demos</a><a href="#platform">The platform</a
+        ><a class="contact" href="../ThemeAuthored/#brief">Plan your mill →</a>
+      </nav>
+    </header>
+    <main>
+      <section class="intro">
+        <p class="eyebrow">YOUR MILL. ONE CONNECTED PICTURE.</p>
+        <h1>See the work.<br /><span>Stay ahead of it.</span></h1>
+        <p>
+          From the first bale to the final dispatch. Give every team a clear
+          view of the records that keep your mill moving.
+        </p>
+        <div class="intro-actions">
+          <button id="watch">▶ Watch the platform story</button
+          ><a href="../ThemeAuthored/#spec">Explore the specification ↗</a>
+        </div>
+        <span class="edition">01 / COMMAND CENTER COLLECTION</span>
+      </section>
+      <section
+        class="cinema"
+        id="story"
+        aria-label="Interactive platform presentation"
+      >
+        <div class="cinema-top">
+          <span><i></i> EVERGREEN / OPERATIONS VIEW</span
+          ><span>ILLUSTRATIVE PRODUCT STORY · NO LIVE DATA</span
+          ><button id="fullscreen" aria-label="Enter fullscreen presentation">
+            ⛶
+          </button>
+        </div>
+        <div class="stage" data-chapter="0">
+          <div class="grid-floor"></div>
+          <div class="orbit orbit-one"></div>
+          <div class="orbit orbit-two"></div>
+          <div class="scene-label">
+            <span id="chapter-number">01 / CAMPUS</span>
+            <h2 id="scene-title">A wider view.<br />A clearer next step.</h2>
+            <p id="scene-copy">
+              Bring material, production and dispatch into the same
+              conversation.
+            </p>
+          </div>
+          <svg
+            class="campus"
+            viewBox="0 0 900 620"
+            role="img"
+            aria-labelledby="campus-title"
+          >
+            <title id="campus-title">
+              Illustrative isometric textile campus with receiving, spinning,
+              stock and dispatch buildings
+            </title>
+            <defs>
+              <linearGradient id="roof" x2="1" y2="1">
+                <stop stop-color="#33527a" />
+                <stop offset="1" stop-color="#142a48" />
+              </linearGradient>
+              <linearGradient id="wall" x2="0" y2="1">
+                <stop stop-color="#203e5c" />
+                <stop offset="1" stop-color="#0d1d34" />
+              </linearGradient>
+              <pattern
+                id="windows"
+                width="20"
+                height="20"
+                patternUnits="userSpaceOnUse"
+              >
+                <rect
+                  width="10"
+                  height="4"
+                  x="5"
+                  y="8"
+                  fill="#38bdf8"
+                  opacity=".65"
+                />
+              </pattern>
+              <g id="mill">
+                <path d="M0 80 110 20 250 95 140 155Z" fill="url(#roof)" />
+                <path d="M0 80v85l140 75v-85Z" fill="url(#wall)" />
+                <path d="M140 155 250 95v85l-110 60Z" fill="#183f49" />
+                <path d="M10 105v44l115 62v-44Z" fill="url(#windows)" />
+                <path d="m151 168 84-45v36l-84 46Z" fill="url(#windows)" />
+                <path
+                  d="m15 80 95-50 121 65-92 49Z"
+                  fill="none"
+                  stroke="#5a7f9e"
+                />
+                <path
+                  d="m60 59 126 69m-91-87 126 69"
+                  stroke="#638497"
+                  opacity=".5"
+                />
+              </g>
+            </defs>
+            <path class="campus-base" d="M60 310 430 100 850 325 474 560Z" />
+            <path class="road" d="m110 332 335-186 344 186-313 184Z" />
+            <path class="route" d="m190 320 230-131 285 153-230 140Z" />
+            <g class="building receive">
+              <use href="#mill" transform="translate(170 150) scale(.85)" />
+              <text x="185" y="350">01 RECEIVING</text>
+            </g>
+            <g class="building spinning">
+              <use href="#mill" transform="translate(395 120) scale(1.1)" />
+              <text x="490" y="390">02 SPINNING</text>
+            </g>
+            <g class="building stock">
+              <use href="#mill" transform="translate(340 325) scale(.7)" />
+              <text x="380" y="525">03 STOCK & DISPATCH</text>
+            </g>
+            <g class="campus-trees" fill="#226b58">
+              <path
+                d="m104 329 17-60 18 60Zm27 23 17-60 18 60Zm580 72 17-60 18 60Zm28-17 17-60 18 60Z"
+              />
+            </g>
+          </svg>
+          <aside class="hud">
+            <span class="hud-label">THE CONNECTED RECORD</span>
+            <div>
+              <b id="record-title">Material inward</b
+              ><span id="record-subtitle">Start with a traceable receipt</span>
+            </div>
+            <ol id="record-list">
+              <li>Supplier reference</li>
+              <li>Lot identity</li>
+              <li>Received quantity</li>
+            </ol>
+            <div class="signal">
+              <span></span><span></span><span></span><span></span><span></span
+              ><span></span><span></span><span></span><span></span><span></span
+              ><span></span><span></span>
+            </div>
+            <small>Example workflow · verify your mill’s configuration</small>
+          </aside>
+          <div class="scene-foot">
+            <span>INWARD → PRODUCTION → STOCK → DISPATCH</span
+            ><span>DESIGNED AROUND THE WORK</span>
+          </div>
+        </div>
+        <div class="transport">
+          <button id="play" aria-label="Play presentation">▶</button
+          ><span id="time">00:00 / 00:24</span
+          ><label class="scrub-label"
+            >Presentation position<input
+              id="scrub"
+              type="range"
+              min="0"
+              max="24"
+              step="0.1"
+              value="0" /></label
+          ><button id="restart">↺ Restart</button
+          ><span class="sound-note">SILENT PRESENTATION</span>
+        </div>
+        <div class="chapters" aria-label="Presentation chapters">
+          <button data-chapter="0" aria-pressed="true">
+            <span>01</span> The campus <small>A shared picture</small></button
+          ><button data-chapter="1" aria-pressed="false">
+            <span>02</span> The floor <small>Follow the handoff</small></button
+          ><button data-chapter="2" aria-pressed="false">
+            <span>03</span> The decision
+            <small>Know what needs attention</small>
+          </button>
+        </div>
+        <p id="player-status" role="status">
+          Press play or choose a chapter. Motion follows your device
+          preferences.
+        </p>
+      </section>
+      <section class="platform" id="platform">
+        <div>
+          <p class="eyebrow">CLARITY AT EVERY HANDOFF</p>
+          <h2>One reference.<br />Across the whole mill.</h2>
+          <p>
+            Built for the owner asking what is outstanding, the accountant
+            checking the document, and the floor handing work to the next shift.
+          </p>
+          <a href="../ThemeAuthored/#record">Inspect the operational flow →</a>
+        </div>
+        <div class="capabilities">
+          <article>
+            <span>↙</span>
+            <h3>Know what arrived</h3>
+            <p>Keep the supplier, quantity and material reference together.</p>
+          </article>
+          <article>
+            <span>◈</span>
+            <h3>Follow what changed</h3>
+            <p>Review production inputs, output, waste and stock movements.</p>
+          </article>
+          <article>
+            <span>↗</span>
+            <h3>Close the handoff</h3>
+            <p>
+              Check dispatch, invoicing and export records before the next step.
+            </p>
+          </article>
+        </div>
+      </section>
+      <section class="closing">
+        <p class="eyebrow">LET’S START WITH YOUR MILL</p>
+        <h2>Make the next shift<br /><span>a little clearer.</span></h2>
+        <a class="contact" href="../ThemeAuthored/#brief">Prepare your mill brief →</a>
+        <p>
+          Sales ·
+          <a id="sales" href="mailto:sales@evergreen.com"
+            >sales@evergreen.com</a
+          >
+          <span id="hours">09:00–18:00 IST</span>
+        </p>
+      </section>
+    </main>
+    <footer>
+      <span>EverGreen / Command Cinema</span
+      ><a href="../">Return to all themes ↗</a
+      ><span>Concept presentation · illustrative geometry</span>
+    </footer>
+  </body>
+</html>

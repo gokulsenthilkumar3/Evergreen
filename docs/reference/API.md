@@ -4,10 +4,17 @@ Generated from Nest controller decorators. Default global policy: authenticated 
 
 | Method | Route | Policy | Handler signature | Source |
 | --- | --- | --- | --- | --- |
-| GET | `/` | Public (inspect local guards) | `index(@Res({ passthrough: true }) res: Response)` | [apps/api/src/app.controller.ts:11](../../apps/api/src/app.controller.ts) |
-| GET | `/health` | Public (inspect local guards) | `health(@Res({ passthrough: true }) res: Response)` | [apps/api/src/app.controller.ts:18](../../apps/api/src/app.controller.ts) |
-| GET | `/status` | ADMIN | `status()` | [apps/api/src/app.controller.ts:25](../../apps/api/src/app.controller.ts) |
+| GET | `/license/status` | Public (inspect local guards) | `licenceStatus()` | [apps/api/src/app.controller.ts:12](../../apps/api/src/app.controller.ts) |
+| GET | `/` | Public (inspect local guards) | `index(@Res({ passthrough: true }) res: Response)` | [apps/api/src/app.controller.ts:23](../../apps/api/src/app.controller.ts) |
+| GET | `/health` | Public (inspect local guards) | `health(@Res({ passthrough: true }) res: Response)` | [apps/api/src/app.controller.ts:30](../../apps/api/src/app.controller.ts) |
+| GET | `/status` | ADMIN | `status()` | [apps/api/src/app.controller.ts:37](../../apps/api/src/app.controller.ts) |
 | POST | `/admin-ops/migrate` | MODIFIER | `runMigration()` | [apps/api/src/modules/admin-ops/admin-ops.controller.ts:11](../../apps/api/src/modules/admin-ops/admin-ops.controller.ts) |
+| GET | `/ai/staff` | VIEWER | `staffStatus()` | [apps/api/src/modules/assistants/assistants.controller.ts:25](../../apps/api/src/modules/assistants/assistants.controller.ts) |
+| POST | `/ai/staff` | VIEWER | `staff(@Body() body: unknown, @Req() req: Request & { user: { userId?: number; username: string } })` | [apps/api/src/modules/assistants/assistants.controller.ts:33](../../apps/api/src/modules/assistants/assistants.controller.ts) |
+| GET | `/ai/customer` | Public (inspect local guards) | `customerStatus()` | [apps/api/src/modules/assistants/assistants.controller.ts:72](../../apps/api/src/modules/assistants/assistants.controller.ts) |
+| POST | `/ai/customer` | Public (inspect local guards) | `customer(@Body() body: unknown, @Req() req: Request)` | [apps/api/src/modules/assistants/assistants.controller.ts:78](../../apps/api/src/modules/assistants/assistants.controller.ts) |
+| GET | `/ai/marketing` | Public (inspect local guards) | `marketingStatus()` | [apps/api/src/modules/assistants/assistants.controller.ts:88](../../apps/api/src/modules/assistants/assistants.controller.ts) |
+| POST | `/ai/marketing` | Public (inspect local guards) | `marketing(@Body() body: unknown, @Req() req: Request)` | [apps/api/src/modules/assistants/assistants.controller.ts:94](../../apps/api/src/modules/assistants/assistants.controller.ts) |
 | POST | `/auth/signup` | VIEWER | `signup()` | [apps/api/src/modules/auth/auth.controller.ts:37](../../apps/api/src/modules/auth/auth.controller.ts) |
 | POST | `/auth/login` | Public (inspect local guards) | `login(@Body() loginDto: LoginDto, @Req() req: Request)` | [apps/api/src/modules/auth/auth.controller.ts:45](../../apps/api/src/modules/auth/auth.controller.ts) |
 | DELETE | `/auth/logout` | VIEWER | `logout(@Req() req: any)` | [apps/api/src/modules/auth/auth.controller.ts:72](../../apps/api/src/modules/auth/auth.controller.ts) |
@@ -77,6 +84,9 @@ Generated from Nest controller decorators. Default global policy: authenticated 
 | GET | `/dashboard/summary` | VIEWER | `getSummary(@Query('from') from?: string, @Query('to') to?: string)` | [apps/api/src/modules/dashboard/dashboard.controller.ts:14](../../apps/api/src/modules/dashboard/dashboard.controller.ts) |
 | GET | `/dashboard/charts` | VIEWER | `getCharts(@Query('from') from?: string, @Query('to') to?: string)` | [apps/api/src/modules/dashboard/dashboard.controller.ts:95](../../apps/api/src/modules/dashboard/dashboard.controller.ts) |
 | GET | `/dashboard/recent-activity` | VIEWER | `getRecentActivity()` | [apps/api/src/modules/dashboard/dashboard.controller.ts:216](../../apps/api/src/modules/dashboard/dashboard.controller.ts) |
+| GET | `/helpdesk/tickets` | VIEWER | `list(@Req() req: { user: Actor })` | [apps/api/src/modules/helpdesk/helpdesk.controller.ts:145](../../apps/api/src/modules/helpdesk/helpdesk.controller.ts) |
+| POST | `/helpdesk/tickets` | VIEWER | `create(@Body() body: CreateTicketDto, @Req() req: { user: Actor })` | [apps/api/src/modules/helpdesk/helpdesk.controller.ts:154](../../apps/api/src/modules/helpdesk/helpdesk.controller.ts) |
+| PATCH | `/helpdesk/tickets/:id` | ADMIN | `update(@Param('id') id: string, @Body() body: UpdateTicketDto)` | [apps/api/src/modules/helpdesk/helpdesk.controller.ts:163](../../apps/api/src/modules/helpdesk/helpdesk.controller.ts) |
 | GET | `/hr/staff` | VIEWER | `listStaff()` | [apps/api/src/modules/hr/hr.controller.ts:15](../../apps/api/src/modules/hr/hr.controller.ts) |
 | POST | `/hr/staff` | MODIFIER | `createStaff(@Body() body: CreateStaffDto)` | [apps/api/src/modules/hr/hr.controller.ts:20](../../apps/api/src/modules/hr/hr.controller.ts) |
 | GET | `/hr/shifts` | VIEWER | `listShifts()` | [apps/api/src/modules/hr/hr.controller.ts:26](../../apps/api/src/modules/hr/hr.controller.ts) |
@@ -85,11 +95,14 @@ Generated from Nest controller decorators. Default global policy: authenticated 
 | POST | `/hr/payroll` | MODIFIER | `createPayrollEntry(@Body() body: CreatePayrollEntryDto)` | [apps/api/src/modules/hr/hr.controller.ts:42](../../apps/api/src/modules/hr/hr.controller.ts) |
 | PUT | `/hr/payroll/:id` | MODIFIER | `updatePayrollEntry(@Param('id') id: string, @Body() body: UpdatePayrollEntryDto)` | [apps/api/src/modules/hr/hr.controller.ts:48](../../apps/api/src/modules/hr/hr.controller.ts) |
 | DELETE | `/hr/payroll/:id` | ADMIN | `deletePayrollEntry(@Param('id') id: string)` | [apps/api/src/modules/hr/hr.controller.ts:56](../../apps/api/src/modules/hr/hr.controller.ts) |
-| POST | `/integrations/imports/preview` | ADMIN | `preview(@Body() body: ImportInput)` | [apps/api/src/modules/integrations/integrations.controller.ts:11](../../apps/api/src/modules/integrations/integrations.controller.ts) |
-| POST | `/integrations/imports/commit` | ADMIN | `commit(@Body() body: ImportInput & { source: string; requestKey: string }, @Req() req: AuthenticatedRequest)` | [apps/api/src/modules/integrations/integrations.controller.ts:14](../../apps/api/src/modules/integrations/integrations.controller.ts) |
-| GET | `/integrations/imports` | ADMIN | `history()` | [apps/api/src/modules/integrations/integrations.controller.ts:20](../../apps/api/src/modules/integrations/integrations.controller.ts) |
-| GET | `/integrations/tally/export` | ADMIN | `exportXml(@Query('from') from: string \| undefined, @Query('to') to: string \| undefined, @Query('types') types: string \| undefined, @Res() res: Response)` | [apps/api/src/modules/integrations/tally/tally.controller.ts:11](../../apps/api/src/modules/integrations/tally/tally.controller.ts) |
-| GET | `/integrations/tally/summary` | ADMIN | `getSummary(@Query('from') from: string \| undefined, @Query('to') to: string \| undefined)` | [apps/api/src/modules/integrations/tally/tally.controller.ts:49](../../apps/api/src/modules/integrations/tally/tally.controller.ts) |
+| POST | `/integrations/imports/preview` | ADMIN | `preview(@Body() body: ImportInput)` | [apps/api/src/modules/integrations/integrations.controller.ts:16](../../apps/api/src/modules/integrations/integrations.controller.ts) |
+| POST | `/integrations/imports/commit` | ADMIN | `commit(@Body() body: ImportInput & { source: string; requestKey: string }, @Req() req: AuthenticatedRequest)` | [apps/api/src/modules/integrations/integrations.controller.ts:19](../../apps/api/src/modules/integrations/integrations.controller.ts) |
+| GET | `/integrations/status` | ADMIN | `status()` | [apps/api/src/modules/integrations/integrations.controller.ts:25](../../apps/api/src/modules/integrations/integrations.controller.ts) |
+| GET | `/integrations/tally/connection` | ADMIN | `connection()` | [apps/api/src/modules/integrations/integrations.controller.ts:28](../../apps/api/src/modules/integrations/integrations.controller.ts) |
+| GET | `/integrations/eway-bill/readiness/:id` | ADMIN | `readiness(@Param('id', ParseIntPipe) id: number)` | [apps/api/src/modules/integrations/integrations.controller.ts:31](../../apps/api/src/modules/integrations/integrations.controller.ts) |
+| GET | `/integrations/imports` | ADMIN | `history()` | [apps/api/src/modules/integrations/integrations.controller.ts:36](../../apps/api/src/modules/integrations/integrations.controller.ts) |
+| GET | `/integrations/tally/export` | ADMIN | `exportXml(@Query('from') from: string \| undefined, @Query('to') to: string \| undefined, @Query('types') types: string \| undefined, @Res() res: Response)` | [apps/api/src/modules/integrations/tally/tally.controller.ts:34](../../apps/api/src/modules/integrations/tally/tally.controller.ts) |
+| GET | `/integrations/tally/summary` | ADMIN | `getSummary(@Query('from') from: string \| undefined, @Query('to') to: string \| undefined, @Query('types') types?: string)` | [apps/api/src/modules/integrations/tally/tally.controller.ts:61](../../apps/api/src/modules/integrations/tally/tally.controller.ts) |
 | GET | `/inventory/history` | VIEWER | `getInventoryHistory(@Query('range') range: DateRange = DateRange.MONTH, @Query('from') from?: string, @Query('to') to?: string)` | [apps/api/src/modules/inventory/inventory.controller.ts:24](../../apps/api/src/modules/inventory/inventory.controller.ts) |
 | POST | `/inventory/inward` | MODIFIER | `createInward(@Body() data: any, @Req() req: any)` | [apps/api/src/modules/inventory/inventory.controller.ts:119](../../apps/api/src/modules/inventory/inventory.controller.ts) |
 | POST | `/inventory/inward/weighbridge-sync` | MODIFIER | `syncWeighbridgeReading(@Body() body: any, @Req() req: any)` | [apps/api/src/modules/inventory/inventory.controller.ts:127](../../apps/api/src/modules/inventory/inventory.controller.ts) |

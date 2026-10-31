@@ -1,3 +1,10 @@
+import { refreshInstallationLease } from '@evergreen/types/licensing-online';
+import { ownerGroqEnvironment } from '@evergreen/types/ai-server';
+import { upgradeApiReference } from './api-reference';
+import {
+  requireInstallationLicence,
+  ownerHostEnvironment,
+} from '@evergreen/types/licensing';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
@@ -10,6 +17,14 @@ import { BusinessActionFilter } from './filters/business-action.filter';
 import { PrismaService } from './services/prisma.service';
 
 async function bootstrap() {
+  Object.assign(process.env, ownerHostEnvironment('tenant'));
+  Object.assign(process.env, ownerGroqEnvironment());
+  try {
+    await refreshInstallationLease('tenant');
+  } catch {
+    /* Existing signed offline access is checked below. */
+  }
+  requireInstallationLicence('tenant');
   if (process.env.AUTO_MIGRATE === 'true') {
     throw new Error(
       'AUTO_MIGRATE is no longer supported. Use the release deployment helper to snapshot and migrate the selected database.',
@@ -139,13 +154,15 @@ Authorize with your own staff bearer token for protected endpoints. Try it out e
         'Staff directory, shift rosters & wage disbursement',
       )
       .build();
-    const document = SwaggerModule.createDocument(app, config);
+    const document = upgradeApiReference(app, SwaggerModule.createDocument(app, config), 'tenant');
     SwaggerModule.setup('api/docs', app, document, {
       customSiteTitle:
         'EverGreen One — API Documentation & Interactive Explorer',
       swaggerOptions: {
         persistAuthorization: true,
-        docExpansion: 'list',
+        docExpansion: 'none',
+        displayOperationId: true,
+        requestSnippetsEnabled: true,
         filter: true,
         displayRequestDuration: true,
         tryItOutEnabled: true,

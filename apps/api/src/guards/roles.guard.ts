@@ -46,6 +46,15 @@ export class RolesGuard implements CanActivate {
     }
 
     const userRole = normalizeRole(user.role);
+    // Signed installation roles can narrow access; they never grant a user additional permissions.
+    if (
+      request.installationLicence &&
+      !request.installationLicence.roles.includes(userRole)
+    ) {
+      throw new ForbiddenException(
+        'Your staff role is not enabled by this installation licence',
+      );
+    }
     const allowedRoles = ROLE_HIERARCHY[userRole] || [userRole];
     const hasRole = effectiveRoles.some((role) => allowedRoles.includes(role));
 

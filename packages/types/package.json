@@ -4,12 +4,27 @@
   "main": "./dist/index.js",
   "types": "./index.ts",
   "exports": {
+    "./ai-server": {
+      "types": "./ai-server.ts",
+      "require": "./dist/ai-server.js",
+      "default": "./dist/ai-server.js"
+    },
     ".": {
       "types": "./index.ts",
       "browser": "./index.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.js",
       "default": "./dist/index.js"
+    },
+    "./licensing": {
+      "types": "./licensing.ts",
+      "require": "./dist/licensing.js",
+      "default": "./dist/licensing.js"
+    },
+    "./licensing-online": {
+      "types": "./licensing-online.ts",
+      "require": "./dist/licensing-online.js",
+      "default": "./dist/licensing-online.js"
     }
   },
   "scripts": {

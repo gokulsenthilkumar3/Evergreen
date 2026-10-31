@@ -2,6 +2,8 @@ node_modules
 dist
 .env
 *.db
+*.db-*
+*.sqlite*
 *.log
 .DS_Store
 .next
@@ -16,6 +18,9 @@ yarn-debug.log*
 yarn-error.log*
 *.zip
 *.tsbuildinfo
+*.dpapi
+**/installation-key.json
+**/owner-keys/
 # Local database snapshots and archives belong outside the repository.
 backups/
 .evergreen/

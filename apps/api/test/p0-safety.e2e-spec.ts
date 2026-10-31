@@ -1,3 +1,4 @@
+import { InstallationLicenseGuard } from '../src/guards/installation-license.guard';
 import { Test } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
@@ -49,6 +50,9 @@ describe('P0 safety: public surfaces and the costing kill-switch', () => {
       { env: process.env, stdio: 'pipe' },
     );
     const module = await Test.createTestingModule({ imports: [AppModule] })
+      // The business fixture represents an activated deployment. Licence enforcement has separate cryptographic and guard tests.
+      .overrideProvider(InstallationLicenseGuard)
+      .useValue({ canActivate: () => true })
       .overrideProvider(EmailService)
       .useValue({ sendLoginNotification: () => Promise.resolve() })
       .compile();

@@ -1,3 +1,4 @@
+import { validatePartyContact } from './gst';
 /** Explicit column mapping for master data. Never imports stock or accounting balances. */
 export const IMPORT_FIELDS = {
   customers: ['name', 'phone', 'email', 'gstin', 'state', 'address'],
@@ -70,11 +71,10 @@ export function previewImport(input: ImportInput): ImportPreview {
         record[field] = Number(value);
       }
     } else {
-      if (record.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(record.email))) issue('email', 'Invalid email.');
-      if (record.gstin) {
-        record.gstin = String(record.gstin).toUpperCase();
-        if (!/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/.test(String(record.gstin))) issue('gstin', 'Invalid GSTIN format.');
-      }
+      const contact = validatePartyContact(record);
+      if (contact.error) issue('contact', contact.error);
+      else Object.assign(record, Object.fromEntries(Object.entries(contact.value).map(([key, value]) => [key, value ?? ''])));
+
     }
     const identity = String(input.entity === 'items' ? record.sku : record.name).toLowerCase();
     if (identities.has(identity)) issue(input.entity === 'items' ? 'sku' : 'name', 'Duplicate identity within this batch.');

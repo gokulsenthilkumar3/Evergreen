@@ -9,9 +9,9 @@ describe('legacy CSV migration', () => {
     expect(() => parseImportCsv(text)).toThrow();
   });
   it('does not guess unknown headings and reports ignored columns', () => {
-    const file = parseImportCsv('Odd heading,Old phone,Ignore this\nCustomer One,01234,legacy');
+    const file = parseImportCsv('Odd heading,Old phone,Ignore this\nCustomer One,0123456789,legacy');
     const input: ImportInput = { entity: 'customers', ...file, mapping: { name: 0, phone: 1 } };
-    expect(previewImport(input)).toEqual({ records: [{ name: 'Customer One', phone: '01234' }], issues: [], ignoredHeaders: ['Ignore this'] });
+    expect(previewImport(input)).toEqual({ records: [{ name: 'Customer One', phone: '0123456789' }], issues: [], ignoredHeaders: ['Ignore this'] });
   });
   it('reports row-specific errors and canonicalizes catalogue identifiers', () => {
     const result = previewImport({ entity: 'items', headers: ['code', 'description', 'category', 'unit', 'tax'], rows: [['a', 'Yarn', 'yarn', 'KG', '101'], ['A', 'Yarn', 'BAD', 'KG', 'NaN']], mapping: { sku: 0, name: 1, type: 2, uom: 3, gstRate: 4 } });

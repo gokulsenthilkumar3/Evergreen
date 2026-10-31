@@ -10,11 +10,13 @@ const IV_LENGTH = 12; // 96 bits for GCM
 const TAG_LENGTH = 16; // 128 bits
 const SALT = 'evergreen_spinning_field_encryption_salt_2026';
 
+/** Each installation supplies its own secret; a committed default would let anyone decrypt. */
 function getKey(masterSecret?: string): Buffer {
-  const secret =
-    masterSecret ||
-    process.env.ENCRYPTION_SECRET ||
-    'evergreen_default_production_encryption_key_9921';
+  const secret = masterSecret || process.env.ENCRYPTION_SECRET;
+  if (!secret || secret.length < 32)
+    throw new Error(
+      'ENCRYPTION_SECRET must be set to at least 32 characters before encrypting or decrypting fields',
+    );
   return scryptSync(secret, SALT, 32);
 }
 

@@ -78,18 +78,23 @@ Source: [tally.service.ts](../apps/api/src/modules/integrations/tally/tally.serv
 | Endpoint | Behaviour |
 | --- | --- |
 | GET `/integrations/tally/export` | Downloads an `<ENVELOPE>` XML file for the chosen date range and voucher types |
-| GET `/integrations/tally/summary` | Returns voucher counts and a preview as JSON |
+| GET `/integrations/tally/summary` | Returns voucher counts, the number of void invoices left out, and a preview as JSON |
+
+`from` and `to` are calendar days (`YYYY-MM-DD`). The range covers both days in full, from 00:00 on `from` to 23:59:59 on `to`, by the server clock. Any other format returns 400.
 
 | Voucher | Built from | Ledger lines |
 | --- | --- | --- |
-| Sales | Invoices | Debit the customer for the total; credit `Cotton Yarn Sales` with the taxable amount; credit `Output IGST 5%`, or `Output CGST 2.5%` plus `Output SGST 2.5%` |
-| Receipt | Payments | Debit `Cash` or `Bank Account (Current)`; credit the customer |
+| Sales | Invoices, except void ones | Debit the customer for the total; credit `Cotton Yarn Sales` with the taxable amount; credit one output tax ledger per GST rate on the invoice, named by that rate: `Output IGST 18%`, or `Output CGST 9%` plus `Output SGST 9%`. If the saved total ever differs from taxable value plus tax, a `Round Off` line carries the difference so the voucher balances |
+| Receipt | Cash, bank, UPI and cheque payments | Debit `Cash` or `Bank Account (Current)`; credit the customer. Allocation rows are internal settlement entries and are never exported. Original receipts remain in their payment period. Reversals export as balanced Journal vouchers on the reversal date, crediting the original cash/bank ledger and debiting the customer |
 | Purchase | Not exported | Rejected on purpose: a purchase voucher needs an approved supplier bill, agreed rate, tax treatment and ledger mapping, not just an inward weight |
 
-Known gaps before an accountant should rely on the file:
+Create the tax ledgers in Tally with exactly these names before importing, one per rate you sell at. When an invoice has several rates, the saved tax is split across them in proportion to each rate's taxable value, with any paisa difference on the largest share, so the lines always add up to the saved invoice. Invoices saved before line rates were recorded use the rate implied by their saved totals.
 
-- Void invoices and internal payment rows (allocations, reversals) are exported, and negative amounts can produce `--` in the XML (INT-001).
-- Ledger names are fixed and ignore the invoice's actual GST rate and the customer's Tally mapping. Vouchers have no stable integration ID, Tally's import response is not read, and an end date at midnight can drop that day's later transactions (INT-002).
+Known gaps before an accountant should rely on the file (INT-002):
+
+- The sales, cash and bank ledger names are fixed and ignore the customer's Tally ledger mapping.
+- Vouchers have no stable integration ID, and Tally's import response is not read, so importing the same period twice creates duplicates. Export each period once and keep the file.
+- The Receipt selection includes reversal Journal vouchers; receiptCount includes both event types. skippedReversedReceipts is retained as zero for response compatibility.
 
 To import: open the matching company in TallyPrime, choose Import → Vouchers, and select the file. Compare voucher counts, balances and tax totals against EverGreen afterwards.
 
@@ -104,3 +109,36 @@ Map company identity, ledger names, units, tax ledgers, voucher type, number and
 Registration uses the official authenticated API workflow; API credentials are obtained through the applicable direct/GSP registration route. Store credentials server-side, test generation/query/error handling in the provider sandbox, persist acknowledgements and reconcile status after timeouts before retrying. A printable invoice or a checksum is not an e-Way Bill or e-invoice registration. [Official overview](https://docs.ewaybillgst.gov.in/apidocs/api-overview.html), [authentication](https://docs.ewaybillgst.gov.in/apidocs/version1.01/authentication.html).
 
 The referenced provider documentation was checked on 2026-10-10. Eligibility, current schemas, provider access and customer-specific statutory requirements must be checked when implementing the connector. No live statutory submission was made.
+
+## Workspace rollout (2026-10-31)
+
+The Integrations screen provides CSV templates, column matching, database conflict checks, normalized preview, idempotent commit and batch history. Changing a file or mapping invalidates the preview. A failed commit retries with the same request key. Existing records are never overwritten.
+
+Tally preview and XML download accept the same Sales/Receipt selection. Dates are inclusive calendar days. GET /integrations/tally/connection performs a read-only check against 127.0.0.1 on TALLY_PORT (default 9000), with a five-second timeout. In containers, loopback means the API container; a remote desktop needs the planned bridge. No accounting data is posted by this check.
+
+GET /integrations/eway-bill/readiness/:id checks available invoice fields. The current schema lacks structured ship-to/dispatch pincodes and complete transporter fields. This checklist always reports registration unavailable until an authorized provider adapter, sandbox tests, persisted acknowledgement and status reconciliation are implemented. No provider is configured for this installation.
+
+### Remaining external connector work
+
+- Tally: select and validate the company, configure ledger mappings, durable delivery jobs, stable integration identifiers, acknowledgement parsing, retry reconciliation, cancellation and reversal lifecycle tests against the installed release.
+- e-Way Bill: select authorized GSP/direct access, obtain sandbox authorization, add structured transport/address data, implement provider authentication and generation/query/cancellation/vehicle updates, persist the official number and validity, reconcile uncertain submissions before retry.
+- Regional adapters: validate local currency/accounting, language, tax identity, document signing and local provider access separately. The regional cards describe research, not installed connectors.
+
+### Market research and product decisions
+
+Official references checked 2026-10-31. This is a product implementation direction; customer-specific tax treatment requires local validation.
+
+| Market / product | Observed capability | Implementation direction |
+| --- | --- | --- |
+| [Zoho Inventory](https://www.zoho.com/us/inventory/help/migration/migration-general.html) | Column mapping and preview during migration | Templates, suggested exact column matches and explicit review |
+| [ERPNext](https://docs.frappe.io/erpnext/data-import) | Import validation and duplicate errors | Show conflicts before commit and retain row-level messages |
+| [India / Tally](https://help.tallysolutions.com/pre-requisites-for-integrations/) | XML over HTTP with Tally running and a loaded company | Local connection check; live posting awaits durable acknowledgement |
+| [India / NIC](https://docs.ewaybillgst.gov.in/apidocs/) | Authorized API access; versioned lifecycle operations and release notes | Provider onboarding and sandbox tests before registration |
+| [China](https://english.www.gov.cn/news/202411/25/content_WS6743b13ac6d0868f4e8ed5e1.html) | Nationwide fully digitalized invoices | Dedicated local adapter, Chinese text and correction lifecycle |
+| [Vietnam government](https://vanban.chinhphu.vn/?docid=213179&lang=vi&pageid=27160), [MISA AMIS](https://www.misa.vn/154117/tai-lieu-huong-dan-tich-hop-amis-ke-toan-doanh-nghiep/) | Updated invoice rules and a local accounting API ecosystem | Validate a local provider, signing and correction workflows |
+| [Singapore / IMDA](https://www.imda.gov.sg/how-we-can-help/nationwide-e-invoicing-framework/invoicenow) | InvoiceNow uses Peppol | Access-point onboarding and structured document responses |
+| [Malaysia / LHDNM](https://sdk.myinvois.hasil.gov.my/einvoicingapi/) | Submission, taxpayer validation, cancellation/rejection APIs | Signed document adapter with status polling |
+
+### Login
+
+The sign-in page identifies the current workspace host, supports password/MFA and supported passkeys, displays actionable connection/rate-limit errors and links to administrator recovery guidance. Shared-device sessions use sessionStorage by default; persistence is opt-in. Logout and unauthorized responses clear both storage locations. No self-service password-reset endpoint exists, so recovery does not pretend to send an email.

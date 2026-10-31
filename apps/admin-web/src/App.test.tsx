@@ -10,6 +10,10 @@ import {
   within,
 } from "@testing-library/react";
 import App from "./App";
+import type { ReactNode } from 'react';
+// Workspace tests represent an activated, signed-in owner. Gate behavior is covered separately.
+vi.mock('./InstallationGate', () => ({ default: ({ children }: { children: ReactNode }) => children }));
+vi.mock('./ProviderAccessGate', () => ({ default: ({ children }: { children: ReactNode }) => children }));
 import { DEMO_TENANTS } from "./control-data";
 
 // jest-dom is hoisted to the root node_modules and vitest is installed under apps/admin-web, so the

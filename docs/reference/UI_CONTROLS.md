@@ -4,24 +4,26 @@ Generated from every active-source UI file. Labels expressed in code are preserv
 
 | Source | Control | Label / expression | Handler |
 | --- | --- | --- | --- |
-| [apps/web/src/App.tsx:260](../../apps/web/src/App.tsx) | TextField | <TextField id="global-search-input" placeholder="Search invoices, stock, customers (Ctrl+K)..." fullWidth size="small" autoComplete="off" value={query} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleSearch(e.target.value)} onKeyDown={handleKeyDown} InputProps={{ startAdornment: ( <InputAdornment position="start"> {loading ? <SyncIcon fontSize="small" className="spin-icon" /> : <Search | `{(e: React.ChangeEvent<HTMLInputElement>) => handleSearch(e.target.value)}` |
-| [apps/web/src/App.tsx:278](../../apps/web/src/App.tsx) | IconButton | Clear search | `{() => { setQuery(''); setResults([]); }}` |
-| [apps/web/src/App.tsx:781](../../apps/web/src/App.tsx) | Button | Connect with Licensing Desk (WhatsApp) | `` |
-| [apps/web/src/App.tsx:792](../../apps/web/src/App.tsx) | Button | Call Support | `` |
-| [apps/web/src/App.tsx:818](../../apps/web/src/App.tsx) | IconButton | {item.icon} | `{() => setCurrentPage(item.page)}` |
-| [apps/web/src/App.tsx:855](../../apps/web/src/App.tsx) | IconButton | open drawer | `{handleDrawerToggle}` |
-| [apps/web/src/App.tsx:886](../../apps/web/src/App.tsx) | IconButton | Toggle language | `{toggleLanguage}` |
-| [apps/web/src/App.tsx:892](../../apps/web/src/App.tsx) | IconButton | <SyncIcon className={isSyncing ? 'spin-icon' : ''} /> | `{handleSync}` |
-| [apps/web/src/App.tsx:901](../../apps/web/src/App.tsx) | IconButton | {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />} | `{toggleTheme}` |
-| [apps/web/src/App.tsx:907](../../apps/web/src/App.tsx) | IconButton | <Avatar alt={user.name \|\| user.username} sx={{ bgcolor: 'primary.main', width: 36, height: 36, fontSize: '0.9rem', fontWeight: 'bold', border: '2px solid rgba(255,255,255,0.1)' }} > {(user.name \|\| user.username)?.charAt(0).toUpperCase()} </Avatar> | `{handleProfileClick}` |
+| [apps/web/src/App.tsx:262](../../apps/web/src/App.tsx) | TextField | <TextField id="global-search-input" placeholder="Search invoices, stock, customers (Ctrl+K)..." fullWidth size="small" autoComplete="off" value={query} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleSearch(e.target.value)} onKeyDown={handleKeyDown} InputProps={{ startAdornment: ( <InputAdornment position="start"> {loading ? <SyncIcon fontSize="small" className="spin-icon" /> : <Search | `{(e: React.ChangeEvent<HTMLInputElement>) => handleSearch(e.target.value)}` |
+| [apps/web/src/App.tsx:280](../../apps/web/src/App.tsx) | IconButton | Clear search | `{() => { setQuery(''); setResults([]); }}` |
+| [apps/web/src/App.tsx:782](../../apps/web/src/App.tsx) | Button | Connect with Licensing Desk (WhatsApp) | `` |
+| [apps/web/src/App.tsx:793](../../apps/web/src/App.tsx) | Button | Call Support | `` |
+| [apps/web/src/App.tsx:819](../../apps/web/src/App.tsx) | IconButton | {item.icon} | `{() => setCurrentPage(item.page)}` |
+| [apps/web/src/App.tsx:856](../../apps/web/src/App.tsx) | IconButton | open drawer | `{handleDrawerToggle}` |
+| [apps/web/src/App.tsx:887](../../apps/web/src/App.tsx) | IconButton | Toggle language | `{toggleLanguage}` |
+| [apps/web/src/App.tsx:893](../../apps/web/src/App.tsx) | IconButton | <SyncIcon className={isSyncing ? 'spin-icon' : ''} /> | `{handleSync}` |
+| [apps/web/src/App.tsx:902](../../apps/web/src/App.tsx) | IconButton | {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />} | `{toggleTheme}` |
+| [apps/web/src/App.tsx:908](../../apps/web/src/App.tsx) | IconButton | <Avatar alt={user.name \|\| user.username} sx={{ bgcolor: 'primary.main', width: 36, height: 36, fontSize: '0.9rem', fontWeight: 'bold', border: '2px solid rgba(255,255,255,0.1)' }} > {(user.name \|\| user.username)?.charAt(0).toUpperCase()} </Avatar> | `{handleProfileClick}` |
 | [apps/web/src/components/BusinessFlowGuide.tsx:25](../../apps/web/src/components/BusinessFlowGuide.tsx) | TextField | Search workflow guide | `{event => setSearch(event.target.value)}` |
 | [apps/web/src/components/BusinessFlowGuide.tsx:34](../../apps/web/src/components/BusinessFlowGuide.tsx) | Button | {step.action} | `{() => onNavigate(step.page)}` |
-| [apps/web/src/components/Login.tsx:325](../../apps/web/src/components/Login.tsx) | TextField | Username | `{(e) => { setUsername(e.target.value); if (error) setError(null); handleTyping(); }}` |
-| [apps/web/src/components/Login.tsx:352](../../apps/web/src/components/Login.tsx) | TextField | Password | `{(e) => { setPassword(e.target.value); if (error) setError(null); handleTyping(); }}` |
-| [apps/web/src/components/Login.tsx:379](../../apps/web/src/components/Login.tsx) | IconButton | {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />} | `{() => setShowPassword(!showPassword)}` |
-| [apps/web/src/components/Login.tsx:388](../../apps/web/src/components/Login.tsx) | TextField | 6-Digit Authenticator Code | `{(e) => setTotpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}` |
-| [apps/web/src/components/Login.tsx:427](../../apps/web/src/components/Login.tsx) | Button | <Box sx={{ display: 'flex', alignItems: 'center', height: 24 }}> {loading && !success && <CircularProgress size={20} color="inherit" sx={{ mr: 1 }} />} {success ? ( <Fade in timeout={500}> <Box sx={{ display: 'flex', alignItems: 'center' }}> <CheckCircleIcon sx={{ mr: 1 }} /> Success! Redirecting... </Box> </Fade> ) : ( <Box sx={{ display: 'flex', alignItems: 'center' }}> {!loading && 'Sign In To  | `` |
-| [apps/web/src/components/Login.tsx:475](../../apps/web/src/components/Login.tsx) | Button | Sign in with Passkey | `{handlePasskeyLogin}` |
+| [apps/web/src/components/Login.tsx:312](../../apps/web/src/components/Login.tsx) | TextField | Username | `{(e) => { setUsername(e.target.value); setError(""); }}` |
+| [apps/web/src/components/Login.tsx:327](../../apps/web/src/components/Login.tsx) | TextField | Password | `{(e) => setPassword(e.target.value)}` |
+| [apps/web/src/components/Login.tsx:343](../../apps/web/src/components/Login.tsx) | IconButton | { visible ? "Hide password" : "Show password" } | `{() => setVisible(!visible)}` |
+| [apps/web/src/components/Login.tsx:365](../../apps/web/src/components/Login.tsx) | TextField | Authenticator code | `{(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6)) }` |
+| [apps/web/src/components/Login.tsx:399](../../apps/web/src/components/Login.tsx) | Button | {busy ? "Signing in..." : mfa ? "Verify and sign in" : "Sign in"} | `` |
+| [apps/web/src/components/Login.tsx:421](../../apps/web/src/components/Login.tsx) | Button | Use a different sign-in | `{() => { setMfa(false); setCode(""); setPassword(""); setError(""); }}` |
+| [apps/web/src/components/Login.tsx:439](../../apps/web/src/components/Login.tsx) | Button | Sign in with a passkey | `{passkey}` |
+| [apps/web/src/components/Login.tsx:458](../../apps/web/src/components/Login.tsx) | Button | Need help signing in? | `{() => setHelp(!help)}` |
 | [apps/web/src/components/ProfileModal.tsx:197](../../apps/web/src/components/ProfileModal.tsx) | IconButton | <CloseIcon fontSize="small" /> | `{onClose}` |
 | [apps/web/src/components/ProfileModal.tsx:244](../../apps/web/src/components/ProfileModal.tsx) | Tabs | <Tab icon={<PersonIcon fontSize="small" />} iconPosition="start" label="Profile" /> <Tab icon={<LockIcon fontSize="small" />} iconPosition="start" label="Security" /> <Tab icon={<PaletteIcon fontSize="small" />} iconPosition="start" label="Preferences" /> | `{(_, v) => setTab(v)}` |
 | [apps/web/src/components/ProfileModal.tsx:255](../../apps/web/src/components/ProfileModal.tsx) | Tab | Profile | `` |
@@ -276,28 +278,49 @@ Generated from every active-source UI file. Labels expressed in code are preserv
 | [apps/web/src/pages/Dashboard.tsx:510](../../apps/web/src/pages/Dashboard.tsx) | Button | Review Challans &amp; Generate Invoices | `{() => navigate('outward')}` |
 | [apps/web/src/pages/Dashboard.tsx:557](../../apps/web/src/pages/Dashboard.tsx) | Select | Period | `{handleDateFilterChange}` |
 | [apps/web/src/pages/Dashboard.tsx:901](../../apps/web/src/pages/Dashboard.tsx) | Button | View all logs | `{() => navigate('logs')}` |
-| [apps/web/src/pages/Helpdesk.tsx:175](../../apps/web/src/pages/Helpdesk.tsx) | TextField | <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, mb: 2 }}> <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}> <HelpIcon color="primary" /> <Typography variant="h6" fontWeight={800}>Frequently Asked Questions</Typography> </Box> <Chip label={`${filteredFAQs.length} found`} size="small" variant="outlined" /> </Box> <TextField fullWidth size="smal | `{(e) => setFaqSearch(e.target.value)}` |
-| [apps/web/src/pages/Helpdesk.tsx:231](../../apps/web/src/pages/Helpdesk.tsx) | Button | Raise another | `{() => { setSubmitted(false); setTicketForm({ subject: '', type: 'Bug', description: '' }); }}` |
-| [apps/web/src/pages/Helpdesk.tsx:236](../../apps/web/src/pages/Helpdesk.tsx) | TextField | Subject | `{(e) => setTicketForm({ ...ticketForm, subject: e.target.value })}` |
-| [apps/web/src/pages/Helpdesk.tsx:237](../../apps/web/src/pages/Helpdesk.tsx) | TextField | Type | `{(e) => setTicketForm({ ...ticketForm, type: e.target.value })}` |
-| [apps/web/src/pages/Helpdesk.tsx:243](../../apps/web/src/pages/Helpdesk.tsx) | TextField | Description | `{(e) => setTicketForm({ ...ticketForm, description: e.target.value })}` |
-| [apps/web/src/pages/Helpdesk.tsx:244](../../apps/web/src/pages/Helpdesk.tsx) | Button | Save draft | `{handleSubmitTicket}` |
+| [apps/web/src/pages/Helpdesk.tsx:241](../../apps/web/src/pages/Helpdesk.tsx) | Button | Refresh | `{() => void tickets.refetch()}` |
+| [apps/web/src/pages/Helpdesk.tsx:254](../../apps/web/src/pages/Helpdesk.tsx) | TextField | Search tickets | `{(event) => setSearch(event.target.value)}` |
+| [apps/web/src/pages/Helpdesk.tsx:261](../../apps/web/src/pages/Helpdesk.tsx) | TextField | Status | `{(event) => setFilter(event.target.value)}` |
+| [apps/web/src/pages/Helpdesk.tsx:282](../../apps/web/src/pages/Helpdesk.tsx) | Button | Retry | `{() => void tickets.refetch()}` |
+| [apps/web/src/pages/Helpdesk.tsx:346](../../apps/web/src/pages/Helpdesk.tsx) | Button | Update status | `{() => { setSelected(ticket); setStatus(ticket.status); setResolution(ticket.resolution \|\| ""); update.reset(); }}` |
+| [apps/web/src/pages/Helpdesk.tsx:390](../../apps/web/src/pages/Helpdesk.tsx) | TextField | Subject | `{(event) => setForm({ ...form, subject: event.target.value }) }` |
+| [apps/web/src/pages/Helpdesk.tsx:400](../../apps/web/src/pages/Helpdesk.tsx) | TextField | Category | `{(event) => setForm({ ...form, category: event.target.value }) }` |
+| [apps/web/src/pages/Helpdesk.tsx:415](../../apps/web/src/pages/Helpdesk.tsx) | TextField | Priority | `{(event) => setForm({ ...form, priority: event.target.value }) }` |
+| [apps/web/src/pages/Helpdesk.tsx:430](../../apps/web/src/pages/Helpdesk.tsx) | TextField | What happened? | `{(event) => setForm({ ...form, description: event.target.value }) }` |
+| [apps/web/src/pages/Helpdesk.tsx:449](../../apps/web/src/pages/Helpdesk.tsx) | Button | {create.isPending ? "Saving ticket..." : "Save ticket to installation"} | `` |
+| [apps/web/src/pages/Helpdesk.tsx:473](../../apps/web/src/pages/Helpdesk.tsx) | Button | {draft.subject} | `{() => setForm({ ...initialForm, subject: draft.subject.slice(0, 160), description: draft.description.slice(0, 4000), }) }` |
+| [apps/web/src/pages/Helpdesk.tsx:522](../../apps/web/src/pages/Helpdesk.tsx) | TextField | Ticket status | `{(event) => setStatus(event.target.value)}` |
+| [apps/web/src/pages/Helpdesk.tsx:535](../../apps/web/src/pages/Helpdesk.tsx) | TextField | Resolution or progress note | `{(event) => setResolution(event.target.value)}` |
+| [apps/web/src/pages/Helpdesk.tsx:551](../../apps/web/src/pages/Helpdesk.tsx) | Button | Cancel | `{() => setSelected(null)}` |
+| [apps/web/src/pages/Helpdesk.tsx:554](../../apps/web/src/pages/Helpdesk.tsx) | Button | {update.isPending ? "Saving..." : "Save update"} | `{() => update.mutate()}` |
 | [apps/web/src/pages/Insights.tsx:81](../../apps/web/src/pages/Insights.tsx) | Button | Export All | `{() => alert('All reports exported successfully!')}` |
 | [apps/web/src/pages/Insights.tsx:109](../../apps/web/src/pages/Insights.tsx) | Button | Generate Reports → | `{() => alert('${cat.category} reports generated successfully!')}` |
 | [apps/web/src/pages/Insights.tsx:262](../../apps/web/src/pages/Insights.tsx) | Tabs | {INSIGHT_TABS.map((t, i) => ( <Tab key={i} label={t.label} icon={t.icon} iconPosition="start" /> ))} | `{(_, v) => setTab(v)}` |
 | [apps/web/src/pages/Insights.tsx:275](../../apps/web/src/pages/Insights.tsx) | Tab | {t.label} | `` |
-| [apps/web/src/pages/Integrations.tsx:47](../../apps/web/src/pages/Integrations.tsx) | Tabs | <Tab label="Import data" /> <Tab label="Connectors" /> <Tab label="API & webhooks" /> <Tab label="Import history" /> | `{(_, value) => setTab(value)}` |
-| [apps/web/src/pages/Integrations.tsx:48](../../apps/web/src/pages/Integrations.tsx) | Tab | Import data | `` |
-| [apps/web/src/pages/Integrations.tsx:48](../../apps/web/src/pages/Integrations.tsx) | Tab | Connectors | `` |
-| [apps/web/src/pages/Integrations.tsx:48](../../apps/web/src/pages/Integrations.tsx) | Tab | API & webhooks | `` |
-| [apps/web/src/pages/Integrations.tsx:48](../../apps/web/src/pages/Integrations.tsx) | Tab | Import history | `` |
-| [apps/web/src/pages/Integrations.tsx:52](../../apps/web/src/pages/Integrations.tsx) | TextField | Import into | `{e => { setEntity(e.target.value as ImportEntity); setInput(null); invalidatePreview(); }}` |
-| [apps/web/src/pages/Integrations.tsx:55](../../apps/web/src/pages/Integrations.tsx) | TextField | Source name | `{e => { setSource(e.target.value); invalidatePreview(); }}` |
-| [apps/web/src/pages/Integrations.tsx:56](../../apps/web/src/pages/Integrations.tsx) | Button | Choose CSV <input type="file" accept=".csv,text/csv" hidden onChange={async e => { const file = e.target.files?.[0]; e.target.value = ''; if (!file) return; invalidatePreview(); setInput(null); try { if (file.size > 500_000) throw new Error('Use a CSV smaller than 500 KB.'); const parsed = parseImportCsv(await file.text()); setInput({ entity, ...parsed, mapping: {} }); } catch (error) { showError( | `` |
-| [apps/web/src/pages/Integrations.tsx:68](../../apps/web/src/pages/Integrations.tsx) | TextField | {`Map ${field}`} | `{event => { const mapping = { ...input.mapping }; if (event.target.value === '') delete mapping[field]; else mapping[field] = Number(event.target.value); setInput({ ...input, mapping }); invalidatePreview(); }}` |
-| [apps/web/src/pages/Integrations.tsx:72](../../apps/web/src/pages/Integrations.tsx) | Button | Validate and preview | `{check}` |
-| [apps/web/src/pages/Integrations.tsx:80](../../apps/web/src/pages/Integrations.tsx) | Button | Import {preview.records.length} records | `{commit}` |
-| [apps/web/src/pages/Integrations.tsx:99](../../apps/web/src/pages/Integrations.tsx) | Button | Retry | `{() => history.refetch()}` |
+| [apps/web/src/pages/Integrations.tsx:321](../../apps/web/src/pages/Integrations.tsx) | Tabs | Integration workflows | `{(_, value) => { setTab(value); setError(""); }}` |
+| [apps/web/src/pages/Integrations.tsx:338](../../apps/web/src/pages/Integrations.tsx) | Tab | {label} | `` |
+| [apps/web/src/pages/Integrations.tsx:373](../../apps/web/src/pages/Integrations.tsx) | StepLabel | {label} | `` |
+| [apps/web/src/pages/Integrations.tsx:383](../../apps/web/src/pages/Integrations.tsx) | TextField | Import into | `{(e) => { setEntity(e.target.value as ImportEntity); setInput(null); setFilename(""); invalidate(); }}` |
+| [apps/web/src/pages/Integrations.tsx:399](../../apps/web/src/pages/Integrations.tsx) | Button | Download template | `{template}` |
+| [apps/web/src/pages/Integrations.tsx:407](../../apps/web/src/pages/Integrations.tsx) | TextField | Source name | `{(e) => { setSource(e.target.value); invalidate(); }}` |
+| [apps/web/src/pages/Integrations.tsx:429](../../apps/web/src/pages/Integrations.tsx) | Button | Choose CSV file <input aria-label="Choose CSV file" type="file" accept=".csv,text/csv" hidden onChange={(e) => { choose(e.target.files?.[0]); e.target.value = ""; }} /> | `` |
+| [apps/web/src/pages/Integrations.tsx:464](../../apps/web/src/pages/Integrations.tsx) | TextField | {labels[field]} | `{(e) => { const mapping = { ...input.mapping }; if (e.target.value === "") delete mapping[field]; else mapping[field] = Number(e.target.value); setInput({ ...input, mapping }); invalidate(); }}` |
+| [apps/web/src/pages/Integrations.tsx:494](../../apps/web/src/pages/Integrations.tsx) | Button | Validate and preview | `{check}` |
+| [apps/web/src/pages/Integrations.tsx:570](../../apps/web/src/pages/Integrations.tsx) | Button | Import {preview.records.length} records | `{commit}` |
+| [apps/web/src/pages/Integrations.tsx:591](../../apps/web/src/pages/Integrations.tsx) | Button | Start another import | `{() => { setInput(null); setFilename(""); setSource(""); invalidate(); }}` |
+| [apps/web/src/pages/Integrations.tsx:622](../../apps/web/src/pages/Integrations.tsx) | TextField | From | `{(e) => { setFrom(e.target.value); resetExport(); }}` |
+| [apps/web/src/pages/Integrations.tsx:633](../../apps/web/src/pages/Integrations.tsx) | TextField | To (inclusive) | `{(e) => { setTo(e.target.value); resetExport(); }}` |
+| [apps/web/src/pages/Integrations.tsx:682](../../apps/web/src/pages/Integrations.tsx) | Button | Preview voucher counts | `{() => run(async () => setSummary( (await api.get("/integrations/tally/summary", { params })) .data, ), ) }` |
+| [apps/web/src/pages/Integrations.tsx:705](../../apps/web/src/pages/Integrations.tsx) | Button | Download Tally XML | `{exportXml}` |
+| [apps/web/src/pages/Integrations.tsx:728](../../apps/web/src/pages/Integrations.tsx) | Button | Check Tally connection | `{() => run(async () => setConnection( (await api.get("/integrations/tally/connection")).data, ), ) }` |
+| [apps/web/src/pages/Integrations.tsx:778](../../apps/web/src/pages/Integrations.tsx) | Button | Retry | `{() => invoices.refetch()}` |
+| [apps/web/src/pages/Integrations.tsx:789](../../apps/web/src/pages/Integrations.tsx) | TextField | Invoice | `{(e) => { setInvoiceId(e.target.value); setReadiness(null); }}` |
+| [apps/web/src/pages/Integrations.tsx:808](../../apps/web/src/pages/Integrations.tsx) | Button | Check invoice preparation | `{() => run(async () => setReadiness( ( await api.get( "/integrations/eway-bill/readiness/" + invoiceId, ) ).data, ), ) }` |
+| [apps/web/src/pages/Integrations.tsx:848](../../apps/web/src/pages/Integrations.tsx) | Button | Official e-Way Bill onboarding & API documentation | `` |
+| [apps/web/src/pages/Integrations.tsx:922](../../apps/web/src/pages/Integrations.tsx) | Button | Official reference | `` |
+| [apps/web/src/pages/Integrations.tsx:950](../../apps/web/src/pages/Integrations.tsx) | Button | Refresh | `{() => history.refetch()}` |
+| [apps/web/src/pages/Integrations.tsx:968](../../apps/web/src/pages/Integrations.tsx) | Button | Retry | `{() => history.refetch()}` |
+| [apps/web/src/pages/Integrations.tsx:979](../../apps/web/src/pages/Integrations.tsx) | Button | Import your first CSV | `{() => setTab(0)}` |
 | [apps/web/src/pages/Inventory.tsx:477](../../apps/web/src/pages/Inventory.tsx) | Select | Date Filter | `{handleDateFilterChange}` |
 | [apps/web/src/pages/Inventory.tsx:493](../../apps/web/src/pages/Inventory.tsx) | Tabs | <Tab label="Dashboard" /> <Tab label="Cotton Inventory" /> <Tab label="Yarn Inventory" /> <Tab label="Waste Logs" /> <Tab label="All History" /> | `{(_, newValue) => setTabValue(newValue)}` |
 | [apps/web/src/pages/Inventory.tsx:494](../../apps/web/src/pages/Inventory.tsx) | Tab | Dashboard | `` |
@@ -472,31 +495,31 @@ Generated from every active-source UI file. Labels expressed in code are preserv
 | [apps/web/src/pages/Settings.tsx:541](../../apps/web/src/pages/Settings.tsx) | TextField | Supported Yarn Counts | `{(e) => setRateSettings({ ...rateSettings, supportedCounts: e.target.value })}` |
 | [apps/web/src/pages/Settings.tsx:551](../../apps/web/src/pages/Settings.tsx) | Button | Save Operational Rates | `{handleSaveRates}` |
 | [apps/web/src/pages/SharedPayments.tsx:14](../../apps/web/src/pages/SharedPayments.tsx) | Button | Download drafts | `{download}` |
-| [apps/web/src/pages/ShopPortal.tsx:70](../../apps/web/src/pages/ShopPortal.tsx) | Button | {language === 'en' ? 'தமிழ்' : 'English'} | `{switchLanguage}` |
-| [apps/web/src/pages/ShopPortal.tsx:70](../../apps/web/src/pages/ShopPortal.tsx) | Button | {t.staff} | `` |
-| [apps/web/src/pages/ShopPortal.tsx:73](../../apps/web/src/pages/ShopPortal.tsx) | TextField | {t.search} | `{event => setSearch(event.target.value)}` |
-| [apps/web/src/pages/ShopPortal.tsx:73](../../apps/web/src/pages/ShopPortal.tsx) | TextField | {t.all} | `{event => setCategory(event.target.value)}` |
-| [apps/web/src/pages/ShopPortal.tsx:73](../../apps/web/src/pages/ShopPortal.tsx) | TextField | {t.allBrands} | `{event => setBrand(event.target.value)}` |
-| [apps/web/src/pages/ShopPortal.tsx:73](../../apps/web/src/pages/ShopPortal.tsx) | TextField | {t.sort} | `{event => setSort(event.target.value)}` |
-| [apps/web/src/pages/ShopPortal.tsx:75](../../apps/web/src/pages/ShopPortal.tsx) | Button | {t.retry} | `{() => void refetch()}` |
-| [apps/web/src/pages/ShopPortal.tsx:78](../../apps/web/src/pages/ShopPortal.tsx) | Button | {t.view} | `{() => setSelected(product)}` |
-| [apps/web/src/pages/ShopPortal.tsx:78](../../apps/web/src/pages/ShopPortal.tsx) | Button | {t.add} | `{() => setQuantity(product, quantityFor(product.id) + 1)}` |
-| [apps/web/src/pages/ShopPortal.tsx:81](../../apps/web/src/pages/ShopPortal.tsx) | IconButton | {`Remove ${row.product!.name}`} | `{() => setQuantity(row.product!, row.quantity - 1)}` |
-| [apps/web/src/pages/ShopPortal.tsx:81](../../apps/web/src/pages/ShopPortal.tsx) | TextField | <Typography sx={{ flex: 1 }} fontWeight={600}>{row.product!.name}</Typography> <IconButton aria-label={`Remove ${row.product!.name}`} onClick={() => setQuantity(row.product!, row.quantity - 1)}><Remove /></IconButton> <TextField type="number" size="small" value={row.quantity} onChange={event => setQuantity(row.product!, Number(event.target.value))} inputProps={{ min: 0, max: row.product!.available | `{event => setQuantity(row.product!, Number(event.target.value))}` |
-| [apps/web/src/pages/ShopPortal.tsx:81](../../apps/web/src/pages/ShopPortal.tsx) | IconButton | {`Add ${row.product!.name}`} | `{() => setQuantity(row.product!, row.quantity + 1)}` |
-| [apps/web/src/pages/ShopPortal.tsx:81](../../apps/web/src/pages/ShopPortal.tsx) | Button | {t.checkout} | `{() => { setError(''); setCheckoutOpen(true); }}` |
-| [apps/web/src/pages/ShopPortal.tsx:83](../../apps/web/src/pages/ShopPortal.tsx) | IconButton | <Close /> | `{() => setSelected(null)}` |
-| [apps/web/src/pages/ShopPortal.tsx:83](../../apps/web/src/pages/ShopPortal.tsx) | Button | {t.add} | `{() => { if (selected) setQuantity(selected, quantityFor(selected.id) + 1); setSelected(null); }}` |
-| [apps/web/src/pages/ShopPortal.tsx:84](../../apps/web/src/pages/ShopPortal.tsx) | IconButton | <Close /> | `{() => setCheckoutOpen(false)}` |
-| [apps/web/src/pages/ShopPortal.tsx:84](../../apps/web/src/pages/ShopPortal.tsx) | TextField | {t.name} | `{event => setBuyer({ ...buyer, name: event.target.value })}` |
-| [apps/web/src/pages/ShopPortal.tsx:84](../../apps/web/src/pages/ShopPortal.tsx) | TextField | {t.phone} | `{event => setBuyer({ ...buyer, phone: event.target.value })}` |
-| [apps/web/src/pages/ShopPortal.tsx:84](../../apps/web/src/pages/ShopPortal.tsx) | TextField | {t.email} | `{event => setBuyer({ ...buyer, email: event.target.value })}` |
-| [apps/web/src/pages/ShopPortal.tsx:84](../../apps/web/src/pages/ShopPortal.tsx) | TextField | {t.address} | `{event => setBuyer({ ...buyer, address: event.target.value })}` |
-| [apps/web/src/pages/ShopPortal.tsx:84](../../apps/web/src/pages/ShopPortal.tsx) | TextField | {t.state} | `{event => setBuyer({ ...buyer, state: event.target.value })}` |
-| [apps/web/src/pages/ShopPortal.tsx:84](../../apps/web/src/pages/ShopPortal.tsx) | TextField | {t.gstin} | `{event => setBuyer({ ...buyer, gstin: event.target.value })}` |
-| [apps/web/src/pages/ShopPortal.tsx:84](../../apps/web/src/pages/ShopPortal.tsx) | TextField | {t.notes} | `{event => setBuyer({ ...buyer, notes: event.target.value })}` |
-| [apps/web/src/pages/ShopPortal.tsx:84](../../apps/web/src/pages/ShopPortal.tsx) | Button | {submitting ? t.placing : t.place} | `{() => void placeOrder()}` |
-| [apps/web/src/pages/ShopPortal.tsx:85](../../apps/web/src/pages/ShopPortal.tsx) | Button | {t.back} | `{() => setResult(null)}` |
+| [apps/web/src/pages/ShopPortal.tsx:72](../../apps/web/src/pages/ShopPortal.tsx) | Button | {language === 'en' ? 'தமிழ்' : 'English'} | `{switchLanguage}` |
+| [apps/web/src/pages/ShopPortal.tsx:72](../../apps/web/src/pages/ShopPortal.tsx) | Button | {t.staff} | `` |
+| [apps/web/src/pages/ShopPortal.tsx:75](../../apps/web/src/pages/ShopPortal.tsx) | TextField | {t.search} | `{event => setSearch(event.target.value)}` |
+| [apps/web/src/pages/ShopPortal.tsx:75](../../apps/web/src/pages/ShopPortal.tsx) | TextField | {t.all} | `{event => setCategory(event.target.value)}` |
+| [apps/web/src/pages/ShopPortal.tsx:75](../../apps/web/src/pages/ShopPortal.tsx) | TextField | {t.allBrands} | `{event => setBrand(event.target.value)}` |
+| [apps/web/src/pages/ShopPortal.tsx:75](../../apps/web/src/pages/ShopPortal.tsx) | TextField | {t.sort} | `{event => setSort(event.target.value)}` |
+| [apps/web/src/pages/ShopPortal.tsx:77](../../apps/web/src/pages/ShopPortal.tsx) | Button | {t.retry} | `{() => void refetch()}` |
+| [apps/web/src/pages/ShopPortal.tsx:80](../../apps/web/src/pages/ShopPortal.tsx) | Button | {t.view} | `{() => setSelected(product)}` |
+| [apps/web/src/pages/ShopPortal.tsx:80](../../apps/web/src/pages/ShopPortal.tsx) | Button | {t.add} | `{() => setQuantity(product, quantityFor(product.id) + 1)}` |
+| [apps/web/src/pages/ShopPortal.tsx:83](../../apps/web/src/pages/ShopPortal.tsx) | IconButton | {`Remove ${row.product!.name}`} | `{() => setQuantity(row.product!, row.quantity - 1)}` |
+| [apps/web/src/pages/ShopPortal.tsx:83](../../apps/web/src/pages/ShopPortal.tsx) | TextField | <Typography sx={{ flex: 1 }} fontWeight={600}>{row.product!.name}</Typography> <IconButton aria-label={`Remove ${row.product!.name}`} onClick={() => setQuantity(row.product!, row.quantity - 1)}><Remove /></IconButton> <TextField type="number" size="small" value={row.quantity} onChange={event => setQuantity(row.product!, Number(event.target.value))} inputProps={{ min: 0, max: row.product!.available | `{event => setQuantity(row.product!, Number(event.target.value))}` |
+| [apps/web/src/pages/ShopPortal.tsx:83](../../apps/web/src/pages/ShopPortal.tsx) | IconButton | {`Add ${row.product!.name}`} | `{() => setQuantity(row.product!, row.quantity + 1)}` |
+| [apps/web/src/pages/ShopPortal.tsx:83](../../apps/web/src/pages/ShopPortal.tsx) | Button | {t.checkout} | `{() => { setError(''); setCheckoutOpen(true); }}` |
+| [apps/web/src/pages/ShopPortal.tsx:85](../../apps/web/src/pages/ShopPortal.tsx) | IconButton | <Close /> | `{() => setSelected(null)}` |
+| [apps/web/src/pages/ShopPortal.tsx:85](../../apps/web/src/pages/ShopPortal.tsx) | Button | {t.add} | `{() => { if (selected) setQuantity(selected, quantityFor(selected.id) + 1); setSelected(null); }}` |
+| [apps/web/src/pages/ShopPortal.tsx:86](../../apps/web/src/pages/ShopPortal.tsx) | IconButton | <Close /> | `{() => setCheckoutOpen(false)}` |
+| [apps/web/src/pages/ShopPortal.tsx:86](../../apps/web/src/pages/ShopPortal.tsx) | TextField | {t.name} | `{event => setBuyer({ ...buyer, name: event.target.value })}` |
+| [apps/web/src/pages/ShopPortal.tsx:86](../../apps/web/src/pages/ShopPortal.tsx) | TextField | {t.phone} | `{event => setBuyer({ ...buyer, phone: event.target.value })}` |
+| [apps/web/src/pages/ShopPortal.tsx:86](../../apps/web/src/pages/ShopPortal.tsx) | TextField | {t.email} | `{event => setBuyer({ ...buyer, email: event.target.value })}` |
+| [apps/web/src/pages/ShopPortal.tsx:86](../../apps/web/src/pages/ShopPortal.tsx) | TextField | {t.address} | `{event => setBuyer({ ...buyer, address: event.target.value })}` |
+| [apps/web/src/pages/ShopPortal.tsx:86](../../apps/web/src/pages/ShopPortal.tsx) | TextField | {t.state} | `{event => setBuyer({ ...buyer, state: event.target.value })}` |
+| [apps/web/src/pages/ShopPortal.tsx:86](../../apps/web/src/pages/ShopPortal.tsx) | TextField | {t.gstin} | `{event => setBuyer({ ...buyer, gstin: event.target.value })}` |
+| [apps/web/src/pages/ShopPortal.tsx:86](../../apps/web/src/pages/ShopPortal.tsx) | TextField | {t.notes} | `{event => setBuyer({ ...buyer, notes: event.target.value })}` |
+| [apps/web/src/pages/ShopPortal.tsx:86](../../apps/web/src/pages/ShopPortal.tsx) | Button | {submitting ? t.placing : t.place} | `{() => void placeOrder()}` |
+| [apps/web/src/pages/ShopPortal.tsx:87](../../apps/web/src/pages/ShopPortal.tsx) | Button | {t.back} | `{() => setResult(null)}` |
 | [apps/web/src/pages/Store.tsx:49](../../apps/web/src/pages/Store.tsx) | Button | Open public shop | `` |
 | [apps/web/src/pages/Store.tsx:49](../../apps/web/src/pages/Store.tsx) | Button | Manage catalogue | `{() => onNavigate?.('catalogue')}` |
 | [apps/web/src/pages/Store.tsx:49](../../apps/web/src/pages/Store.tsx) | Button | Sales orders | `{() => onNavigate?.('orders')}` |
@@ -511,11 +534,14 @@ Generated from every active-source UI file. Labels expressed in code are preserv
 | [apps/web/src/pages/TodayDashboard.tsx:153](../../apps/web/src/pages/TodayDashboard.tsx) | IconButton | <RefreshIcon /> | `{handleRefresh}` |
 | [apps/web/src/pages/TodayDashboard.tsx:254](../../apps/web/src/pages/TodayDashboard.tsx) | Button | Record Production | `{() => navigate('production')}` |
 | [apps/web/src/pages/TodayDashboard.tsx:263](../../apps/web/src/pages/TodayDashboard.tsx) | Button | Add Costs | `{() => navigate('costing')}` |
-| [apps/web/src/pages/Tutorial.tsx:239](../../apps/web/src/pages/Tutorial.tsx) | StepLabel | <Typography variant="body2" fontWeight={700}>{step.label}</Typography> | `` |
-| [apps/web/src/pages/Tutorial.tsx:245](../../apps/web/src/pages/Tutorial.tsx) | Button | {i === chapter.steps.length - 1 ? 'Finish chapter' : 'Got it →'} | `{handleStepComplete}` |
-| [apps/web/src/pages/Tutorial.tsx:246](../../apps/web/src/pages/Tutorial.tsx) | Button | Back | `{() => setActiveStep(i - 1)}` |
-| [apps/web/src/pages/Tutorial.tsx:259](../../apps/web/src/pages/Tutorial.tsx) | Button | Next chapter → | `{() => { const nextIndex = TUTORIAL_CHAPTERS.findIndex((c) => c.id === selectedChapter) + 1; if (nextIndex < TUTORIAL_CHAPTERS.length) { handleChapterChange(TUTORIAL_CHAPTERS[nextIndex].id); } }}` |
-| [apps/web/src/pages/Tutorial.tsx:260](../../apps/web/src/pages/Tutorial.tsx) | Button | Restart tour | `{() => { setCompletedSteps({}); setSelectedChapter('getting-started'); setActiveStep(0); }}` |
+| [apps/web/src/pages/Tutorial.tsx:249](../../apps/web/src/pages/Tutorial.tsx) | TextField | Search learning paths | `{event => setSearch(event.target.value)}` |
+| [apps/web/src/pages/Tutorial.tsx:278](../../apps/web/src/pages/Tutorial.tsx) | Button | Open related workspace | `{() => onNavigate(({ activation: 'settings', integrations: 'integrations', support: 'helpdesk', inventory: 'inventory', billing: 'business', costing: 'costing', admin: 'users' } as Record<string, string>)[selectedChapter] \|\| 'dashboard')}` |
+| [apps/web/src/pages/Tutorial.tsx:282](../../apps/web/src/pages/Tutorial.tsx) | StepLabel | <Button size="small" color="inherit" onClick={() => setActiveStep(i)} sx={{ textAlign: 'left', justifyContent: 'flex-start', fontWeight: 700 }}>{step.label}</Button> | `` |
+| [apps/web/src/pages/Tutorial.tsx:283](../../apps/web/src/pages/Tutorial.tsx) | Button | {step.label} | `{() => setActiveStep(i)}` |
+| [apps/web/src/pages/Tutorial.tsx:288](../../apps/web/src/pages/Tutorial.tsx) | Button | {i === chapter.steps.length - 1 ? 'Finish chapter' : 'Got it →'} | `{handleStepComplete}` |
+| [apps/web/src/pages/Tutorial.tsx:289](../../apps/web/src/pages/Tutorial.tsx) | Button | Back | `{() => setActiveStep(i - 1)}` |
+| [apps/web/src/pages/Tutorial.tsx:302](../../apps/web/src/pages/Tutorial.tsx) | Button | Next chapter → | `{() => { const nextIndex = TUTORIAL_CHAPTERS.findIndex((c) => c.id === selectedChapter) + 1; if (nextIndex < TUTORIAL_CHAPTERS.length) { handleChapterChange(TUTORIAL_CHAPTERS[nextIndex].id); } }}` |
+| [apps/web/src/pages/Tutorial.tsx:303](../../apps/web/src/pages/Tutorial.tsx) | Button | Restart tour | `{() => { setCompletedSteps({}); setSelectedChapter('getting-started'); setActiveStep(0); }}` |
 | [apps/web/src/pages/UnifiedWorkspace.tsx:195](../../apps/web/src/pages/UnifiedWorkspace.tsx) | Button | Open Mill Dashboard | `{() => onNavigate('dashboard')}` |
 | [apps/web/src/pages/UnifiedWorkspace.tsx:204](../../apps/web/src/pages/UnifiedWorkspace.tsx) | Button | Yarn ERP Hub (9 Modules) | `{() => onNavigate('yarnerp')}` |
 | [apps/web/src/pages/UnifiedWorkspace.tsx:216](../../apps/web/src/pages/UnifiedWorkspace.tsx) | Button | Business Desk & Invoices | `{() => onNavigate('business')}` |
@@ -541,40 +567,40 @@ Generated from every active-source UI file. Labels expressed in code are preserv
 | [apps/web/src/pages/UserManagement.tsx:415](../../apps/web/src/pages/UserManagement.tsx) | Select | Role | `{(e) => setFormData({ ...formData, role: e.target.value as User['role'] })}` |
 | [apps/web/src/pages/UserManagement.tsx:447](../../apps/web/src/pages/UserManagement.tsx) | Button | Cancel | `{handleCloseDialog}` |
 | [apps/web/src/pages/UserManagement.tsx:448](../../apps/web/src/pages/UserManagement.tsx) | Button | {isSaving ? 'Saving…' : editingUser ? 'Update User' : 'Create User'} | `` |
-| [apps/web/src/pages/WorkflowDesk.tsx:96](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Supplier / job worker | `{() => setSupplierOpen(true)}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:99](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | {op.title} | `{() => open(op)}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:100](../../apps/web/src/pages/WorkflowDesk.tsx) | Tabs | <Tab label="Document trail" /> <Tab label="Lots, holds & WIP" /> <Tab label="Accounts & closure" /> | `{(_, v) => setTab(v)}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:100](../../apps/web/src/pages/WorkflowDesk.tsx) | Tab | Document trail | `` |
-| [apps/web/src/pages/WorkflowDesk.tsx:100](../../apps/web/src/pages/WorkflowDesk.tsx) | Tab | Lots, holds & WIP | `` |
-| [apps/web/src/pages/WorkflowDesk.tsx:100](../../apps/web/src/pages/WorkflowDesk.tsx) | Tab | Accounts & closure | `` |
-| [apps/web/src/pages/WorkflowDesk.tsx:101](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | {d.documentNo} | `{() => setSelectedDoc(d)}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:102](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Inspect & release | `{() => { setRelease(h); setReleaseNotes(''); }}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:103](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Close through a date | `{() => setCloseOpen(true)}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:104](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | {f.label} | `{e => change(f.key, f.source ? Number(e.target.value) : e.target.value)}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:105](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | Item | `{e => changeLine(i, 'itemId', Number(e.target.value))}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:105](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | Quantity | `{e => changeLine(i, 'quantity', e.target.value)}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:105](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | Unit cost ₹ | `{e => changeLine(i, 'rate', e.target.value)}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:105](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | GST % | `{e => changeLine(i, 'gstRate', e.target.value)}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:105](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | Quarantine quantity | `{e => changeLine(i, 'rejectedQty', e.target.value)}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:105](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | Lot (blank = available lots) | `{e => changeLine(i, 'lotId', e.target.value)}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:105](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | Location | `{e => changeLine(i, 'locationId', Number(e.target.value))}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:105](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Add line | `{() => setLines(old => [...old, { itemId: '', quantity: '', rate: '', gstRate: '' }])}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:106](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | Posting time (optional) | `{e => change('date', e.target.value)}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:106](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | Reason / evidence / notes | `{e => change('notes', e.target.value)}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:106](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Cancel | `{() => setOperation(null)}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:106](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | {saving ? 'Posting…' : 'Post & synchronize'} | `{submit}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:107](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | {titleCase(key)} | `{e => setSupplier(s => ({ ...s, [key]: e.target.value }))}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:107](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Cancel | `{() => setSupplierOpen(false)}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:107](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Save | `{async () => { setSaving(true); try { await api.post('/workflows/suppliers', supplier); setSupplierOpen(false); setSupplier({ name: '', code: '', gstin: '', address: '' }); } catch (e: any) { toast.error(e.response?.data?.message \|\| 'Could not save supplier'); } finally { setSaving(false); } }}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:108](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | Inspection result / release reason | `{e => setReleaseNotes(e.target.value)}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:108](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Cancel | `{() => setRelease(null)}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:108](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Record pass & release | `{handleRelease}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:109](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | Close through | `{e => setCloseDate(e.target.value)}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:109](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | Closure reason | `{e => setCloseNotes(e.target.value)}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:109](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Cancel | `{() => setCloseOpen(false)}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:109](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Close period | `{async () => { setSaving(true); try { await api.post('/workflows/periods/close', { through: closeDate, notes: closeNotes }); setCloseOpen(false); } catch (e: any) { toast.error(e.response?.data?.message \|\| 'Closure failed'); } finally { setSaving(false); } }}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:110](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Download document PDF | `{() => downloadWorkflowDocument(selectedDoc)}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:110](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Close | `{() => setSelectedDoc(null)}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:97](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Supplier / job worker | `{() => setSupplierOpen(true)}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:100](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | {op.title} | `{() => open(op)}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:101](../../apps/web/src/pages/WorkflowDesk.tsx) | Tabs | <Tab label="Document trail" /> <Tab label="Lots, holds & WIP" /> <Tab label="Accounts & closure" /> | `{(_, v) => setTab(v)}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:101](../../apps/web/src/pages/WorkflowDesk.tsx) | Tab | Document trail | `` |
+| [apps/web/src/pages/WorkflowDesk.tsx:101](../../apps/web/src/pages/WorkflowDesk.tsx) | Tab | Lots, holds & WIP | `` |
+| [apps/web/src/pages/WorkflowDesk.tsx:101](../../apps/web/src/pages/WorkflowDesk.tsx) | Tab | Accounts & closure | `` |
+| [apps/web/src/pages/WorkflowDesk.tsx:102](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | {d.documentNo} | `{() => setSelectedDoc(d)}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:103](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Inspect & release | `{() => { setRelease(h); setReleaseNotes(''); }}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:104](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Close through a date | `{() => setCloseOpen(true)}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:105](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | {f.label} | `{e => change(f.key, f.source ? Number(e.target.value) : e.target.value)}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:106](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | Item | `{e => changeLine(i, 'itemId', Number(e.target.value))}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:106](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | Quantity | `{e => changeLine(i, 'quantity', e.target.value)}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:106](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | Unit cost ₹ | `{e => changeLine(i, 'rate', e.target.value)}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:106](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | GST % | `{e => changeLine(i, 'gstRate', e.target.value)}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:106](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | Quarantine quantity | `{e => changeLine(i, 'rejectedQty', e.target.value)}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:106](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | Lot (blank = available lots) | `{e => changeLine(i, 'lotId', e.target.value)}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:106](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | Location | `{e => changeLine(i, 'locationId', Number(e.target.value))}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:106](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Add line | `{() => setLines(old => [...old, { itemId: '', quantity: '', rate: '', gstRate: '' }])}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:107](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | Posting time (optional) | `{e => change('date', e.target.value)}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:107](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | Reason / evidence / notes | `{e => change('notes', e.target.value)}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:107](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Cancel | `{() => setOperation(null)}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:107](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | {saving ? 'Posting…' : 'Post & synchronize'} | `{submit}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:108](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | {titleCase(key)} | `{e => setSupplier(s => ({ ...s, [key]: e.target.value }))}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:108](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Cancel | `{() => setSupplierOpen(false)}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:108](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Save | `{async () => { setSaving(true); try { await api.post('/workflows/suppliers', supplier); setSupplierOpen(false); setSupplier({ name: '', code: '', gstin: '', address: '' }); } catch (e: any) { toast.error(e.response?.data?.message \|\| 'Could not save supplier'); } finally { setSaving(false); } }}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:109](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | Inspection result / release reason | `{e => setReleaseNotes(e.target.value)}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:109](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Cancel | `{() => setRelease(null)}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:109](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Record pass & release | `{handleRelease}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:110](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | Close through | `{e => setCloseDate(e.target.value)}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:110](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | Closure reason | `{e => setCloseNotes(e.target.value)}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:110](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Cancel | `{() => setCloseOpen(false)}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:110](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Close period | `{async () => { setSaving(true); try { await api.post('/workflows/periods/close', { through: closeDate, notes: closeNotes }); setCloseOpen(false); } catch (e: any) { toast.error(e.response?.data?.message \|\| 'Closure failed'); } finally { setSaving(false); } }}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:111](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Download document PDF | `{() => downloadWorkflowDocument(selectedDoc)}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:111](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Close | `{() => setSelectedDoc(null)}` |
 | [apps/web/src/pages/yarn/ComplianceReports.tsx:75](../../apps/web/src/pages/yarn/ComplianceReports.tsx) | Button | Refresh | `{refresh}` |
 | [apps/web/src/pages/yarn/DemandForecasting.tsx:142](../../apps/web/src/pages/yarn/DemandForecasting.tsx) | Button | {isRefetching ? 'Refreshing...' : 'Refresh'} | `{() => queryClient.invalidateQueries({ queryKey: ['commerce-orders'] })}` |
 | [apps/web/src/pages/yarn/HRManagement.tsx:223](../../apps/web/src/pages/yarn/HRManagement.tsx) | Button | Refresh | `{() => { queryClient.invalidateQueries({ queryKey: ['hr-staff'] }); queryClient.invalidateQueries({ queryKey: ['hr-payroll'] }); }}` |

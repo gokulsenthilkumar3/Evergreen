@@ -1,5 +1,7 @@
 # EverGreen
 
+Portal upgrades: [AI assistants and secure Groq setup](docs/AI_AGENTS.md) · [Marketing design guide](docs/MARKETING_DESIGN_BRIEF.md)
+
 EverGreen is an ERP for textile businesses: mills, traders, warehouses and job-work units. It covers material receipts, production, stock and lots, job work, sales orders, invoices and customer payments, with a separate provider workspace for managing customer companies and licenses.
 
 Built with React, NestJS and Prisma. Both databases use SQLite today; one PostgreSQL database per customer is the planned target.
@@ -9,6 +11,7 @@ Built with React, NestJS and Prisma. Both databases use SQLite today; one Postgr
 - **What's done and what's open:** [Project status](docs/PROJECT_AUDIT.md) and [backlog](docs/IMPLEMENTATION_BACKLOG.md).
 - **All documentation:** [docs/README.md](docs/README.md).
 - **Install or update:** [Windows installer and hosted deployment](docs/ONE_CLICK_DELIVERY.md).
+- **Owner activation, keys and private hosting:** [Owner licensing guide](docs/OWNER_LICENSING.md). An owner-signed activation is required; private signing keys and databases stay outside the source checkout.
 
 ## Applications
 

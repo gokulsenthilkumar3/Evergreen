@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { TextField } from '@mui/material';
+import { getStoredUser } from '../utils/authStorage';
 import BusinessFlowGuide from '../components/BusinessFlowGuide';
 import {
     Box,
@@ -30,6 +32,33 @@ import {
 } from '@mui/icons-material';
 
 const TUTORIAL_CHAPTERS = [
+    {
+        id: 'activation', title: 'Activation & Secure Access', emoji: '01', description: 'Understand owner activation, role boundaries and shared-device sign-in.', duration: '4 min', color: '#296f51', icon: <UsersIcon />,
+        steps: [
+            { label: 'Check installation activation', description: 'The owner issues an installation-specific, signed licence. If the activation gate appears, ask the owner to check expiry, device binding and the signed offline deadline. A provider subscription setting is not a signed activation.' },
+            { label: 'Choose safe sign-in', description: 'Use your own staff account. Leave Remember me off on shared devices. If MFA is enabled, enter your authenticator code. Passkeys require a compatible browser and a registered credential.' },
+            { label: 'Know your role', description: 'VIEWER can inspect records and ask for help. MODIFIER can perform permitted day-to-day changes. ADMIN manages user access and imports. The signed installation licence can narrow access further.' },
+            { label: 'Recover without sharing secrets', description: 'Contact the installation administrator for account recovery. Owner access keys and signing keys must never be shared in helpdesk tickets, chat or AI prompts. Lock the provider console or sign out when finished.' },
+        ],
+    },
+    {
+        id: 'integrations', title: 'Import & Tally Export', emoji: '02', description: 'Preview, validate and trace integration work before changing records.', duration: '6 min', color: '#306e88', icon: <InventoryIcon />,
+        steps: [
+            { label: 'Prepare a CSV', description: 'An ADMIN opens Migration & integrations and downloads the correct template. Use up to 500 rows and a file under 500 KB. Keep identifiers and GST/contact values as text so leading zeros are preserved.' },
+            { label: 'Map and inspect', description: 'Choose the import type, map every required field, and read the preview. Fix duplicate names/SKUs and validation issues. Nothing is committed by previewing.' },
+            { label: 'Confirm and inspect history', description: 'Review the confirmation before importing. Keep the same submission unchanged when retrying a network failure. Read the result and import history before attempting a new import.' },
+            { label: 'Preview and export Tally XML', description: 'Select dates and Sales/Receipt voucher types. Preview the summary, download XML and review it in a test Tally company before live import. The connection check does not post vouchers. e-Way Bill readiness is a checklist, not registration.' },
+        ],
+    },
+    {
+        id: 'support', title: 'Helpdesk & AI Guidance', emoji: '03', description: 'Get useful help while protecting your business information.', duration: '3 min', color: '#6a5884', icon: <TutorialIcon />,
+        steps: [
+            { label: 'Try the quick answers', description: 'Open Helpdesk and read the workflow FAQs. Search your ticket queue for an existing issue before creating another.' },
+            { label: 'Ask Loom', description: 'If Groq is configured, choose a suggested question or write your own. Read the data-sharing notice and opt in before sending. Loom receives only your supplied conversation, has no database tools and cannot perform operations.' },
+            { label: 'Create a useful ticket', description: 'Write a clear subject, select category/priority, and include steps, expected result and actual result. Do not include credentials or customer personal data. Submit once and retry the same request if the connection fails.' },
+            { label: 'Track the response', description: 'Your ticket is saved in this installation. You can see your own tickets; administrators manage the installation queue and add resolution notes. This does not email an external support team or promise a reply time.' },
+        ],
+    },
     {
         id: 'getting-started',
         title: 'Getting Started',
@@ -161,9 +190,20 @@ const ChapterCard = ({ chapter, onSelect, isSelected, progress }: { chapter: typ
 );
 
 const Tutorial: React.FC<{ onNavigate?: (page: string) => void }> = ({ onNavigate }) => {
+    const [search, setSearch] = useState('');
+    let username = 'local';
+    try { username = (JSON.parse(getStoredUser() || '{}') as { username?: string }).username || 'local'; } catch { /* Use visit-local identity. */ }
+    const progressKey = `evergreen-tutorial-v2-${encodeURIComponent(username)}`;
     const [selectedChapter, setSelectedChapter] = useState<string>('getting-started');
     const [activeStep, setActiveStep] = useState(0);
-    const [completedSteps, setCompletedSteps] = useState<Record<string, Set<number>>>({});
+    const [completedSteps, setCompletedSteps] = useState<Record<string, Set<number>>>(() => {
+        try {
+            const saved = JSON.parse(localStorage.getItem(progressKey) || '{}') as Record<string, unknown>;
+            return Object.fromEntries(TUTORIAL_CHAPTERS.map(item => [item.id, new Set(Array.isArray(saved[item.id]) ? (saved[item.id] as unknown[]).filter((index): index is number => typeof index === 'number' && Number.isInteger(index) && index >= 0 && index < item.steps.length) : [])]));
+        } catch { return {}; }
+    });
+    useEffect(() => { try { localStorage.setItem(progressKey, JSON.stringify(Object.fromEntries(Object.entries(completedSteps).map(([id, steps]) => [id, [...steps]])))); } catch { /* Progress stays available during this visit. */ } }, [completedSteps, progressKey]);
+    const matchingChapters = TUTORIAL_CHAPTERS.filter(item => `${item.title} ${item.description} ${item.steps.map(step => `${step.label} ${step.description}`).join(' ')}`.toLowerCase().includes(search.toLowerCase()));
 
     const chapter = TUTORIAL_CHAPTERS.find((c) => c.id === selectedChapter)!;
     const completed = completedSteps[selectedChapter] || new Set();
@@ -206,7 +246,9 @@ const Tutorial: React.FC<{ onNavigate?: (page: string) => void }> = ({ onNavigat
                 <Grid size={{ xs: 12, md: 4 }}>
                     <Typography variant="subtitle2" fontWeight={800} color="text.secondary" sx={{ mb: 1.5, textTransform: 'uppercase', letterSpacing: '0.08em', fontSize: '0.7rem' }}>Chapters</Typography>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                        {TUTORIAL_CHAPTERS.map((c) => <ChapterCard key={c.id} chapter={c} onSelect={() => handleChapterChange(c.id)} isSelected={selectedChapter === c.id} progress={Math.round(((completedSteps[c.id]?.size || 0) / c.steps.length) * 100)} />)}
+                        <TextField label="Search learning paths" size="small" value={search} onChange={event => setSearch(event.target.value)} />
+                        {matchingChapters.map((c) => <ChapterCard key={c.id} chapter={c} onSelect={() => handleChapterChange(c.id)} isSelected={selectedChapter === c.id} progress={Math.round(((completedSteps[c.id]?.size || 0) / c.steps.length) * 100)} />)}
+                        {!matchingChapters.length && <Typography role="status">No matching lessons. Try activation, invoice, import or support.</Typography>}
                     </Box>
                 </Grid>
 
@@ -233,11 +275,12 @@ const Tutorial: React.FC<{ onNavigate?: (page: string) => void }> = ({ onNavigat
 
                         <Box sx={{ p: 3 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}><PlayIcon color="primary" /><Typography variant="subtitle1" fontWeight={800}>Guided steps</Typography></Box>
+                            {onNavigate && <Button variant="outlined" sx={{ mb: 2 }} onClick={() => onNavigate(({ activation: 'settings', integrations: 'integrations', support: 'helpdesk', inventory: 'inventory', billing: 'business', costing: 'costing', admin: 'users' } as Record<string, string>)[selectedChapter] || 'dashboard')}>Open related workspace</Button>}
                             <Stepper activeStep={activeStep} orientation="vertical">
                                 {chapter.steps.map((step, i) => (
                                     <Step key={i} completed={completed.has(i)}>
                                         <StepLabel StepIconComponent={() => completed.has(i) ? <DoneIcon sx={{ color: chapter.color, fontSize: 22 }} /> : <Box sx={{ width: 22, height: 22, borderRadius: '50%', bgcolor: i === activeStep ? chapter.color : 'divider', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Typography sx={{ color: i === activeStep ? '#fff' : 'text.disabled', fontSize: '0.7rem', fontWeight: 700 }}>{i + 1}</Typography></Box>}>
-                                            <Typography variant="body2" fontWeight={700}>{step.label}</Typography>
+                                            <Button size="small" color="inherit" onClick={() => setActiveStep(i)} sx={{ textAlign: 'left', justifyContent: 'flex-start', fontWeight: 700 }}>{step.label}</Button>
                                         </StepLabel>
                                         <StepContent>
                                             <Typography variant="body2" color="text.secondary" sx={{ mb: 2, lineHeight: 1.75 }}>{step.description}</Typography>
@@ -256,7 +299,7 @@ const Tutorial: React.FC<{ onNavigate?: (page: string) => void }> = ({ onNavigat
                                     <Typography variant="h6" fontWeight={800} gutterBottom>Chapter complete 🎉</Typography>
                                     <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>You’ve finished the "{chapter.title}" chapter.</Typography>
                                     <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
-                                        <Button variant="outlined" size="small" onClick={() => { const nextIndex = TUTORIAL_CHAPTERS.findIndex((c) => c.id === selectedChapter) + 1; if (nextIndex < TUTORIAL_CHAPTERS.length) { handleChapterChange(TUTORIAL_CHAPTERS[nextIndex].id); } }}>Next chapter →</Button>
+                                        <Button variant="outlined" size="small" disabled={TUTORIAL_CHAPTERS.findIndex(c => c.id === selectedChapter) === TUTORIAL_CHAPTERS.length - 1} onClick={() => { const nextIndex = TUTORIAL_CHAPTERS.findIndex((c) => c.id === selectedChapter) + 1; if (nextIndex < TUTORIAL_CHAPTERS.length) { handleChapterChange(TUTORIAL_CHAPTERS[nextIndex].id); } }}>Next chapter →</Button>
                                         <Button variant="text" size="small" onClick={() => { setCompletedSteps({}); setSelectedChapter('getting-started'); setActiveStep(0); }}>Restart tour</Button>
                                     </Box>
                                 </Box>
