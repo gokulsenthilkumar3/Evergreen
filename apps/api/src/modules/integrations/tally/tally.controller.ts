@@ -1,4 +1,10 @@
-import { Controller, Get, Query, Res } from '@nestjs/common';
+import {
+  BadRequestException,
+  Controller,
+  Get,
+  Query,
+  Res,
+} from '@nestjs/common';
 import type { Response } from 'express';
 import { TallyExportService } from './tally.service';
 import { Roles } from '../../../decorators/roles.decorator';
@@ -8,6 +14,23 @@ import { Roles } from '../../../decorators/roles.decorator';
 export class TallyExportController {
   constructor(private readonly tallyService: TallyExportService) {}
 
+  private parseTypes(types?: string): ('Sales' | 'Receipt')[] {
+    if (types === undefined) return ['Sales', 'Receipt'];
+    if (typeof types !== 'string')
+      throw new BadRequestException(
+        'Voucher types must be a comma-separated string',
+      );
+    const values = [...new Set(types.split(','))];
+    if (
+      !values.length ||
+      values.some((value) => value !== 'Sales' && value !== 'Receipt')
+    )
+      throw new BadRequestException(
+        'Choose Sales, Receipt or both. Purchase export is not available.',
+      );
+    return values as ('Sales' | 'Receipt')[];
+  }
+
   @Get('export')
   async exportXml(
     @Query('from') from: string | undefined,
@@ -15,18 +38,7 @@ export class TallyExportController {
     @Query('types') types: string | undefined,
     @Res() res: Response,
   ) {
-    const validTypes: ('Purchase' | 'Sales' | 'Receipt')[] = [
-      'Purchase',
-      'Sales',
-      'Receipt',
-    ];
-    const voucherTypes: ('Purchase' | 'Sales' | 'Receipt')[] = types
-      ? types
-          .split(',')
-          .filter((t): t is 'Purchase' | 'Sales' | 'Receipt' =>
-            validTypes.includes(t as any),
-          )
-      : ['Sales', 'Receipt'];
+    const voucherTypes = this.parseTypes(types);
 
     const result = await this.tallyService.generateTallyXml({
       from,
@@ -50,8 +62,13 @@ export class TallyExportController {
   async getSummary(
     @Query('from') from: string | undefined,
     @Query('to') to: string | undefined,
+    @Query('types') types?: string,
   ) {
-    const result = await this.tallyService.generateTallyXml({ from, to });
+    const result = await this.tallyService.generateTallyXml({
+      from,
+      to,
+      voucherTypes: this.parseTypes(types),
+    });
     return {
       filename: result.filename,
       stats: result.stats,

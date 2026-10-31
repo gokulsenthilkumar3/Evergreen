@@ -21,6 +21,47 @@ export class IntegrationsService {
     }
   }
 
+  async previewWithConflicts(input: ImportInput) {
+    const preview = this.preview(input);
+    if (input.entity === 'customers') {
+      const existing = new Set(
+        (await this.prisma.customer.findMany({ select: { name: true } })).map(
+          (row) => row.name.trim().toLowerCase(),
+        ),
+      );
+      preview.records.forEach((row, index) => {
+        if (existing.has(String(row.name).toLowerCase()))
+          preview.issues.push({
+            row: index + 2,
+            field: 'name',
+            message:
+              'Customer already exists. Existing records are never overwritten.',
+          });
+      });
+    } else {
+      const existing = new Set(
+        (
+          await this.prisma.catalogueItem.findMany({
+            where: {
+              sku: { in: preview.records.map((row) => String(row.sku)) },
+            },
+            select: { sku: true },
+          })
+        ).map((row) => row.sku),
+      );
+      preview.records.forEach((row, index) => {
+        if (existing.has(String(row.sku)))
+          preview.issues.push({
+            row: index + 2,
+            field: 'sku',
+            message:
+              'SKU already exists. Existing records are never overwritten.',
+          });
+      });
+    }
+    return preview;
+  }
+
   async commit(
     input: ImportInput & { source: string; requestKey: string },
     actor: string,

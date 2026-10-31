@@ -32,6 +32,10 @@ function setupAccount() {
 async function start() {
   let origin = 'http://localhost:4000';
   if (!isDev) {
+    const licensing = require(path.join(runtimeRoot, 'node_modules/@evergreen/types/dist/licensing.js'));
+    const online = require(path.join(runtimeRoot, 'node_modules/@evergreen/types/dist/licensing-online.js'));
+    try { await online.refreshInstallationLease('tenant'); } catch { /* Enforce the signed offline window below. */ }
+    licensing.requireInstallationLicence('tenant');
     const directory = app.getPath('userData');
     fs.mkdirSync(path.join(directory, 'databases'), { recursive: true });
     const manifest = readJson(path.join(runtimeRoot, 'release-manifest.json'));

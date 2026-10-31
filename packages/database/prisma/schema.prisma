@@ -7,6 +7,23 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model SupportTicket {
+  id          String   @id @default(cuid())
+  requestKey  String   @unique
+  subject     String
+  description String
+  category    String
+  priority    String   @default("NORMAL")
+  status      String   @default("OPEN")
+  createdBy   String
+  resolution  String?
+  version     Int      @default(1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  @@index([createdBy, createdAt])
+  @@index([status, updatedAt])
+}
+
 model User {
   id               Int       @id @default(autoincrement())
   email            String    @unique

@@ -2,6 +2,27 @@
 
 Generated from [schema.prisma](../../packages/database/prisma/schema.prisma). SQLite is the current datasource. There is no tenant discriminator on operational models; isolate company installations.
 
+## SupportTicket
+
+```prisma
+model SupportTicket {
+  id          String   @id @default(cuid())
+  requestKey  String   @unique
+  subject     String
+  description String
+  category    String
+  priority    String   @default("NORMAL")
+  status      String   @default("OPEN")
+  createdBy   String
+  resolution  String?
+  version     Int      @default(1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  @@index([createdBy, createdAt])
+  @@index([status, updatedAt])
+}
+```
+
 ## User
 
 ```prisma

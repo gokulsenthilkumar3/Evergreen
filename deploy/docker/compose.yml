@@ -1,6 +1,7 @@
 # Use scripts/release/deploy.mjs to create persistent secrets and select a database generation.
 services:
   tenant-api:
+    hostname: ${COMPOSE_PROJECT_NAME:-evergreen}-tenant
     image: ${EVERGREEN_IMAGE_PREFIX:-evergreen}/tenant-api:${EVERGREEN_RELEASE:?Set a release tag}
     build: { context: ../.., dockerfile: deploy/docker/Dockerfile, target: tenant-api }
     restart: unless-stopped
@@ -16,7 +17,13 @@ services:
       ADMIN_API_URL: ''
       COMPANY_ID: ''
       AUTO_MIGRATE: 'false'
-    volumes: [tenant_data:/data]
+      EVERGREEN_LICENSE_FILE: /run/evergreen-license/tenant.json
+      EVERGREEN_INSTALLATION_KEY_FILE: /run/evergreen-license/installation-key.json
+      EVERGREEN_LICENSE_RENEWAL_URL: ${EVERGREEN_LICENSE_RENEWAL_URL:-}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      GROQ_PUBLIC_API_KEY: ${GROQ_PUBLIC_API_KEY:-}
+      GROQ_MODEL: ${GROQ_MODEL:-openai/gpt-oss-20b}
+    volumes: [tenant_data:/data, '${EVERGREEN_TENANT_LICENSE_DIRECTORY:?Set the licensed tenant directory}:/run/evergreen-license']
     networks: [tenant]
   tenant-web:
     image: ${EVERGREEN_IMAGE_PREFIX:-evergreen}/tenant-web:${EVERGREEN_RELEASE:?Set a release tag}
@@ -27,6 +34,7 @@ services:
       tenant-api: { condition: service_healthy }
     networks: [tenant]
   admin-api:
+    hostname: ${COMPOSE_PROJECT_NAME:-evergreen}-provider
     profiles: [provider]
     image: ${EVERGREEN_IMAGE_PREFIX:-evergreen}/admin-api:${EVERGREEN_RELEASE:?Set a release tag}
     build: { context: ../.., dockerfile: deploy/docker/Dockerfile, target: admin-api }
@@ -36,11 +44,17 @@ services:
       EVERGREEN_API_HOST: 0.0.0.0
       ADMIN_DATABASE_URL: file:/data/${PROVIDER_DATABASE:-provider.db}
       ADMIN_API_KEY: ${PROVIDER_ADMIN_API_KEY:-}
+      ADMIN_CORS_ORIGIN: ${ADMIN_CORS_ORIGIN:-http://localhost:5174}
       JWT_SECRET: ${ADMIN_JWT_SECRET:-}
       EVERGREEN_GITHUB_REPOSITORY: ${EVERGREEN_GITHUB_REPOSITORY:-}
       EVERGREEN_GITHUB_TOKEN: ${EVERGREEN_GITHUB_TOKEN:-}
       EVERGREEN_DEPLOY_TARGETS: ${EVERGREEN_DEPLOY_TARGETS:-}
-    volumes: [provider_data:/data]
+      EVERGREEN_LICENSE_FILE: /run/evergreen-license/provider.json
+      EVERGREEN_INSTALLATION_KEY_FILE: /run/evergreen-license/installation-key.json
+      EVERGREEN_LICENSE_RENEWAL_URL: ${EVERGREEN_PROVIDER_LICENSE_RENEWAL_URL:-}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      GROQ_MODEL: ${GROQ_MODEL:-openai/gpt-oss-20b}
+    volumes: [provider_data:/data, '${EVERGREEN_PROVIDER_LICENSE_DIRECTORY:-./unconfigured-provider-license}:/run/evergreen-license']
     networks: [provider]
   admin-web:
     profiles: [provider]
@@ -57,7 +71,9 @@ services:
     build: { context: ../.., dockerfile: deploy/docker/Dockerfile, target: marketing-web }
     restart: unless-stopped
     ports: ['${EVERGREEN_BIND:-127.0.0.1}:${EVERGREEN_MARKETING_PORT:-3300}:3300']
-    networks: [marketing]
+    depends_on:
+      tenant-api: { condition: service_healthy }
+    networks: [marketing, tenant, provider]
 networks:
   tenant: {}
   provider: {}

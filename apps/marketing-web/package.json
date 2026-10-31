@@ -4,15 +4,23 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "test": "npm run test:homepage && npm run test:demo && npm run test:genesis",
+    "test:demo": "node --test test/authored.test.mjs",
+    "test:genesis": "node --test test/genesis.test.mjs",
+    "test:demo:http": "node test/demo-http.mjs",
     "dev": "vite --port 3300",
-    "build": "tsc -b && vite build",
-    "preview": "vite preview"
+    "build": "npm run build:theme && tsc -b && vite build",
+    "preview": "vite preview",
+    "test:homepage": "node --test test/unified.test.mjs",
+    "build:theme": "vite build --config vite.theme.config.ts",
+    "predev": "npm run build:theme"
   },
   "dependencies": {
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },
   "devDependencies": {
+    "jsdom": "^25.0.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
     "@vitejs/plugin-react": "^6.1.1",

@@ -1,3 +1,4 @@
+export * from './gst';
 export * from './company-profile';
 export * from './migration';
 export * from './geo';

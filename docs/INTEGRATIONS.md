@@ -109,3 +109,36 @@ Map company identity, ledger names, units, tax ledgers, voucher type, number and
 Registration uses the official authenticated API workflow; API credentials are obtained through the applicable direct/GSP registration route. Store credentials server-side, test generation/query/error handling in the provider sandbox, persist acknowledgements and reconcile status after timeouts before retrying. A printable invoice or a checksum is not an e-Way Bill or e-invoice registration. [Official overview](https://docs.ewaybillgst.gov.in/apidocs/api-overview.html), [authentication](https://docs.ewaybillgst.gov.in/apidocs/version1.01/authentication.html).
 
 The referenced provider documentation was checked on 2026-10-10. Eligibility, current schemas, provider access and customer-specific statutory requirements must be checked when implementing the connector. No live statutory submission was made.
+
+## Workspace rollout (2026-10-31)
+
+The Integrations screen provides CSV templates, column matching, database conflict checks, normalized preview, idempotent commit and batch history. Changing a file or mapping invalidates the preview. A failed commit retries with the same request key. Existing records are never overwritten.
+
+Tally preview and XML download accept the same Sales/Receipt selection. Dates are inclusive calendar days. GET /integrations/tally/connection performs a read-only check against 127.0.0.1 on TALLY_PORT (default 9000), with a five-second timeout. In containers, loopback means the API container; a remote desktop needs the planned bridge. No accounting data is posted by this check.
+
+GET /integrations/eway-bill/readiness/:id checks available invoice fields. The current schema lacks structured ship-to/dispatch pincodes and complete transporter fields. This checklist always reports registration unavailable until an authorized provider adapter, sandbox tests, persisted acknowledgement and status reconciliation are implemented. No provider is configured for this installation.
+
+### Remaining external connector work
+
+- Tally: select and validate the company, configure ledger mappings, durable delivery jobs, stable integration identifiers, acknowledgement parsing, retry reconciliation, cancellation and reversal lifecycle tests against the installed release.
+- e-Way Bill: select authorized GSP/direct access, obtain sandbox authorization, add structured transport/address data, implement provider authentication and generation/query/cancellation/vehicle updates, persist the official number and validity, reconcile uncertain submissions before retry.
+- Regional adapters: validate local currency/accounting, language, tax identity, document signing and local provider access separately. The regional cards describe research, not installed connectors.
+
+### Market research and product decisions
+
+Official references checked 2026-10-31. This is a product implementation direction; customer-specific tax treatment requires local validation.
+
+| Market / product | Observed capability | Implementation direction |
+| --- | --- | --- |
+| [Zoho Inventory](https://www.zoho.com/us/inventory/help/migration/migration-general.html) | Column mapping and preview during migration | Templates, suggested exact column matches and explicit review |
+| [ERPNext](https://docs.frappe.io/erpnext/data-import) | Import validation and duplicate errors | Show conflicts before commit and retain row-level messages |
+| [India / Tally](https://help.tallysolutions.com/pre-requisites-for-integrations/) | XML over HTTP with Tally running and a loaded company | Local connection check; live posting awaits durable acknowledgement |
+| [India / NIC](https://docs.ewaybillgst.gov.in/apidocs/) | Authorized API access; versioned lifecycle operations and release notes | Provider onboarding and sandbox tests before registration |
+| [China](https://english.www.gov.cn/news/202411/25/content_WS6743b13ac6d0868f4e8ed5e1.html) | Nationwide fully digitalized invoices | Dedicated local adapter, Chinese text and correction lifecycle |
+| [Vietnam government](https://vanban.chinhphu.vn/?docid=213179&lang=vi&pageid=27160), [MISA AMIS](https://www.misa.vn/154117/tai-lieu-huong-dan-tich-hop-amis-ke-toan-doanh-nghiep/) | Updated invoice rules and a local accounting API ecosystem | Validate a local provider, signing and correction workflows |
+| [Singapore / IMDA](https://www.imda.gov.sg/how-we-can-help/nationwide-e-invoicing-framework/invoicenow) | InvoiceNow uses Peppol | Access-point onboarding and structured document responses |
+| [Malaysia / LHDNM](https://sdk.myinvois.hasil.gov.my/einvoicingapi/) | Submission, taxpayer validation, cancellation/rejection APIs | Signed document adapter with status polling |
+
+### Login
+
+The sign-in page identifies the current workspace host, supports password/MFA and supported passkeys, displays actionable connection/rate-limit errors and links to administrator recovery guidance. Shared-device sessions use sessionStorage by default; persistence is opt-in. Logout and unauthorized responses clear both storage locations. No self-service password-reset endpoint exists, so recovery does not pretend to send an email.

@@ -1,3 +1,9 @@
+import AiAssistant from '../../../packages/portal-ui/AiAssistant';
+import MarketingSettings from './MarketingSettings';
+import DatabaseWorkspace from './DatabaseWorkspace';
+import WorkspacePreferences from './WorkspacePreferences';
+import ProviderAccessGate from './ProviderAccessGate';
+import InstallationGate from './InstallationGate';
 import { useEffect, useState, useMemo, useRef } from 'react';
 import './App.css';
 import './layout.css';
@@ -96,6 +102,7 @@ export type TabId =
   | 'PACKAGES'
   | 'MAINTENANCE'
   | 'DATABASES'
+  | 'MARKETING_SETTINGS'
   | 'APIS'
   | 'WEBHOOKS'
   | 'INTEGRATIONS'
@@ -148,7 +155,7 @@ const SAMPLE_ACTIVITY: Array<{ dot: string; msg: string; time: string }> = [];
 /* ─────────────────────────────────────────────────────────────────────────── */
 /*  MAIN APP COMPONENT                                                          */
 /* ─────────────────────────────────────────────────────────────────────────── */
-export default function App() {
+function App() {
   const [activeCategory, setActiveCategory] = useState<NavCategory>('ALL');
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const mainRef = useRef<HTMLElement>(null);
@@ -228,12 +235,6 @@ export default function App() {
     tally: { status: 'CONNECTED', pingMs: 8 },
   });
 
-  // AI Agent Studio state
-  const [aiProvider, setAiProvider] = useState<'OPENAI' | 'ANTHROPIC' | 'GROK' | 'OLLAMA'>('ANTHROPIC');
-  const [aiPrompt, setAiPrompt] = useState<string>('Analyze Weighbridge Moisture Anomaly logs for Coimbatore and detect tare tampering patterns.');
-  const [aiResponse, setAiResponse] = useState<string>('');
-  const [aiLoading, setAiLoading] = useState<boolean>(false);
-
   // Terminal & Bash Executor state
   const [terminalHistory, setTerminalHistory] = useState<string[]>([
     'Provider console. Commands read the provider API; nothing runs on customer installations.',
@@ -260,16 +261,13 @@ export default function App() {
   const [newRecordPriority, setNewRecordPriority] = useState<string>('NORMAL');
 
   const adminApiBase = (import.meta as any).env?.VITE_ADMIN_API_URL || '/admin-api';
-  const providerKey = typeof window !== 'undefined'
-    ? localStorage.getItem('evergreen_provider_key')
-    : null;
-
   const authFetch = (input: RequestInfo | URL, init?: RequestInit) => {
     const headers = new Headers(init?.headers || {});
-    if (providerKey && !headers.has('Authorization')) {
-      headers.set('Authorization', `Bearer ${providerKey}`);
-    }
-    return fetch(input, { ...init, headers });
+
+    return fetch(input, { ...init, headers, credentials: 'same-origin', signal: init?.signal || AbortSignal.timeout(15000) }).then(response => {
+      if (response.status === 401) { sessionStorage.removeItem('evergreen_provider_key'); window.dispatchEvent(new Event('evergreen:provider-locked')); }
+      return response;
+    });
   };
 
   /* ──── DATA FETCHING ──── */
@@ -594,42 +592,6 @@ export default function App() {
     setTerminalHistory(prev => [...prev, `$ ${cmd}`, ...output]);
   };
 
-  const handleRunAiAgent = () => {
-    setAiLoading(true);
-    setAiResponse('');
-    setTimeout(() => {
-      setAiLoading(false);
-      if (aiPrompt.toLowerCase().includes('moisture') || aiPrompt.toLowerCase().includes('weighbridge')) {
-        setAiResponse(
-          `### 🤖 TareZero AI Weighbridge Analysis Report\n\n` +
-          `**Analysis by ${aiProvider} Textile Copilot**\n\n` +
-          `- **Dataset Scanned**: 482 gross-tare weighment events across Coimbatore and Tirupur nodes.\n` +
-          `- **Anomaly Flagged**: 3 consignments from Supplier *Venkateshwara Cotton Traders* displayed moisture reading drift of **10.8%** (Standard mill contract allowance: **8.5%**).\n` +
-          `- **Financial Loss Averted**: Deducted **₹1,42,800** in excess water weight automatically before Tally Prime voucher generation.\n` +
-          `- **Recommended Action**: Enable *Strict Tare Lockout* on the Avery RS-232 bridge and dispatch WhatsApp alert to Mill Purchase Manager.`
-        );
-      } else if (aiPrompt.toLowerCase().includes('renewal') || aiPrompt.toLowerCase().includes('quota')) {
-        setAiResponse(
-          `### 🤖 Mill Renewal & UTR Demand Generation\n\n` +
-          `**Analysis by ${aiProvider} Commercial Engine**\n\n` +
-          `- **Target Mill**: *Kavitha Cotton Mills Private Limited* (Grace Quota Day 3 of 7).\n` +
-          `- **Annual License**: Scale Tier (₹1,69,990 + 18% GST = ₹2,00,588).\n` +
-          `- **Drafted Tamil & English WhatsApp Notice**:\n` +
-          `  > *வணக்கம்! EverGreen OS உரிமம் புதுப்பித்தல் நிலுவையில் உள்ளது. தடையற்ற மில் செயல்பாட்டிற்கு ₹2,00,588 செலுத்தி UTR எண்ணை பகிரவும்.*\n` +
-          `  > *Dear Director, Your EverGreen OS subscription is due. Contact the provider finance desk to confirm your renewal amount and payment reference.*`
-        );
-      } else {
-        setAiResponse(
-          `### 🤖 Operational Diagnostic Summary\n\n` +
-          `**Generated via ${aiProvider} Engine**\n\n` +
-          `- System integrity verified across all 4 cloud environments.\n` +
-          `- Tally Prime 4.0 XML bridge synchronized 48 vouchers without ledger error.\n` +
-          `- Quota consumption healthy across 140,000 monitored spindles.`
-        );
-      }
-    }, 1200);
-  };
-
   const handleSendChat = (e: React.FormEvent) => {
     e.preventDefault();
     if (!chatInput.trim()) return;
@@ -721,6 +683,7 @@ export default function App() {
     { id: 'DEPLOYMENTS', label: 'Deployments', cat: 'CLOUD', badge: String(deployments.length), badgeColor: '' },
     { id: 'PACKAGES', label: 'Release registry', cat: 'CLOUD', badge: String(packages.length), badgeColor: '' },
     { id: 'DATABASES', label: 'Database studio', cat: 'CLOUD', badge: 'SQLITE', badgeColor: 'emerald' },
+    { id: 'MARKETING_SETTINGS', label: 'Marketing settings', cat: 'CORE' },
     { id: 'MAINTENANCE', label: 'Maintenance', cat: 'CLOUD', badge: String(records.filter(r => r.kind === 'MAINTENANCE').length), badgeColor: '' },
     { id: 'INTEGRATIONS', label: 'Integrations', cat: 'CONNECTIVITY', badge: `${CONNECTORS.length} EXT`, badgeColor: 'cyan' },
     { id: 'APIS', label: 'API management', cat: 'CONNECTIVITY', badge: '7 EP', badgeColor: '' },
@@ -844,6 +807,7 @@ export default function App() {
       </aside>
 
       {/* ── MAIN VIEWPORT ── */}
+      <WorkspacePreferences />
       <main id="workspace-main" ref={mainRef} tabIndex={-1} className="admin-main-viewport">
         {Object.entries(dataErrors).filter(([, message]) => message).map(([section, message]) => (
           <p key={section} role="alert">{message}</p>
@@ -1511,124 +1475,8 @@ export default function App() {
             {/* ═══════════════════════════════════════════════════════════════
                 TAB 6: DATABASE STUDIO & MANAGEMENT
                 ═══════════════════════════════════════════════════════════════ */}
-            {activeTab === 'DATABASES' && (
-              <div className="db-tab-view">
-                <div className="page-toolbar">
-                  <div>
-                    <h1 className="page-title">Database studio</h1>
-                    <p style={{ fontSize: '0.82rem', color: 'var(--adm-muted)' }}>SQLite Provider control ledger, tenant schemas, WAL mode replication, and atomic vacuum</p>
-                  </div>
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button
-                      className="btn-table-action primary"
-                      onClick={() => handleRunTerminalCommand('backup')}
-                    >
-                      📦 Snapshot instructions
-                    </button>
-                    <button
-                      className="btn-table-action"
-                      onClick={() => {
-                        showMsg('⚡ Running PRAGMA wal_checkpoint(TRUNCATE) on admin.db...');
-                        setTimeout(() => showMsg('✅ SQLite admin.db vacuumed & optimized.'), 1000);
-                      }}
-                    >
-                      🧹 Vacuum & Checkpoint
-                    </button>
-                  </div>
-                </div>
-
-                <div className="db-studio-deck">
-                  <div className="glass-panel db-studio-card">
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <h3 style={{ fontSize: '1rem', color: '#ffffff' }}>🏢 Primary Provider Database</h3>
-                      <span className="status-pill active">SQLITE · WAL ACTIVE</span>
-                    </div>
-                    <div style={{ fontSize: '0.82rem', color: 'var(--adm-muted)' }}>
-                      Location: <span className="font-mono text-cyan">packages/admin-database/prisma/admin.db</span>
-                    </div>
-                    <div className="db-metric-bar">
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.74rem' }}>
-                        <span>Allocated Storage (1.4 MB / 10 GB Local Disk)</span>
-                        <span className="text-cyan">0.01%</span>
-                      </div>
-                      <div className="db-metric-track">
-                        <div className="db-metric-fill" style={{ width: '1%', background: 'var(--adm-cyan)' }} />
-                      </div>
-                    </div>
-                    <div className="metric-grid">
-                      <div style={{ background: 'rgba(255,255,255,0.03)', padding: '0.6rem', borderRadius: 6 }}>
-                        <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#ffffff' }}>{companies.length}</div>
-                        <div style={{ fontSize: '0.68rem', color: 'var(--adm-dim)' }}>Company Rows</div>
-                      </div>
-                      <div style={{ background: 'rgba(255,255,255,0.03)', padding: '0.6rem', borderRadius: 6 }}>
-                        <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#ffffff' }}>{records.length}</div>
-                        <div style={{ fontSize: '0.68rem', color: 'var(--adm-dim)' }}>Control Records</div>
-                      </div>
-                      <div style={{ background: 'rgba(255,255,255,0.03)', padding: '0.6rem', borderRadius: 6 }}>
-                        <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--adm-emerald)' }}>0 Errors</div>
-                        <div style={{ fontSize: '0.68rem', color: 'var(--adm-dim)' }}>Integrity Check</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="glass-panel db-studio-card">
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <h3 style={{ fontSize: '1rem', color: '#ffffff' }}>🏭 Tenant Factory Isolation</h3>
-                      <span className="status-pill active">MULTI-INSTANCE</span>
-                    </div>
-                    <div style={{ fontSize: '0.82rem', color: 'var(--adm-muted)' }}>
-                      Isolated SQLite databases on factory Linux VMs + Postgres Cloud instances
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', fontSize: '0.78rem' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.35rem 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                        <span>Selvam Spinning Works</span>
-                        <span className="text-emerald">Cloud Postgres (m5.large) · Healthy</span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.35rem 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                        <span>Sri Murugan Handlooms</span>
-                        <span className="text-emerald">On-Prem SQLite WAL · Auto-sync</span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.35rem 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                        <span>Kavitha Cotton Mills</span>
-                        <span className="text-amber">Azure Postgres · Quota Grace</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="glass-panel" style={{ padding: '1.25rem' }}>
-                  <h3 style={{ fontSize: '0.95rem', color: '#ffffff', marginBottom: '0.75rem' }}>🔍 Control Records Raw Ledger Explorer</h3>
-                  <div style={{ maxHeight: 280, overflowY: 'auto' }}>
-                    <table className="tenants-data-table">
-                      <thead>
-                        <tr>
-                          <th>Record ID</th>
-                          <th>Kind</th>
-                          <th>Title</th>
-                          <th>Status</th>
-                          <th>Priority</th>
-                          <th>Owner</th>
-                          <th>Updated</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {records.slice(0, 10).map(r => (
-                          <tr key={r.id} onClick={() => setActiveRecordModal(r)} style={{ cursor: 'pointer' }}>
-                            <td><span className="font-mono text-cyan">{r.id}</span></td>
-                            <td><span className="plan-badge-tag">{r.kind}</span></td>
-                            <td><strong>{r.title}</strong></td>
-                            <td><span className={`status-pill ${r.status.toLowerCase()}`}>{r.status}</span></td>
-                            <td><span>{r.priority}</span></td>
-                            <td><span style={{ fontSize: '0.75rem' }}>{r.owner}</span></td>
-                            <td><span className="text-dim" style={{ fontSize: '0.72rem' }}>{new Date(r.updatedAt).toLocaleTimeString()}</span></td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            )}
+            {activeTab === 'DATABASES' && <DatabaseWorkspace apiBase={adminApiBase} />}
+            {activeTab === 'MARKETING_SETTINGS' && <MarketingSettings apiBase={adminApiBase} />}
 
             {/* ═══════════════════════════════════════════════════════════════
                 TAB 7: MAINTENANCE & SLA
@@ -2021,108 +1869,7 @@ export default function App() {
             {/* ═══════════════════════════════════════════════════════════════
                 TAB 13: AI AGENT STUDIO (COPILOT)
                 ═══════════════════════════════════════════════════════════════ */}
-            {activeTab === 'AI_AGENT' && (
-              <div className="ai-agent-tab-view">
-                <div className="page-toolbar">
-                  <div>
-                    <h1 className="page-title">AI studio</h1>
-                    <p style={{ fontSize: '0.82rem', color: 'var(--adm-muted)' }}>Configurable multi-provider copilot: Anthropic Claude, OpenAI GPT-4o, xAI Grok, and Local Ollama</p>
-                  </div>
-                  <div style={{ display: 'flex', gap: '0.4rem' }}>
-                    {(['ANTHROPIC', 'OPENAI', 'GROK', 'OLLAMA'] as const).map(p => (
-                      <button
-                        key={p}
-                        className={`dash-widget-toggle-btn ${aiProvider === p ? 'active' : ''}`}
-                        onClick={() => setAiProvider(p)}
-                      >
-                        {p}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="ai-agent-layout">
-                  {/* PRESET PROMPTS */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-                    <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--adm-muted)' }}>TEXTILE SYSTEM PRESETS</span>
-
-                    {[
-                      {
-                        title: '⚖️ Weighbridge Moisture Tampering',
-                        prompt: 'Analyze Weighbridge Moisture Anomaly logs for Coimbatore and detect tare tampering patterns.',
-                      },
-                      {
-                        title: '📜 Mill License Renewal Notice',
-                        prompt: 'Draft formal bilingual (Tamil & English) WhatsApp renewal notice with UTR bank details for Kavitha Cotton Mills.',
-                      },
-                      {
-                        title: '📑 Tally Prime Ledger Reconciliation',
-                        prompt: 'Reconcile 48 Tally Prime XML purchase vouchers against weighbridge gross tare receipts and identify ledger mismatches.',
-                      },
-                      {
-                        title: '☁️ Multi-Cloud Canary Health Audit',
-                        prompt: 'Run diagnostic health audit on GCP Cloud Run and Local Factory VM and generate rollback safety index.',
-                      },
-                    ].map((item, i) => (
-                      <button type="button"
-                        key={i}
-                        className="ai-prompt-template-card"
-                        onClick={() => setAiPrompt(item.prompt)}
-                      >
-                        <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#ffffff', marginBottom: '0.2rem' }}>{item.title}</div>
-                        <div style={{ fontSize: '0.72rem', color: 'var(--adm-dim)', lineHeight: '1.4' }}>{item.prompt}</div>
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* PROMPT RUNNER & OUTPUT */}
-                  <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    <div>
-                      <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--adm-muted)', textTransform: 'uppercase' }}>
-                        Operational Prompt ({aiProvider} Provider)
-                      </label>
-                      <textarea
-                        className="form-input-text"
-                        aria-label="Operational prompt"
-                        style={{ minHeight: 90, marginTop: '0.4rem' }}
-                        value={aiPrompt}
-                        onChange={e => setAiPrompt(e.target.value)}
-                      />
-                    </div>
-
-                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                      <button
-                        className="btn-provision-trigger"
-                        disabled={aiLoading}
-                        onClick={handleRunAiAgent}
-                      >
-                        {aiLoading ? '🤖 Analyzing Mill Telemetry...' : '🚀 Execute AI Analysis'}
-                      </button>
-                    </div>
-
-                    <div style={{ background: '#020610', borderRadius: 8, border: '1px solid var(--adm-border)', padding: '1rem', minHeight: 220 }}>
-                      <div style={{ fontSize: '0.7rem', color: 'var(--adm-dim)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                        Copilot Output Stream
-                      </div>
-                      {aiLoading ? (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', color: 'var(--adm-cyan)', fontSize: '0.84rem' }}>
-                          <div className="loading-spinner" style={{ width: 16, height: 16 }} />
-                          Synthesizing textile telemetry via {aiProvider}...
-                        </div>
-                      ) : aiResponse ? (
-                        <div style={{ color: '#e2e8f0', fontSize: '0.82rem', lineHeight: '1.7', whiteSpace: 'pre-wrap' }}>
-                          {aiResponse}
-                        </div>
-                      ) : (
-                        <div style={{ color: 'var(--adm-dim)', fontSize: '0.8rem', fontStyle: 'italic' }}>
-                          Select a textile preset or type a prompt above, then click Execute AI Analysis.
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
+            {activeTab === 'AI_AGENT' && <section><div className="page-toolbar"><div><p className="workspace-eyebrow">OWNER / INTELLIGENCE</p><h1 className="page-title">AI studio</h1><p className="workspace-subtitle">Atlas uses Groq for guidance and drafting. It cannot run commands, inspect tenant data or change records.</p></div></div><AiAssistant endpoint={adminApiBase + '/ai/owner'} title="Atlas" purpose="Owner operations, deployment planning and licence guidance" prompts={['How do I issue a licence with an offline period?', 'Prepare a deployment and recovery checklist.', 'Explain provider roles and secure owner access.']} /></section>}
 
             {/* ═══════════════════════════════════════════════════════════════
                 TAB 14: CHATOPS LIVE FEED
@@ -2884,3 +2631,5 @@ export default function App() {
     </div>
   );
 }
+
+export default function LicensedProviderApp() { return <InstallationGate url={((import.meta as { env?: { VITE_ADMIN_API_URL?: string } }).env?.VITE_ADMIN_API_URL || '/admin-api').replace(/\/+$/, '') + '/license/status'}><ProviderAccessGate><App /></ProviderAccessGate></InstallationGate>; }

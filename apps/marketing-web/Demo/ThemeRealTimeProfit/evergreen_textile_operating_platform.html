@@ -1,0 +1,2537 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EverGreen | From Raw Fiber to Real-Time Profit — Textile Operating System</title>
+  
+  <!-- Google Fonts: Space Grotesk, Inter, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            ink: {
+              950: '#020504',
+              900: '#040b08',
+              850: '#07140f',
+              800: '#0a1f18',
+              700: '#0f2e24',
+              600: '#164234',
+            },
+            emerald: {
+              500: '#10b981',
+              400: '#34d399',
+              300: '#6ee7b7',
+            },
+            gold: {
+              500: '#d4af37',
+              400: '#f3cf55',
+              300: '#fae084',
+            },
+            crimson: {
+              500: '#ef4444',
+              400: '#f87171',
+              950: '#2a0808'
+            }
+          },
+          fontFamily: {
+            display: ['"Space Grotesk"', 'sans-serif'],
+            sans: ['"Inter"', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace']
+          },
+          boxShadow: {
+            'emerald-glow': '0 0 50px -10px rgba(16, 185, 129, 0.4)',
+            'gold-glow': '0 0 45px -10px rgba(212, 175, 55, 0.45)',
+            'crimson-glow': '0 0 50px -8px rgba(239, 68, 68, 0.5)',
+            'panel-inner': 'inset 0 1px 0 0 rgba(255, 255, 255, 0.07)'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 7px; height: 7px; }
+    ::-webkit-scrollbar-track { background: #020504; }
+    ::-webkit-scrollbar-thumb { background: #0f2e24; border-radius: 4px; border: 1px solid rgba(52, 211, 153, 0.25); }
+    ::-webkit-scrollbar-thumb:hover { background: #10b981; }
+
+    /* Structural Textile Grid & Linear Spotlight */
+    .bg-loom-grid {
+      background-size: 48px 48px;
+      background-image: 
+        linear-gradient(to right, rgba(16, 185, 129, 0.045) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(16, 185, 129, 0.045) 1px, transparent 1px);
+    }
+
+    .linear-spotlight {
+      background: radial-gradient(650px circle at var(--mouse-x, 50%) var(--mouse-y, 30%), rgba(16, 185, 129, 0.13), rgba(212, 175, 55, 0.04) 40%, transparent 80%);
+    }
+
+    /* 3D Spool & Stage Rules */
+    .stage-3d {
+      perspective: 1400px;
+      transform-style: preserve-3d;
+    }
+
+    .spool-assembly {
+      transform-style: preserve-3d;
+      transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .spool-auto-spin {
+      animation: ambientSpoolSpin 24s linear infinite;
+    }
+
+    @keyframes ambientSpoolSpin {
+      0% { transform: rotateX(16deg) rotateY(0deg) rotateZ(-6deg); }
+      50% { transform: rotateX(22deg) rotateY(180deg) rotateZ(6deg); }
+      100% { transform: rotateX(16deg) rotateY(360deg) rotateZ(-6deg); }
+    }
+
+    .yarn-strand-texture {
+      background: repeating-linear-gradient(
+        4deg,
+        #064e3b 0px,
+        #10b981 3px,
+        #d4af37 5px,
+        #042f2e 9px
+      );
+      background-size: 100% 18px;
+      animation: yarnUnwindShift 1.6s linear infinite;
+    }
+
+    @keyframes yarnUnwindShift {
+      0% { background-position: 0 0; }
+      100% { background-position: 0 18px; }
+    }
+
+    /* Orbit Rings */
+    .orbital-filament {
+      position: absolute;
+      border-radius: 50%;
+      transform-style: preserve-3d;
+      pointer-events: none;
+    }
+    .filament-1 {
+      border: 1.5px dashed rgba(52, 211, 153, 0.45);
+      animation: orbitOne 16s linear infinite;
+    }
+    .filament-2 {
+      border: 1px solid rgba(212, 175, 55, 0.35);
+      animation: orbitTwo 22s linear infinite reverse;
+    }
+    @keyframes orbitOne {
+      0% { transform: rotateX(70deg) rotateY(12deg) rotateZ(0deg); }
+      100% { transform: rotateX(70deg) rotateY(12deg) rotateZ(360deg); }
+    }
+    @keyframes orbitTwo {
+      0% { transform: rotateX(62deg) rotateY(-18deg) rotateZ(0deg); }
+      100% { transform: rotateX(62deg) rotateY(-18deg) rotateZ(360deg); }
+    }
+
+    /* Digital Nervous System Conduits */
+    .nervous-packet {
+      stroke-dasharray: 10 140;
+      animation: packetFlow 2.6s linear infinite;
+    }
+    @keyframes packetFlow {
+      from { stroke-dashoffset: 300; }
+      to { stroke-dashoffset: 0; }
+    }
+
+    .legacy-jagged {
+      stroke-dasharray: 6 8;
+      animation: crimsonJitter 0.35s steps(2) infinite;
+    }
+    @keyframes crimsonJitter {
+      0% { stroke-dashoffset: 0; opacity: 0.9; }
+      50% { stroke-dashoffset: 4; opacity: 0.35; }
+      100% { stroke-dashoffset: 8; opacity: 1; }
+    }
+
+    /* Holographic 3D Code Card */
+    .hologram-card {
+      transform: perspective(1100px) rotateY(-6deg) rotateX(4deg);
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
+    }
+    .hologram-card:hover {
+      transform: perspective(1100px) rotateY(0deg) rotateX(0deg);
+    }
+
+    /* Liquid Gold Shimmer Bar */
+    .liquid-gold-fill {
+      background: linear-gradient(90deg, #9a7b1c 0%, #d4af37 45%, #fae084 75%, #d4af37 100%);
+      background-size: 200% 100%;
+      animation: liquidGoldFlow 3s ease infinite;
+    }
+    @keyframes liquidGoldFlow {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* Glass Panels */
+    .divine-glass {
+      background: rgba(7, 20, 15, 0.72);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(52, 211, 153, 0.16);
+      box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
+    }
+
+    /* Pause / Reduced Motion Support */
+    body.motion-paused *,
+    body.motion-paused *::before,
+    body.motion-paused *::after {
+      animation-play-state: paused !important;
+      transition-duration: 0.01ms !important;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-play-state: paused !important;
+      }
+    }
+
+    /* Rotary Dial Cursor */
+    .rotary-dial-svg {
+      cursor: ns-resize;
+      user-select: none;
+      touch-action: none;
+    }
+  </style>
+</head>
+
+<body class="bg-ink-950 text-slate-200 font-sans antialiased selection:bg-emerald-500 selection:text-ink-950 overflow-x-hidden relative">
+
+  <!-- GLOBAL AMBIENT STAGE & SCROLL-UNWINDING THREAD SVG OVERLAY -->
+  <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-loom-grid">
+    <div id="heroSpotlight" class="absolute inset-0 linear-spotlight"></div>
+    <div class="absolute -top-40 left-1/2 -translate-x-1/2 w-[900px] h-[420px] bg-emerald-500/10 rounded-full blur-[150px]"></div>
+    <div class="absolute top-[35%] -right-40 w-[600px] h-[600px] bg-gold-500/5 rounded-full blur-[160px]"></div>
+    <div class="absolute bottom-0 left-10 w-[550px] h-[550px] bg-emerald-900/15 rounded-full blur-[140px]"></div>
+  </div>
+
+  <!-- SCROLL-LINKED UNWINDING GOLDEN-EMERALD THREAD (Apple + Bruno Simon Weave) -->
+  <svg id="globalWeaveSvg" class="fixed inset-0 w-full h-full pointer-events-none z-20 opacity-75" preserveAspectRatio="none" viewBox="0 0 1440 1000">
+    <defs>
+      <linearGradient id="threadGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#34d399" stop-opacity="0.9" />
+        <stop offset="50%" stop-color="#d4af37" stop-opacity="0.95" />
+        <stop offset="100%" stop-color="#10b981" stop-opacity="0.6" />
+      </linearGradient>
+      <filter id="threadGlow" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation="4" result="blur" />
+        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+      </filter>
+    </defs>
+    <!-- Primary Unwinding Thread Path -->
+    <path id="unwindingThreadPath" 
+          d="M 1030 290 C 1030 460, 720 440, 720 560 C 720 690, 220 660, 220 790 C 220 900, 720 880, 720 1000" 
+          fill="none" 
+          stroke="url(#threadGrad)" 
+          stroke-width="2.2" 
+          filter="url(#threadGlow)"
+          stroke-dasharray="2200" 
+          stroke-dashoffset="1950" />
+    <!-- Travelling Shuttle Node -->
+    <circle id="threadShuttleOrb" cx="1030" cy="290" r="5" fill="#fae084" filter="url(#threadGlow)" />
+  </svg>
+
+  <!-- TOP PORT TOPOLOGY & TRANSPARENCY RIBBON -->
+  <div class="relative z-40 bg-ink-900/95 border-b border-emerald-500/20 py-2 px-4 text-[11px] font-mono">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center gap-3 flex-wrap">
+        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+          MARKETING APP :3300
+        </span>
+        <span class="text-slate-400 hidden sm:inline">|</span>
+        <span class="text-slate-400">Mill Ops Target: <a href="http://localhost:4001" target="_blank" rel="noopener noreferrer" class="text-emerald-300 hover:underline">:4001</a></span>
+        <span class="text-slate-400 hidden md:inline">|</span>
+        <span class="text-slate-400 hidden md:inline">Owner Console: <span class="text-gold-400">:5174</span></span>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="text-slate-400 hidden lg:inline">Simulators, payloads &amp; plans are illustrative</span>
+        <button onclick="openCommandPalette()" class="px-2 py-0.5 rounded bg-ink-800 border border-emerald-500/30 text-emerald-300 hover:bg-ink-700 transition-colors flex items-center gap-1.5">
+          <span>Command Palette</span>
+          <kbd class="px-1 bg-ink-950 rounded text-[10px] text-gold-400 border border-ink-600">⌘K</kbd>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN STICKY NAVIGATION HEADER -->
+  <header class="sticky top-0 z-40 backdrop-blur-xl bg-ink-950/85 border-b border-emerald-500/15">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+      
+      <!-- Brand Identity -->
+      <a href="#" class="flex items-center gap-3 group focus:outline-none">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 via-emerald-600 to-ink-900 p-[1px] shadow-emerald-glow group-hover:scale-105 transition-transform">
+          <div class="w-full h-full bg-ink-950 rounded-[11px] flex items-center justify-center relative overflow-hidden">
+            <i class="fa-solid fa-ring text-emerald-400 text-lg"></i>
+            <span class="absolute w-2 h-2 rounded-full bg-gold-400"></span>
+          </div>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-display font-bold text-xl tracking-tight text-white">EverGreen</span>
+            <span class="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-gold-500/15 text-gold-400 border border-gold-500/30">Divine OS</span>
+          </div>
+          <div class="text-[10px] font-mono text-slate-400 tracking-wider uppercase">Material &bull; Mill &bull; Market</div>
+        </div>
+      </a>
+
+      <!-- Section Jump Links -->
+      <nav class="hidden xl:flex items-center gap-6 text-xs font-mono uppercase tracking-wider text-slate-300">
+        <a href="#nervous-system" class="hover:text-emerald-400 transition-colors">1. Nervous System</a>
+        <a href="#command-center" class="hover:text-emerald-400 transition-colors">2. Command Center</a>
+        <a href="#oracle-yield" class="hover:text-gold-400 transition-colors">3. Oracle of Yield</a>
+        <a href="#neural-bridge" class="hover:text-emerald-400 transition-colors">4. Neural Bridge</a>
+        <a href="#glass-house" class="hover:text-emerald-400 transition-colors">5. Glass House</a>
+        <a href="#plans-deploy" class="hover:text-emerald-400 transition-colors">6. Plans &amp; Edge</a>
+      </nav>
+
+      <!-- Action Toolbar -->
+      <div class="flex items-center gap-2.5">
+        <!-- Accessibility Pause Motion Button -->
+        <button id="motionToggleBtn" onclick="toggleGlobalMotion()" title="Pause or Resume 3D & Flow Animations" class="px-2.5 py-2 rounded-lg bg-ink-900 border border-emerald-500/25 text-xs font-mono text-slate-300 hover:text-white hover:border-emerald-400 transition-all flex items-center gap-1.5">
+          <i id="motionToggleIcon" class="fa-solid fa-pause text-emerald-400"></i>
+          <span id="motionToggleLabel" class="hidden sm:inline">Motion: On</span>
+        </button>
+
+        <!-- Scout AI Guru Trigger -->
+        <button onclick="openScoutOverlay()" class="px-3 py-2 rounded-lg bg-ink-800/90 border border-gold-500/40 text-xs font-mono text-gold-300 hover:bg-ink-700 transition-all flex items-center gap-1.5 shadow-gold-glow">
+          <i class="fa-solid fa-wand-magic-sparkles text-gold-400"></i>
+          <span>Scout AI</span>
+        </button>
+
+        <!-- Primary Action: Prepare POC Draft -->
+        <button onclick="openPocModal()" class="px-4 py-2 rounded-lg font-display font-bold text-xs bg-gradient-to-r from-emerald-400 via-emerald-300 to-gold-300 text-ink-950 hover:brightness-110 transition-all shadow-emerald-glow flex items-center gap-1.5">
+          <span>Prepare Demo Draft</span>
+          <i class="fa-solid fa-arrow-right text-[10px]"></i>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <main class="relative z-10">
+
+    <!-- =====================================================================
+         PILLAR 1: THE HERO SECTION — "THE GENESIS LOOM"
+         (Bruno Simon 3D Interactivity + Linear Glow + Apple Scroll Unwind)
+    ====================================================================== -->
+    <section id="genesis-loom" class="relative pt-12 pb-24 lg:pt-20 lg:pb-32 overflow-hidden border-b border-emerald-500/15">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          
+          <!-- Left 7 Columns: Space Grotesk Architecture & Controls -->
+          <div class="lg:col-span-7 space-y-6 relative z-20">
+            
+            <!-- Readiness Status Pill Bar -->
+            <div class="inline-flex flex-wrap items-center gap-2 p-1.5 rounded-full bg-ink-900/90 border border-emerald-500/30 text-[11px] font-mono">
+              <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold">
+                <i class="fa-solid fa-circle-nodes mr-1"></i>Illustrative Simulator
+              </span>
+              <span class="text-slate-300 px-2">Tally XML: <strong class="text-emerald-400">Live in App</strong></span>
+              <span class="text-slate-500">|</span>
+              <span id="tenantPortalBadge" class="text-gold-300 pr-2">Dev Portal :4001</span>
+            </div>
+
+            <!-- Monumental Space Grotesk Headline -->
+            <h1 class="font-display text-4xl sm:text-6xl lg:text-[64px] font-bold tracking-tight text-white leading-[1.06]">
+              From <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-emerald-400 to-teal-200">Raw Fiber</span> to <span class="text-transparent bg-clip-text bg-gradient-to-r from-gold-300 via-gold-400 to-amber-500">Real-Time Profit.</span>
+            </h1>
+
+            <p class="text-base sm:text-lg text-slate-300 max-w-2xl leading-relaxed font-normal">
+              EverGreen synthesizes cotton bale HVI testing, ring-frame spindle telemetry, job-work sizing ledgers, and native Tally Prime XML vouchers into one unified industrial nervous system.
+            </p>
+
+            <!-- Interactive Spool Tension & Unwind Scrubber (Bruno Simon Playfulness) -->
+            <div class="divine-glass p-4 rounded-2xl border border-emerald-500/25 max-w-xl space-y-2.5">
+              <div class="flex items-center justify-between text-xs font-mono">
+                <span class="text-emerald-300 flex items-center gap-1.5">
+                  <i class="fa-solid fa-bezier-curve text-gold-400"></i>
+                  Interactive Thread Unwind &amp; Spool RPM Control
+                </span>
+                <span id="spoolTensionReadout" class="text-gold-400 font-bold">18,400 RPM &bull; 40s Combed Ne</span>
+              </div>
+              <input id="spoolTensionSlider" type="range" min="0" max="100" value="28" 
+                     oninput="updateSpoolTension(this.value)"
+                     class="w-full h-2 bg-ink-950 rounded-lg appearance-none cursor-pointer accent-gold-400">
+              <div class="flex justify-between text-[10px] font-mono text-slate-400">
+                <span>Drag or Scroll Page to Unwind Thread Across Grid</span>
+                <span>Weave Tension: <strong id="tensionPctLabel" class="text-emerald-300">28%</strong></span>
+              </div>
+            </div>
+
+            <!-- Hero CTAs & Tenant Portal Logic -->
+            <div class="flex flex-wrap items-center gap-3.5 pt-2">
+              <button onclick="openPocModal('Full Mill Walkthrough')" class="px-6 py-3.5 rounded-xl font-display font-bold text-sm bg-gradient-to-r from-emerald-400 via-emerald-300 to-gold-300 text-ink-950 shadow-emerald-glow hover:scale-[1.02] transition-all flex items-center gap-2">
+                <span>Prepare Mill Demo &amp; POC</span>
+                <i class="fa-solid fa-arrow-right"></i>
+              </button>
+
+              <button onclick="handleTenantPortalAction()" class="px-5 py-3.5 rounded-xl font-mono text-xs bg-ink-900/90 hover:bg-ink-800 text-emerald-300 border border-emerald-500/35 transition-all flex items-center gap-2">
+                <i class="fa-solid fa-terminal text-gold-400"></i>
+                <span id="portalBtnText">Launch Mill Portal (:4001)</span>
+              </button>
+
+              <button onclick="openCommandPalette()" class="px-4 py-3.5 rounded-xl font-mono text-xs bg-ink-900/60 hover:bg-ink-800 text-slate-300 border border-slate-700/70 transition-all flex items-center gap-2">
+                <i class="fa-solid fa-bolt text-gold-400"></i>
+                <span>Quick Jump (⌘K)</span>
+              </button>
+            </div>
+
+            <!-- Honest Readiness Footnote -->
+            <div class="flex items-center gap-2 text-[11px] font-mono text-slate-400 pt-1">
+              <i class="fa-solid fa-shield-check text-emerald-400"></i>
+              <span>No synthetic claims: Simulators &amp; sample payloads illustrate target architecture before on-site mill audit.</span>
+            </div>
+
+          </div>
+
+          <!-- Right 5 Columns: Interactive 3D CSS Yarn Spool Stage -->
+          <div class="lg:col-span-5 flex flex-col items-center justify-center relative">
+            
+            <div id="spoolStage" class="stage-3d relative w-full max-w-[440px] h-[460px] flex items-center justify-center select-none cursor-grab active:cursor-grabbing">
+              
+              <!-- Ambient Linear Backlight Behind Spool -->
+              <div id="spoolSpecularGlow" class="absolute w-72 h-72 rounded-full bg-gradient-to-tr from-emerald-500/30 via-gold-500/20 to-transparent blur-2xl pointer-events-none transition-transform duration-200"></div>
+
+              <!-- Orbital Thread Filaments -->
+              <div class="orbital-filament filament-1 w-[350px] h-[350px]"></div>
+              <div class="orbital-filament filament-2 w-[280px] h-[280px]"></div>
+
+              <!-- 3D Spool Cylinder Assembly -->
+              <div id="spool3DObject" class="spool-assembly spool-auto-spin relative w-40 h-64 flex flex-col items-center justify-center">
+                
+                <!-- Top Conical Flange -->
+                <div class="w-40 h-11 rounded-[50%] bg-gradient-to-r from-ink-900 via-emerald-800 to-ink-900 border-2 border-gold-400/60 shadow-2xl relative z-20 flex items-center justify-center">
+                  <div class="w-16 h-6 rounded-[50%] bg-ink-950 border border-emerald-400/70 flex items-center justify-center">
+                    <div class="w-6 h-2.5 rounded-[50%] bg-gold-400/40"></div>
+                  </div>
+                </div>
+
+                <!-- Wound Yarn Core Barrel -->
+                <div class="w-36 h-48 -my-3 relative z-10 overflow-hidden rounded-lg border-x-2 border-gold-400/40 yarn-strand-texture shadow-inner flex flex-col justify-between py-2">
+                  <!-- Specular Highlight Overlay -->
+                  <div id="spoolBarrelHighlight" class="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent pointer-events-none"></div>
+                  <div class="w-full h-[1px] bg-gold-300/40"></div>
+                  <div class="w-full h-[1px] bg-emerald-300/40"></div>
+                  <div class="w-full h-[1px] bg-gold-300/50"></div>
+                  <div class="w-full h-[1px] bg-emerald-300/40"></div>
+                  <div class="w-full h-[1px] bg-gold-300/40"></div>
+                </div>
+
+                <!-- Bottom Base Flange -->
+                <div class="w-44 h-12 rounded-[50%] bg-gradient-to-r from-ink-950 via-emerald-900 to-ink-950 border-2 border-emerald-400/50 shadow-2xl relative z-20 flex items-center justify-center">
+                  <div class="w-16 h-5 rounded-[50%] bg-ink-950 border border-gold-500/40"></div>
+                </div>
+
+              </div>
+
+              <!-- Floating Telemetry Callout Badges on Stage -->
+              <div class="absolute top-4 left-2 divine-glass px-3 py-2 rounded-xl border border-emerald-500/35 text-xs font-mono shadow-lg">
+                <div class="text-[10px] text-emerald-400 uppercase flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Bale Lot #SH6-409
+                </div>
+                <div class="text-white font-bold mt-0.5">29.8 mm &bull; 3.9 Mic</div>
+                <div class="text-[10px] text-slate-400">HVI Trash: 2.1% | Regain: 8.2%</div>
+              </div>
+
+              <div class="absolute bottom-5 right-2 divine-glass px-3 py-2 rounded-xl border border-gold-500/40 text-xs font-mono shadow-lg">
+                <div class="text-[10px] text-gold-400 uppercase flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-gold-400"></span> Cone Output Telemetry
+                </div>
+                <div class="text-white font-bold mt-0.5" id="spoolLiveGpsBadge">96.4 GPS &bull; UKG 3.12</div>
+                <div class="text-[10px] text-emerald-300">Tally Voucher Ready &rarr;</div>
+              </div>
+
+            </div>
+
+            <div class="text-[11px] font-mono text-slate-400 text-center mt-1 flex items-center gap-2">
+              <i class="fa-solid fa-hand-pointer text-gold-400"></i>
+              <span>Move cursor over the 3D Spool to tilt perspective &amp; shift thread illumination</span>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- =====================================================================
+         PILLAR 2: THE WORKFLOW SECTION — "THE DIGITAL NERVOUS SYSTEM"
+         (Samsara Live Telemetry + Vercel Geometric Flow + Legacy Mode Twist)
+    ====================================================================== -->
+    <section id="nervous-system" class="py-24 relative border-b border-emerald-500/15">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Header + The Twist Toggle ("EverGreen Live" vs. "Legacy Mode") -->
+        <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-12">
+          <div>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-ink-900 border border-emerald-500/30 text-xs font-mono text-emerald-300 mb-3">
+              <i class="fa-solid fa-network-wired"></i> Pillar 02 &bull; Samsara + Vercel Synthesis
+            </div>
+            <h2 class="font-display text-3xl sm:text-4xl font-bold text-white tracking-tight">
+              The Digital Nervous System
+            </h2>
+            <p class="text-slate-400 text-sm sm:text-base mt-1 max-w-2xl">
+              Follow a cotton bale from weighbridge inward to GST dispatch. Click any geometric node for live telemetry—or flip the switch to witness how legacy chalkboards fracture mill data.
+            </p>
+          </div>
+
+          <!-- THE TWIST: EVERGREEN vs. LEGACY MODE SWITCH -->
+          <div class="divine-glass p-2 rounded-2xl border border-emerald-500/30 flex items-center gap-2 self-start lg:self-auto">
+            <button id="btnModeEvergreen" onclick="setNervousSystemMode('evergreen')" class="px-4 py-2.5 rounded-xl font-mono text-xs font-bold bg-emerald-500 text-ink-950 shadow-emerald-glow transition-all flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-ink-950 animate-ping"></span>
+              <span>EverGreen OS (Healed)</span>
+            </button>
+            <button id="btnModeLegacy" onclick="setNervousSystemMode('legacy')" class="px-4 py-2.5 rounded-xl font-mono text-xs font-bold text-slate-300 hover:text-white bg-ink-900/80 border border-transparent hover:border-crimson-500/40 transition-all flex items-center gap-2">
+              <i class="fa-solid fa-triangle-exclamation text-crimson-400"></i>
+              <span>Legacy Mode (Broken)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Geometric Circuit Flow & SVG Conduit Canvas -->
+        <div id="nervousSystemBoard" class="divine-glass rounded-3xl p-6 sm:p-8 border border-emerald-500/25 relative overflow-hidden transition-colors duration-500">
+          
+          <!-- Animated SVG Connecting Circuitry Behind Nodes -->
+          <div class="hidden lg:block relative h-16 mb-2">
+            <svg class="w-full h-full overflow-visible" viewBox="0 0 1100 60">
+              <!-- Base Conduit Line -->
+              <path id="conduitBaseLine" d="M 60 30 L 1040 30" fill="none" stroke="rgba(16, 185, 129, 0.25)" stroke-width="2" />
+              <!-- Animated Pulse / Jagged Legacy Line -->
+              <path id="conduitPulseLine" d="M 60 30 L 1040 30" fill="none" stroke="#34d399" stroke-width="3.5" class="nervous-packet" />
+              <!-- Connection Junction Circles -->
+              <circle cx="90" cy="30" r="6" fill="#10b981" />
+              <circle cx="275" cy="30" r="6" fill="#10b981" />
+              <circle cx="460" cy="30" r="6" fill="#10b981" />
+              <circle cx="645" cy="30" r="6" fill="#10b981" />
+              <circle cx="830" cy="30" r="6" fill="#10b981" />
+              <circle cx="1010" cy="30" r="6" fill="#d4af37" />
+            </svg>
+          </div>
+
+          <!-- 6 Geometric Workflow Nodes -->
+          <div id="workflowNodesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+            <!-- Populated dynamically via JS for instant EverGreen vs. Legacy transformation -->
+          </div>
+
+          <!-- Expanded Samsara-Style Live Telemetry Inspector Drawer -->
+          <div id="nodeTelemetryInspector" class="mt-8 p-5 rounded-2xl bg-ink-950/90 border border-emerald-500/30 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 transition-all">
+            <div class="space-y-1">
+              <div class="flex items-center gap-2">
+                <span id="inspStatusDot" class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                <span id="inspStageCode" class="text-xs font-mono uppercase tracking-widest text-emerald-400">STAGE 03 &bull; RING FRAME PRODUCTION</span>
+              </div>
+              <h3 id="inspTitle" class="font-display text-xl font-bold text-white">Ring Frame 04: Running &bull; Combed 40s Compact</h3>
+              <p id="inspDesc" class="text-xs text-slate-300 max-w-2xl">
+                Live spindle telemetry links doff weighments directly to bale mixing lot #SH6-409. Invisible waste is computed every 15 minutes against blowroom input.
+              </p>
+            </div>
+            <div id="inspMetricsRow" class="grid grid-cols-3 gap-3 w-full lg:w-auto shrink-0 font-mono">
+              <div class="p-3 rounded-xl bg-ink-900 border border-emerald-500/20">
+                <div class="text-[10px] text-slate-400">EFFICIENCY</div>
+                <div id="inspMetric1" class="text-base font-bold text-emerald-300 mt-0.5">98.2%</div>
+              </div>
+              <div class="p-3 rounded-xl bg-ink-900 border border-emerald-500/20">
+                <div class="text-[10px] text-slate-400">INVISIBLE WASTE</div>
+                <div id="inspMetric2" class="text-base font-bold text-gold-400 mt-0.5">0.18%</div>
+              </div>
+              <div class="p-3 rounded-xl bg-ink-900 border border-emerald-500/20">
+                <div class="text-[10px] text-slate-400">SYNC LATENCY</div>
+                <div id="inspMetric3" class="text-base font-bold text-white mt-0.5">12 ms</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- =====================================================================
+         PILLAR 3: THE SIMULATOR — "THE OMNISCIENT COMMAND CENTER"
+         (Palantir Foundry 3-Panel Density + Global Crisis Slider + Raycast)
+    ====================================================================== -->
+    <section id="command-center" class="py-24 relative border-b border-emerald-500/15 bg-ink-900/30">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Section Header & Quick Scenario Presets -->
+        <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-10">
+          <div>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-ink-900 border border-gold-500/30 text-xs font-mono text-gold-300 mb-3">
+              <i class="fa-solid fa-tower-observation"></i> Pillar 03 &bull; Palantir Foundry + Raycast Density
+            </div>
+            <h2 class="font-display text-3xl sm:text-4xl font-bold text-white tracking-tight">
+              The Omniscient Command Center
+            </h2>
+            <p class="text-slate-400 text-sm sm:text-base mt-1 max-w-2xl">
+              Three synchronized operational lenses—Floor Ops (<code class="text-emerald-300">:4001</code>), Tally Finance, and Owner Console (<code class="text-gold-300">:5174</code>). Drag the <strong>Global Crisis Slider</strong> below to see how one event ripples across the entire mill.
+            </p>
+          </div>
+
+          <!-- Preset Scenario Buttons -->
+          <div class="flex flex-wrap items-center gap-2 font-mono text-xs">
+            <span class="text-slate-400 mr-1">Presets:</span>
+            <button onclick="setCrisisLevel(0)" class="px-3 py-1.5 rounded-lg bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/25 transition-all">
+              0% Normal
+            </button>
+            <button onclick="setCrisisLevel(50)" class="px-3 py-1.5 rounded-lg bg-gold-500/15 border border-gold-500/40 text-gold-300 hover:bg-gold-500/25 transition-all">
+              50% Moisture / Job-Work Drift
+            </button>
+            <button onclick="setCrisisLevel(100)" class="px-3 py-1.5 rounded-lg bg-crimson-500/20 border border-crimson-500/50 text-crimson-400 hover:bg-crimson-500/30 transition-all">
+              100% Power Outage Crisis
+            </button>
+          </div>
+        </div>
+
+        <!-- PALANTIR-STYLE 3 SYNCHRONIZED VERTICAL PANELS -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          
+          <!-- PANEL 1: FLOOR OPERATIONS (:4001) -->
+          <div id="panelOps" class="divine-glass rounded-2xl p-5 border border-emerald-500/30 flex flex-col justify-between font-mono transition-all duration-300">
+            <div>
+              <div class="flex items-center justify-between pb-3 border-b border-ink-700">
+                <div class="flex items-center gap-2">
+                  <span id="opsStatusDot" class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                  <span class="text-xs font-bold text-white tracking-wider">01 // MILL FLOOR OPS (:4001)</span>
+                </div>
+                <span id="opsBadge" class="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">GRID NOMINAL</span>
+              </div>
+
+              <!-- Machine Telemetry Grid -->
+              <div class="grid grid-cols-2 gap-2.5 my-4">
+                <div id="rfBox1" class="p-3 rounded-xl bg-ink-950/90 border border-emerald-500/25">
+                  <div class="flex justify-between text-[10px] text-slate-400">
+                    <span>RF-01..04 (4,800 Sp)</span>
+                    <span id="rf1State" class="text-emerald-400">RUN</span>
+                  </div>
+                  <div id="rf1Rpm" class="text-lg font-bold text-white mt-1">19,400 RPM</div>
+                  <div id="rf1Sub" class="text-[10px] text-slate-400 mt-0.5">UKG: 3.08 | End-Breaks: 4/hr</div>
+                </div>
+
+                <div id="rfBox2" class="p-3 rounded-xl bg-ink-950/90 border border-emerald-500/25">
+                  <div class="flex justify-between text-[10px] text-slate-400">
+                    <span>RF-05..08 (4,800 Sp)</span>
+                    <span id="rf2State" class="text-emerald-400">RUN</span>
+                  </div>
+                  <div id="rf2Rpm" class="text-lg font-bold text-white mt-1">19,250 RPM</div>
+                  <div id="rf2Sub" class="text-[10px] text-slate-400 mt-0.5">Pneumafil Suction: -14.2 mbar</div>
+                </div>
+              </div>
+
+              <!-- Live Telemetry Log Rows -->
+              <div class="space-y-2 text-[11px] bg-ink-950/70 p-3 rounded-xl border border-ink-800">
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Power Source:</span>
+                  <span id="opsPowerSource" class="text-emerald-300 font-semibold">TANGEDCO 11kV Feeder</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Plant RH% / Temp:</span>
+                  <span id="opsHumidity" class="text-white">63.5% RH &bull; 27.8&deg;C</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Shift Doff Queue:</span>
+                  <span id="opsDoffQueue" class="text-gold-300">Auto-Doffer Ready (04m)</span>
+                </div>
+              </div>
+            </div>
+
+            <div id="opsAlertFooter" class="mt-4 pt-3 border-t border-ink-700 text-[11px] text-emerald-400 flex items-center justify-between">
+              <span><i class="fa-solid fa-check-double mr-1"></i>Zero Spindle Stoppages</span>
+              <span>Shift B &bull; 98.4% Eff</span>
+            </div>
+          </div>
+
+          <!-- PANEL 2: FINANCE & TALLY ACCOUNTANT -->
+          <div id="panelFin" class="divine-glass rounded-2xl p-5 border border-emerald-500/30 flex flex-col justify-between font-mono transition-all duration-300">
+            <div>
+              <div class="flex items-center justify-between pb-3 border-b border-ink-700">
+                <div class="flex items-center gap-2">
+                  <span id="finStatusDot" class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                  <span class="text-xs font-bold text-white tracking-wider">02 // FINANCE &amp; TALLY LEDGER</span>
+                </div>
+                <span id="finBadge" class="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">RECONCILED</span>
+              </div>
+
+              <!-- Ledger Entries Table -->
+              <div class="my-4 space-y-2 text-[11px]">
+                <div class="p-2.5 rounded-lg bg-ink-950/90 border border-ink-700 flex justify-between items-center">
+                  <div>
+                    <div class="text-white font-semibold">Cotton Lot #SH6-409 Cost</div>
+                    <div class="text-[10px] text-slate-400">Sec 194Q TDS @ 0.1% Deducted</div>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-emerald-300 font-bold">&#8377;184.20 / Kg</div>
+                    <div class="text-[9px] text-slate-500">Voucher #PU-882</div>
+                  </div>
+                </div>
+
+                <div id="finVarianceRow" class="p-2.5 rounded-lg bg-ink-950/90 border border-emerald-500/25 flex justify-between items-center transition-colors">
+                  <div>
+                    <div id="finVarTitle" class="text-white font-semibold">Power &amp; Conversion Allocation</div>
+                    <div id="finVarSub" class="text-[10px] text-slate-400">Standard Grid Tariff Absorbed</div>
+                  </div>
+                  <div class="text-right">
+                    <div id="finVarAmount" class="text-emerald-300 font-bold">&#8377;31.40 / Kg</div>
+                    <div id="finVarTag" class="text-[9px] text-emerald-400">Variance: &#8377;0.00</div>
+                  </div>
+                </div>
+
+                <div class="p-2.5 rounded-lg bg-ink-950/90 border border-ink-700 flex justify-between items-center">
+                  <div>
+                    <div class="text-white font-semibold">Job-Work Sizing Challan</div>
+                    <div id="finJwSub" class="text-[10px] text-slate-400">Beam Return Weight Matched</div>
+                  </div>
+                  <div class="text-right">
+                    <div id="finJwStatus" class="text-gold-300 font-bold">0.0% Shortage</div>
+                    <div class="text-[9px] text-slate-500">GST ITC Safe</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div id="finAlertFooter" class="mt-4 pt-3 border-t border-ink-700 text-[11px] text-emerald-400 flex items-center justify-between">
+              <span><i class="fa-solid fa-code-commit mr-1"></i>Tally XML Queue: 100% Synced</span>
+              <span>0 Exceptions</span>
+            </div>
+          </div>
+
+          <!-- PANEL 3: OWNER EXECUTIVE CONSOLE (:5174) -->
+          <div id="panelOwner" class="divine-glass rounded-2xl p-5 border border-emerald-500/30 flex flex-col justify-between font-mono transition-all duration-300">
+            <div>
+              <div class="flex items-center justify-between pb-3 border-b border-ink-700">
+                <div class="flex items-center gap-2">
+                  <span id="ownerStatusDot" class="w-2.5 h-2.5 rounded-full bg-gold-400"></span>
+                  <span class="text-xs font-bold text-white tracking-wider">03 // OWNER CONSOLE (:5174)</span>
+                </div>
+                <span id="ownerBadge" class="text-[10px] px-2 py-0.5 rounded bg-gold-500/20 text-gold-300 border border-gold-500/30">MARGIN OPTIMAL</span>
+              </div>
+
+              <!-- Executive KPI Duo -->
+              <div class="grid grid-cols-2 gap-2.5 my-4">
+                <div class="p-3 rounded-xl bg-ink-950/90 border border-ink-700">
+                  <div class="text-[10px] text-slate-400">YARN REALIZATION</div>
+                  <div id="ownerRealization" class="text-xl font-bold text-emerald-300 mt-1">87.65%</div>
+                  <div id="ownerRealSub" class="text-[9px] text-emerald-400">+0.45% vs Target</div>
+                </div>
+                <div class="p-3 rounded-xl bg-ink-950/90 border border-ink-700">
+                  <div class="text-[10px] text-slate-400">NET EBITDA / KG</div>
+                  <div id="ownerEbitda" class="text-xl font-bold text-gold-400 mt-1">&#8377;42.80</div>
+                  <div id="ownerEbitdaSub" class="text-[9px] text-slate-400">Shift P&amp;L: +&#8377;3.42L</div>
+                </div>
+              </div>
+
+              <!-- Dynamic SVG Margin Trajectory Sparkline -->
+              <div class="p-3 rounded-xl bg-ink-950/90 border border-ink-800">
+                <div class="flex justify-between text-[10px] text-slate-400 mb-2">
+                  <span>REAL-TIME MARGIN TRAJECTORY</span>
+                  <span id="ownerSparkLabel" class="text-emerald-400">STEADY CLIMB</span>
+                </div>
+                <svg class="w-full h-16 overflow-visible" viewBox="0 0 260 55">
+                  <path id="ownerSparkPath" d="M 5 45 Q 65 40, 120 28 T 255 10" fill="none" stroke="#34d399" stroke-width="2.5" />
+                  <circle id="ownerSparkDot" cx="255" cy="10" r="4" fill="#d4af37" />
+                </svg>
+              </div>
+            </div>
+
+            <div id="ownerAlertFooter" class="mt-4 pt-3 border-t border-ink-700 text-[11px] text-gold-300 flex items-center justify-between">
+              <span><i class="fa-solid fa-shield-halved mr-1"></i>All Export Contracts On Track</span>
+              <span>Risk: LOW</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- GLOBAL CRISIS SLIDER BAR -->
+        <div class="mt-6 divine-glass rounded-2xl p-6 border border-gold-500/35 shadow-2xl">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3 font-mono">
+            <div class="flex items-center gap-2">
+              <i id="crisisSliderIcon" class="fa-solid fa-sliders text-emerald-400"></i>
+              <span class="text-xs font-bold uppercase tracking-wider text-white">GLOBAL MILL STRESS &amp; CRISIS SIMULATOR:</span>
+              <span id="crisisStateTitle" class="text-xs px-2.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">0% — Normal Synchronized Operations</span>
+            </div>
+            <span class="text-[11px] text-slate-400">Drag slider right to trigger crisis ripple; slide back to 0% to auto-heal</span>
+          </div>
+
+          <input id="globalCrisisSlider" type="range" min="0" max="100" value="0" 
+                 oninput="setCrisisLevel(this.value)"
+                 class="w-full h-3 bg-gradient-to-r from-emerald-500 via-gold-400 to-crimson-500 rounded-lg appearance-none cursor-pointer">
+
+          <div class="grid grid-cols-3 text-[11px] font-mono text-slate-400 mt-2">
+            <div><strong class="text-emerald-400">0% Nominal:</strong> Grid Power &bull; 87.6% Realization</div>
+            <div class="text-center"><strong class="text-gold-400">50% Drift:</strong> High Moisture &bull; Job-Work Shortage</div>
+            <div class="text-right"><strong class="text-crimson-400">100% Crisis:</strong> Feeder Outage &bull; Diesel DG Cost Spike</div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- =====================================================================
+         PILLAR 4: THE CALCULATOR — "THE ORACLE OF YIELD"
+         (Chargebee Logic Visualization + Linear Precision Rotary Dials)
+    ====================================================================== -->
+    <section id="oracle-yield" class="py-24 relative border-b border-emerald-500/15">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-14">
+          <div>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-ink-900 border border-gold-500/35 text-xs font-mono text-gold-300 mb-3">
+              <i class="fa-solid fa-compass-drafting"></i> Pillar 04 &bull; Chargebee + Linear Trading Terminal
+            </div>
+            <h2 class="font-display text-3xl sm:text-4xl font-bold text-white tracking-tight">
+              The Oracle of Yield
+            </h2>
+            <p class="text-slate-400 text-sm sm:text-base mt-1 max-w-2xl">
+              Drag the precision rotary dials vertically or use the fine steppers to model how reclaiming invisible sweep waste and moisture loss impacts your annual recovery.
+            </p>
+          </div>
+
+          <!-- Mandatory Transparency Trust Badge with Formula Tooltip -->
+          <div class="relative group self-start lg:self-auto">
+            <div class="px-4 py-2 rounded-xl bg-ink-900 border border-gold-500/40 text-xs font-mono text-gold-300 flex items-center gap-2 cursor-help">
+              <i class="fa-solid fa-scale-balanced text-gold-400"></i>
+              <span>ESTIMATE ONLY &bull; ILLUSTRATIVE MODEL</span>
+              <i class="fa-solid fa-circle-question text-slate-400"></i>
+            </div>
+            <!-- Math Tooltip -->
+            <div class="hidden group-hover:block absolute right-0 mt-2 w-80 p-4 rounded-xl bg-ink-950 border border-gold-500/50 text-[11px] font-mono text-slate-300 shadow-2xl z-30 leading-relaxed">
+              <div class="text-gold-400 font-bold mb-1">Underlying Terminal Formula:</div>
+              Daily Output Kg = (Spindles &times; 0.095 Kg/shift &times; 3 shifts).<br>
+              Annual Recovery = Daily Kg &times; 350 days &times; (Recoverable Waste %) &times; Yarn Price (&#8377;/Kg).<br>
+              <span class="text-emerald-400">Note: Verified savings require a 90-day on-site lot audit.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+          
+          <!-- Left 7 Columns: 3 Interactive SVG Rotary Dials -->
+          <div class="lg:col-span-7 divine-glass rounded-3xl p-6 sm:p-8 border border-emerald-500/25 flex flex-col justify-between">
+            
+            <div class="flex items-center justify-between border-b border-ink-700 pb-4 mb-6">
+              <span class="text-xs font-mono uppercase tracking-wider text-emerald-300 font-bold">
+                <i class="fa-solid fa-gauge-high mr-1.5 text-gold-400"></i>Rotary Parameter Console (Drag Dial or Click +/-)
+              </span>
+              <button onclick="resetOracleDials()" class="text-xs font-mono text-slate-400 hover:text-white underline">Reset Defaults</button>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 my-auto">
+              
+              <!-- DIAL 1: SPINDLE CAPACITY -->
+              <div class="p-4 rounded-2xl bg-ink-950/85 border border-ink-700 flex flex-col items-center text-center">
+                <span class="text-[11px] font-mono text-slate-400 uppercase">01. Active Spindles</span>
+                <div class="relative my-3"
+                     onmousedown="startRotaryDrag(event, 'spindles')"
+                     ontouchstart="startRotaryDrag(event, 'spindles')"
+                     onwheel="wheelRotaryDial(event, 'spindles')">
+                  <svg class="w-36 h-36 rotary-dial-svg" viewBox="0 0 120 120">
+                    <circle cx="60" cy="60" r="46" fill="none" stroke="#0f2e24" stroke-width="8" stroke-dasharray="220 300" stroke-dashoffset="-35" stroke-linecap="round" transform="rotate(135 60 60)"/>
+                    <circle id="dialArcSpindles" cx="60" cy="60" r="46" fill="none" stroke="#10b981" stroke-width="8" stroke-dasharray="110 300" stroke-linecap="round" transform="rotate(135 60 60)"/>
+                    <circle cx="60" cy="60" r="34" fill="#040b08" stroke="rgba(52,211,153,0.3)" stroke-width="1.5"/>
+                    <text id="dialTextSpindles" x="60" y="58" text-anchor="middle" class="fill-white font-mono font-bold text-[15px]">25,000</text>
+                    <text x="60" y="73" text-anchor="middle" class="fill-emerald-400 font-mono text-[9px]">SPINDLES</text>
+                  </svg>
+                </div>
+                <div class="flex items-center gap-2 mt-1">
+                  <button onclick="stepDial('spindles', -2000)" class="w-7 h-7 rounded bg-ink-800 hover:bg-ink-700 text-white font-mono text-xs border border-ink-600">-</button>
+                  <span id="dialSubSpindles" class="text-[11px] font-mono text-slate-300">~7.1 Tons/day</span>
+                  <button onclick="stepDial('spindles', 2000)" class="w-7 h-7 rounded bg-ink-800 hover:bg-ink-700 text-white font-mono text-xs border border-ink-600">+</button>
+                </div>
+                <input id="rangeSpindles" type="range" min="6000" max="60000" step="500" value="25000"
+                       aria-label="Active Spindles or Looms"
+                       oninput="setDialValue('spindles', parseFloat(this.value))"
+                       class="w-full h-1.5 bg-ink-900 rounded-lg appearance-none cursor-pointer accent-emerald-400 mt-3">
+              </div>
+
+              <!-- DIAL 2: RECOVERABLE WASTE & MOISTURE % -->
+              <div class="p-4 rounded-2xl bg-ink-950/85 border border-ink-700 flex flex-col items-center text-center">
+                <span class="text-[11px] font-mono text-slate-400 uppercase">02. Waste &amp; Regain Lift</span>
+                <div class="relative my-3"
+                     onmousedown="startRotaryDrag(event, 'waste')"
+                     ontouchstart="startRotaryDrag(event, 'waste')"
+                     onwheel="wheelRotaryDial(event, 'waste')">
+                  <svg class="w-36 h-36 rotary-dial-svg" viewBox="0 0 120 120">
+                    <circle cx="60" cy="60" r="46" fill="none" stroke="#0f2e24" stroke-width="8" stroke-dasharray="220 300" stroke-linecap="round" transform="rotate(135 60 60)"/>
+                    <circle id="dialArcWaste" cx="60" cy="60" r="46" fill="none" stroke="#d4af37" stroke-width="8" stroke-dasharray="85 300" stroke-linecap="round" transform="rotate(135 60 60)"/>
+                    <circle cx="60" cy="60" r="34" fill="#040b08" stroke="rgba(212,175,55,0.35)" stroke-width="1.5"/>
+                    <text id="dialTextWaste" x="60" y="58" text-anchor="middle" class="fill-gold-300 font-mono font-bold text-[16px]">0.85%</text>
+                    <text x="60" y="73" text-anchor="middle" class="fill-slate-400 font-mono text-[9px]">RECLAIMED</text>
+                  </svg>
+                </div>
+                <div class="flex items-center gap-2 mt-1">
+                  <button onclick="stepDial('waste', -0.1)" class="w-7 h-7 rounded bg-ink-800 hover:bg-ink-700 text-white font-mono text-xs border border-ink-600">-</button>
+                  <span class="text-[11px] font-mono text-slate-300">0.2% to 2.5%</span>
+                  <button onclick="stepDial('waste', 0.1)" class="w-7 h-7 rounded bg-ink-800 hover:bg-ink-700 text-white font-mono text-xs border border-ink-600">+</button>
+                </div>
+                <input id="rangeWaste" type="range" min="0.20" max="2.50" step="0.05" value="0.85"
+                       aria-label="Waste and Moisture Loss Reduction Percentage"
+                       oninput="setDialValue('waste', parseFloat(this.value))"
+                       class="w-full h-1.5 bg-ink-900 rounded-lg appearance-none cursor-pointer accent-gold-400 mt-3">
+              </div>
+
+              <!-- DIAL 3: YARN SELLING REALIZATION (₹/KG) -->
+              <div class="p-4 rounded-2xl bg-ink-950/85 border border-ink-700 flex flex-col items-center text-center">
+                <span class="text-[11px] font-mono text-slate-400 uppercase">03. Yarn Rate (&#8377;/Kg)</span>
+                <div class="relative my-3"
+                     onmousedown="startRotaryDrag(event, 'price')"
+                     ontouchstart="startRotaryDrag(event, 'price')"
+                     onwheel="wheelRotaryDial(event, 'price')">
+                  <svg class="w-36 h-36 rotary-dial-svg" viewBox="0 0 120 120">
+                    <circle cx="60" cy="60" r="46" fill="none" stroke="#0f2e24" stroke-width="8" stroke-dasharray="220 300" stroke-linecap="round" transform="rotate(135 60 60)"/>
+                    <circle id="dialArcPrice" cx="60" cy="60" r="46" fill="none" stroke="#34d399" stroke-width="8" stroke-dasharray="120 300" stroke-linecap="round" transform="rotate(135 60 60)"/>
+                    <circle cx="60" cy="60" r="34" fill="#040b08" stroke="rgba(52,211,153,0.3)" stroke-width="1.5"/>
+                    <text id="dialTextPrice" x="60" y="58" text-anchor="middle" class="fill-white font-mono font-bold text-[15px]">&#8377;310</text>
+                    <text x="60" y="73" text-anchor="middle" class="fill-emerald-400 font-mono text-[9px]">PER KG</text>
+                  </svg>
+                </div>
+                <div class="flex items-center gap-2 mt-1">
+                  <button onclick="stepDial('price', -10)" class="w-7 h-7 rounded bg-ink-800 hover:bg-ink-700 text-white font-mono text-xs border border-ink-600">-</button>
+                  <span class="text-[11px] font-mono text-slate-300">40s Combed Benchmark</span>
+                  <button onclick="stepDial('price', 10)" class="w-7 h-7 rounded bg-ink-800 hover:bg-ink-700 text-white font-mono text-xs border border-ink-600">+</button>
+                </div>
+                <input id="rangePrice" type="range" min="190" max="450" step="5" value="310"
+                       aria-label="Yarn Selling Price per Kg"
+                       oninput="setDialValue('price', parseFloat(this.value))"
+                       class="w-full h-1.5 bg-ink-900 rounded-lg appearance-none cursor-pointer accent-emerald-400 mt-3">
+              </div>
+
+            </div>
+
+            <!-- Dynamic Causal Micro-Copy -->
+            <div class="mt-6 p-4 rounded-xl bg-ink-950 border border-gold-500/30 text-xs font-mono text-slate-200 leading-relaxed">
+              <span class="text-gold-400 font-bold"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i>CAUSAL INSIGHT:</span>
+              <span id="oracleCausalCopy">
+                Reducing invisible sweep &amp; moisture loss by <strong class="text-gold-300">0.85%</strong> across <strong class="text-emerald-300">25,000 spindles</strong> (~2,493 Tons/yr) at <strong class="text-white">&#8377;310/kg</strong> reclaims <strong class="text-gold-300">21.2 Metric Tons</strong> of salable cone yarn worth <strong class="text-emerald-300">&#8377;65.7 Lakhs annually</strong>.
+              </span>
+            </div>
+
+          </div>
+
+          <!-- Right 5 Columns: Liquid Gold Bar Chart & Breakdown -->
+          <div class="lg:col-span-5 divine-glass rounded-3xl p-6 sm:p-8 border border-gold-500/35 flex flex-col justify-between relative overflow-hidden">
+            
+            <div>
+              <div class="text-xs font-mono text-gold-400 uppercase tracking-widest">Projected Annual &amp; Monthly Value Recovery</div>
+              <div class="flex flex-wrap items-baseline gap-3 mt-1">
+                <div id="oracleTotalLakhs" class="font-display text-4xl sm:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-gold-300 via-gold-400 to-emerald-300">
+                  &#8377;65.7 Lakhs
+                </div>
+                <span id="oracleMonthlyLakhs" class="text-xs font-mono text-emerald-300 font-semibold">(&#8377;5.48 L / mo)</span>
+                <span id="oracleTotalUsd" class="text-xs font-mono text-slate-400">(~$78,900 / yr)</span>
+              </div>
+
+              <!-- Liquid Gold Real-Time Progress Bars -->
+              <div class="space-y-5 mt-8 font-mono">
+                
+                <!-- Bar 1 -->
+                <div>
+                  <div class="flex justify-between text-xs mb-1.5">
+                    <span class="text-slate-300">1. Unaccounted Sweep &amp; Noil Control</span>
+                    <span id="barVal1" class="text-gold-300 font-bold">&#8377;36.1 L</span>
+                  </div>
+                  <div class="w-full h-3.5 bg-ink-950 rounded-full overflow-hidden border border-ink-700 p-0.5">
+                    <div id="barFill1" class="h-full rounded-full liquid-gold-fill transition-all duration-300" style="width: 64%"></div>
+                  </div>
+                </div>
+
+                <!-- Bar 2 -->
+                <div>
+                  <div class="flex justify-between text-xs mb-1.5">
+                    <span class="text-slate-300">2. Conditioning &amp; Moisture Regain Lock</span>
+                    <span id="barVal2" class="text-emerald-300 font-bold">&#8377;19.7 L</span>
+                  </div>
+                  <div class="w-full h-3.5 bg-ink-950 rounded-full overflow-hidden border border-ink-700 p-0.5">
+                    <div id="barFill2" class="h-full rounded-full bg-gradient-to-r from-emerald-600 to-emerald-300 transition-all duration-300" style="width: 48%"></div>
+                  </div>
+                </div>
+
+                <!-- Bar 3 -->
+                <div>
+                  <div class="flex justify-between text-xs mb-1.5">
+                    <span class="text-slate-300">3. Billing Weight &amp; Tare Reconciliation</span>
+                    <span id="barVal3" class="text-teal-300 font-bold">&#8377;9.9 L</span>
+                  </div>
+                  <div class="w-full h-3.5 bg-ink-950 rounded-full overflow-hidden border border-ink-700 p-0.5">
+                    <div id="barFill3" class="h-full rounded-full bg-gradient-to-r from-teal-600 to-gold-300 transition-all duration-300" style="width: 32%"></div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <div class="mt-8 pt-5 border-t border-ink-700 space-y-3">
+              <div class="flex items-center justify-between text-xs font-mono">
+                <span class="text-slate-400">Reclaimed Salable Yarn:</span>
+                <span id="oracleTonsLabel" class="text-white font-bold">21.2 Metric Tons / Year</span>
+              </div>
+              <button onclick="openPocModal('Yield Calculator Audit Request')" class="w-full py-3.5 rounded-xl font-display font-bold text-xs bg-gradient-to-r from-gold-400 to-emerald-400 text-ink-950 hover:brightness-110 transition-all shadow-gold-glow">
+                Include This Yield Profile in My Demo Draft &rarr;
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- =====================================================================
+         PILLAR 5: INTEGRATIONS — "THE NEURAL BRIDGE"
+         (Vercel Wire-Format Hologram + Animated SVG Tag-to-Field Leader Lines)
+    ====================================================================== -->
+    <section id="neural-bridge" class="py-24 relative border-b border-emerald-500/15 bg-ink-900/25">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-12">
+          <div>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-ink-900 border border-emerald-500/30 text-xs font-mono text-emerald-300 mb-3">
+              <i class="fa-solid fa-code-branch"></i> Pillar 05 &bull; Vercel Developer Experience + Samsara Hardware
+            </div>
+            <h2 class="font-display text-3xl sm:text-4xl font-bold text-white tracking-tight">
+              The Neural Bridge &amp; Wire-Format Inspector
+            </h2>
+            <p class="text-slate-400 text-sm sm:text-base mt-1 max-w-2xl">
+              Inspect the actual wire payloads. Click any connector profile below to project its holographic payload and trace how raw XML/Serial tags map directly into EverGreen UI fields.
+            </p>
+          </div>
+
+          <!-- Connector Readiness Legend -->
+          <div class="flex flex-wrap items-center gap-3 text-xs font-mono">
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-ink-900 border border-emerald-500/30 text-emerald-300">
+              🟢 Live in App
+            </span>
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-ink-900 border border-gold-500/30 text-gold-300">
+              🟡 Planned Profile
+            </span>
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-ink-900 border border-slate-700 text-slate-400">
+              ⚪ Roadmap
+            </span>
+          </div>
+        </div>
+
+        <!-- 4 Orbiting Connector Selector Nodes -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 mb-8 font-mono">
+          
+          <button onclick="selectBridgeNode('tally')" id="bridgeBtn-tally" class="bridge-node-btn p-4 rounded-2xl border-2 border-emerald-400 bg-ink-800/90 text-left transition-all shadow-emerald-glow">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-emerald-300 font-bold">🟢 Tally Prime XML</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300">LIVE IN APP</span>
+            </div>
+            <div class="text-sm font-sans font-bold text-white mt-1.5">GST Sales &amp; 194Q Ledger</div>
+            <div class="text-[11px] text-slate-400 mt-0.5">Native &lt;ENVELOPE&gt; Export</div>
+          </button>
+
+          <button onclick="selectBridgeNode('weighbridge')" id="bridgeBtn-weighbridge" class="bridge-node-btn p-4 rounded-2xl border border-ink-700 bg-ink-900/60 hover:border-gold-500/50 text-left transition-all">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-gold-300 font-bold">🟡 RS-232 Weighbridge</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-gold-500/15 text-gold-300">PLANNED</span>
+            </div>
+            <div class="text-sm font-sans font-bold text-white mt-1.5">Electronic Scale Serial</div>
+            <div class="text-[11px] text-slate-400 mt-0.5">9600 Baud ASCII Stream</div>
+          </button>
+
+          <button onclick="selectBridgeNode('hvi')" id="bridgeBtn-hvi" class="bridge-node-btn p-4 rounded-2xl border border-ink-700 bg-ink-900/60 hover:border-gold-500/50 text-left transition-all">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-gold-300 font-bold">🟡 Uster HVI Spectrum</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-gold-500/15 text-gold-300">PLANNED</span>
+            </div>
+            <div class="text-sm font-sans font-bold text-white mt-1.5">Bale Lab Quality CSV/JSON</div>
+            <div class="text-[11px] text-slate-400 mt-0.5">UHML, Mic, GPT &amp; Sci</div>
+          </button>
+
+          <button onclick="selectBridgeNode('plc')" id="bridgeBtn-plc" class="bridge-node-btn p-4 rounded-2xl border border-ink-700 bg-ink-900/60 hover:border-slate-500 text-left transition-all">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-slate-300 font-bold">⚪ Ring Frame PLC</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">ROADMAP</span>
+            </div>
+            <div class="text-sm font-sans font-bold text-white mt-1.5">LMW / Rieter Modbus TCP</div>
+            <div class="text-[11px] text-slate-400 mt-0.5">Register Poll &amp; Stop Motion</div>
+          </button>
+
+        </div>
+
+        <!-- Holographic Wire-Format Inspector + Leader Lines + EverGreen Mapped UI -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center relative">
+          
+          <!-- Left 6 Columns: 3D-Tilted Holographic Code Payload -->
+          <div class="lg:col-span-6 hologram-card divine-glass rounded-2xl border border-emerald-500/40 p-5 font-mono shadow-emerald-glow">
+            <div class="flex items-center justify-between pb-3 border-b border-ink-700 text-xs">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                <span id="holoFileName" class="text-white font-bold">tally_prime_yarn_voucher.xml</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <button onclick="copyBridgePayload()" class="px-2.5 py-1 rounded bg-ink-800 hover:bg-ink-700 text-emerald-300 border border-emerald-500/30 text-[11px]">
+                  <i class="fa-regular fa-copy mr-1"></i><span id="copyBridgeLabel">Copy</span>
+                </button>
+                <button onclick="downloadBridgePayload()" class="px-2.5 py-1 rounded bg-ink-800 hover:bg-ink-700 text-gold-300 border border-gold-500/30 text-[11px]">
+                  <i class="fa-solid fa-download mr-1"></i>Download
+                </button>
+              </div>
+            </div>
+
+            <pre id="holoCodeBlock" class="mt-3 p-4 rounded-xl bg-ink-950/95 text-[11px] leading-relaxed text-emerald-300 overflow-x-auto border border-ink-800 max-h-[340px]"></pre>
+          </div>
+
+          <!-- Center 1 Column: Animated SVG Tag-to-Field Leader Lines (Desktop) -->
+          <div class="hidden lg:flex lg:col-span-1 flex-col items-center justify-center">
+            <svg class="w-full h-64 overflow-visible" viewBox="0 0 80 240">
+              <path d="M 0 45 C 40 45, 40 45, 80 45" fill="none" stroke="#34d399" stroke-width="2" class="nervous-packet"/>
+              <path d="M 0 120 C 40 120, 40 120, 80 120" fill="none" stroke="#d4af37" stroke-width="2" class="nervous-packet"/>
+              <path d="M 0 195 C 40 195, 40 195, 80 195" fill="none" stroke="#34d399" stroke-width="2" class="nervous-packet"/>
+              <circle cx="40" cy="45" r="3.5" fill="#34d399"/>
+              <circle cx="40" cy="120" r="3.5" fill="#d4af37"/>
+              <circle cx="40" cy="195" r="3.5" fill="#34d399"/>
+            </svg>
+          </div>
+
+          <!-- Right 5 Columns: Mapped EverGreen Tenant UI Fields (:4001) -->
+          <div class="lg:col-span-5 divine-glass rounded-2xl p-6 border border-gold-500/30 space-y-4 font-mono">
+            <div class="flex items-center justify-between border-b border-ink-700 pb-3">
+              <span class="text-xs font-bold text-white uppercase tracking-wider">
+                <i class="fa-solid fa-arrow-right-to-bracket text-gold-400 mr-1.5"></i>EverGreen Mapped Entity (:4001)
+              </span>
+              <span id="mappedStatusPill" class="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300">LIVE EXPORT</span>
+            </div>
+
+            <div id="mappedFieldsList" class="space-y-3 text-xs">
+              <!-- Populated dynamically when switching nodes -->
+            </div>
+
+            <div class="p-3 rounded-xl bg-ink-950/80 border border-ink-800 text-[11px] text-slate-400 font-sans">
+              <strong class="text-emerald-300 font-mono">Readiness Note:</strong> Tally XML export exists and functions in the application today. Weighbridge, HVI, and PLC profiles represent planned connector schemas.
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- =====================================================================
+         PILLAR 6: "THE GLASS HOUSE" OF RADICAL TRANSPARENCY
+         (Locomotive Bespoke Empty Frames Awaiting Verified Mill Proof)
+    ====================================================================== -->
+    <section id="glass-house" class="py-24 relative border-b border-emerald-500/15">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="max-w-3xl mb-14">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-ink-900 border border-gold-500/35 text-xs font-mono text-gold-300 mb-3">
+            <i class="fa-solid fa-building-shield"></i> Pillar 06 &bull; Locomotive Editorial + Radical Honesty
+          </div>
+          <h2 class="font-display text-3xl sm:text-5xl font-bold text-white tracking-tight">
+            The Glass House: <span class="text-slate-400 font-normal">We Do Not Publish Fake Testimonials.</span>
+          </h2>
+          <p class="text-slate-300 text-sm sm:text-base mt-3 leading-relaxed">
+            Enterprise software marketing is polluted with invented quotes and unverified percentages. Below are three architectural evidence frames. They remain intentionally locked until a partner mill completes a 90-day audited pilot.
+          </p>
+        </div>
+
+        <!-- 3 Architectural Empty Frames Awaiting Verification -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          
+          <!-- Frame 01 -->
+          <div class="group relative rounded-3xl p-7 bg-ink-950/60 border-2 border-dashed border-emerald-500/30 hover:border-gold-400/70 transition-all duration-300 flex flex-col justify-between min-h-[340px]">
+            <div>
+              <div class="flex items-center justify-between text-xs font-mono text-slate-400">
+                <span>EVIDENCE FRAME // 01</span>
+                <span class="px-2 py-0.5 rounded bg-ink-900 text-gold-400 border border-gold-500/30">AWAITING VERIFICATION</span>
+              </div>
+
+              <div class="my-8 py-6 border-y border-ink-800 text-center space-y-2">
+                <i class="fa-solid fa-fingerprint text-3xl text-emerald-500/50 group-hover:text-gold-400 transition-colors"></i>
+                <div class="font-display text-lg font-bold text-white">Comber Noil &amp; Realization Proof</div>
+                <p class="text-xs font-mono text-slate-400 px-2">
+                  Requires 90 days of audited lot-level weighbridge &amp; HVI data from an active spinning partner mill.
+                </p>
+              </div>
+            </div>
+
+            <!-- Hover Audit Protocol Details -->
+            <div class="text-xs font-mono space-y-1.5 bg-ink-900/90 p-3.5 rounded-xl border border-ink-700">
+              <div class="text-gold-300 font-bold uppercase text-[10px]">Required Verification Protocol:</div>
+              <div class="text-slate-300">&bull; 500+ MT raw cotton inward weighed</div>
+              <div class="text-slate-300">&bull; Signed CA ledger reconciliation</div>
+              <button onclick="openPocModal('Apply for Frame 01 Pilot Mill')" class="text-emerald-400 hover:underline pt-1 inline-block">
+                Commission Your Mill for Frame 01 &rarr;
+              </button>
+            </div>
+          </div>
+
+          <!-- Frame 02 -->
+          <div class="group relative rounded-3xl p-7 bg-ink-950/60 border-2 border-dashed border-emerald-500/30 hover:border-gold-400/70 transition-all duration-300 flex flex-col justify-between min-h-[340px]">
+            <div>
+              <div class="flex items-center justify-between text-xs font-mono text-slate-400">
+                <span>EVIDENCE FRAME // 02</span>
+                <span class="px-2 py-0.5 rounded bg-ink-900 text-gold-400 border border-gold-500/30">AWAITING VERIFICATION</span>
+              </div>
+
+              <div class="my-8 py-6 border-y border-ink-800 text-center space-y-2">
+                <i class="fa-solid fa-file-invoice text-3xl text-emerald-500/50 group-hover:text-gold-400 transition-colors"></i>
+                <div class="font-display text-lg font-bold text-white">Zero-Touch Tally Closure Speed</div>
+                <p class="text-xs font-mono text-slate-400 px-2">
+                  Requires 3 consecutive monthly GST &amp; 194Q closing cycles comparing manual entry vs. XML export.
+                </p>
+              </div>
+            </div>
+
+            <div class="text-xs font-mono space-y-1.5 bg-ink-900/90 p-3.5 rounded-xl border border-ink-700">
+              <div class="text-gold-300 font-bold uppercase text-[10px]">Required Verification Protocol:</div>
+              <div class="text-slate-300">&bull; 1,000+ Tax Invoices exported via XML</div>
+              <div class="text-slate-300">&bull; Zero duplicate voucher checksums</div>
+              <button onclick="openPocModal('Apply for Frame 02 Finance Pilot')" class="text-emerald-400 hover:underline pt-1 inline-block">
+                Commission Your Mill for Frame 02 &rarr;
+              </button>
+            </div>
+          </div>
+
+          <!-- Frame 03 -->
+          <div class="group relative rounded-3xl p-7 bg-ink-950/60 border-2 border-dashed border-emerald-500/30 hover:border-gold-400/70 transition-all duration-300 flex flex-col justify-between min-h-[340px]">
+            <div>
+              <div class="flex items-center justify-between text-xs font-mono text-slate-400">
+                <span>EVIDENCE FRAME // 03</span>
+                <span class="px-2 py-0.5 rounded bg-ink-900 text-gold-400 border border-gold-500/30">AWAITING VERIFICATION</span>
+              </div>
+
+              <div class="my-8 py-6 border-y border-ink-800 text-center space-y-2">
+                <i class="fa-solid fa-industry text-3xl text-emerald-500/50 group-hover:text-gold-400 transition-colors"></i>
+                <div class="font-display text-lg font-bold text-white">Job-Work Sizing &amp; Dyeing Shrinkage</div>
+                <p class="text-xs font-mono text-slate-400 px-2">
+                  Requires 60 days of closed-loop outward cone dispatch vs. warped beam return weighments.
+                </p>
+              </div>
+            </div>
+
+            <div class="text-xs font-mono space-y-1.5 bg-ink-900/90 p-3.5 rounded-xl border border-ink-700">
+              <div class="text-gold-300 font-bold uppercase text-[10px]">Required Verification Protocol:</div>
+              <div class="text-slate-300">&bull; Multi-vendor challan aging audit</div>
+              <div class="text-slate-300">&bull; Moisture-adjusted tare comparison</div>
+              <button onclick="openPocModal('Apply for Frame 03 Job-Work Pilot')" class="text-emerald-400 hover:underline pt-1 inline-block">
+                Commission Your Mill for Frame 03 &rarr;
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- =====================================================================
+         PROPOSED PLANS & CONTAINER DEPLOYMENT TOPOLOGY
+         (Explicit Readiness Labels, Port Topology 3300/4001/5174, Docker Prerequisites)
+    ====================================================================== -->
+    <section id="plans-deploy" class="py-24 relative">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-20">
+        
+        <!-- Proposed Commercial Packages -->
+        <div>
+          <div class="text-center max-w-3xl mx-auto mb-12">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-ink-900 border border-emerald-500/30 text-xs font-mono text-emerald-300 mb-3">
+              <i class="fa-solid fa-layer-group"></i> Proposed Commercial Packages
+            </div>
+            <h2 class="font-display text-3xl sm:text-4xl font-bold text-white">
+              Proposed Plans &amp; Mill Readiness Tiers
+            </h2>
+            <p class="text-xs sm:text-sm font-mono text-slate-400 mt-2">
+              All packages below are proposed structures for discovery. Final commercial terms, SLAs, and hardware integration scopes require mutual confirmation after a technical site assessment.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            <!-- Plan 1 -->
+            <div class="divine-glass rounded-2xl p-6 border border-ink-700 flex flex-col justify-between">
+              <div>
+                <div class="flex justify-between items-center text-xs font-mono">
+                  <span class="text-slate-400 uppercase">TIER 01 // COMMERCE</span>
+                  <span class="px-2 py-0.5 rounded bg-ink-900 text-slate-300 border border-ink-600">Proposed Plan</span>
+                </div>
+                <h3 class="font-display text-2xl font-bold text-white mt-2">Yarn Trader &amp; Agency</h3>
+                <p class="text-xs text-slate-400 mt-1">For yarn merchants, brokerages, and conversion houses needing inventory &amp; Tally XML sync.</p>
+                <div class="my-5 py-4 border-y border-ink-800 font-mono">
+                  <div class="text-2xl font-bold text-white">Proposed: &#8377;24,000<span class="text-xs font-normal text-slate-400"> / mo</span></div>
+                  <div class="text-[10px] text-emerald-400">Subject to commercial confirmation</div>
+                </div>
+                <ul class="space-y-2.5 text-xs text-slate-300 font-mono">
+                  <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Lot &amp; Bag Barcode Inventory</li>
+                  <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>GST Invoicing &amp; Broker Splits</li>
+                  <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Live Tally Prime XML Export</li>
+                </ul>
+              </div>
+              <button onclick="openPocModal('Tier 01: Yarn Trader Plan')" class="mt-6 w-full py-3 rounded-xl font-mono text-xs bg-ink-800 hover:bg-ink-700 text-white border border-emerald-500/30 transition-all">
+                Prepare Trader Enquiry Draft
+              </button>
+            </div>
+
+            <!-- Plan 2 -->
+            <div class="divine-glass rounded-2xl p-6 border-2 border-emerald-400/80 shadow-emerald-glow flex flex-col justify-between relative">
+              <div class="absolute -top-3 left-6 px-3 py-0.5 rounded-full bg-emerald-400 text-ink-950 font-mono font-bold text-[10px] uppercase">
+                Core Spinning Benchmark
+              </div>
+              <div>
+                <div class="flex justify-between items-center text-xs font-mono">
+                  <span class="text-emerald-300 uppercase">TIER 02 // SPINNING MILL</span>
+                  <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Proposed Plan</span>
+                </div>
+                <h3 class="font-display text-2xl font-bold text-white mt-2">Mill Operations (:4001)</h3>
+                <p class="text-xs text-slate-300 mt-1">Up to 35,000 spindles. Connects bale inward, blowroom, ring frames, job-work, and Tally.</p>
+                <div class="my-5 py-4 border-y border-ink-700 font-mono">
+                  <div class="text-2xl font-bold text-gold-300">Proposed: &#8377;64,000<span class="text-xs font-normal text-slate-400"> / mo</span></div>
+                  <div class="text-[10px] text-gold-400">Requires on-site plant readiness audit</div>
+                </div>
+                <ul class="space-y-2.5 text-xs text-slate-200 font-mono">
+                  <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>All Trader Commerce Modules</li>
+                  <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Shift Doff, UKG &amp; GPS Tracking</li>
+                  <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Owner Executive Console (:5174)</li>
+                  <li><i class="fa-solid fa-check text-gold-400 mr-2"></i>Local Docker Edge Container Setup</li>
+                </ul>
+              </div>
+              <button onclick="openPocModal('Tier 02: Spinning Mill Core')" class="mt-6 w-full py-3 rounded-xl font-display font-bold text-xs bg-gradient-to-r from-emerald-400 to-gold-300 text-ink-950 hover:brightness-110 transition-all">
+                Prepare Spinning POC Draft
+              </button>
+            </div>
+
+            <!-- Plan 3 -->
+            <div class="divine-glass rounded-2xl p-6 border border-ink-700 flex flex-col justify-between">
+              <div>
+                <div class="flex justify-between items-center text-xs font-mono">
+                  <span class="text-slate-400 uppercase">TIER 03 // COMPOSITE GROUP</span>
+                  <span class="px-2 py-0.5 rounded bg-ink-900 text-slate-300 border border-ink-600">Proposed Plan</span>
+                </div>
+                <h3 class="font-display text-2xl font-bold text-white mt-2">Multi-Unit Enterprise</h3>
+                <p class="text-xs text-slate-400 mt-1">For multi-mill groups requiring custom RS-232 weighbridge daemons &amp; PLC telemetry.</p>
+                <div class="my-5 py-4 border-y border-ink-800 font-mono">
+                  <div class="text-2xl font-bold text-white">Custom Scope</div>
+                  <div class="text-[10px] text-slate-400">Scoped per spindle &amp; hardware node</div>
+                </div>
+                <ul class="space-y-2.5 text-xs text-slate-300 font-mono">
+                  <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Multi-Tenant Group Consolidation</li>
+                  <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Custom RS-232 &amp; HVI Connectors</li>
+                  <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Dedicated Deployment Engineer</li>
+                </ul>
+              </div>
+              <button onclick="openPocModal('Tier 03: Enterprise Group')" class="mt-6 w-full py-3 rounded-xl font-mono text-xs bg-ink-800 hover:bg-ink-700 text-white border border-emerald-500/30 transition-all">
+                Prepare Enterprise Scope Draft
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Container & Port Deployment Prerequisites -->
+        <div class="divine-glass rounded-3xl p-6 sm:p-8 border border-emerald-500/25">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <div class="lg:col-span-6 space-y-3">
+              <div class="text-xs font-mono text-emerald-400 uppercase tracking-widest">Local &amp; Container Prerequisites</div>
+              <h3 class="font-display text-2xl font-bold text-white">Service Isolation &amp; Port Topology</h3>
+              <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                This marketing application (<code class="text-emerald-300">http://localhost:3300</code>) is strictly isolated from live plant operations. It does not automatically provision cloud servers or mutate tenant databases.
+              </p>
+              <div class="space-y-2 pt-2 font-mono text-xs">
+                <div class="p-3 rounded-xl bg-ink-950 border border-ink-700 flex justify-between">
+                  <span class="text-slate-400">Public Marketing App:</span>
+                  <span class="text-emerald-300">Port :3300 (Read-Only / Simulators)</span>
+                </div>
+                <div class="p-3 rounded-xl bg-ink-950 border border-ink-700 flex justify-between">
+                  <span class="text-slate-400">Mill Operations Portal:</span>
+                  <span class="text-gold-300">Port :4001 (VITE_TENANT_PORTAL_URL)</span>
+                </div>
+                <div class="p-3 rounded-xl bg-ink-950 border border-ink-700 flex justify-between">
+                  <span class="text-slate-400">Owner Executive Console:</span>
+                  <span class="text-emerald-300">Port :5174 (Analytics &amp; Governance)</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="lg:col-span-6 bg-ink-950 rounded-2xl p-5 border border-ink-700 font-mono text-xs">
+              <div class="flex items-center justify-between pb-3 border-b border-ink-800 text-slate-400">
+                <span>docker-compose.topology.yml (Reference Only)</span>
+                <span class="text-emerald-400">Docker 24+ Ready</span>
+              </div>
+              <pre class="mt-3 text-[11px] text-slate-300 overflow-x-auto leading-relaxed"><code>services:
+  evergreen-marketing:
+    ports: ["3300:3300"]
+    environment:
+      - VITE_TENANT_PORTAL_URL=${VITE_TENANT_PORTAL_URL:-}
+  evergreen-mill-ops:
+    ports: ["4001:4001"] # Mill Floor &amp; Tally Bridge
+    depends_on: [postgres-mill-db]
+  evergreen-owner-console:
+    ports: ["5174:5174"] # Executive Margin Telemetry</code></pre>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-ink-950 border-t border-emerald-500/20 py-12 relative z-10 font-mono text-xs text-slate-400">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-7 h-7 rounded-lg bg-emerald-500 text-ink-950 font-bold flex items-center justify-center">EG</div>
+        <span>EverGreen Textile OS &bull; Marketing :3300 | Mill Ops :4001 | Owner :5174</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <button onclick="openScoutOverlay()" class="text-gold-300 hover:underline">Launch Scout AI</button>
+        <button onclick="openCommandPalette()" class="text-emerald-300 hover:underline">Command Palette (⌘K)</button>
+        <button onclick="openPocModal()" class="text-white hover:underline">Prepare POC Draft</button>
+      </div>
+    </div>
+  </footer>
+
+
+  <!-- =====================================================================
+       PILLAR 7A: SCOUT AI — "THE DIGITAL GURU" FULL-SCREEN OVERLAY
+       (Raycast AI + Reactive Soundwave Canvas + Zero Data Exfiltration Lock)
+  ====================================================================== -->
+  <div id="scoutOverlay" class="fixed inset-0 z-50 bg-ink-950/95 backdrop-blur-2xl hidden flex-col justify-between p-4 sm:p-8">
+    
+    <!-- Top Bar with Privacy Lock & Consent Switch -->
+    <div class="max-w-5xl w-full mx-auto flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-emerald-500/25">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gold-500/15 border border-gold-400/50 flex items-center justify-center text-gold-300 shadow-gold-glow">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+        </div>
+        <div>
+          <div class="font-display font-bold text-lg text-white flex items-center gap-2">
+            <span>Scout AI &mdash; The Digital Guru</span>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+              <i class="fa-solid fa-lock mr-1"></i>Zero Private Data Exfiltration
+            </span>
+          </div>
+          <div class="text-xs font-mono text-slate-400">Groq / Textile Engineering Knowledge Profile &bull; No Access to Private Mill Ledgers</div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <label class="flex items-center gap-2 text-xs font-mono text-emerald-300 bg-ink-900 px-3 py-1.5 rounded-lg border border-emerald-500/30 cursor-pointer">
+          <input id="scoutConsentCheck" type="checkbox" checked class="accent-emerald-400 rounded">
+          <span>Session Consent Active</span>
+        </label>
+        <button onclick="closeScoutOverlay()" class="px-3 py-1.5 rounded-lg bg-ink-800 hover:bg-ink-700 text-slate-300 font-mono text-xs border border-ink-600">
+          ESC to Close
+        </button>
+      </div>
+    </div>
+
+    <!-- Center Conversation & Reactive Wave Stage -->
+    <div class="max-w-5xl w-full mx-auto flex-1 flex flex-col justify-between my-6 overflow-hidden">
+      
+      <!-- Prompt Pills -->
+      <div class="flex flex-wrap gap-2 mb-4 font-mono text-xs">
+        <button onclick="askScoutGuru('How does humidity affect ring frame efficiency?')" class="px-3 py-1.5 rounded-lg bg-ink-900 hover:bg-ink-800 text-emerald-300 border border-emerald-500/30 transition-all">
+          &gt; How does humidity affect ring frame efficiency?
+        </button>
+        <button onclick="askScoutGuru('Show me the Docker compose structure')" class="px-3 py-1.5 rounded-lg bg-ink-900 hover:bg-ink-800 text-gold-300 border border-gold-500/30 transition-all">
+          &gt; Show me the Docker compose structure
+        </button>
+        <button onclick="askScoutGuru('Explain Tally 194Q TDS XML tags')" class="px-3 py-1.5 rounded-lg bg-ink-900 hover:bg-ink-800 text-emerald-300 border border-emerald-500/30 transition-all">
+          &gt; Explain Tally 194Q TDS XML tags
+        </button>
+        <button onclick="askScoutGuru('How is Comber Noil % reconciled?')" class="px-3 py-1.5 rounded-lg bg-ink-900 hover:bg-ink-800 text-gold-300 border border-gold-500/30 transition-all">
+          &gt; How is Comber Noil % reconciled?
+        </button>
+      </div>
+
+      <!-- Guru Output Terminal -->
+      <div id="scoutConversationBox" class="flex-1 overflow-y-auto space-y-4 p-5 rounded-2xl bg-ink-900/70 border border-emerald-500/20 font-mono text-xs leading-relaxed">
+        <div class="p-4 rounded-xl bg-ink-950 border border-emerald-500/30 text-slate-200">
+          <div class="text-emerald-400 font-bold mb-1">// SCOUT GURU SYSTEM READY</div>
+          Ask any question regarding ring spinning physics, blowroom trash extraction, Tally Prime XML envelopes, or EverGreen container deployment. Type below to see the reactive acoustic wave respond in real time.
+        </div>
+      </div>
+
+      <!-- Reactive Soundwave Canvas + Command Input -->
+      <div class="mt-4 space-y-2">
+        <canvas id="scoutWaveCanvas" width="900" height="54" class="w-full h-14 rounded-xl bg-ink-950 border border-ink-800"></canvas>
+        
+        <form onsubmit="submitScoutGuruForm(event)" class="flex gap-3">
+          <div class="flex-1 relative">
+            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gold-400 font-mono font-bold">&gt;_</span>
+            <input id="scoutGuruInput" type="text" 
+                   oninput="triggerScoutWavePulse()"
+                   placeholder="Ask Scout AI about spinning math, Tally XML schemas, or Docker readiness..." 
+                   class="w-full pl-11 pr-4 py-3.5 rounded-xl bg-ink-900 border border-emerald-500/40 text-white font-mono text-xs focus:outline-none focus:border-gold-400">
+          </div>
+          <button type="submit" class="px-6 py-3.5 rounded-xl font-display font-bold text-xs bg-gradient-to-r from-emerald-400 to-gold-300 text-ink-950">
+            Execute Query
+          </button>
+        </form>
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================================
+       PILLAR 7B: CMD+K RAYCAST COMMAND PALETTE MODAL
+  ====================================================================== -->
+  <div id="cmdPaletteModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-start justify-center pt-20 p-4">
+    <div class="max-w-xl w-full divine-glass rounded-2xl border border-emerald-500/40 shadow-2xl overflow-hidden font-mono">
+      <div class="p-3.5 bg-ink-950 border-b border-ink-700 flex items-center gap-3">
+        <i class="fa-solid fa-magnifying-glass text-emerald-400 text-sm"></i>
+        <input id="cmdSearchInput" type="text" oninput="filterCommandList(this.value)" placeholder="Type a command or scenario (e.g., Crisis, Legacy, Tally XML, Yield)..." class="w-full bg-transparent text-xs text-white focus:outline-none">
+        <button onclick="closeCommandPalette()" class="text-[10px] px-2 py-0.5 rounded bg-ink-800 text-slate-400">ESC</button>
+      </div>
+      <div id="cmdItemsContainer" class="p-2 max-h-80 overflow-y-auto space-y-1 text-xs">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </div>
+
+
+  <!-- =====================================================================
+       OFFLINE POC / DEMO DRAFT GENERATOR MODAL (Explicit Non-Delivery Notice)
+  ====================================================================== -->
+  <div id="pocModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4">
+    <div class="max-w-xl w-full divine-glass rounded-3xl border border-emerald-500/40 p-6 sm:p-8 shadow-2xl relative">
+      <button onclick="closePocModal()" class="absolute top-5 right-5 w-8 h-8 rounded-lg bg-ink-900 border border-ink-700 text-slate-400 hover:text-white">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="text-xs font-mono text-emerald-400 uppercase tracking-wider">Offline Enquiry &amp; POC Specification Builder</div>
+      <h3 class="font-display text-2xl font-bold text-white mt-1">Download Your Mill Demo Draft</h3>
+      <p class="text-xs text-slate-300 mt-1 mb-5">
+        This form packages your selected capacity and workflow priorities into a downloadable <code class="text-gold-300">.json</code> draft. <strong>It explicitly does not claim live server delivery</strong> until a production endpoint is configured.
+      </p>
+
+      <form onsubmit="exportPocDraftFile(event)" class="space-y-3.5 font-mono text-xs">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-400 mb-1">Contact Name *</label>
+            <input id="pocName" type="text" required placeholder="e.g. Karthik Subramanian" class="w-full px-3 py-2.5 rounded-xl bg-ink-950 border border-ink-700 text-white focus:border-emerald-400 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1">Spinning Mill / Firm *</label>
+            <input id="pocMill" type="text" required placeholder="e.g. Kongu Spinners Pvt Ltd" class="w-full px-3 py-2.5 rounded-xl bg-ink-950 border border-ink-700 text-white focus:border-emerald-400 focus:outline-none">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-400 mb-1">Work Email *</label>
+            <input id="pocEmail" type="email" required placeholder="md@milldomain.in" class="w-full px-3 py-2.5 rounded-xl bg-ink-950 border border-ink-700 text-white focus:border-emerald-400 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1">Target Port / Focus</label>
+            <input id="pocContext" type="text" value="Full Mill Walkthrough (:4001 & :5174)" class="w-full px-3 py-2.5 rounded-xl bg-ink-950 border border-ink-700 text-gold-300 focus:border-emerald-400 focus:outline-none">
+          </div>
+        </div>
+
+        <div class="p-3 rounded-xl bg-ink-950 border border-gold-500/30 text-[11px] text-slate-300">
+          <i class="fa-solid fa-file-shield text-gold-400 mr-1"></i>
+          Includes your current Oracle of Yield settings (<span id="pocYieldSummary" class="text-emerald-300">25,000 Spindles, 0.85% Waste Lift</span>) in the exported draft file.
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <button type="submit" onclick="window.pocExportFormat='json'" class="w-full py-3.5 rounded-xl font-display font-bold text-xs bg-gradient-to-r from-emerald-400 via-emerald-300 to-gold-300 text-ink-950 shadow-emerald-glow">
+            <i class="fa-solid fa-file-code mr-1.5"></i>Download Draft (.json)
+          </button>
+          <button type="submit" onclick="window.pocExportFormat='txt'" class="w-full py-3.5 rounded-xl font-mono font-bold text-xs bg-ink-900 hover:bg-ink-800 text-gold-300 border border-gold-500/40 transition-all">
+            <i class="fa-solid fa-file-lines mr-1.5"></i>Download Summary (.txt)
+          </button>
+        </div>
+      </form>
+
+      <div id="pocDownloadSuccess" class="hidden mt-4 p-3.5 rounded-xl bg-emerald-950/90 border border-emerald-400 text-xs font-mono text-emerald-200">
+        <i class="fa-solid fa-circle-check text-emerald-400 mr-1"></i>
+        Draft downloaded locally! Share this JSON file with your EverGreen deployment engineer during your walkthrough.
+      </div>
+    </div>
+  </div>
+
+
+  <!-- =====================================================================
+       MASTER INTERACTIVE JAVASCRIPT ENGINE
+  ====================================================================== -->
+  <script>
+    /*************************************************************************
+     * 0. VITE_TENANT_PORTAL_URL READINESS & MOTION ACCESSIBILITY
+     *************************************************************************/
+    const VITE_TENANT_PORTAL_URL = ""; // Empty by default; directs visitors to request access or dev :4001
+    let globalMotionEnabled = true;
+
+    function handleTenantPortalAction() {
+      if (VITE_TENANT_PORTAL_URL && VITE_TENANT_PORTAL_URL.trim() !== "") {
+        window.open(VITE_TENANT_PORTAL_URL, "_blank", "noopener,noreferrer");
+      } else {
+        openPocModal("Request Tenant Portal Access (Dev Target :4001)");
+      }
+    }
+
+    function toggleGlobalMotion() {
+      globalMotionEnabled = !globalMotionEnabled;
+      document.body.classList.toggle("motion-paused", !globalMotionEnabled);
+      const icon = document.getElementById("motionToggleIcon");
+      const label = document.getElementById("motionToggleLabel");
+      if (globalMotionEnabled) {
+        icon.className = "fa-solid fa-pause text-emerald-400";
+        label.innerText = "Motion: On";
+      } else {
+        icon.className = "fa-solid fa-play text-gold-400";
+        label.innerText = "Motion: Paused";
+      }
+    }
+
+    /*************************************************************************
+     * 1. HERO 3D SPOOL INTERACTIVITY & SCROLL-LINKED THREAD WEAVE
+     *************************************************************************/
+    const spoolStage = document.getElementById("spoolStage");
+    const spool3DObject = document.getElementById("spool3DObject");
+    const spoolSpecularGlow = document.getElementById("spoolSpecularGlow");
+    const unwindingThreadPath = document.getElementById("unwindingThreadPath");
+    const threadShuttleOrb = document.getElementById("threadShuttleOrb");
+
+    // Linear-style spotlight tracking + 3D spool perspective tilt
+    document.addEventListener("mousemove", (e) => {
+      if (!globalMotionEnabled) return;
+      const xPct = (e.clientX / window.innerWidth) * 100;
+      const yPct = (e.clientY / window.innerHeight) * 100;
+      document.documentElement.style.setProperty("--mouse-x", `${xPct}%`);
+      document.documentElement.style.setProperty("--mouse-y", `${yPct}%`);
+    });
+
+    spoolStage.addEventListener("mousemove", (e) => {
+      if (!globalMotionEnabled) return;
+      const rect = spoolStage.getBoundingClientRect();
+      const relX = (e.clientX - rect.left) / rect.width - 0.5;
+      const relY = (e.clientY - rect.top) / rect.height - 0.5;
+      spool3DObject.classList.remove("spool-auto-spin");
+      spool3DObject.style.transform = `rotateY(${relX * 48}deg) rotateX(${18 - relY * 38}deg) rotateZ(${relX * -12}deg)`;
+      spoolSpecularGlow.style.transform = `translate(${relX * 45}px, ${relY * 45}px)`;
+    });
+
+    spoolStage.addEventListener("mouseleave", () => {
+      if (!globalMotionEnabled) return;
+      spool3DObject.style.transform = "";
+      spool3DObject.classList.add("spool-auto-spin");
+      spoolSpecularGlow.style.transform = "translate(0px, 0px)";
+    });
+
+    // Scroll & Slider Linked Unwinding Thread
+    function syncThreadWeaveProgress(pct0to100) {
+      const clamped = Math.max(5, Math.min(100, pct0to100));
+      const maxDash = 2200;
+      const offset = maxDash - (maxDash * (clamped / 100));
+      unwindingThreadPath.style.strokeDashoffset = offset;
+
+      // Move shuttle orb along path length
+      try {
+        const totalLen = unwindingThreadPath.getTotalLength();
+        const pt = unwindingThreadPath.getPointAtLength(totalLen * (clamped / 100));
+        threadShuttleOrb.setAttribute("cx", pt.x);
+        threadShuttleOrb.setAttribute("cy", pt.y);
+      } catch (err) {}
+    }
+
+    function updateSpoolTension(val) {
+      const pct = parseInt(val, 10);
+      document.getElementById("tensionPctLabel").innerText = `${pct}%`;
+      const rpm = 14000 + Math.round(pct * 65);
+      document.getElementById("spoolTensionReadout").innerText = `${rpm.toLocaleString()} RPM • 40s Combed Ne`;
+      document.getElementById("spoolLiveGpsBadge").innerText = `${(88 + pct * 0.14).toFixed(1)} GPS • UKG 3.12`;
+      syncThreadWeaveProgress(Math.max(12, pct));
+    }
+
+    window.addEventListener("scroll", () => {
+      if (!globalMotionEnabled) return;
+      const docHeight = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+      const scrollPct = Math.min(100, Math.max(12, (window.scrollY / docHeight) * 100));
+      syncThreadWeaveProgress(scrollPct);
+    });
+
+
+    /*************************************************************************
+     * 2. THE DIGITAL NERVOUS SYSTEM (EverGreen Live vs. Legacy Mode Twist)
+     *************************************************************************/
+    let currentNervousMode = "evergreen";
+    let selectedStageIndex = 2; // Default Stage 03: Ring Frame
+
+    const workflowStages = [
+      {
+        code: "STAGE 01",
+        name: "Gate & Weighbridge",
+        icon: "fa-scale-unbalanced",
+        egStat: "Moisture: 8.1% • Lot #409",
+        egTitle: "Bale Weighbridge & Uster HVI Sync",
+        egDesc: "Every cotton bale is weighed via RS-232 and tagged with UHML staple length, micronaire, and trash % before blowroom issue.",
+        egM1: "99.9%", egM2: "0.04%", egM3: "8 ms",
+        legStat: "Manual Gate Slip",
+        legTitle: "LEGACY: Handwritten Gate Register",
+        legDesc: "Unverified moisture regain; ginning trash disputes discovered 3 weeks after bales are already consumed in blowroom.",
+        legM1: "64.0%", legM2: "1.45%", legM3: "48 hrs"
+      },
+      {
+        code: "STAGE 02",
+        name: "Ginning & Blowroom",
+        icon: "fa-wind",
+        egStat: "Sliver CV%: 3.4%",
+        egTitle: "Automated Bale Laydown & Comber Noil",
+        egDesc: "Carding sliver weight and comber noil extraction % are tracked per shift against mixing recipe targets.",
+        egM1: "97.8%", egM2: "0.15%", egM3: "14 ms",
+        legStat: "Unweighed Comber Noil Drift",
+        legTitle: "LEGACY: Unmonitored Comber Noil Drift",
+        legDesc: "Good long-staple lint escapes into flat strips and comber noil bins without shift-level alarms.",
+        legM1: "78.2%", legM2: "1.90%", legM3: "24 hrs"
+      },
+      {
+        code: "STAGE 03",
+        name: "Ring Frame Production",
+        icon: "fa-rotate",
+        egStat: "96.4 GPS • 98.2% Eff",
+        egTitle: "Ring Frame 04: Running • 96.4 GPS • 0.2% Pneumafil Waste",
+        egDesc: "Live spindle telemetry links doff weighments directly to bale mixing lot #SH6-409. Invisible waste is computed every 15 minutes.",
+        egM1: "98.2%", egM2: "0.20%", egM3: "12 ms",
+        legStat: "Chalkboard Shift Tally",
+        legTitle: "LEGACY: Delayed Shift Clerk Hank Entry",
+        legDesc: "End-breakage spikes and idle spindles go unnoticed until next morning's production meeting.",
+        legM1: "81.5%", legM2: "2.10%", legM3: "18 hrs"
+      },
+      {
+        code: "STAGE 04",
+        name: "Lot Inventory",
+        icon: "fa-boxes-stacked",
+        egStat: "QR Pallet • Tare Locked",
+        egTitle: "Conditioned Cone Bag Serialization",
+        egDesc: "Paper cone tare and carton weights are locked by lot barcode, preventing overweight giveaways.",
+        egM1: "99.6%", egM2: "0.05%", egM3: "10 ms",
+        legStat: "Unreconciled Godown",
+        legTitle: "LEGACY: Missing Lot Traceability",
+        legDesc: "Mixed yarn shade lots in godown bins trigger customer claims and unrecorded tare giveaway.",
+        legM1: "72.0%", legM2: "0.95%", legM3: "72 hrs"
+      },
+      {
+        code: "STAGE 05",
+        name: "Job Work Dispatch",
+        icon: "fa-right-left",
+        egStat: "Challan #904 • 0% Loss",
+        egTitle: "Closed-Loop Sizing & Hank Dyeing Ledger",
+        egDesc: "Outward yarn cones are reconciled gram-for-gram against returned sized weaver beams and permissible waste.",
+        egM1: "99.1%", egM2: "0.12%", egM3: "15 ms",
+        legStat: "Lost Job-Work Challan",
+        legTitle: "LEGACY: Unreconciled Subcontractor Shortage",
+        legDesc: "Job-work processors retain 2–3% excess yarn as unverified wastage; GST ITC deadlines lapse.",
+        legM1: "68.4%", legM2: "2.40%", legM3: "14 days"
+      },
+      {
+        code: "STAGE 06",
+        name: "Tally GST Ledger",
+        icon: "fa-file-code",
+        egStat: "XML Voucher • 0 ms Lag",
+        egTitle: "Zero-Re-Entry Tally Prime XML Bridge",
+        egDesc: "Dispatched yarn invoices generate complete Tally XML envelopes with batch allocations and 194Q/TCS ledgers.",
+        egM1: "100%", egM2: "0.00%", egM3: "0 ms",
+        legStat: "Delayed 48h Tally Entry",
+        legTitle: "LEGACY: Duplicate Data Entry & Ledger Mismatch",
+        legDesc: "Accountants re-key weighbridge slips into Tally days later, causing rate/weight credit note disputes.",
+        legM1: "58.0%", legM2: "1.10%", legM3: "48 hrs"
+      }
+    ];
+
+    function renderNervousSystem() {
+      const grid = document.getElementById("workflowNodesGrid");
+      const isEG = currentNervousMode === "evergreen";
+      const board = document.getElementById("nervousSystemBoard");
+      const pulseLine = document.getElementById("conduitPulseLine");
+
+      if (isEG) {
+        board.classList.remove("border-crimson-500/50", "shadow-crimson-glow");
+        board.classList.add("border-emerald-500/25");
+        pulseLine.setAttribute("stroke", "#34d399");
+        pulseLine.setAttribute("class", "nervous-packet");
+      } else {
+        board.classList.remove("border-emerald-500/25");
+        board.classList.add("border-crimson-500/50", "shadow-crimson-glow");
+        pulseLine.setAttribute("stroke", "#ef4444");
+        pulseLine.setAttribute("class", "legacy-jagged");
+      }
+
+      grid.innerHTML = workflowStages.map((s, idx) => {
+        const isSelected = idx === selectedStageIndex;
+        const borderClass = isEG
+          ? (isSelected ? "border-emerald-400 bg-ink-800/90 shadow-emerald-glow" : "border-ink-700 bg-ink-900/70 hover:border-emerald-500/50")
+          : (isSelected ? "border-crimson-400 bg-crimson-950/70 shadow-crimson-glow" : "border-crimson-500/30 bg-ink-950/90 hover:border-crimson-400");
+        const badgeColor = isEG ? "text-emerald-400" : "text-crimson-400";
+        const statText = isEG ? s.egStat : s.legStat;
+
+        return `
+          <button onclick="selectWorkflowStage(${idx})" onmouseenter="selectWorkflowStage(${idx})"
+                  class="p-4 rounded-2xl border ${borderClass} text-left transition-all flex flex-col justify-between group">
+            <div>
+              <div class="flex items-center justify-between text-[10px] font-mono ${badgeColor}">
+                <span>${s.code}</span>
+                <i class="fa-solid ${isEG ? s.icon : 'fa-link-slash'}"></i>
+              </div>
+              <div class="font-display font-bold text-sm text-white mt-2">${s.name}</div>
+            </div>
+            <div class="mt-4 pt-2.5 border-t border-ink-700/80 text-[11px] font-mono ${isEG ? 'text-gold-300' : 'text-crimson-400'}">
+              ${statText}
+            </div>
+          </button>
+        `;
+      }).join("");
+
+      updateNodeInspector();
+    }
+
+    function selectWorkflowStage(idx) {
+      selectedStageIndex = idx;
+      renderNervousSystem();
+    }
+
+    function updateNodeInspector() {
+      const s = workflowStages[selectedStageIndex];
+      const isEG = currentNervousMode === "evergreen";
+      const dot = document.getElementById("inspStatusDot");
+      const code = document.getElementById("inspStageCode");
+
+      dot.className = isEG ? "w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" : "w-2.5 h-2.5 rounded-full bg-crimson-500";
+      code.className = isEG ? "text-xs font-mono uppercase tracking-widest text-emerald-400" : "text-xs font-mono uppercase tracking-widest text-crimson-400";
+      code.innerText = `${s.code} • ${s.name.toUpperCase()} (${isEG ? 'EVERGREEN TELEMETRY' : 'LEGACY FRACTURE'})`;
+
+      document.getElementById("inspTitle").innerText = isEG ? s.egTitle : s.legTitle;
+      document.getElementById("inspDesc").innerText = isEG ? s.egDesc : s.legDesc;
+      document.getElementById("inspMetric1").innerText = isEG ? s.egM1 : s.legM1;
+      document.getElementById("inspMetric2").innerText = isEG ? s.egM2 : s.legM2;
+      document.getElementById("inspMetric3").innerText = isEG ? s.egM3 : s.legM3;
+
+      document.getElementById("inspMetric1").className = isEG ? "text-base font-bold text-emerald-300 mt-0.5" : "text-base font-bold text-crimson-400 mt-0.5";
+    }
+
+    function setNervousSystemMode(mode) {
+      currentNervousMode = mode;
+      const btnEG = document.getElementById("btnModeEvergreen");
+      const btnLeg = document.getElementById("btnModeLegacy");
+
+      if (mode === "evergreen") {
+        btnEG.className = "px-4 py-2.5 rounded-xl font-mono text-xs font-bold bg-emerald-500 text-ink-950 shadow-emerald-glow transition-all flex items-center gap-2";
+        btnLeg.className = "px-4 py-2.5 rounded-xl font-mono text-xs font-bold text-slate-300 hover:text-white bg-ink-900/80 border border-transparent transition-all flex items-center gap-2";
+      } else {
+        btnLeg.className = "px-4 py-2.5 rounded-xl font-mono text-xs font-bold bg-crimson-500 text-white shadow-crimson-glow transition-all flex items-center gap-2";
+        btnEG.className = "px-4 py-2.5 rounded-xl font-mono text-xs font-bold text-slate-300 hover:text-white bg-ink-900/80 border border-transparent transition-all flex items-center gap-2";
+      }
+      renderNervousSystem();
+    }
+
+
+    /*************************************************************************
+     * 3. THE OMNISCIENT COMMAND CENTER (Global Crisis Slider across 3 Panels)
+     *************************************************************************/
+    function setCrisisLevel(val) {
+      const lvl = parseInt(val, 10);
+      document.getElementById("globalCrisisSlider").value = lvl;
+
+      const title = document.getElementById("crisisStateTitle");
+      const panelOps = document.getElementById("panelOps");
+      const panelFin = document.getElementById("panelFin");
+      const panelOwner = document.getElementById("panelOwner");
+
+      if (lvl < 25) {
+        // NORMAL STATE
+        title.innerText = `${lvl}% — Normal Synchronized Operations`;
+        title.className = "text-xs px-2.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold";
+        panelOps.className = "divine-glass rounded-2xl p-5 border border-emerald-500/30 flex flex-col justify-between font-mono transition-all";
+        panelFin.className = "divine-glass rounded-2xl p-5 border border-emerald-500/30 flex flex-col justify-between font-mono transition-all";
+        panelOwner.className = "divine-glass rounded-2xl p-5 border border-emerald-500/30 flex flex-col justify-between font-mono transition-all";
+
+        // Ops
+        document.getElementById("opsStatusDot").className = "w-2.5 h-2.5 rounded-full bg-emerald-400";
+        document.getElementById("opsBadge").innerText = "GRID NOMINAL";
+        document.getElementById("opsBadge").className = "text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+        document.getElementById("rf1State").innerText = "RUN";
+        document.getElementById("rf1State").className = "text-emerald-400";
+        document.getElementById("rf1Rpm").innerText = "19,400 RPM";
+        document.getElementById("rf2Rpm").innerText = "19,250 RPM";
+        document.getElementById("opsPowerSource").innerText = "TANGEDCO 11kV Feeder";
+        document.getElementById("opsPowerSource").className = "text-emerald-300 font-semibold";
+        document.getElementById("opsAlertFooter").innerHTML = `<span><i class="fa-solid fa-check-double mr-1"></i>Zero Spindle Stoppages</span><span>Shift B • 98.4% Eff</span>`;
+        document.getElementById("opsAlertFooter").className = "mt-4 pt-3 border-t border-ink-700 text-[11px] text-emerald-400 flex items-center justify-between";
+
+        // Finance
+        document.getElementById("finBadge").innerText = "RECONCILED";
+        document.getElementById("finBadge").className = "text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+        document.getElementById("finVarAmount").innerText = "₹31.40 / Kg";
+        document.getElementById("finVarAmount").className = "text-emerald-300 font-bold";
+        document.getElementById("finVarTag").innerText = "Variance: ₹0.00";
+        document.getElementById("finVarTag").className = "text-[9px] text-emerald-400";
+        document.getElementById("finJwStatus").innerText = "0.0% Shortage";
+        document.getElementById("finJwStatus").className = "text-gold-300 font-bold";
+        document.getElementById("finAlertFooter").innerHTML = `<span><i class="fa-solid fa-code-commit mr-1"></i>Tally XML Queue: 100% Synced</span><span>0 Exceptions</span>`;
+        document.getElementById("finAlertFooter").className = "mt-4 pt-3 border-t border-ink-700 text-[11px] text-emerald-400 flex items-center justify-between";
+
+        // Owner
+        document.getElementById("ownerBadge").innerText = "MARGIN OPTIMAL";
+        document.getElementById("ownerRealization").innerText = "87.65%";
+        document.getElementById("ownerRealization").className = "text-xl font-bold text-emerald-300 mt-1";
+        document.getElementById("ownerEbitda").innerText = "₹42.80";
+        document.getElementById("ownerEbitda").className = "text-xl font-bold text-gold-400 mt-1";
+        document.getElementById("ownerSparkPath").setAttribute("d", "M 5 45 Q 65 40, 120 28 T 255 10");
+        document.getElementById("ownerSparkPath").setAttribute("stroke", "#34d399");
+        document.getElementById("ownerSparkDot").setAttribute("cy", "10");
+        document.getElementById("ownerSparkLabel").innerText = "STEADY CLIMB";
+        document.getElementById("ownerSparkLabel").className = "text-emerald-400";
+
+      } else if (lvl < 75) {
+        // DRIFT / WARNING STATE
+        title.innerText = `${lvl}% — Moisture Drift & Job-Work Shortage Detected`;
+        title.className = "text-xs px-2.5 py-0.5 rounded bg-gold-500/20 text-gold-300 font-bold";
+        panelOps.className = "divine-glass rounded-2xl p-5 border border-gold-500/50 flex flex-col justify-between font-mono transition-all";
+        panelFin.className = "divine-glass rounded-2xl p-5 border border-gold-500/50 flex flex-col justify-between font-mono transition-all";
+        panelOwner.className = "divine-glass rounded-2xl p-5 border border-gold-500/50 flex flex-col justify-between font-mono transition-all";
+
+        // Ops
+        document.getElementById("opsBadge").innerText = "RH% DRIFT ALERT";
+        document.getElementById("opsBadge").className = "text-[10px] px-2 py-0.5 rounded bg-gold-500/20 text-gold-300 border border-gold-500/40";
+        document.getElementById("rf1Rpm").innerText = "17,900 RPM";
+        document.getElementById("opsHumidity").innerText = "54.2% RH (LOW) • End-Breaks Rising";
+        document.getElementById("opsAlertFooter").innerHTML = `<span><i class="fa-solid fa-triangle-exclamation mr-1"></i>Humidification Plant Auto-Boosted</span><span>Eff: 93.1%</span>`;
+        document.getElementById("opsAlertFooter").className = "mt-4 pt-3 border-t border-ink-700 text-[11px] text-gold-300 flex items-center justify-between";
+
+        // Finance
+        document.getElementById("finBadge").innerText = "DEBIT NOTE QUEUED";
+        document.getElementById("finBadge").className = "text-[10px] px-2 py-0.5 rounded bg-gold-500/20 text-gold-300 border border-gold-500/40";
+        document.getElementById("finVarAmount").innerText = "₹34.90 / Kg";
+        document.getElementById("finVarTag").innerText = "Variance: +₹3.50/Kg";
+        document.getElementById("finVarTag").className = "text-[9px] text-gold-400";
+        document.getElementById("finJwStatus").innerText = "-1.8% Beam Shortage";
+        document.getElementById("finJwStatus").className = "text-gold-400 font-bold";
+        document.getElementById("finAlertFooter").innerHTML = `<span><i class="fa-solid fa-file-circle-exclamation mr-1"></i>Auto-Drafted Sizing Debit Note</span><span>1 Hold</span>`;
+        document.getElementById("finAlertFooter").className = "mt-4 pt-3 border-t border-ink-700 text-[11px] text-gold-300 flex items-center justify-between";
+
+        // Owner
+        document.getElementById("ownerRealization").innerText = "85.90%";
+        document.getElementById("ownerRealization").className = "text-xl font-bold text-gold-300 mt-1";
+        document.getElementById("ownerEbitda").innerText = "₹37.10";
+        document.getElementById("ownerSparkPath").setAttribute("d", "M 5 35 Q 85 20, 145 32 T 255 36");
+        document.getElementById("ownerSparkPath").setAttribute("stroke", "#f3cf55");
+        document.getElementById("ownerSparkDot").setAttribute("cy", "36");
+        document.getElementById("ownerSparkLabel").innerText = "MARGIN COMPRESSION";
+        document.getElementById("ownerSparkLabel").className = "text-gold-400";
+
+      } else {
+        // 100% CRISIS: FEEDER POWER OUTAGE & DG FALLBACK
+        title.innerText = `${lvl}% — CRISIS: 11kV Feeder Outage • Diesel DG Active`;
+        title.className = "text-xs px-2.5 py-0.5 rounded bg-crimson-500 text-white font-bold animate-pulse";
+        panelOps.className = "divine-glass rounded-2xl p-5 border-2 border-crimson-500 shadow-crimson-glow flex flex-col justify-between font-mono transition-all";
+        panelFin.className = "divine-glass rounded-2xl p-5 border-2 border-crimson-500 shadow-crimson-glow flex flex-col justify-between font-mono transition-all";
+        panelOwner.className = "divine-glass rounded-2xl p-5 border-2 border-crimson-500 shadow-crimson-glow flex flex-col justify-between font-mono transition-all";
+
+        // Ops
+        document.getElementById("opsStatusDot").className = "w-2.5 h-2.5 rounded-full bg-crimson-500 animate-ping";
+        document.getElementById("opsBadge").innerText = "FEEDER TRIP ALARM";
+        document.getElementById("opsBadge").className = "text-[10px] px-2 py-0.5 rounded bg-crimson-500/30 text-crimson-300 border border-crimson-500";
+        document.getElementById("rf1State").innerText = "DG-LOAD";
+        document.getElementById("rf1State").className = "text-crimson-400 font-bold";
+        document.getElementById("rf1Rpm").innerText = "14,200 RPM";
+        document.getElementById("rf2Rpm").innerText = "IDLE (SHED)";
+        document.getElementById("opsPowerSource").innerText = "1500 kVA Diesel DG (₹24.5/kWh)";
+        document.getElementById("opsPowerSource").className = "text-crimson-400 font-bold";
+        document.getElementById("opsAlertFooter").innerHTML = `<span><i class="fa-solid fa-bolt-lightning mr-1"></i>RF-05..08 Load Shedding Active</span><span>Eff: 61.0%</span>`;
+        document.getElementById("opsAlertFooter").className = "mt-4 pt-3 border-t border-ink-700 text-[11px] text-crimson-400 flex items-center justify-between";
+
+        // Finance
+        document.getElementById("finBadge").innerText = "UNABSORBED DG COST";
+        document.getElementById("finBadge").className = "text-[10px] px-2 py-0.5 rounded bg-crimson-500/30 text-crimson-300 border border-crimson-500";
+        document.getElementById("finVarAmount").innerText = "₹46.80 / Kg";
+        document.getElementById("finVarAmount").className = "text-crimson-400 font-bold";
+        document.getElementById("finVarTag").innerText = "DG Spike: +₹15.40/Kg";
+        document.getElementById("finVarTag").className = "text-[9px] text-crimson-400 font-bold";
+        document.getElementById("finAlertFooter").innerHTML = `<span><i class="fa-solid fa-bell mr-1"></i>Diesel Voucher #DG-19 Flagged in Tally</span><span>ACTION REQ</span>`;
+        document.getElementById("finAlertFooter").className = "mt-4 pt-3 border-t border-ink-700 text-[11px] text-crimson-400 flex items-center justify-between";
+
+        // Owner
+        document.getElementById("ownerBadge").innerText = "MARGIN ALERT";
+        document.getElementById("ownerRealization").innerText = "84.10%";
+        document.getElementById("ownerRealization").className = "text-xl font-bold text-crimson-400 mt-1";
+        document.getElementById("ownerEbitda").innerText = "₹26.40";
+        document.getElementById("ownerEbitda").className = "text-xl font-bold text-crimson-400 mt-1";
+        document.getElementById("ownerSparkPath").setAttribute("d", "M 5 20 Q 95 18, 150 38 T 255 52");
+        document.getElementById("ownerSparkPath").setAttribute("stroke", "#ef4444");
+        document.getElementById("ownerSparkDot").setAttribute("cy", "52");
+        document.getElementById("ownerSparkLabel").innerText = "DG BURN (-₹1.8L/hr)";
+        document.getElementById("ownerSparkLabel").className = "text-crimson-400 font-bold";
+      }
+    }
+
+
+    /*************************************************************************
+     * 4. THE ORACLE OF YIELD (Interactive SVG Rotary Dials + Liquid Gold Bars)
+     *************************************************************************/
+    const oracleState = {
+      spindles: { val: 25000, min: 6000, max: 60000, step: 1000 },
+      waste:    { val: 0.85,  min: 0.20, max: 2.50,  step: 0.05 },
+      price:    { val: 310,   min: 190,  max: 450,   step: 5 }
+    };
+
+    let activeDialKey = null;
+    let dragStartY = 0;
+    let dragStartVal = 0;
+
+    function startRotaryDrag(e, key) {
+      e.preventDefault();
+      activeDialKey = key;
+      dragStartY = e.touches ? e.touches[0].clientY : e.clientY;
+      dragStartVal = oracleState[key].val;
+
+      window.addEventListener("mousemove", onRotaryDragMove);
+      window.addEventListener("touchmove", onRotaryDragMove, { passive: false });
+      window.addEventListener("mouseup", stopRotaryDrag);
+      window.addEventListener("touchend", stopRotaryDrag);
+    }
+
+    function onRotaryDragMove(e) {
+      if (!activeDialKey) return;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      const deltaY = dragStartY - clientY; // Dragging up increases value
+      const cfg = oracleState[activeDialKey];
+      const range = cfg.max - cfg.min;
+      const rawNew = dragStartVal + (deltaY / 130) * range;
+      setDialValue(activeDialKey, rawNew);
+    }
+
+    function stopRotaryDrag() {
+      activeDialKey = null;
+      window.removeEventListener("mousemove", onRotaryDragMove);
+      window.removeEventListener("touchmove", onRotaryDragMove);
+      window.removeEventListener("mouseup", stopRotaryDrag);
+      window.removeEventListener("touchend", stopRotaryDrag);
+    }
+
+    function wheelRotaryDial(e, key) {
+      e.preventDefault();
+      const dir = e.deltaY < 0 ? 1 : -1;
+      stepDial(key, dir * oracleState[key].step * 2);
+    }
+
+    function stepDial(key, delta) {
+      setDialValue(key, oracleState[key].val + delta);
+    }
+
+    function setDialValue(key, newVal) {
+      const cfg = oracleState[key];
+      let clamped = Math.max(cfg.min, Math.min(cfg.max, newVal));
+      if (key === "spindles") clamped = Math.round(clamped / 500) * 500;
+      if (key === "waste") clamped = parseFloat(clamped.toFixed(2));
+      if (key === "price") clamped = Math.round(clamped);
+      cfg.val = clamped;
+      renderOracleYield();
+    }
+
+    function resetOracleDials() {
+      oracleState.spindles.val = 25000;
+      oracleState.waste.val = 0.85;
+      oracleState.price.val = 310;
+      renderOracleYield();
+    }
+
+    function renderOracleYield() {
+      const sp = oracleState.spindles.val;
+      const ws = oracleState.waste.val;
+      const pr = oracleState.price.val;
+
+      // Update SVG Arcs (max arc length = 220)
+      const spArc = ((sp - oracleState.spindles.min) / (oracleState.spindles.max - oracleState.spindles.min)) * 220;
+      const wsArc = ((ws - oracleState.waste.min) / (oracleState.waste.max - oracleState.waste.min)) * 220;
+      const prArc = ((pr - oracleState.price.min) / (oracleState.price.max - oracleState.price.min)) * 220;
+
+      document.getElementById("dialArcSpindles").setAttribute("stroke-dasharray", `${spArc} 300`);
+      document.getElementById("dialArcWaste").setAttribute("stroke-dasharray", `${wsArc} 300`);
+      document.getElementById("dialArcPrice").setAttribute("stroke-dasharray", `${prArc} 300`);
+
+      document.getElementById("dialTextSpindles").textContent = sp.toLocaleString();
+      document.getElementById("dialTextWaste").textContent = `${ws.toFixed(2)}%`;
+      document.getElementById("dialTextPrice").textContent = `₹${pr}`;
+
+      // Sync accessible range inputs
+      const rSp = document.getElementById("rangeSpindles");
+      const rWs = document.getElementById("rangeWaste");
+      const rPr = document.getElementById("rangePrice");
+      if (rSp) rSp.value = sp;
+      if (rWs) rWs.value = ws;
+      if (rPr) rPr.value = pr;
+
+      const dailyTons = (sp * 0.095 * 3) / 1000;
+      const annualTons = dailyTons * 350;
+      document.getElementById("dialSubSpindles").innerText = `~${dailyTons.toFixed(1)} Tons/day`;
+
+      // Recovered Yarn & Value Math
+      const reclaimedTons = annualTons * (ws / 100);
+      const totalRupees = reclaimedTons * 1000 * pr;
+      const totalLakhs = totalRupees / 100000;
+      const monthlyLakhs = totalLakhs / 12;
+      const totalUsd = Math.round(totalRupees / 83.3);
+
+      document.getElementById("oracleTotalLakhs").innerText = `₹${totalLakhs.toFixed(1)} Lakhs`;
+      const moEl = document.getElementById("oracleMonthlyLakhs");
+      if (moEl) moEl.innerText = `(₹${monthlyLakhs.toFixed(2)} L / mo)`;
+      document.getElementById("oracleTotalUsd").innerText = `(~$${totalUsd.toLocaleString()} / yr)`;
+      document.getElementById("oracleTonsLabel").innerText = `${reclaimedTons.toFixed(1)} Metric Tons / Year`;
+
+      // Breakdown bars (55% Sweep/Noil, 30% Moisture, 15% Tare)
+      const b1 = totalLakhs * 0.55;
+      const b2 = totalLakhs * 0.30;
+      const b3 = totalLakhs * 0.15;
+      document.getElementById("barVal1").innerText = `₹${b1.toFixed(1)} L`;
+      document.getElementById("barVal2").innerText = `₹${b2.toFixed(1)} L`;
+      document.getElementById("barVal3").innerText = `₹${b3.toFixed(1)} L`;
+
+      const pctScale = Math.min(100, Math.max(18, (totalLakhs / 180) * 100));
+      document.getElementById("barFill1").style.width = `${Math.min(100, pctScale * 1.05)}%`;
+      document.getElementById("barFill2").style.width = `${Math.min(100, pctScale * 0.72)}%`;
+      document.getElementById("barFill3").style.width = `${Math.min(100, pctScale * 0.45)}%`;
+
+      document.getElementById("oracleCausalCopy").innerHTML = `
+        Reducing invisible sweep &amp; moisture loss by <strong class="text-gold-300">${ws.toFixed(2)}%</strong> across <strong class="text-emerald-300">${sp.toLocaleString()} spindles</strong> (~${Math.round(annualTons).toLocaleString()} Tons/yr) at <strong class="text-white">₹${pr}/kg</strong> reclaims <strong class="text-gold-300">${reclaimedTons.toFixed(1)} Metric Tons</strong> of salable cone yarn worth <strong class="text-emerald-300">₹${totalLakhs.toFixed(1)} Lakhs annually</strong>.
+      `;
+
+      document.getElementById("pocYieldSummary").innerText = `${sp.toLocaleString()} Spindles, ${ws.toFixed(2)}% Waste Lift (~₹${totalLakhs.toFixed(1)}L Est.)`;
+    }
+
+
+    /*************************************************************************
+     * 5. THE NEURAL BRIDGE (Holographic Wire Payloads + Mapped UI Fields)
+     *************************************************************************/
+    let activeBridgeKey = "tally";
+
+    const bridgeNodesData = {
+      tally: {
+        file: "tally_prime_yarn_voucher.xml",
+        status: "🟢 LIVE IN APP",
+        code: `<ENVELOPE>
+  <HEADER><TALLYREQUEST>Import Data</TALLYREQUEST></HEADER>
+  <BODY>
+    <IMPORTDATA>
+      <REQUESTDATA>
+        <TALLYMESSAGE xmlns:UDF="TallyUDF">
+          <VOUCHER VCHTYPE="Yarn Tax Sales" ACTION="Create">
+            <DATE>20261101</DATE>
+            <GUID>EG-VCH-2026-8812</GUID>
+            <PARTYLEDGERNAME>Palladam Tech Weaves Pvt Ltd</PARTYLEDGERNAME>
+            <ALLINVENTORYENTRIES.LIST>
+              <STOCKITEMNAME>40s Combed Compact Cone</STOCKITEMNAME>
+              <RATE>310.00/Kg</RATE>
+              <BILLEDQTY>2000.00 Kg</BILLEDQTY>
+              <AMOUNT>620000.00</AMOUNT>
+              <BATCHALLOCATIONS.LIST>
+                <GODOWNNAME>Cone Godown A</GODOWNNAME>
+                <BATCHNAME>LOT-SH6-409</BATCHNAME>
+              </BATCHALLOCATIONS.LIST>
+            </ALLINVENTORYENTRIES.LIST>
+          </VOUCHER>
+        </TALLYMESSAGE>
+      </REQUESTDATA>
+    </IMPORTDATA>
+  </BODY>
+</ENVELOPE>`,
+        fields: [
+          { tag: "<GUID>", uiField: "Idempotent Voucher Key", val: "EG-VCH-2026-8812 (No Dupes)" },
+          { tag: "<STOCKITEMNAME>", uiField: "Mill Yarn Count Master", val: "40s Combed Compact Cone" },
+          { tag: "<BATCHNAME>", uiField: "Traceable Cotton Mixing Lot", val: "LOT-SH6-409 (2,000 Kg)" }
+        ]
+      },
+      weighbridge: {
+        file: "rs232_weighbridge_frame.txt",
+        status: "🟡 PLANNED PROFILE",
+        code: `STX,GROSS,+014820,KG,TARE,+000310,KG,NET,+014510,KG,MOIST,08.2,PCT,LOT,SH6-409,CRC,9A,ETX
+# Serial Daemon Config: /dev/ttyUSB0 | 9600 8N1
+# Auto-Locks Gross/Tare to Gate Pass #GP-2026-1104`,
+        fields: [
+          { tag: "NET,+014510,KG", uiField: "Inward Bale Net Weight", val: "14,510.00 Kg (Auto-Locked)" },
+          { tag: "MOIST,08.2,PCT", uiField: "Moisture Regain Deduction", val: "8.2% (Within 8.5% Norm)" },
+          { tag: "CRC,9A,ETX", uiField: "Tamper-Proof Frame Checksum", val: "Verified Hardware Ticket" }
+        ]
+      },
+      hvi: {
+        file: "uster_hvi_lot_import.json",
+        status: "🟡 PLANNED PROFILE",
+        code: `{
+  "labInstrument": "Uster HVI 1000",
+  "mixingLotId": "LOT-SH6-409",
+  "balesTested": 100,
+  "metrics": {
+    "uhmlMm": 29.8,
+    "micronaire": 3.88,
+    "bundleStrengthGpt": 30.4,
+    "spinningConsistencyIndex": 142,
+    "trashAreaPct": 0.24
+  }
+}`,
+        fields: [
+          { tag: "metrics.uhmlMm", uiField: "Ring Frame Draft Roller Setting", val: "29.8 mm Staple (Auto-Suggested)" },
+          { tag: "metrics.micronaire", uiField: "Blowroom Bale Laydown Mix", val: "3.88 Mic (Balanced Blend)" },
+          { tag: "spinningConsistencyIndex", uiField: "Predicted Yarn CSP Target", val: "SCI 142 -> 3,180 CSP" }
+        ]
+      },
+      plc: {
+        file: "modbus_ringframe_registers.json",
+        status: "⚪ ROADMAP PROFILE",
+        code: `{
+  "machineId": "RF-04-LMW-LR9",
+  "protocol": "ModbusTCP:502",
+  "registers": {
+    "40001_spindleRpm": 19400,
+    "40002_deliveryMpm": 24.8,
+    "40005_pneumafilMbar": -14.2,
+    "40009_shiftHanks": 18.42
+  }
+}`,
+        fields: [
+          { tag: "40001_spindleRpm", uiField: "Live Floor Spindle Telemetry", val: "19,400 RPM (98.2% Eff)" },
+          { tag: "40005_pneumafilMbar", uiField: "Suction Waste Fan Inverter", val: "-14.2 mbar (Optimal)" },
+          { tag: "40009_shiftHanks", uiField: "Piece-Rate Hank Payroll", val: "18.42 Hanks Logged" }
+        ]
+      }
+    };
+
+    function selectBridgeNode(key) {
+      activeBridgeKey = key;
+      document.querySelectorAll(".bridge-node-btn").forEach(btn => {
+        btn.className = "bridge-node-btn p-4 rounded-2xl border border-ink-700 bg-ink-900/60 hover:border-emerald-500/50 text-left transition-all";
+      });
+      const activeBtn = document.getElementById(`bridgeBtn-${key}`);
+      if (activeBtn) {
+        activeBtn.className = "bridge-node-btn p-4 rounded-2xl border-2 border-emerald-400 bg-ink-800/90 text-left transition-all shadow-emerald-glow";
+      }
+
+      const data = bridgeNodesData[key];
+      document.getElementById("holoFileName").innerText = data.file;
+      document.getElementById("holoCodeBlock").textContent = data.code;
+      document.getElementById("mappedStatusPill").innerText = data.status;
+
+      document.getElementById("mappedFieldsList").innerHTML = data.fields.map(f => `
+        <div class="p-3 rounded-xl bg-ink-950 border border-emerald-500/25 flex items-center justify-between gap-2">
+          <div>
+            <div class="text-[10px] text-gold-400">${f.tag.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+            <div class="text-white font-semibold mt-0.5">${f.uiField}</div>
+          </div>
+          <div class="text-right text-emerald-300 font-bold">${f.val}</div>
+        </div>
+      `).join("");
+    }
+
+    function copyBridgePayload() {
+      const code = bridgeNodesData[activeBridgeKey].code;
+      const ta = document.createElement("textarea");
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      const lbl = document.getElementById("copyBridgeLabel");
+      lbl.innerText = "Copied!";
+      setTimeout(() => { lbl.innerText = "Copy"; }, 1800);
+    }
+
+    function downloadBridgePayload() {
+      const data = bridgeNodesData[activeBridgeKey];
+      const blob = new Blob([data.code], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = data.file;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+
+    /*************************************************************************
+     * 6. SCOUT AI ("THE DIGITAL GURU") + REACTIVE SOUNDWAVE CANVAS
+     *************************************************************************/
+    let waveEnergy = 0.2;
+    let wavePhase = 0;
+
+    function openScoutOverlay() {
+      const el = document.getElementById("scoutOverlay");
+      el.classList.remove("hidden");
+      el.classList.add("flex");
+      document.getElementById("scoutGuruInput").focus();
+      requestAnimationFrame(animateScoutWave);
+    }
+
+    function closeScoutOverlay() {
+      const el = document.getElementById("scoutOverlay");
+      el.classList.add("hidden");
+      el.classList.remove("flex");
+    }
+
+    function triggerScoutWavePulse() {
+      waveEnergy = 1.0;
+    }
+
+    function animateScoutWave() {
+      const overlay = document.getElementById("scoutOverlay");
+      if (overlay.classList.contains("hidden")) return;
+
+      const canvas = document.getElementById("scoutWaveCanvas");
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const midY = canvas.height / 2;
+      wavePhase += 0.12;
+      waveEnergy = Math.max(0.18, waveEnergy * 0.94);
+
+      for (let line = 0; line < 2; line++) {
+        ctx.beginPath();
+        ctx.strokeStyle = line === 0 ? "#34d399" : "#d4af37";
+        ctx.lineWidth = line === 0 ? 2 : 1.2;
+
+        for (let x = 0; x < canvas.width; x += 6) {
+          const amp = (18 * waveEnergy) * Math.sin((x / canvas.width) * Math.PI);
+          const y = midY + Math.sin(x * 0.025 + wavePhase + line * 1.4) * amp;
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+
+      if (globalMotionEnabled) {
+        requestAnimationFrame(animateScoutWave);
+      }
+    }
+
+    function submitScoutGuruForm(e) {
+      e.preventDefault();
+      const input = document.getElementById("scoutGuruInput");
+      const q = input.value.trim();
+      if (!q) return;
+      input.value = "";
+      askScoutGuru(q);
+    }
+
+    function askScoutGuru(question) {
+      const consent = document.getElementById("scoutConsentCheck").checked;
+      const box = document.getElementById("scoutConversationBox");
+      triggerScoutWavePulse();
+
+      if (!consent) {
+        box.innerHTML += `
+          <div class="p-3.5 rounded-xl bg-crimson-950 border border-crimson-500/50 text-crimson-300">
+            [CONSENT REQUIRED]: Please enable the "Session Consent Active" checkbox in the top bar before querying Scout AI.
+          </div>
+        `;
+        box.scrollTop = box.scrollHeight;
+        return;
+      }
+
+      const lower = question.toLowerCase();
+      let answer = "EverGreen unites inward cotton HVI parameters, ring-frame spindle GPS, conditioned cone barcodes, and native Tally Prime XML vouchers. All marketing simulators run at :3300 while live mill operations run at :4001.";
+
+      if (lower.includes("humidity") || lower.includes("rh") || lower.includes("ring")) {
+        answer = "In ring spinning, maintaining Relative Humidity (RH%) between 60% and 65% keeps cotton fiber conductive and pliable. If RH% drops below 53%, static electricity causes fibers to flare, spiking pneumafil suction waste and end-breaks. EverGreen tracks department RH% alongside Ring Frame UKG and alerts the floor master before realization drops.";
+      } else if (lower.includes("docker") || lower.includes("compose") || lower.includes("port") || lower.includes("3300") || lower.includes("4001") || lower.includes("vite")) {
+        answer = "EverGreen enforces strict container isolation across 3 ports: Marketing runs on http://localhost:3300, Mill Operations runs on :4001, and the Owner Console runs on :5174. At build time, setting VITE_TENANT_PORTAL_URL links directly to your production tenant domain; when unset, the marketing site safely prepares an offline access draft without provisioning cloud servers.";
+      } else if (lower.includes("tally") || lower.includes("194q") || lower.includes("xml")) {
+        answer = "EverGreen's Tally Prime connector is live in the application. It generates strict <ENVELOPE> XML vouchers containing <GUID> idempotency keys, automatic Section 194Q (0.1% TDS) ledger splits on raw cotton inward exceeding ₹50L, and godown batch allocations (<BATCHNAME>) for 100% bale-to-invoice traceability.";
+      } else if (lower.includes("comber") || lower.includes("noil")) {
+        answer = "Comber Noil % is reconciled by weighing lap feed input against combed sliver output and noil filter bag collections per shift. If Comber Noil drifts +0.6% above the 16.5% recipe target, EverGreen flags the machine in Floor Ops (:4001) and calculates the exact ₹/Kg realization impact in the Owner Console (:5174).";
+      }
+
+      box.innerHTML += `
+        <div class="p-3 rounded-xl bg-ink-800/80 border border-gold-500/30 text-gold-300">
+          <strong>QUERY &gt;</strong> ${question.replace(/</g, '&lt;')}
+        </div>
+        <div class="p-4 rounded-xl bg-ink-950 border border-emerald-500/35 text-slate-200">
+          <div class="text-emerald-400 font-bold mb-1">// SCOUT GURU RESPONSE (CONSENT-VERIFIED • ZERO PRIVATE DATA ACCESS)</div>
+          ${answer}
+        </div>
+      `;
+      box.scrollTop = box.scrollHeight;
+    }
+
+
+    /*************************************************************************
+     * 7. CMD+K RAYCAST COMMAND PALETTE & OFFLINE POC DRAFT MODAL
+     *************************************************************************/
+    const commandActions = [
+      { label: "Simulate Crisis: 100% Feeder Power Outage & DG Switchover", tag: "Simulator", run: () => { location.href = "#command-center"; setCrisisLevel(100); } },
+      { label: "Simulate Drift: 50% Moisture & Job-Work Beam Shortage", tag: "Simulator", run: () => { location.href = "#command-center"; setCrisisLevel(50); } },
+      { label: "Heal Command Center: Restore 0% Nominal Operations", tag: "Simulator", run: () => { location.href = "#command-center"; setCrisisLevel(0); } },
+      { label: "Trigger Legacy Mode Fracture in Digital Nervous System", tag: "Workflow", run: () => { location.href = "#nervous-system"; setNervousSystemMode("legacy"); } },
+      { label: "Heal Digital Nervous System with EverGreen OS", tag: "Workflow", run: () => { location.href = "#nervous-system"; setNervousSystemMode("evergreen"); } },
+      { label: "Inspect Live Tally Prime XML Voucher Payload", tag: "Integrations", run: () => { location.href = "#neural-bridge"; selectBridgeNode("tally"); } },
+      { label: "Open Oracle of Yield Rotary Calculator", tag: "Calculator", run: () => { location.href = "#oracle-yield"; } },
+      { label: "Launch Scout AI — The Digital Guru", tag: "AI Assistant", run: () => { openScoutOverlay(); } },
+      { label: "Prepare & Download Offline POC Enquiry Draft (.json)", tag: "POC Draft", run: () => { openPocModal("Cmd+K Direct POC Draft"); } }
+    ];
+
+    function openCommandPalette() {
+      const modal = document.getElementById("cmdPaletteModal");
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+      const inp = document.getElementById("cmdSearchInput");
+      inp.value = "";
+      filterCommandList("");
+      inp.focus();
+    }
+
+    function closeCommandPalette() {
+      const modal = document.getElementById("cmdPaletteModal");
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+    }
+
+    function filterCommandList(query) {
+      const q = query.toLowerCase();
+      const container = document.getElementById("cmdItemsContainer");
+      const filtered = commandActions.filter(item => item.label.toLowerCase().includes(q) || item.tag.toLowerCase().includes(q));
+
+      container.innerHTML = filtered.map((item, i) => `
+        <button onclick="executeCommandAction(${commandActions.indexOf(item)})"
+                class="w-full p-3 rounded-xl hover:bg-ink-800 text-left flex items-center justify-between transition-colors group">
+          <span class="text-slate-200 group-hover:text-emerald-300">${item.label}</span>
+          <span class="text-[10px] px-2 py-0.5 rounded bg-ink-950 text-gold-400 border border-ink-700">${item.tag}</span>
+        </button>
+      `).join("");
+    }
+
+    function executeCommandAction(idx) {
+      closeCommandPalette();
+      if (commandActions[idx]) commandActions[idx].run();
+    }
+
+    // Keyboard shortcut Cmd+K / Ctrl+K & ESC
+    window.addEventListener("keydown", (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        openCommandPalette();
+      } else if (e.key === "Escape") {
+        closeCommandPalette();
+        closeScoutOverlay();
+        closePocModal();
+      }
+    });
+
+    // POC Modal & Draft Exporter
+    function openPocModal(contextText) {
+      if (contextText) {
+        document.getElementById("pocContext").value = contextText;
+      }
+      document.getElementById("pocDownloadSuccess").classList.add("hidden");
+      const m = document.getElementById("pocModal");
+      m.classList.remove("hidden");
+      m.classList.add("flex");
+    }
+
+    function closePocModal() {
+      const m = document.getElementById("pocModal");
+      m.classList.add("hidden");
+      m.classList.remove("flex");
+    }
+
+    function exportPocDraftFile(e) {
+      e.preventDefault();
+      const fmt = window.pocExportFormat || "json";
+      const draftPayload = {
+        schema: "evergreen.marketing.enquiry.draft.v1",
+        generatedAt: new Date().toISOString(),
+        topology: {
+          marketingPort: 3300,
+          millOperationsPort: 4001,
+          ownerConsolePort: 5174,
+          tenantPortalConfigured: Boolean(VITE_TENANT_PORTAL_URL)
+        },
+        millContact: {
+          name: document.getElementById("pocName").value,
+          millName: document.getElementById("pocMill").value,
+          email: document.getElementById("pocEmail").value,
+          priorityScope: document.getElementById("pocContext").value
+        },
+        simulatedYieldParameters: {
+          activeSpindles: oracleState.spindles.val,
+          recoverableWastePercent: oracleState.waste.val,
+          yarnPriceInrPerKg: oracleState.price.val,
+          disclaimer: "Illustrative estimate only; requires on-site verification."
+        },
+        deliveryNotice: "OFFLINE DRAFT ONLY. This file was generated locally in your browser and has not been transmitted to an external server."
+      };
+
+      const safeMill = draftPayload.millContact.millName.replace(/\s+/g, "_");
+      let blob, filename;
+
+      if (fmt === "txt") {
+        const txtContent = [
+          "====================================================================",
+          "EVERGREEN TEXTILE OS — OFFLINE POC & DEMO SPECIFICATION DRAFT",
+          "====================================================================",
+          `Generated At   : ${draftPayload.generatedAt}`,
+          `Port Topology  : Marketing :3300 | Mill Ops :4001 | Owner :5174`,
+          `Contact Name   : ${draftPayload.millContact.name}`,
+          `Spinning Mill  : ${draftPayload.millContact.millName}`,
+          `Work Email     : ${draftPayload.millContact.email}`,
+          `Priority Scope : ${draftPayload.millContact.priorityScope}`,
+          "--------------------------------------------------------------------",
+          "SIMULATED ORACLE OF YIELD PARAMETERS (ILLUSTRATIVE ESTIMATE ONLY):",
+          `Active Spindles: ${draftPayload.simulatedYieldParameters.activeSpindles.toLocaleString()}`,
+          `Waste Lift %   : ${draftPayload.simulatedYieldParameters.recoverableWastePercent}%`,
+          `Yarn Price     : INR ${draftPayload.simulatedYieldParameters.yarnPriceInrPerKg}/Kg`,
+          "--------------------------------------------------------------------",
+          "NOTICE: This file was downloaded locally and explicitly does not",
+          "claim automated server delivery.",
+          "===================================================================="
+        ].join("\n");
+        blob = new Blob([txtContent], { type: "text/plain;charset=utf-8" });
+        filename = `EverGreen_POC_Draft_${safeMill}.txt`;
+      } else {
+        blob = new Blob([JSON.stringify(draftPayload, null, 2)], { type: "application/json" });
+        filename = `EverGreen_POC_Draft_${safeMill}.json`;
+      }
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      document.getElementById("pocDownloadSuccess").classList.remove("hidden");
+    }
+
+    // Initialize All Interactive Pillars on Load
+    window.addEventListener("DOMContentLoaded", () => {
+      renderNervousSystem();
+      setCrisisLevel(0);
+      renderOracleYield();
+      selectBridgeNode("tally");
+      syncThreadWeaveProgress(28);
+    });
+  </script>
+
+</body>
+</html>

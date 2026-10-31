@@ -39,6 +39,7 @@ ENV NODE_ENV=production EVERGREEN_API_HOST=0.0.0.0
 RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates gosu && rm -rf /var/lib/apt/lists/*
 COPY package.json ./
 COPY scripts/release/database.cjs ./scripts/release/database.cjs
+COPY scripts/security/owner-license.cjs ./scripts/security/owner-license.cjs
 COPY --chmod=755 deploy/docker/api-entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
 

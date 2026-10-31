@@ -1,3 +1,4 @@
+import { requireInstallationLicence } from '@evergreen/types/licensing';
 import { Controller, Get, Res } from '@nestjs/common';
 import type { Response } from 'express';
 import { AppService } from './app.service';
@@ -7,6 +8,17 @@ import { Roles } from './decorators/roles.decorator';
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}
+
+  @Get('license/status')
+  @Public()
+  licenceStatus() {
+    try {
+      requireInstallationLicence('tenant');
+      return { active: true };
+    } catch {
+      return { active: false };
+    }
+  }
 
   @Get()
   @Public()

@@ -472,31 +472,31 @@ Generated from every active-source UI file. Labels expressed in code are preserv
 | [apps/web/src/pages/Settings.tsx:541](../../apps/web/src/pages/Settings.tsx) | TextField | Supported Yarn Counts | `{(e) => setRateSettings({ ...rateSettings, supportedCounts: e.target.value })}` |
 | [apps/web/src/pages/Settings.tsx:551](../../apps/web/src/pages/Settings.tsx) | Button | Save Operational Rates | `{handleSaveRates}` |
 | [apps/web/src/pages/SharedPayments.tsx:14](../../apps/web/src/pages/SharedPayments.tsx) | Button | Download drafts | `{download}` |
-| [apps/web/src/pages/ShopPortal.tsx:70](../../apps/web/src/pages/ShopPortal.tsx) | Button | {language === 'en' ? 'தமிழ்' : 'English'} | `{switchLanguage}` |
-| [apps/web/src/pages/ShopPortal.tsx:70](../../apps/web/src/pages/ShopPortal.tsx) | Button | {t.staff} | `` |
-| [apps/web/src/pages/ShopPortal.tsx:73](../../apps/web/src/pages/ShopPortal.tsx) | TextField | {t.search} | `{event => setSearch(event.target.value)}` |
-| [apps/web/src/pages/ShopPortal.tsx:73](../../apps/web/src/pages/ShopPortal.tsx) | TextField | {t.all} | `{event => setCategory(event.target.value)}` |
-| [apps/web/src/pages/ShopPortal.tsx:73](../../apps/web/src/pages/ShopPortal.tsx) | TextField | {t.allBrands} | `{event => setBrand(event.target.value)}` |
-| [apps/web/src/pages/ShopPortal.tsx:73](../../apps/web/src/pages/ShopPortal.tsx) | TextField | {t.sort} | `{event => setSort(event.target.value)}` |
-| [apps/web/src/pages/ShopPortal.tsx:75](../../apps/web/src/pages/ShopPortal.tsx) | Button | {t.retry} | `{() => void refetch()}` |
-| [apps/web/src/pages/ShopPortal.tsx:78](../../apps/web/src/pages/ShopPortal.tsx) | Button | {t.view} | `{() => setSelected(product)}` |
-| [apps/web/src/pages/ShopPortal.tsx:78](../../apps/web/src/pages/ShopPortal.tsx) | Button | {t.add} | `{() => setQuantity(product, quantityFor(product.id) + 1)}` |
-| [apps/web/src/pages/ShopPortal.tsx:81](../../apps/web/src/pages/ShopPortal.tsx) | IconButton | {`Remove ${row.product!.name}`} | `{() => setQuantity(row.product!, row.quantity - 1)}` |
-| [apps/web/src/pages/ShopPortal.tsx:81](../../apps/web/src/pages/ShopPortal.tsx) | TextField | <Typography sx={{ flex: 1 }} fontWeight={600}>{row.product!.name}</Typography> <IconButton aria-label={`Remove ${row.product!.name}`} onClick={() => setQuantity(row.product!, row.quantity - 1)}><Remove /></IconButton> <TextField type="number" size="small" value={row.quantity} onChange={event => setQuantity(row.product!, Number(event.target.value))} inputProps={{ min: 0, max: row.product!.available | `{event => setQuantity(row.product!, Number(event.target.value))}` |
-| [apps/web/src/pages/ShopPortal.tsx:81](../../apps/web/src/pages/ShopPortal.tsx) | IconButton | {`Add ${row.product!.name}`} | `{() => setQuantity(row.product!, row.quantity + 1)}` |
-| [apps/web/src/pages/ShopPortal.tsx:81](../../apps/web/src/pages/ShopPortal.tsx) | Button | {t.checkout} | `{() => { setError(''); setCheckoutOpen(true); }}` |
-| [apps/web/src/pages/ShopPortal.tsx:83](../../apps/web/src/pages/ShopPortal.tsx) | IconButton | <Close /> | `{() => setSelected(null)}` |
-| [apps/web/src/pages/ShopPortal.tsx:83](../../apps/web/src/pages/ShopPortal.tsx) | Button | {t.add} | `{() => { if (selected) setQuantity(selected, quantityFor(selected.id) + 1); setSelected(null); }}` |
-| [apps/web/src/pages/ShopPortal.tsx:84](../../apps/web/src/pages/ShopPortal.tsx) | IconButton | <Close /> | `{() => setCheckoutOpen(false)}` |
-| [apps/web/src/pages/ShopPortal.tsx:84](../../apps/web/src/pages/ShopPortal.tsx) | TextField | {t.name} | `{event => setBuyer({ ...buyer, name: event.target.value })}` |
-| [apps/web/src/pages/ShopPortal.tsx:84](../../apps/web/src/pages/ShopPortal.tsx) | TextField | {t.phone} | `{event => setBuyer({ ...buyer, phone: event.target.value })}` |
-| [apps/web/src/pages/ShopPortal.tsx:84](../../apps/web/src/pages/ShopPortal.tsx) | TextField | {t.email} | `{event => setBuyer({ ...buyer, email: event.target.value })}` |
-| [apps/web/src/pages/ShopPortal.tsx:84](../../apps/web/src/pages/ShopPortal.tsx) | TextField | {t.address} | `{event => setBuyer({ ...buyer, address: event.target.value })}` |
-| [apps/web/src/pages/ShopPortal.tsx:84](../../apps/web/src/pages/ShopPortal.tsx) | TextField | {t.state} | `{event => setBuyer({ ...buyer, state: event.target.value })}` |
-| [apps/web/src/pages/ShopPortal.tsx:84](../../apps/web/src/pages/ShopPortal.tsx) | TextField | {t.gstin} | `{event => setBuyer({ ...buyer, gstin: event.target.value })}` |
-| [apps/web/src/pages/ShopPortal.tsx:84](../../apps/web/src/pages/ShopPortal.tsx) | TextField | {t.notes} | `{event => setBuyer({ ...buyer, notes: event.target.value })}` |
-| [apps/web/src/pages/ShopPortal.tsx:84](../../apps/web/src/pages/ShopPortal.tsx) | Button | {submitting ? t.placing : t.place} | `{() => void placeOrder()}` |
-| [apps/web/src/pages/ShopPortal.tsx:85](../../apps/web/src/pages/ShopPortal.tsx) | Button | {t.back} | `{() => setResult(null)}` |
+| [apps/web/src/pages/ShopPortal.tsx:72](../../apps/web/src/pages/ShopPortal.tsx) | Button | {language === 'en' ? 'தமிழ்' : 'English'} | `{switchLanguage}` |
+| [apps/web/src/pages/ShopPortal.tsx:72](../../apps/web/src/pages/ShopPortal.tsx) | Button | {t.staff} | `` |
+| [apps/web/src/pages/ShopPortal.tsx:75](../../apps/web/src/pages/ShopPortal.tsx) | TextField | {t.search} | `{event => setSearch(event.target.value)}` |
+| [apps/web/src/pages/ShopPortal.tsx:75](../../apps/web/src/pages/ShopPortal.tsx) | TextField | {t.all} | `{event => setCategory(event.target.value)}` |
+| [apps/web/src/pages/ShopPortal.tsx:75](../../apps/web/src/pages/ShopPortal.tsx) | TextField | {t.allBrands} | `{event => setBrand(event.target.value)}` |
+| [apps/web/src/pages/ShopPortal.tsx:75](../../apps/web/src/pages/ShopPortal.tsx) | TextField | {t.sort} | `{event => setSort(event.target.value)}` |
+| [apps/web/src/pages/ShopPortal.tsx:77](../../apps/web/src/pages/ShopPortal.tsx) | Button | {t.retry} | `{() => void refetch()}` |
+| [apps/web/src/pages/ShopPortal.tsx:80](../../apps/web/src/pages/ShopPortal.tsx) | Button | {t.view} | `{() => setSelected(product)}` |
+| [apps/web/src/pages/ShopPortal.tsx:80](../../apps/web/src/pages/ShopPortal.tsx) | Button | {t.add} | `{() => setQuantity(product, quantityFor(product.id) + 1)}` |
+| [apps/web/src/pages/ShopPortal.tsx:83](../../apps/web/src/pages/ShopPortal.tsx) | IconButton | {`Remove ${row.product!.name}`} | `{() => setQuantity(row.product!, row.quantity - 1)}` |
+| [apps/web/src/pages/ShopPortal.tsx:83](../../apps/web/src/pages/ShopPortal.tsx) | TextField | <Typography sx={{ flex: 1 }} fontWeight={600}>{row.product!.name}</Typography> <IconButton aria-label={`Remove ${row.product!.name}`} onClick={() => setQuantity(row.product!, row.quantity - 1)}><Remove /></IconButton> <TextField type="number" size="small" value={row.quantity} onChange={event => setQuantity(row.product!, Number(event.target.value))} inputProps={{ min: 0, max: row.product!.available | `{event => setQuantity(row.product!, Number(event.target.value))}` |
+| [apps/web/src/pages/ShopPortal.tsx:83](../../apps/web/src/pages/ShopPortal.tsx) | IconButton | {`Add ${row.product!.name}`} | `{() => setQuantity(row.product!, row.quantity + 1)}` |
+| [apps/web/src/pages/ShopPortal.tsx:83](../../apps/web/src/pages/ShopPortal.tsx) | Button | {t.checkout} | `{() => { setError(''); setCheckoutOpen(true); }}` |
+| [apps/web/src/pages/ShopPortal.tsx:85](../../apps/web/src/pages/ShopPortal.tsx) | IconButton | <Close /> | `{() => setSelected(null)}` |
+| [apps/web/src/pages/ShopPortal.tsx:85](../../apps/web/src/pages/ShopPortal.tsx) | Button | {t.add} | `{() => { if (selected) setQuantity(selected, quantityFor(selected.id) + 1); setSelected(null); }}` |
+| [apps/web/src/pages/ShopPortal.tsx:86](../../apps/web/src/pages/ShopPortal.tsx) | IconButton | <Close /> | `{() => setCheckoutOpen(false)}` |
+| [apps/web/src/pages/ShopPortal.tsx:86](../../apps/web/src/pages/ShopPortal.tsx) | TextField | {t.name} | `{event => setBuyer({ ...buyer, name: event.target.value })}` |
+| [apps/web/src/pages/ShopPortal.tsx:86](../../apps/web/src/pages/ShopPortal.tsx) | TextField | {t.phone} | `{event => setBuyer({ ...buyer, phone: event.target.value })}` |
+| [apps/web/src/pages/ShopPortal.tsx:86](../../apps/web/src/pages/ShopPortal.tsx) | TextField | {t.email} | `{event => setBuyer({ ...buyer, email: event.target.value })}` |
+| [apps/web/src/pages/ShopPortal.tsx:86](../../apps/web/src/pages/ShopPortal.tsx) | TextField | {t.address} | `{event => setBuyer({ ...buyer, address: event.target.value })}` |
+| [apps/web/src/pages/ShopPortal.tsx:86](../../apps/web/src/pages/ShopPortal.tsx) | TextField | {t.state} | `{event => setBuyer({ ...buyer, state: event.target.value })}` |
+| [apps/web/src/pages/ShopPortal.tsx:86](../../apps/web/src/pages/ShopPortal.tsx) | TextField | {t.gstin} | `{event => setBuyer({ ...buyer, gstin: event.target.value })}` |
+| [apps/web/src/pages/ShopPortal.tsx:86](../../apps/web/src/pages/ShopPortal.tsx) | TextField | {t.notes} | `{event => setBuyer({ ...buyer, notes: event.target.value })}` |
+| [apps/web/src/pages/ShopPortal.tsx:86](../../apps/web/src/pages/ShopPortal.tsx) | Button | {submitting ? t.placing : t.place} | `{() => void placeOrder()}` |
+| [apps/web/src/pages/ShopPortal.tsx:87](../../apps/web/src/pages/ShopPortal.tsx) | Button | {t.back} | `{() => setResult(null)}` |
 | [apps/web/src/pages/Store.tsx:49](../../apps/web/src/pages/Store.tsx) | Button | Open public shop | `` |
 | [apps/web/src/pages/Store.tsx:49](../../apps/web/src/pages/Store.tsx) | Button | Manage catalogue | `{() => onNavigate?.('catalogue')}` |
 | [apps/web/src/pages/Store.tsx:49](../../apps/web/src/pages/Store.tsx) | Button | Sales orders | `{() => onNavigate?.('orders')}` |
@@ -511,11 +511,14 @@ Generated from every active-source UI file. Labels expressed in code are preserv
 | [apps/web/src/pages/TodayDashboard.tsx:153](../../apps/web/src/pages/TodayDashboard.tsx) | IconButton | <RefreshIcon /> | `{handleRefresh}` |
 | [apps/web/src/pages/TodayDashboard.tsx:254](../../apps/web/src/pages/TodayDashboard.tsx) | Button | Record Production | `{() => navigate('production')}` |
 | [apps/web/src/pages/TodayDashboard.tsx:263](../../apps/web/src/pages/TodayDashboard.tsx) | Button | Add Costs | `{() => navigate('costing')}` |
-| [apps/web/src/pages/Tutorial.tsx:239](../../apps/web/src/pages/Tutorial.tsx) | StepLabel | <Typography variant="body2" fontWeight={700}>{step.label}</Typography> | `` |
-| [apps/web/src/pages/Tutorial.tsx:245](../../apps/web/src/pages/Tutorial.tsx) | Button | {i === chapter.steps.length - 1 ? 'Finish chapter' : 'Got it →'} | `{handleStepComplete}` |
-| [apps/web/src/pages/Tutorial.tsx:246](../../apps/web/src/pages/Tutorial.tsx) | Button | Back | `{() => setActiveStep(i - 1)}` |
-| [apps/web/src/pages/Tutorial.tsx:259](../../apps/web/src/pages/Tutorial.tsx) | Button | Next chapter → | `{() => { const nextIndex = TUTORIAL_CHAPTERS.findIndex((c) => c.id === selectedChapter) + 1; if (nextIndex < TUTORIAL_CHAPTERS.length) { handleChapterChange(TUTORIAL_CHAPTERS[nextIndex].id); } }}` |
-| [apps/web/src/pages/Tutorial.tsx:260](../../apps/web/src/pages/Tutorial.tsx) | Button | Restart tour | `{() => { setCompletedSteps({}); setSelectedChapter('getting-started'); setActiveStep(0); }}` |
+| [apps/web/src/pages/Tutorial.tsx:249](../../apps/web/src/pages/Tutorial.tsx) | TextField | Search learning paths | `{event => setSearch(event.target.value)}` |
+| [apps/web/src/pages/Tutorial.tsx:278](../../apps/web/src/pages/Tutorial.tsx) | Button | Open related workspace | `{() => onNavigate(({ activation: 'settings', integrations: 'integrations', support: 'helpdesk', inventory: 'inventory', billing: 'business', costing: 'costing', admin: 'users' } as Record<string, string>)[selectedChapter] \|\| 'dashboard')}` |
+| [apps/web/src/pages/Tutorial.tsx:282](../../apps/web/src/pages/Tutorial.tsx) | StepLabel | <Button size="small" color="inherit" onClick={() => setActiveStep(i)} sx={{ textAlign: 'left', justifyContent: 'flex-start', fontWeight: 700 }}>{step.label}</Button> | `` |
+| [apps/web/src/pages/Tutorial.tsx:283](../../apps/web/src/pages/Tutorial.tsx) | Button | {step.label} | `{() => setActiveStep(i)}` |
+| [apps/web/src/pages/Tutorial.tsx:288](../../apps/web/src/pages/Tutorial.tsx) | Button | {i === chapter.steps.length - 1 ? 'Finish chapter' : 'Got it →'} | `{handleStepComplete}` |
+| [apps/web/src/pages/Tutorial.tsx:289](../../apps/web/src/pages/Tutorial.tsx) | Button | Back | `{() => setActiveStep(i - 1)}` |
+| [apps/web/src/pages/Tutorial.tsx:302](../../apps/web/src/pages/Tutorial.tsx) | Button | Next chapter → | `{() => { const nextIndex = TUTORIAL_CHAPTERS.findIndex((c) => c.id === selectedChapter) + 1; if (nextIndex < TUTORIAL_CHAPTERS.length) { handleChapterChange(TUTORIAL_CHAPTERS[nextIndex].id); } }}` |
+| [apps/web/src/pages/Tutorial.tsx:303](../../apps/web/src/pages/Tutorial.tsx) | Button | Restart tour | `{() => { setCompletedSteps({}); setSelectedChapter('getting-started'); setActiveStep(0); }}` |
 | [apps/web/src/pages/UnifiedWorkspace.tsx:195](../../apps/web/src/pages/UnifiedWorkspace.tsx) | Button | Open Mill Dashboard | `{() => onNavigate('dashboard')}` |
 | [apps/web/src/pages/UnifiedWorkspace.tsx:204](../../apps/web/src/pages/UnifiedWorkspace.tsx) | Button | Yarn ERP Hub (9 Modules) | `{() => onNavigate('yarnerp')}` |
 | [apps/web/src/pages/UnifiedWorkspace.tsx:216](../../apps/web/src/pages/UnifiedWorkspace.tsx) | Button | Business Desk & Invoices | `{() => onNavigate('business')}` |
@@ -541,40 +544,40 @@ Generated from every active-source UI file. Labels expressed in code are preserv
 | [apps/web/src/pages/UserManagement.tsx:415](../../apps/web/src/pages/UserManagement.tsx) | Select | Role | `{(e) => setFormData({ ...formData, role: e.target.value as User['role'] })}` |
 | [apps/web/src/pages/UserManagement.tsx:447](../../apps/web/src/pages/UserManagement.tsx) | Button | Cancel | `{handleCloseDialog}` |
 | [apps/web/src/pages/UserManagement.tsx:448](../../apps/web/src/pages/UserManagement.tsx) | Button | {isSaving ? 'Saving…' : editingUser ? 'Update User' : 'Create User'} | `` |
-| [apps/web/src/pages/WorkflowDesk.tsx:96](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Supplier / job worker | `{() => setSupplierOpen(true)}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:99](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | {op.title} | `{() => open(op)}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:100](../../apps/web/src/pages/WorkflowDesk.tsx) | Tabs | <Tab label="Document trail" /> <Tab label="Lots, holds & WIP" /> <Tab label="Accounts & closure" /> | `{(_, v) => setTab(v)}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:100](../../apps/web/src/pages/WorkflowDesk.tsx) | Tab | Document trail | `` |
-| [apps/web/src/pages/WorkflowDesk.tsx:100](../../apps/web/src/pages/WorkflowDesk.tsx) | Tab | Lots, holds & WIP | `` |
-| [apps/web/src/pages/WorkflowDesk.tsx:100](../../apps/web/src/pages/WorkflowDesk.tsx) | Tab | Accounts & closure | `` |
-| [apps/web/src/pages/WorkflowDesk.tsx:101](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | {d.documentNo} | `{() => setSelectedDoc(d)}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:102](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Inspect & release | `{() => { setRelease(h); setReleaseNotes(''); }}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:103](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Close through a date | `{() => setCloseOpen(true)}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:104](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | {f.label} | `{e => change(f.key, f.source ? Number(e.target.value) : e.target.value)}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:105](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | Item | `{e => changeLine(i, 'itemId', Number(e.target.value))}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:105](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | Quantity | `{e => changeLine(i, 'quantity', e.target.value)}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:105](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | Unit cost ₹ | `{e => changeLine(i, 'rate', e.target.value)}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:105](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | GST % | `{e => changeLine(i, 'gstRate', e.target.value)}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:105](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | Quarantine quantity | `{e => changeLine(i, 'rejectedQty', e.target.value)}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:105](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | Lot (blank = available lots) | `{e => changeLine(i, 'lotId', e.target.value)}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:105](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | Location | `{e => changeLine(i, 'locationId', Number(e.target.value))}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:105](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Add line | `{() => setLines(old => [...old, { itemId: '', quantity: '', rate: '', gstRate: '' }])}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:106](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | Posting time (optional) | `{e => change('date', e.target.value)}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:106](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | Reason / evidence / notes | `{e => change('notes', e.target.value)}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:106](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Cancel | `{() => setOperation(null)}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:106](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | {saving ? 'Posting…' : 'Post & synchronize'} | `{submit}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:107](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | {titleCase(key)} | `{e => setSupplier(s => ({ ...s, [key]: e.target.value }))}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:107](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Cancel | `{() => setSupplierOpen(false)}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:107](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Save | `{async () => { setSaving(true); try { await api.post('/workflows/suppliers', supplier); setSupplierOpen(false); setSupplier({ name: '', code: '', gstin: '', address: '' }); } catch (e: any) { toast.error(e.response?.data?.message \|\| 'Could not save supplier'); } finally { setSaving(false); } }}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:108](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | Inspection result / release reason | `{e => setReleaseNotes(e.target.value)}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:108](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Cancel | `{() => setRelease(null)}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:108](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Record pass & release | `{handleRelease}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:109](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | Close through | `{e => setCloseDate(e.target.value)}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:109](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | Closure reason | `{e => setCloseNotes(e.target.value)}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:109](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Cancel | `{() => setCloseOpen(false)}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:109](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Close period | `{async () => { setSaving(true); try { await api.post('/workflows/periods/close', { through: closeDate, notes: closeNotes }); setCloseOpen(false); } catch (e: any) { toast.error(e.response?.data?.message \|\| 'Closure failed'); } finally { setSaving(false); } }}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:110](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Download document PDF | `{() => downloadWorkflowDocument(selectedDoc)}` |
-| [apps/web/src/pages/WorkflowDesk.tsx:110](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Close | `{() => setSelectedDoc(null)}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:97](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Supplier / job worker | `{() => setSupplierOpen(true)}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:100](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | {op.title} | `{() => open(op)}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:101](../../apps/web/src/pages/WorkflowDesk.tsx) | Tabs | <Tab label="Document trail" /> <Tab label="Lots, holds & WIP" /> <Tab label="Accounts & closure" /> | `{(_, v) => setTab(v)}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:101](../../apps/web/src/pages/WorkflowDesk.tsx) | Tab | Document trail | `` |
+| [apps/web/src/pages/WorkflowDesk.tsx:101](../../apps/web/src/pages/WorkflowDesk.tsx) | Tab | Lots, holds & WIP | `` |
+| [apps/web/src/pages/WorkflowDesk.tsx:101](../../apps/web/src/pages/WorkflowDesk.tsx) | Tab | Accounts & closure | `` |
+| [apps/web/src/pages/WorkflowDesk.tsx:102](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | {d.documentNo} | `{() => setSelectedDoc(d)}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:103](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Inspect & release | `{() => { setRelease(h); setReleaseNotes(''); }}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:104](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Close through a date | `{() => setCloseOpen(true)}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:105](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | {f.label} | `{e => change(f.key, f.source ? Number(e.target.value) : e.target.value)}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:106](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | Item | `{e => changeLine(i, 'itemId', Number(e.target.value))}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:106](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | Quantity | `{e => changeLine(i, 'quantity', e.target.value)}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:106](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | Unit cost ₹ | `{e => changeLine(i, 'rate', e.target.value)}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:106](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | GST % | `{e => changeLine(i, 'gstRate', e.target.value)}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:106](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | Quarantine quantity | `{e => changeLine(i, 'rejectedQty', e.target.value)}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:106](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | Lot (blank = available lots) | `{e => changeLine(i, 'lotId', e.target.value)}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:106](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | Location | `{e => changeLine(i, 'locationId', Number(e.target.value))}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:106](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Add line | `{() => setLines(old => [...old, { itemId: '', quantity: '', rate: '', gstRate: '' }])}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:107](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | Posting time (optional) | `{e => change('date', e.target.value)}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:107](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | Reason / evidence / notes | `{e => change('notes', e.target.value)}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:107](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Cancel | `{() => setOperation(null)}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:107](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | {saving ? 'Posting…' : 'Post & synchronize'} | `{submit}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:108](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | {titleCase(key)} | `{e => setSupplier(s => ({ ...s, [key]: e.target.value }))}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:108](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Cancel | `{() => setSupplierOpen(false)}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:108](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Save | `{async () => { setSaving(true); try { await api.post('/workflows/suppliers', supplier); setSupplierOpen(false); setSupplier({ name: '', code: '', gstin: '', address: '' }); } catch (e: any) { toast.error(e.response?.data?.message \|\| 'Could not save supplier'); } finally { setSaving(false); } }}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:109](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | Inspection result / release reason | `{e => setReleaseNotes(e.target.value)}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:109](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Cancel | `{() => setRelease(null)}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:109](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Record pass & release | `{handleRelease}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:110](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | Close through | `{e => setCloseDate(e.target.value)}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:110](../../apps/web/src/pages/WorkflowDesk.tsx) | TextField | Closure reason | `{e => setCloseNotes(e.target.value)}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:110](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Cancel | `{() => setCloseOpen(false)}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:110](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Close period | `{async () => { setSaving(true); try { await api.post('/workflows/periods/close', { through: closeDate, notes: closeNotes }); setCloseOpen(false); } catch (e: any) { toast.error(e.response?.data?.message \|\| 'Closure failed'); } finally { setSaving(false); } }}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:111](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Download document PDF | `{() => downloadWorkflowDocument(selectedDoc)}` |
+| [apps/web/src/pages/WorkflowDesk.tsx:111](../../apps/web/src/pages/WorkflowDesk.tsx) | Button | Close | `{() => setSelectedDoc(null)}` |
 | [apps/web/src/pages/yarn/ComplianceReports.tsx:75](../../apps/web/src/pages/yarn/ComplianceReports.tsx) | Button | Refresh | `{refresh}` |
 | [apps/web/src/pages/yarn/DemandForecasting.tsx:142](../../apps/web/src/pages/yarn/DemandForecasting.tsx) | Button | {isRefetching ? 'Refreshing...' : 'Refresh'} | `{() => queryClient.invalidateQueries({ queryKey: ['commerce-orders'] })}` |
 | [apps/web/src/pages/yarn/HRManagement.tsx:223](../../apps/web/src/pages/yarn/HRManagement.tsx) | Button | Refresh | `{() => { queryClient.invalidateQueries({ queryKey: ['hr-staff'] }); queryClient.invalidateQueries({ queryKey: ['hr-payroll'] }); }}` |

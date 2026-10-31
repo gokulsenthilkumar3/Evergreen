@@ -1,3 +1,4 @@
+import { getStoredUser } from '../utils/authStorage';
 import { useMemo, useState } from 'react';
 import { Alert, Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControlLabel, MenuItem, Paper, Stack, Switch, Tab, Tabs, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography } from '@mui/material';
 import Grid from '@mui/material/GridLegacy';
@@ -49,7 +50,7 @@ export default function WorkflowDesk({ initialTab = 0, title = 'Business flows',
   const { data, isLoading, error } = useQuery<any>({ queryKey: ['workflows'], queryFn: async () => (await api.get('/workflows')).data });
   const [tab, setTab] = useState(initialTab), [operation, setOperation] = useState<Operation | null>(null), [form, setForm] = useState<any>({}), [lines, setLines] = useState<any[]>([]), [saving, setSaving] = useState(false), [requestKey, setRequestKey] = useState(''), [selectedDoc, setSelectedDoc] = useState<any>(null);
   const [supplierOpen, setSupplierOpen] = useState(false), [supplier, setSupplier] = useState({ name: '', code: '', gstin: '', address: '' }), [release, setRelease] = useState<any>(null), [releaseNotes, setReleaseNotes] = useState(''), [closeOpen, setCloseOpen] = useState(false), [closeDate, setCloseDate] = useState(''), [closeNotes, setCloseNotes] = useState('');
-  const user = useMemo(() => { try { return JSON.parse(localStorage.getItem('user') || '{}'); } catch { return {}; } }, []);
+  const user = useMemo(() => { try { return JSON.parse(getStoredUser() || '{}'); } catch { return {}; } }, []);
   const canWrite = ['ADMIN', 'MODIFIER'].includes(user.role), docs = data?.documents || [];
   const byKind = (kind: string) => docs.filter((d: any) => d.kind === kind && !['CANCELLED', 'RETURNED', 'COMPLETED'].includes(d.status));
   const sources: Record<string, any[]> = { suppliers: data?.suppliers || [], customers: data?.customers || [], invoices: data?.invoices || [], orders: (data?.orders || []).filter((o: any) => ['CONFIRMED', 'PARTIALLY_INVOICED'].includes(o.status)), items: data?.items || [], lots: (data?.lots || []).filter((l: any) => l.quantity > 0), wip: (data?.wip || []).filter((l: any) => l.status === 'OPEN'), customerCredits: [...byKind('CUSTOMER_RECEIPT'), ...byKind('SALES_RETURN')], supplierPayments: byKind('SUPPLIER_PAYMENT'), purchaseOrders: byKind('PURCHASE_ORDER'), receipts: byKind('GOODS_RECEIPT'), bills: byKind('SUPPLIER_BILL'), dispatches: byKind('ORDER_DISPATCH'), jobs: byKind('TRANSFORM_DISPATCH') };

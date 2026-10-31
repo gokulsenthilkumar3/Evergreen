@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import App from './App.tsx'
 import ShopPortal from './pages/ShopPortal.tsx'
+import InstallationGate from './components/InstallationGate.tsx'
 import './index.css'
 import { setMutationListener } from './utils/api'
 
@@ -14,7 +15,7 @@ setMutationListener(() => { void queryClient.invalidateQueries(); })
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
-    {window.location.pathname.startsWith('/shop') ? <ShopPortal /> : <App />}
+    {window.location.pathname.startsWith('/shop') ? <InstallationGate url={(import.meta.env.VITE_API_URL || '/api/backend').replace(/\/+$/, '') + '/license/status'}><ShopPortal /></InstallationGate> : <App />}
     </QueryClientProvider>
   </React.StrictMode>,
 )

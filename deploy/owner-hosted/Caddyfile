@@ -1,0 +1,44 @@
+# Set the three domain variables and absolute public build directories before running Caddy.
+# Business databases, signing keys and runtime.dpapi must stay outside these public roots.
+{$EVERGREEN_TENANT_DOMAIN} {
+  encode zstd gzip
+  handle_path /api/backend/* {
+    reverse_proxy 127.0.0.1:4301
+  }
+  handle {
+    root * {$EVERGREEN_TENANT_WEB_ROOT}
+    try_files {path} /index.html
+    file_server
+  }
+  header X-Content-Type-Options nosniff
+  header Referrer-Policy no-referrer
+}
+
+{$EVERGREEN_PROVIDER_DOMAIN} {
+  encode zstd gzip
+  handle_path /admin-api/* {
+    reverse_proxy 127.0.0.1:4300
+  }
+  handle {
+    root * {$EVERGREEN_PROVIDER_WEB_ROOT}
+    try_files {path} /index.html
+    file_server
+  }
+  header X-Content-Type-Options nosniff
+  header Referrer-Policy no-referrer
+}
+
+{$EVERGREEN_LICENSE_DOMAIN} {
+  @lease {
+    path /licensing/lease
+    method POST
+  }
+  handle @lease {
+    reverse_proxy 127.0.0.1:4300
+  }
+  handle {
+    respond "Not found" 404
+  }
+  header Cache-Control no-store
+  header X-Content-Type-Options nosniff
+}

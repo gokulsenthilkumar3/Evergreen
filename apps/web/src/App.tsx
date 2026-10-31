@@ -396,7 +396,7 @@ const GlobalSearch = ({ onNavigate }: { onNavigate: (page: string) => void }) =>
 const App: React.FC = () => {
   const [user, setUser] = useState<any>(() => {
     try {
-      const savedUser = localStorage.getItem('user');
+      const savedUser = getStoredUser();
       return savedUser && savedUser !== 'undefined' ? JSON.parse(savedUser) : null;
     } catch (e) {
       console.error('Failed to parse user from localStorage:', e);
@@ -520,8 +520,7 @@ const App: React.FC = () => {
     } catch {
       // Best-effort: even if the server call fails, we clear local credentials
     } finally {
-      localStorage.removeItem('user');
-      localStorage.removeItem('token');
+      clearAuth();
       await queryClient.cancelQueries();
       queryClient.clear();
       setUser(null);
@@ -531,7 +530,7 @@ const App: React.FC = () => {
 
   const handleLogin = (userData: any) => {
     queryClient.clear();
-    localStorage.setItem('user', JSON.stringify(userData));
+    saveUser(userData);
     setUser(userData);
   };
 
@@ -1318,7 +1317,7 @@ const App: React.FC = () => {
                 onUserUpdate={(updated) => {
                   const newUser = { ...user, ...updated };
                   setUser(newUser);
-                  localStorage.setItem('user', JSON.stringify(newUser));
+                  saveUser(newUser);
                 }}
                 mode={mode}
                 onToggleTheme={toggleTheme}
@@ -1341,4 +1340,4 @@ const App: React.FC = () => {
   );
 };
 
-export default App;
+export default function LicensedApp() { return <InstallationGate url={(import.meta.env.VITE_API_URL || '/api/backend').replace(/\/+$/, '') + '/license/status'}><App /></InstallationGate>; }

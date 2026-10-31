@@ -1,3 +1,10 @@
+import { refreshInstallationLease } from '@evergreen/types/licensing-online';
+import { ownerGroqEnvironment } from '@evergreen/types/ai-server';
+import { upgradeApiReference } from './api-reference';
+import {
+  requireInstallationLicence,
+  ownerHostEnvironment,
+} from '@evergreen/types/licensing';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
@@ -10,6 +17,14 @@ import { BusinessActionFilter } from './filters/business-action.filter';
 import { PrismaService } from './services/prisma.service';
 
 async function bootstrap() {
+  Object.assign(process.env, ownerHostEnvironment('provider'));
+  Object.assign(process.env, ownerGroqEnvironment());
+  try {
+    await refreshInstallationLease('provider');
+  } catch {
+    /* Existing signed offline access is checked below. */
+  }
+  requireInstallationLicence('provider');
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   // Company logo uploads are limited to 500 KB before base64 encoding.
   app.useBodyParser('json', { limit: '1mb' });
@@ -135,12 +150,14 @@ async function bootstrap() {
         'Staff directory, shift rosters & wage disbursement',
       )
       .build();
-    const document = SwaggerModule.createDocument(app, config);
+    const document = upgradeApiReference(app, SwaggerModule.createDocument(app, config), 'provider');
     SwaggerModule.setup('api/docs', app, document, {
       customSiteTitle: 'EverGreen Provider — API Documentation',
       swaggerOptions: {
         persistAuthorization: false,
-        docExpansion: 'list',
+        docExpansion: 'none',
+        displayOperationId: true,
+        requestSnippetsEnabled: true,
         filter: true,
         displayRequestDuration: true,
         tryItOutEnabled: false,

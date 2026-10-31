@@ -18,19 +18,19 @@ No literal Tab controls in this file. Check composed components and dynamic navi
 
 | Control / label | Handler | Source |
 | --- | --- | --- |
-| {language === 'en' ? 'தமிழ்' : 'English'} | `{switchLanguage}` | [apps/web/src/pages/ShopPortal.tsx:70](../../../apps/web/src/pages/ShopPortal.tsx) |
-| {t.staff} | `delegated / form submit` | [apps/web/src/pages/ShopPortal.tsx:70](../../../apps/web/src/pages/ShopPortal.tsx) |
-| {t.retry} | `{() => void refetch()}` | [apps/web/src/pages/ShopPortal.tsx:75](../../../apps/web/src/pages/ShopPortal.tsx) |
-| {t.view} | `{() => setSelected(product)}` | [apps/web/src/pages/ShopPortal.tsx:78](../../../apps/web/src/pages/ShopPortal.tsx) |
-| {t.add} | `{() => setQuantity(product, quantityFor(product.id) + 1)}` | [apps/web/src/pages/ShopPortal.tsx:78](../../../apps/web/src/pages/ShopPortal.tsx) |
-| {`Remove ${row.product!.name}`} | `{() => setQuantity(row.product!, row.quantity - 1)}` | [apps/web/src/pages/ShopPortal.tsx:81](../../../apps/web/src/pages/ShopPortal.tsx) |
-| {`Add ${row.product!.name}`} | `{() => setQuantity(row.product!, row.quantity + 1)}` | [apps/web/src/pages/ShopPortal.tsx:81](../../../apps/web/src/pages/ShopPortal.tsx) |
-| {t.checkout} | `{() => { setError(''); setCheckoutOpen(true); }}` | [apps/web/src/pages/ShopPortal.tsx:81](../../../apps/web/src/pages/ShopPortal.tsx) |
-| <Close /> | `{() => setSelected(null)}` | [apps/web/src/pages/ShopPortal.tsx:83](../../../apps/web/src/pages/ShopPortal.tsx) |
-| {t.add} | `{() => { if (selected) setQuantity(selected, quantityFor(selected.id) + 1); setSelected(null); }}` | [apps/web/src/pages/ShopPortal.tsx:83](../../../apps/web/src/pages/ShopPortal.tsx) |
-| <Close /> | `{() => setCheckoutOpen(false)}` | [apps/web/src/pages/ShopPortal.tsx:84](../../../apps/web/src/pages/ShopPortal.tsx) |
-| {submitting ? t.placing : t.place} | `{() => void placeOrder()}` | [apps/web/src/pages/ShopPortal.tsx:84](../../../apps/web/src/pages/ShopPortal.tsx) |
-| {t.back} | `{() => setResult(null)}` | [apps/web/src/pages/ShopPortal.tsx:85](../../../apps/web/src/pages/ShopPortal.tsx) |
+| {language === 'en' ? 'தமிழ்' : 'English'} | `{switchLanguage}` | [apps/web/src/pages/ShopPortal.tsx:72](../../../apps/web/src/pages/ShopPortal.tsx) |
+| {t.staff} | `delegated / form submit` | [apps/web/src/pages/ShopPortal.tsx:72](../../../apps/web/src/pages/ShopPortal.tsx) |
+| {t.retry} | `{() => void refetch()}` | [apps/web/src/pages/ShopPortal.tsx:77](../../../apps/web/src/pages/ShopPortal.tsx) |
+| {t.view} | `{() => setSelected(product)}` | [apps/web/src/pages/ShopPortal.tsx:80](../../../apps/web/src/pages/ShopPortal.tsx) |
+| {t.add} | `{() => setQuantity(product, quantityFor(product.id) + 1)}` | [apps/web/src/pages/ShopPortal.tsx:80](../../../apps/web/src/pages/ShopPortal.tsx) |
+| {`Remove ${row.product!.name}`} | `{() => setQuantity(row.product!, row.quantity - 1)}` | [apps/web/src/pages/ShopPortal.tsx:83](../../../apps/web/src/pages/ShopPortal.tsx) |
+| {`Add ${row.product!.name}`} | `{() => setQuantity(row.product!, row.quantity + 1)}` | [apps/web/src/pages/ShopPortal.tsx:83](../../../apps/web/src/pages/ShopPortal.tsx) |
+| {t.checkout} | `{() => { setError(''); setCheckoutOpen(true); }}` | [apps/web/src/pages/ShopPortal.tsx:83](../../../apps/web/src/pages/ShopPortal.tsx) |
+| <Close /> | `{() => setSelected(null)}` | [apps/web/src/pages/ShopPortal.tsx:85](../../../apps/web/src/pages/ShopPortal.tsx) |
+| {t.add} | `{() => { if (selected) setQuantity(selected, quantityFor(selected.id) + 1); setSelected(null); }}` | [apps/web/src/pages/ShopPortal.tsx:85](../../../apps/web/src/pages/ShopPortal.tsx) |
+| <Close /> | `{() => setCheckoutOpen(false)}` | [apps/web/src/pages/ShopPortal.tsx:86](../../../apps/web/src/pages/ShopPortal.tsx) |
+| {submitting ? t.placing : t.place} | `{() => void placeOrder()}` | [apps/web/src/pages/ShopPortal.tsx:86](../../../apps/web/src/pages/ShopPortal.tsx) |
+| {t.back} | `{() => setResult(null)}` | [apps/web/src/pages/ShopPortal.tsx:87](../../../apps/web/src/pages/ShopPortal.tsx) |
 
 ## API calls
 
@@ -41,6 +41,8 @@ Paths are relative to the client API base (`/api/backend` by default in the brow
 
 ## Composed behavior
 
+- [AiAssistant.tsx](../../../packages/portal-ui/AiAssistant.tsx)
+- [api.ts](../../../apps/web/src/utils/api.ts)
 
 ## Verify the workflow
 
