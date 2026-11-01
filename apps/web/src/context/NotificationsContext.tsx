@@ -245,7 +245,7 @@ export const NotificationsBell: React.FC<NotificationsBellProps> = ({ onNavigate
     return (
         <>
             <Tooltip title="Notifications" arrow>
-                <IconButton onClick={() => setOpen(true)} sx={{ p: 0.5 }}>
+                <IconButton aria-label="Notifications" onClick={() => setOpen(true)} sx={{ width: 40, height: 40 }}>
                     <Badge
                         badgeContent={unreadCount > 0 ? unreadCount : undefined}
                         color="error"
