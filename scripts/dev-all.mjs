@@ -46,6 +46,7 @@ function getViteBin(workspaceDir) {
 const installationLicensing = require('@evergreen/types/licensing');
 installationLicensing.requireInstallationLicence('tenant');
 installationLicensing.requireInstallationLicence('provider');
+const tenantPort = Number(process.env.EVERGREEN_PUBLIC_PORT || 4000);
 const tenantOwnerEnvironment = installationLicensing.ownerHostEnvironment('tenant');
 const providerOwnerEnvironment = installationLicensing.ownerHostEnvironment('provider');
 if (tenantOwnerEnvironment.DATABASE_URL) process.env.DATABASE_URL = tenantOwnerEnvironment.DATABASE_URL;

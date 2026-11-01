@@ -25,7 +25,7 @@ import {
   BuildOutlined,
   VerifiedUserOutlined,
 } from '@mui/icons-material';
-import type { MachineData } from './FloorCanvas';
+import FloorCanvas, { type MachineData } from './FloorCanvas';
 import { sfx } from '../../utils/sfx';
 
 export interface WarRoomViewProps {
@@ -102,6 +102,16 @@ export const WarRoomView: React.FC<WarRoomViewProps> = ({
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, width: '100%' }}>
+      <Paper variant="outlined" sx={{ p: 2, borderRadius: 3 }}>
+        <Typography variant="subtitle2" fontWeight={700}>Interactive operations floor</Typography>
+        <Typography variant="caption" color="text.secondary">Illustrative material flow · select a machine to inspect recorded operations</Typography>
+        <Box sx={{ height: { xs: 320, md: 420 }, mt: 1 }}>
+          <FloorCanvas machines={machines} cottonKg={cottonKg} cottonBales={cottonBales}
+            yarnKg={yarnKg} yarnBags={yarnBags} productionRunning={productionRunning}
+            dispatchCount={dispatchCount} qualityHolds={qualityHolds} simulateFlow
+            onMachineClick={onMachineClick} />
+        </Box>
+      </Paper>
       {/* ─── Top Material Throughput Pipeline ─────────────────────────────── */}
       <Paper
         elevation={0}

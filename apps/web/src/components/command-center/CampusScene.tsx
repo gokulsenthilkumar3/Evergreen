@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Box, Button, MenuItem, Select, useMediaQuery, createTheme, ThemeProvider, useTheme } from '@mui/material';
+import { Alert, Box, Button, TextField, Autocomplete, useMediaQuery, createTheme, ThemeProvider, useTheme } from '@mui/material';
 import { useFullscreen } from '../../hooks/useFullscreen';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Html, OrbitControls } from '@react-three/drei';
@@ -254,7 +254,8 @@ function Truck({ motion, speed, offset = 0 }: { motion: boolean; speed: number; 
 }
 
 function World({ props, motion, speed, selected, onSelect, view, onFocus, isDark }: { props: Props; motion: boolean; speed: number; selected: number | null; onSelect: (id: number) => void; view: View; onFocus: (view: View) => void; isDark?: boolean }) {
-  const shown = props.machines.slice(0, 12);
+  const selectedAsset = props.machines.find(machine => machine.id === selected);
+  const shown = selectedAsset ? [selectedAsset, ...props.machines.filter(machine => machine.id !== selected)].slice(0, 12) : props.machines.slice(0, 12);
   const chosen = props.machines.find(m => m.id === selected);
   if (chosen && !shown.some(m => m.id === chosen.id)) shown[shown.length - 1] = chosen;
   return <>
@@ -442,7 +443,7 @@ export default function CampusScene(props: Props) {
   );
 
   return <ThemeProvider theme={campusTheme}><Box ref={container} sx={{ minWidth: 0, scrollMarginTop: 12, '&:fullscreen': { overflow: 'auto', bgcolor: 'background.default', p: 1 }, '& button': { minHeight: 44, textTransform: 'none', fontWeight: 600 }, '& button:focus-visible': { outline: '2px solid #087f65', outlineOffset: -2 } }}>
-    <Button onClick={fullscreen.toggle}>{fullscreen.fullscreen ? 'Exit TV fullscreen' : 'TV fullscreen'}</Button>
+    <Button onClick={fullscreen.toggle}>{fullscreen.fullscreen ? 'Exit fullscreen' : 'Fullscreen'}</Button>
     {fullscreen.error && <Alert severity="info">{fullscreen.error}</Alert>}
     <CampusWorkspace view={view} views={VIEWS} focus={value => focus(value as View)}
       motion={motion} playing={playing} reduced={reduced} toggleMotion={() => setMotion(value => !value)}
@@ -457,10 +458,13 @@ export default function CampusScene(props: Props) {
       ]}
       zone={zones[view]} activity={props.activity} metrics={props.metrics} onNavigate={props.onNavigate}
       selectedMachine={chosen?.name} onInspect={() => { if (chosen) props.onMachineClick?.(chosen); }} clearSelection={() => setSelected(null)}
-      machineSelector={<Select displayEmpty fullWidth size="small" value={chosen?.id ?? ''} inputProps={{ 'aria-label': 'Inspect machine' }} onChange={event => selectMachine(Number(event.target.value))} sx={{ height: 42, fontSize: 12 }}>
-        <MenuItem value="" disabled>{props.machines.length ? 'Find a machine…' : props.machinesAvailable ? 'No machines registered' : 'Machine data unavailable'}</MenuItem>
-        {props.machines.map(machine => <MenuItem key={machine.id} value={machine.id}>{machine.name}</MenuItem>)}
-      </Select>}
+      machineSelector={<Autocomplete options={props.machines} value={chosen ?? null}
+        getOptionLabel={machine => machine.name}
+        isOptionEqualToValue={(a, b) => a.id === b.id}
+        onChange={(_, machine) => { if (machine) selectMachine(machine.id); else setSelected(null); }}
+        noOptionsText={props.machinesAvailable ? 'No matching machines' : 'Machine data unavailable'}
+        renderInput={params => <TextField {...params} label="Find a machine" size="small" />}
+      />}
     >
       <SceneBoundary fallback={<FloorCanvas {...props} simulateFlow={playing} />}>
         <Suspense fallback={<Box sx={{ p: 5 }}>Preparing factory view…</Box>}>

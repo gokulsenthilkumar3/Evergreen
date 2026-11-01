@@ -1,21 +1,24 @@
-import React, { useState, useEffect, lazy } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  Alert,
-  Box,
-  Button,
-  Checkbox,
-  Chip,
-  CircularProgress,
-  Collapse,
-  Divider,
-  FormControlLabel,
-  IconButton,
-  InputAdornment,
-  Paper,
-  Stack,
-  TextField,
-  Typography,
-} from "@mui/material";
+    Box,
+    Paper,
+    Typography,
+    TextField,
+    Button,
+    Link,
+    Alert,
+    CircularProgress,
+    IconButton,
+    InputAdornment,
+    Checkbox,
+    FormControlLabel,
+    useTheme,
+    alpha,
+    Collapse,
+    keyframes,
+    Fade,
+    Zoom
+} from '@mui/material';
 import {
     Visibility,
     VisibilityOff,
@@ -27,9 +30,6 @@ import {
 } from '@mui/icons-material';
 import api from '../utils/api';
 import { startAuthentication } from '@simplewebauthn/browser';
-import { SafeScene } from './common/SceneFallback';
-
-const LoginAvatar = lazy(() => import('./LoginAvatar'));
 
 // --- Animations ---
 const shake = keyframes`
@@ -58,302 +58,181 @@ const fadeInUp = keyframes`
 `;
 
 interface LoginProps {
-  onLoginSuccess: (user: unknown) => void;
-  settings?: { companyName?: string };
-  onSwitchToSignup?: () => void;
+    onLoginSuccess: (user: any) => void;
+    settings?: any;
+    onSwitchToSignup?: () => void;
 }
-export default function Login({ onLoginSuccess, settings }: LoginProps) {
-  const [username, setUsername] = useState(""),
-    [password, setPassword] = useState("");
-  const [code, setCode] = useState(""),
-    [mfa, setMfa] = useState(false);
-  const [visible, setVisible] = useState(false),
-    [remember, setRemember] = useState(false);
-  const [busy, setBusy] = useState(false),
-    [error, setError] = useState("");
-  const [help, setHelp] = useState(false),
-    [caps, setCaps] = useState(false);
-  const lock = useRef(false),
-    codeRef = useRef<HTMLInputElement>(null);
-  const passkeySupported =
-    typeof window.PublicKeyCredential !== "undefined" && window.isSecureContext;
-  useEffect(() => {
-    if (mfa) codeRef.current?.focus();
-  }, [mfa]);
-  useEffect(() => {
-    document.title = "Sign in | EverGreen";
-  }, []);
-  const finish = (data: { access_token: string; user: unknown }) => {
-    if (!data.access_token || !data.user)
-      throw new Error(
-        "The server returned an incomplete sign-in response. Please try again.",
-      );
-    saveSession(data.access_token, data.user, remember);
-    onLoginSuccess(data.user);
-  };
-  const report = (e: unknown) => {
-    const err = e as {
-      response?: { status?: number; data?: { message?: string | string[] } };
-      name?: string;
+
+const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings, onSwitchToSignup }) => {
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [totpCode, setTotpCode] = useState('');
+    const [requiresTotp, setRequiresTotp] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [rememberMe, setRememberMe] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [success, setSuccess] = useState(false);
+    const [shakeAnimation, setShakeAnimation] = useState(false);
+
+    const theme = useTheme();
+
+    useEffect(() => {
+        if (error) {
+            setShakeAnimation(true);
+            const timer = setTimeout(() => setShakeAnimation(false), 500);
+            return () => clearTimeout(timer);
+        }
+    }, [error]);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (success) return;
+
+        setLoading(true);
+        setError(null);
+
+        const startTime = Date.now();
+
+        try {
+            const payload = { username, password, ...(totpCode ? { totpCode } : {}) };
+            const response = await api.post('/auth/login', payload);
+
+            const elapsed = Date.now() - startTime;
+            if (elapsed < 800) await new Promise(r => setTimeout(r, 800 - elapsed));
+
+            setSuccess(true);
+            localStorage.setItem('token', response.data.access_token);
+
+            setTimeout(() => {
+                onLoginSuccess(response.data.user);
+            }, 1200);
+
+        } catch (err: any) {
+            if (err.response?.data?.message === 'TOTP_REQUIRED') {
+                setRequiresTotp(true);
+                setError(null);
+            } else {
+                setError(err.response?.data?.message || 'Invalid credentials');
+            }
+            setLoading(false);
+        }
     };
-    const message = err.response?.data?.message;
-    if (message === "TOTP_REQUIRED") {
-      setMfa(true);
-      setCode("");
-      return;
-    }
-    if (err.name === "NotAllowedError" || err.name === "AbortError")
-      setError(
-        "Passkey sign-in was cancelled. Try again or use your password.",
-      );
-    else if (err.response?.status === 429)
-      setError("Too many attempts. Please wait a minute before trying again.");
-    else if (!err.response)
-      setError(
-        "Could not complete sign-in. Check your connection and try again.",
-      );
-    else
-      setError(
-        Array.isArray(message)
-          ? message.join(" ")
-          : message || "Sign-in failed. Check your details and try again.",
-      );
-  };
-  const submit = async (event: FormEvent) => {
-    event.preventDefault();
-    if (lock.current) return;
-    if (!username.trim() || !password || (mfa && !/^\d{6}$/.test(code))) return;
-    lock.current = true;
-    setBusy(true);
-    setError("");
-    try {
-      finish(
-        (
-          await api.post("/auth/login", {
-            username: username.trim(),
-            password,
-            ...(mfa ? { totpCode: code } : {}),
-          })
-        ).data,
-      );
-    } catch (e) {
-      report(e);
-    } finally {
-      lock.current = false;
-      setBusy(false);
-    }
-  };
-  const passkey = async () => {
-    if (lock.current) return;
-    if (!username.trim()) {
-      setError("Enter your username to find your passkey.");
-      return;
-    }
-    lock.current = true;
-    setBusy(true);
-    setError("");
-    try {
-      const options = (
-        await api.post("/auth/passkey/auth-options", {
-          username: username.trim(),
-        })
-      ).data;
-      const response = await startAuthentication({ optionsJSON: options });
-      finish(
-        (
-          await api.post("/auth/passkey/auth-verify", {
-            username: username.trim(),
-            response,
-          })
-        ).data,
-      );
-    } catch (e) {
-      report(e);
-    } finally {
-      lock.current = false;
-      setBusy(false);
-    }
-  };
-  return (
-    <Box
-      component="main"
-      sx={{
-        minHeight: "100dvh",
-        width: "100%",
-        display: "grid",
-        gridTemplateColumns: { xs: "1fr", md: "1.05fr 1fr" },
-        bgcolor: "background.default",
-      }}
-    >
-      <Box
-        sx={{
-          display: { xs: "none", md: "flex" },
-          flexDirection: "column",
-          justifyContent: "space-between",
-          p: { md: 5, lg: 8 },
-          color: "#ecfdf5",
-          bgcolor: "#062f2a",
-          backgroundImage:
-            "radial-gradient(ellipse at 0% 100%, #115e59 0%, transparent 65%)",
-          overflow: "hidden",
-        }}
-      >
-        <Stack direction="row" spacing={1.5} alignItems="center">
-          <Box
+
+    const handlePasskeyLogin = async () => {
+        if (!username) {
+            setError('Please enter your username first to use Passkey.');
+            return;
+        }
+
+        setError(null);
+        setLoading(true);
+        try {
+            const optsRes = await api.post('/auth/passkey/auth-options', { username });
+            const asseResp = await startAuthentication({ optionsJSON: optsRes.data });
+            
+            const verifyRes = await api.post('/auth/passkey/auth-verify', { username, response: asseResp });
+            
+            setSuccess(true);
+            localStorage.setItem('token', verifyRes.data.access_token);
+            setTimeout(() => {
+                onLoginSuccess(verifyRes.data.user);
+            }, 1200);
+
+        } catch (err: any) {
+            console.error(err);
+            setError(err.message || 'Passkey authentication failed');
+            setLoading(false);
+        }
+    };
+
+    return (
+        <Box
             sx={{
-              width: 42,
-              height: 42,
-              border: "1px solid #5eead4",
-              borderRadius: 2,
-              display: "grid",
-              placeItems: "center",
-              fontWeight: 900,
+                minHeight: '100dvh',
+                width: '100%',
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+                alignItems: 'stretch',
+                position: 'relative',
+                overflow: 'hidden',
+                px: 0,
+                py: 0,
+                background: theme.palette.mode === 'dark'
+                    ? `radial-gradient(circle at 50% 50%, #1e293b 0%, #0f172a 100%)`
+                    : `radial-gradient(circle at 50% 50%, #f1f5f9 0%, #e2e8f0 100%)`,
             }}
-          >
-            E
-          </Box>
-          <Typography fontWeight={800} letterSpacing={2}>
-            EVERGREEN
-          </Typography>
-        </Stack>
-        <Box sx={{ py: 8, maxWidth: 550 }}>
-          <Chip
-            label="YOUR BUSINESS, CONNECTED"
-            sx={{
-              color: "#99f6e4",
-              bgcolor: "#ffffff10",
-              mb: 3,
-              letterSpacing: 1,
-            }}
-          />
-          <Typography
-            component="h2"
-            sx={{
-              fontSize: { md: 44, lg: 58 },
-              lineHeight: 1.08,
-              fontWeight: 800,
-              letterSpacing: -2,
-            }}
-          >
-            From the factory floor.
-            <br />
-            To the bigger picture.
-          </Typography>
-          <Typography
-            sx={{ color: "#b8d9d2", fontSize: 18, mt: 3, lineHeight: 1.8 }}
-          >
-            A shared workspace for your inventory, production, customers and
-            accounts.
-          </Typography>
-          <Stack spacing={2.5} sx={{ mt: 5 }}>
-            {[
-              [
-                <Inventory2Outlined key="stock" />,
-                "Follow every movement",
-                "Stock, batches and production in one place.",
-              ],
-              [
-                <HubOutlined key="flows" />,
-                "Keep your teams connected",
-                "Move from orders to invoices with a shared record.",
-              ],
-              [
-                <ShieldOutlined key="access" />,
-                "Access with accountability",
-                "Individual staff accounts and role-based permissions.",
-              ],
-            ].map(([icon, title, detail], i) => (
-              <Stack key={i} direction="row" spacing={2}>
-                <Box sx={{ color: "#5eead4", pt: 0.5 }}>{icon}</Box>
-                <Box>
-                  <Typography fontWeight={700}>{title}</Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{ color: "#b8d9d2", mt: 0.5 }}
-                  >
-                    {detail}
-                  </Typography>
+        >
+            <Box sx={{ display: { xs: 'none', md: 'flex' }, flexDirection: 'column', justifyContent: 'space-between', minHeight: '100dvh', p: { md: 5, lg: 8 }, bgcolor: '#0b332c', color: '#ecfdf5', zIndex: 1 }}>
+                <Typography sx={{ fontSize: 18, fontWeight: 800, letterSpacing: 2 }}>EVERGREEN</Typography>
+                <Box sx={{ maxWidth: 560, py: 6 }}>
+                    <Typography sx={{ color: '#8cceba', fontSize: 12, fontWeight: 700, letterSpacing: 2, mb: 3 }}>YOUR BUSINESS WORKSPACE</Typography>
+                    <Typography component="h2" sx={{ fontSize: { md: 44, lg: 60 }, lineHeight: 1.1, letterSpacing: '-.04em', fontWeight: 700 }}>Every thread.<br />One connected business.</Typography>
+                    <Typography sx={{ mt: 3, color: '#b7d4ca', fontSize: 17, lineHeight: 1.7, maxWidth: 450 }}>Manage materials, production, inventory and accounts from a shared workspace.</Typography>
+                    <Box sx={{ mt: 5, borderTop: '1px solid #ffffff25' }}>
+                        {['Material inward & inventory', 'Production & dispatch', 'Billing & business records'].map((label, index) => <Box key={label} sx={{ display: 'flex', gap: 3, py: 2, borderBottom: '1px solid #ffffff25', alignItems: 'center' }}><Typography sx={{ fontFamily: 'monospace', fontSize: 12, color: '#8cceba' }}>0{index + 1}</Typography><Typography sx={{ fontSize: 14 }}>{label}</Typography></Box>)}
+                    </Box>
                 </Box>
-              </Stack>
-            ))}
-          </Stack>
-        </Box>
-        <Typography variant="caption" sx={{ color: "#b8d9d2" }}>
-          EverGreen - Built for the work behind your business
-        </Typography>
-      </Box>
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          p: { xs: 3, sm: 5 },
-          py: 6,
-        }}
-      >
-        <Box sx={{ width: "100%", maxWidth: 420 }}>
-          <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 5 }}>
-            <LockOutlined color="primary" />
-            <Typography fontWeight={800}>
-              {settings?.companyName || "EverGreen workspace"}
-            </Typography>
-          </Stack>
-          <Typography
-            component="h1"
-            variant="h3"
-            sx={{ fontWeight: 800, letterSpacing: -1.5 }}
-          >
-            {mfa ? "Verify it's you" : "Welcome back."}
-          </Typography>
-          <Typography color="text.secondary" sx={{ mt: 1.5, mb: 3 }}>
-            {mfa
-              ? "Enter the six-digit code from your authenticator app."
-              : "Sign in to continue to your business workspace."}
-          </Typography>
-          <Paper
-            variant="outlined"
-            sx={{
-              p: 1.5,
-              mb: 3,
-              borderRadius: 2,
-              bgcolor: "background.default",
-            }}
-          >
-            <Stack direction="row" spacing={1} alignItems="center">
-              <CheckCircleOutline color="primary" fontSize="small" />
-              <Typography variant="caption" sx={{ overflowWrap: "anywhere" }}>
-                Workspace: {window.location.host}
-              </Typography>
-            </Stack>
-          </Paper>
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {error}
-            </Alert>
-          )}
-          <Box component="form" onSubmit={submit} aria-busy={busy}>
-            <Stack spacing={2.5}>
-              {!mfa ? (
-                <>
-                  <TextField
-                    label="Username"
-                    name="username"
-                    autoComplete="username"
-                    autoFocus
-                    required
-                    fullWidth
-                    disabled={busy}
-                    value={username}
-                    onChange={(e) => {
-                      setUsername(e.target.value);
-                      setError("");
+                <Typography sx={{ fontSize: 12, color: '#b7d4ca' }}>Built for the work behind your business.</Typography>
+            </Box>
+            {/* Animated Background Blobs */}
+            <Box sx={{
+                position: 'absolute',
+                top: '-10%',
+                left: '-10%',
+                width: '60vw',
+                height: '60vw',
+                borderRadius: '50%',
+                background: `radial-gradient(circle, ${alpha(theme.palette.primary.main, 0.2)} 0%, transparent 70%)`,
+                filter: 'blur(60px)',
+                animation: `${float} 10s ease-in-out infinite`,
+                zIndex: 0,
+            }} />
+            <Box sx={{
+                position: 'absolute',
+                bottom: '-10%',
+                right: '-10%',
+                width: '50vw',
+                height: '50vw',
+                borderRadius: '50%',
+                background: `radial-gradient(circle, ${alpha(theme.palette.secondary.main, 0.15)} 0%, transparent 70%)`,
+                filter: 'blur(60px)',
+                animation: `${floatReverse} 15s ease-in-out infinite`,
+                zIndex: 0,
+            }} />
+
+            <Zoom in={true} style={{ transitionDelay: '100ms' }}>
+                <Paper
+                    elevation={0}
+                    sx={{
+                        p: { xs: 3, sm: 5, lg: 8 },
+                        width: '100%',
+                        maxWidth: 'none',
+                        minHeight: '100dvh',
+                        borderRadius: 0,
+                        zIndex: 1,
+                        position: 'relative',
+                        overflow: 'hidden',
+                        bgcolor: 'background.paper',
+                        border: 0,
+                        borderColor: theme.palette.mode === 'dark'
+                            ? alpha('#ffffff', 0.1)
+                            : alpha('#ffffff', 0.4),
+                        boxShadow: 'none',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        '& > *': { width: '100%', maxWidth: 420 },
+                        animation: shakeAnimation ? `${shake} 0.5s cubic-bezier(.36,.07,.19,.97) both` : 'none',
+                        transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                     }}
                 >
                     <Box sx={{ animation: `${fadeInUp} 0.6s ease-out forwards`, opacity: 0, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
 
                         <Box sx={{
-                            width: 64,
-                            height: 64,
+                            width: 40,
+                            height: 40,
                             borderRadius: '20px',
                             display: 'grid',
                             placeItems: 'center',
@@ -365,15 +244,6 @@ export default function Login({ onLoginSuccess, settings }: LoginProps) {
                             <LockIcon />
                         </Box>
 
-                        <Box sx={{ width: '100%', maxWidth: 320, mb: 2, display: { xs: 'none', sm: 'block' } }}>
-                            <SafeScene height={240} label="EverGreen sign-in illustration">
-                                <LoginAvatar
-                                    compact
-                                    isPasswordFocused={showPassword}
-                                    isTyping={isTyping}
-                                />
-                            </SafeScene>
-                        </Box>
 
                         <Box sx={{ textAlign: 'center', mb: 3 }}>
                             {settings?.logo ? (
@@ -450,7 +320,6 @@ export default function Login({ onLoginSuccess, settings }: LoginProps) {
                                     onChange={(e) => {
                                         setUsername(e.target.value);
                                         if (error) setError(null);
-                                        handleTyping();
                                     }}
                                     variant="outlined"
                                     InputProps={{
@@ -477,7 +346,6 @@ export default function Login({ onLoginSuccess, settings }: LoginProps) {
                                     onChange={(e) => {
                                         setPassword(e.target.value);
                                         if (error) setError(null);
-                                        handleTyping();
                                     }}
                                     variant="outlined"
                                     InputProps={{
@@ -647,7 +515,9 @@ export default function Login({ onLoginSuccess, settings }: LoginProps) {
             </Typography>
             */}
         </Box>
-      </Box>
-    </Box>
-  );
-}
+    );
+};
+
+export default Login;
+
+

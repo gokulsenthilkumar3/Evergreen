@@ -8,14 +8,10 @@ import {
   Drawer,
   AppBar,
   Toolbar,
-  List,
   Typography,
   Divider,
   IconButton,
-  ListItem,
-  ListItemButton,
   ListItemIcon,
-  ListItemText,
   Container,
   Avatar,
   Tooltip,
@@ -23,7 +19,6 @@ import {
   MenuItem,
   ThemeProvider,
   CssBaseline,
-  Badge,
   TextField,
   InputAdornment,
   Paper,
@@ -33,6 +28,7 @@ import {
 } from '@mui/material';
 import {
   Menu as MenuIcon,
+  KeyboardArrowDownRounded,
   Search as SearchIcon,
   Dashboard as DashboardIcon,
   Inventory as InventoryIcon,
@@ -77,7 +73,9 @@ import { lowStockThreshold } from './utils/alerts';
 import getTheme from './theme';
 import type { ThemeName } from './theme';
 import Login from './components/Login';
+import InstallationGate from './components/InstallationGate';
 import ProfileModal from './components/ProfileModal';
+import WorkspaceNavigation, { type NavGroup } from './components/WorkspaceNavigation';
 import { KeyboardShortcutsProvider } from './context/KeyboardShortcutsContext';
 import { ScreenReaderAnnouncer } from './components/common/ScreenReaderAnnouncer';
 import Breadcrumbs from './components/common/Breadcrumbs';
@@ -87,6 +85,7 @@ import { useNotificationSync } from './hooks/useNotificationSync';
 import { useDebounce } from './hooks/useDebounce';
 import { LinearProgress } from '@mui/material';
 import NotFound404 from './components/common/NotFound404';
+import { clearAuth, getStoredUser, saveUser } from './utils/authStorage';
 
 const NotificationSyncRunner = ({ settings }: { settings: any }) => {
   useNotificationSync(settings);
@@ -132,22 +131,8 @@ const BookEllam = lazy(() => import('./pages/BookEllam'));
 /** Provider support number in international digits, e.g. 919800000000. Set VITE_SUPPORT_PHONE when packaging. */
 const SUPPORT_PHONE = /^\d{8,15}$/.test(String(import.meta.env.VITE_SUPPORT_PHONE ?? '')) ? String(import.meta.env.VITE_SUPPORT_PHONE) : '';
 
-const drawerWidth = 260;
-const drawerCollapsedWidth = 72;
-
-interface NavItem {
-  text: string;
-  icon: React.ReactNode;
-  page: string;
-  requiredRole?: string;
-  badge?: number;
-  description?: string;
-}
-
-interface NavGroup {
-  label?: string;
-  items: NavItem[];
-}
+const drawerWidth = 280;
+const drawerCollapsedWidth = 76;
 
 interface SearchResultItem {
   type: string;
@@ -283,10 +268,11 @@ const GlobalSearch = ({ onNavigate }: { onNavigate: (page: string) => void }) =>
   };
 
   return (
-    <Box sx={{ position: 'relative', mx: 2, flex: 1, maxWidth: 400 }}>
+    <Box sx={{ position: 'relative', width: '100%', minWidth: 0 }}>
       <TextField
         id="global-search-input"
-        placeholder="Search invoices, stock, customers (Ctrl+K)..."
+        placeholder="Search invoices, stock, customers…"
+        inputProps={{ 'aria-label': 'Search business records' }}
         fullWidth
         size="small"
         autoComplete="off"
@@ -299,21 +285,21 @@ const GlobalSearch = ({ onNavigate }: { onNavigate: (page: string) => void }) =>
               {loading ? <SyncIcon fontSize="small" className="spin-icon" /> : <SearchIcon sx={{ color: 'text.secondary' }} />}
             </InputAdornment>
           ),
-          endAdornment: query && (
+          endAdornment: query ? (
             <InputAdornment position="end">
               {/* B-08: Use CloseIcon (not CollapseIcon/chevron) for semantic correctness */}
               <IconButton size="small" aria-label="Clear search" onClick={() => { setQuery(''); setResults([]); }}>
                 <CloseIcon fontSize="small" />
               </IconButton>
             </InputAdornment>
-          ),
+          ) : <InputAdornment position="end"><Box component="kbd" sx={{ fontFamily: 'inherit', fontSize: 11, whiteSpace: 'nowrap', color: 'text.secondary', border: '1px solid', borderColor: 'divider', borderRadius: .75, px: .75, display: { xs: 'none', md: 'block' } }}>Ctrl K</Box></InputAdornment>,
           sx: {
-            bgcolor: 'background.paper',
-            borderRadius: '12px',
+            bgcolor: 'action.hover',
+            borderRadius: '8px',
             '& .MuiOutlinedInput-notchedOutline': { borderColor: 'transparent' },
             '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'primary.light' },
             transition: 'all 0.2s',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+            boxShadow: 'none'
           }
         }}
       />
@@ -436,7 +422,8 @@ const App: React.FC = () => {
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
-  const [drawerOpen, setDrawerOpen] = useState(true);
+  const [drawerOpen, setDrawerOpen] = useState(() => localStorage.getItem('sidebarCollapsed') !== 'true');
+  useEffect(() => { localStorage.setItem('sidebarCollapsed', String(!drawerOpen)); }, [drawerOpen]);
   // Below 900px the navigation is an overlay that starts closed; a permanent 260px rail left phones about 130px of content.
   const isCompact = useMediaQuery('(max-width:899.95px)');
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -622,12 +609,12 @@ const App: React.FC = () => {
 
   const navGroups: NavGroup[] = [
     {
-      label: 'EverGreen One',
+      label: 'Overview',
       items: [
         { text: 'Business Workspace', icon: <StoreIcon />, page: 'workspace' },
         { text: 'Dashboard', icon: <DashboardIcon />, page: 'dashboard' },
         { text: "Today's Summary", icon: <SummaryIcon />, page: 'today' },
-        { text: 'Operations Command', icon: <SpeedIcon />, page: 'command-center', description: 'Live factory floor — strategy game view' },
+        { text: 'Operations Command', icon: <SpeedIcon />, page: 'command-center', description: 'Interactive factory campus, recorded operations and machine inspections' },
       ]
     },
     {
@@ -732,6 +719,18 @@ const App: React.FC = () => {
     );
   }
 
+  const seenPages = new Set<string>();
+  const visibleNavGroups = navGroups.map(group => ({
+    ...group,
+    items: group.items.filter(item => {
+      const page = canonicalPage(item.page);
+      if (seenPages.has(page) || !isCompanyPageVisible(item.page, settings) || (item.requiredRole && item.requiredRole !== user.role)) return false;
+      seenPages.add(page);
+      return true;
+    }),
+  })).filter(group => group.items.length);
+  const currentNavGroup = visibleNavGroups.find(group => group.items.some(item => item.page === currentPage));
+  const currentNavItem = currentNavGroup?.items.find(item => item.page === currentPage);
   const allPages = navGroups.flatMap(g => g.items).map(i => i.page);
 
   // Security: If route is invalid, render standalone isolated 404 view
@@ -899,56 +898,53 @@ const App: React.FC = () => {
               <Box sx={{
                 display: 'flex',
                 minHeight: '100vh',
-                width: '100vw',
+                width: '100%',
                 bgcolor: 'background.default',
                 color: 'text.primary',
                 overflow: 'hidden'
               }}>
+                <Box component="a" href="#workspace-main" onClick={event => { event.preventDefault(); mainRef.current?.focus(); }}
+                  sx={{ position: 'fixed', top: 8, left: 16, zIndex: 1500, p: 1.5, bgcolor: 'background.paper', color: 'text.primary', border: '2px solid', borderColor: 'primary.main', borderRadius: 1, transform: 'translateY(-150%)', '&:focus': { transform: 'translateY(0)' } }}>Skip to content</Box>
                 <AppBar
                   position="fixed"
                   sx={{
-                    zIndex: (theme) => theme.zIndex.drawer + 1,
+                    zIndex: (theme) => theme.zIndex.drawer - 1,
+                    left: isCompact ? 0 : drawerOpen ? drawerWidth : drawerCollapsedWidth,
+                    width: isCompact ? '100%' : `calc(100% - ${drawerOpen ? drawerWidth : drawerCollapsedWidth}px)`,
+                    bgcolor: 'background.paper',
+                    borderRadius: 0,
+                    backdropFilter: 'none',
+                    transition: theme => theme.transitions.create(['left', 'width']),
                   }}
                 >
-                  <Toolbar sx={{ gap: 2 }}>
-                    <IconButton
-                      color="inherit"
-                      aria-label="open drawer"
-                      edge="start"
-                      onClick={handleDrawerToggle}
-                      sx={{ mr: 2 }}
-                    >
-                      <MenuIcon />
-                    </IconButton>
-
-                    <Typography
-                      variant="h6"
-                      noWrap
-                      component="div"
-                      sx={{
-                        fontWeight: 800,
-                        letterSpacing: '-0.5px',
-                        display: { xs: 'none', sm: 'block' }
-                      }}
-                    >
-                      {settings?.companyName || 'EverGreen'}
-                    </Typography>
-
-                    <GlobalSearch onNavigate={setCurrentPage} />
-
-                    <Box sx={{ flexGrow: 1 }} />
-
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Toolbar sx={{ gap: { xs: 1, md: 2 }, px: { xs: '16px !important', md: '24px !important' }, py: { xs: 1, sm: 0 }, minHeight: { xs: 112, sm: 72 }, flexWrap: { xs: 'wrap', sm: 'nowrap' } }}>
+                    {isCompact && <Tooltip title="Open navigation">
+                      <IconButton color="inherit"
+                        aria-label={isCompact ? 'Open navigation' : drawerOpen ? 'Collapse navigation' : 'Expand navigation'}
+                        aria-expanded={isCompact ? mobileNavOpen : drawerOpen} aria-controls="workspace-navigation"
+                        onClick={handleDrawerToggle} sx={{ width: 40, height: 40, border: '1px solid', borderColor: 'divider', borderRadius: 1.5 }}>
+                        <MenuIcon />
+                      </IconButton>
+                    </Tooltip>}
+                    <Box sx={{ flex: { xs: 1, sm: '0 1 230px' }, minWidth: 0 }}>
+                      <Typography noWrap sx={{ fontSize: 10, color: 'text.secondary', letterSpacing: '.07em', textTransform: 'uppercase', display: { xs: 'none', md: 'block' } }}>{currentNavGroup?.label || 'Workspace'}</Typography>
+                      <Typography noWrap title={currentNavItem ? labelFor(currentNavItem.text) : currentPage} sx={{ fontSize: { xs: 15, md: 17 }, fontWeight: 700, lineHeight: 1.4 }}>{currentNavItem ? labelFor(currentNavItem.text) : currentPage}</Typography>
+                    </Box>
+                    <Box sx={{ order: { xs: 3, sm: 0 }, flex: { xs: '1 0 100%', sm: '1 1 220px' }, minWidth: 0, maxWidth: { sm: 440 }, ml: { sm: 'auto' } }}>
+                      <GlobalSearch onNavigate={setCurrentPage} />
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: .5, ml: { sm: 'auto' }, '& > .MuiIconButton-root': { width: 40, height: 40 } }}>
                       <NotificationsBell onNavigate={setCurrentPage} />
 
                       <Tooltip title={language === 'en' ? 'தமிழில் காண்க' : 'View in English'} arrow>
-                        <IconButton onClick={toggleLanguage} color="inherit" aria-label="Toggle language">
+                        <IconButton onClick={toggleLanguage} color="inherit" aria-label="Toggle language" sx={{ display: { xs: 'none', md: 'inline-flex' } }}>
                           <TranslateIcon />
                         </IconButton>
                       </Tooltip>
 
                       <Tooltip title="Sync All Data" arrow>
-                        <IconButton onClick={handleSync} color="primary" sx={{
+                        <IconButton onClick={handleSync} color="primary" disabled={isSyncing} aria-label={isSyncing ? 'Refreshing data' : 'Refresh all data'} sx={{
+                          display: { xs: 'none', md: 'inline-flex' },
                           bgcolor: 'rgba(46, 125, 50, 0.08)',
                           '&:hover': { bgcolor: 'rgba(46, 125, 50, 0.15)' }
                         }}>
@@ -957,17 +953,17 @@ const App: React.FC = () => {
                       </Tooltip>
 
                       <Tooltip title="Toggle Theme" arrow>
-                        <IconButton onClick={toggleTheme} color="inherit">
+                        <IconButton onClick={toggleTheme} color="inherit" aria-label={mode === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'} sx={{ display: { xs: 'none', md: 'inline-flex' } }}>
                           {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
                         </IconButton>
                       </Tooltip>
 
                       <Tooltip title="Account Settings" arrow>
-                        <IconButton onClick={handleProfileClick} sx={{ p: 0.5, ml: 1 }}>
+                        <Button onClick={handleProfileClick} color="inherit" aria-label="Account menu" aria-haspopup="menu" aria-expanded={profileMenuOpen} aria-controls={profileMenuOpen ? 'account-menu' : undefined} sx={{ p: .5, minWidth: 0, gap: 1, ml: .5, borderRadius: 1.5, border: '1px solid', borderColor: 'divider', textAlign: 'left', '&:hover': { transform: 'none', boxShadow: 'none' } }}>
                           <Avatar
                             alt={user.name || user.username}
                             sx={{
-                              bgcolor: 'primary.main',
+                              bgcolor: 'primary.dark',
                               width: 36,
                               height: 36,
                               fontSize: '0.9rem',
@@ -977,10 +973,13 @@ const App: React.FC = () => {
                           >
                             {(user.name || user.username)?.charAt(0).toUpperCase()}
                           </Avatar>
-                        </IconButton>
+                            <Box sx={{ display: { xs: 'none', lg: 'block' }, maxWidth: 110, minWidth: 0 }}><Typography fontSize={12} fontWeight={650} noWrap>{user.name || user.username}</Typography><Typography fontSize={10} color="text.secondary" noWrap>{(user.role || 'VIEWER').toLowerCase()}</Typography></Box>
+                          <KeyboardArrowDownRounded sx={{ fontSize: 17, display: { xs: 'none', sm: 'block' } }} />
+                      </Button>
                       </Tooltip>
 
                       <Menu
+                        id="account-menu"
                         anchorEl={anchorEl}
                         open={profileMenuOpen}
                         onClose={handleProfileClose}
@@ -1010,6 +1009,10 @@ const App: React.FC = () => {
                           <ListItemIcon><SettingsIcon fontSize="small" /></ListItemIcon>
                           System Settings
                         </MenuItem>
+                        <Divider sx={{ my: 0.5, display: { md: 'none' } }} />
+                        <MenuItem onClick={() => { handleProfileClose(); void handleSync(); }} disabled={isSyncing} sx={{ display: { md: 'none' } }}><ListItemIcon><SyncIcon fontSize="small" /></ListItemIcon>Refresh all data</MenuItem>
+                        <MenuItem onClick={() => { handleProfileClose(); toggleTheme(); }} sx={{ display: { md: 'none' } }}><ListItemIcon>{mode === 'dark' ? <LightModeIcon fontSize="small" /> : <DarkModeIcon fontSize="small" />}</ListItemIcon>{mode === 'dark' ? 'Light theme' : 'Dark theme'}</MenuItem>
+                        <MenuItem onClick={() => { handleProfileClose(); void toggleLanguage(); }} sx={{ display: { md: 'none' } }}><ListItemIcon><TranslateIcon fontSize="small" /></ListItemIcon>{language === 'en' ? 'தமிழில் காண்க' : 'View in English'}</MenuItem>
                         <Divider sx={{ my: 0.5 }} />
                         <MenuItem onClick={handleLogout} sx={{ color: 'error.main', py: 1.5, m: 0.5, borderRadius: '8px' }}>
                           <ListItemIcon sx={{ color: 'error.main' }}>
@@ -1035,187 +1038,37 @@ const App: React.FC = () => {
                         easing: theme.transitions.easing.sharp,
                         duration: theme.transitions.duration.enteringScreen,
                       }),
-                      overflowX: 'hidden'
+                      overflowX: 'hidden',
+                      height: '100dvh',
+                      borderRadius: 0,
+                      maxWidth: 'calc(100vw - 24px)',
+                      backgroundImage: 'none',
+                      bgcolor: 'background.paper',
                     },
                   }}
                 >
-                  <Toolbar />
-                  {/* Company Logo Header */}
-                  {navExpanded && (
-                    <Box sx={{ px: 3, py: 2, borderBottom: 1, borderColor: 'divider', mb: 1 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                        <Avatar
-                          sx={{
-                            bgcolor: 'primary.main',
-                            width: 40,
-                            height: 40,
-                            fontSize: '1.2rem',
-                            fontWeight: 'bold',
-                          }}
-                        >
-                          {settings?.companyName?.charAt(0) || 'E'}
-                        </Avatar>
-                        <Box>
-                          <Typography variant="subtitle1" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
-                            {settings?.companyName || 'EverGreen'}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            Inventory System
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </Box>
-                  )}
-                  <Box sx={{ overflow: 'auto', flexGrow: 1, py: 2 }}>
-                    {navGroups.map((group, gIdx) => {
-                      const filteredItems = group.items.filter(item => {
-                        if (!isCompanyPageVisible(item.page, settings)) return false;
-                        if (!item.requiredRole) return true;
-                        return item.requiredRole === user.role;
-                      });
-                      if (filteredItems.length === 0) return null;
-                      return (
-                        <Box key={gIdx}>
-                          {navExpanded && group.label && (
-                            <Typography
-                              variant="overline"
-                              sx={{
-                                px: 3, py: 0.5, display: 'block',
-                                color: 'text.disabled', fontWeight: 700,
-                                fontSize: '0.65rem', letterSpacing: '0.12em'
-                              }}
-                            >
-                              {group.label}
-                            </Typography>
-                          )}
-                          {!navExpanded && gIdx > 0 && (
-                            <Divider sx={{ my: 1, mx: 1.5, opacity: 0.4 }} />
-                          )}
-                          <List disablePadding>
-                            {filteredItems.map((item) => (
-                              <ListItem key={item.text} disablePadding sx={{ display: 'block', mb: 0.5 }}>
-                                <Tooltip
-                                  title={
-                                    <Box sx={{ p: 0.5, maxWidth: 260 }}>
-                                      <Typography variant="body2" sx={{ fontWeight: 700, fontSize: '0.82rem' }}>
-                                        {labelFor(item.text)}
-                                      </Typography>
-                                      {item.description && (
-                                        <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 0.35, lineHeight: 1.35 }}>
-                                          {item.description}
-                                        </Typography>
-                                      )}
-                                    </Box>
-                                  }
-                                  placement="right"
-                                  arrow
-                                  enterDelay={250}
-                                >
-                                  <ListItemButton
-                                    selected={currentPage === item.page}
-                                    onClick={() => navigateTo(item.page)}
-                                    sx={{
-                                      minHeight: 44,
-                                      justifyContent: navExpanded ? 'initial' : 'center',
-                                      px: 2,
-                                      mx: 1,
-                                      borderRadius: '12px',
-                                      transition: 'all 0.18s ease',
-                                      '&.Mui-selected': {
-                                        bgcolor: mode === 'dark'
-                                          ? 'rgba(16, 185, 129, 0.12)'
-                                          : 'rgba(16, 185, 129, 0.1)',
-                                        color: 'primary.main',
-                                        '& .MuiListItemIcon-root': {
-                                          color: 'primary.main',
-                                        },
-                                        '&:hover': {
-                                          bgcolor: mode === 'dark'
-                                            ? 'rgba(16, 185, 129, 0.18)'
-                                            : 'rgba(16, 185, 129, 0.15)',
-                                        }
-                                      },
-                                      '&:hover': {
-                                        bgcolor: mode === 'dark' ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.03)',
-                                        transform: navExpanded ? 'translateX(3px)' : 'none',
-                                      }
-                                    }}
-                                  >
-                                    <ListItemIcon
-                                      sx={{
-                                        minWidth: 0,
-                                        mr: navExpanded ? 1.5 : 'auto',
-                                        justifyContent: 'center',
-                                        color: currentPage === item.page ? 'primary.main' : 'text.secondary',
-                                        transition: 'color 0.2s ease',
-                                      }}
-                                    >
-                                      {item.badge ? (
-                                        <Badge badgeContent={item.badge} color="error" variant="dot">
-                                          {item.icon}
-                                        </Badge>
-                                      ) : (
-                                        item.icon
-                                      )}
-                                    </ListItemIcon>
-                                    {navExpanded && (
-                                      <ListItemText
-                                        primary={labelFor(item.text)}
-                                        primaryTypographyProps={{
-                                          variant: 'body2',
-                                          fontWeight: currentPage === item.page ? 700 : 500,
-                                          color: currentPage === item.page ? 'text.primary' : 'text.secondary',
-                                          sx: { transition: 'color 0.2s ease', fontSize: '0.87rem' }
-                                        }}
-                                      />
-                                    )}
-                                  </ListItemButton>
-                                </Tooltip>
-                              </ListItem>
-                            ))}
-                          </List>
-                          {gIdx < navGroups.length - 1 && navExpanded && (
-                            <Divider sx={{ my: 1, mx: 2, opacity: 0.5 }} />
-                          )}
-                        </Box>
-                      );
-                    })}
-                  </Box>
-
-                  {/* User info at bottom of sidebar */}
-                  {navExpanded && (
-                    <Box
-                      onClick={() => setProfileModalOpen(true)}
-                      sx={{
-                      p: 2,
-                      borderTop: 1,
-                      borderColor: 'divider',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1.5,
-                      cursor: 'pointer',
-                      transition: 'background-color 0.2s',
-                      '&:hover': { bgcolor: 'action.hover' },
-                    }}>
-                      <Avatar sx={{ bgcolor: 'primary.main', width: 32, height: 32, fontSize: '0.8rem', fontWeight: 'bold' }}>
-                        {(user.name || user.username)?.charAt(0).toUpperCase()}
-                      </Avatar>
-                      <Box sx={{ flex: 1, minWidth: 0 }}>
-                        <Typography variant="body2" fontWeight={600} noWrap>{user.name || user.username}</Typography>
-                        <Typography variant="caption" color="text.secondary" noWrap>{user.role}</Typography>
-                      </Box>
-                    </Box>
-                  )}
+                  <WorkspaceNavigation
+                    groups={visibleNavGroups}
+                    currentPage={currentPage} expanded={navExpanded} compact={isCompact}
+                    companyName={settings?.companyName || 'EverGreen'} logo={settings?.logo}
+                    username={user.name || user.username} role={user.role || 'VIEWER'}
+                    labelFor={labelFor} onNavigate={navigateTo} onToggle={handleDrawerToggle}
+                    onProfile={() => { setMobileNavOpen(false); setProfileModalOpen(true); }}
+                    onLogout={handleLogout}
+                  />
                 </Drawer>
                 <Box
                   component="main"
+                  id="workspace-main"
+                  tabIndex={-1}
                   ref={mainRef}
                   sx={{
                     flexGrow: 1,
-                    p: { xs: 2.5, md: 4 },
+                    p: { xs: 2, md: 3 },
+                    pb: floatingNav ? '100px !important' : undefined,
                     width: isCompact ? '100%' : `calc(100% - ${drawerOpen ? drawerWidth : drawerCollapsedWidth}px)`,
                     minWidth: 0,
-                    height: '100vh',
+                    height: '100dvh',
                     display: 'flex',
                     flexDirection: 'column',
                     overflowY: 'auto',
@@ -1229,7 +1082,7 @@ const App: React.FC = () => {
                     }),
                   }}
                 >
-                  <Toolbar sx={{ mb: 1 }} />
+                  <Box aria-hidden="true" sx={{ minHeight: { xs: 112, sm: 72 }, flexShrink: 0, mb: 1 }} />
                   <Breadcrumbs
                     items={getBreadcrumbItems()}
                     onNavigate={(path) => setCurrentPage(path)}
