@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage } from "../../i18n";
 import React, { useEffect, useState } from 'react';
 
 /**
@@ -26,6 +27,7 @@ interface ScreenReaderAnnouncerProps {
  * Place this at the root of your app to enable screen reader announcements
  */
 export const ScreenReaderAnnouncer: React.FC = () => {
+  useUiLanguage();
   const [messages, setMessages] = useState<{ id: string; text: string; politeness: 'polite' | 'assertive' }[]>([]);
 
   useEffect(() => {

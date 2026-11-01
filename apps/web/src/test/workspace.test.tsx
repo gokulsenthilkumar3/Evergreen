@@ -28,14 +28,14 @@ describe('workspace business evidence', () => {
   it('reads the actual register and preserves stale values on a failed refresh', async () => {
     vi.mocked(api.get).mockImplementation(async url => ({ data: String(url).startsWith('/health') ? { status: 'ok' } : url === '/machines' ? [{ id: 1 }, { id: 2 }] : report }));
     const client = mountWorkspace();
-    expect(await screen.findByText('₹2,500')).toBeInTheDocument();
+    expect(await screen.findByText('₹ 2,500.00')).toBeInTheDocument();
     expect(screen.getByText('API HEALTHY')).toBeInTheDocument();
     expect(api.get).toHaveBeenCalledWith('/machines');
     expect(api.get).not.toHaveBeenCalledWith('/machines/stats');
     vi.mocked(api.get).mockRejectedValue(new Error('Offline'));
     fireEvent.click(screen.getByRole('button', { name: 'Refresh now' }));
     await waitFor(() => expect(screen.getByText(/Some workspace data could not be refreshed/)).toBeInTheDocument());
-    expect(screen.getByText('₹2,500')).toBeInTheDocument();
+    expect(screen.getByText('₹ 2,500.00')).toBeInTheDocument();
     expect(screen.getByText('HEALTH UNAVAILABLE')).toBeInTheDocument();
     client.clear();
   });

@@ -1,3 +1,4 @@
+import { uiText, uiTemplate } from "../../i18n";
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Box, Button, Chip, IconButton, MenuItem, Select, Stack, Typography, useTheme } from '@mui/material';
 import { AddRounded, ArrowForwardRounded, CloseFullscreenRounded, CropFreeRounded, ExploreOutlined, PauseRounded, PlayArrowRounded, RemoveRounded, RestartAltRounded, VideocamOutlined } from '@mui/icons-material';
@@ -105,7 +106,7 @@ export default function CampusWorkspace(props: Props) {
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))', sm: 'repeat(4, minmax(0, 1fr))' }, borderBottom: `1px solid ${borderMain}`, bgcolor: isDark ? 'rgba(15,23,42,0.6)' : '#fff' }}>
         {props.resources.map(([label, value], i) => (
           <Box key={label} sx={{ px: { xs: 1.5, sm: 2.5 }, py: 1.5, borderRight: i < 3 ? `1px solid ${resourceBorder}` : 0 }}>
-            <Typography fontSize={10} sx={{ color: textMuted, letterSpacing: '0.06em', textTransform: 'uppercase', mb: 0.5, fontWeight: 700 }}>{label}</Typography>
+            <Typography fontSize={10} sx={{ color: textMuted, letterSpacing: '0.06em', textTransform: 'uppercase', mb: 0.5, fontWeight: 700 }}>{uiText(label, 'forms')}</Typography>
             <Typography sx={{ fontWeight: 650, fontSize: { xs: 17, sm: 22 }, lineHeight: 1.2, letterSpacing: '-0.045em', fontVariantNumeric: 'tabular-nums', overflowWrap: 'anywhere', color: textPrimary }}>{value}</Typography>
           </Box>
         ))}
@@ -160,7 +161,7 @@ export default function CampusWorkspace(props: Props) {
                 {locations.map(location => (
                   <Button
                     key={location.name}
-                    aria-label={`Focus ${location.name}`}
+                    aria-label={uiTemplate`Focus ${location.name}`}
                     onClick={() => focus(location.name)}
                     sx={{
                       position: 'absolute',
@@ -196,7 +197,7 @@ export default function CampusWorkspace(props: Props) {
           <Stack direction="row" sx={{ gap: 0.5, flexWrap: 'wrap', alignItems: 'center', bgcolor: headerBg, borderTop: `1px solid ${borderMain}`, p: 1 }}>
             <Button variant="contained" disableElevation size="small" startIcon={props.motion && !props.reduced ? <PauseRounded /> : <PlayArrowRounded />} disabled={props.reduced} aria-pressed={props.motion && !props.reduced} onClick={props.toggleMotion} sx={{ bgcolor: isDark ? '#10b981' : undefined }}>{props.motion && !props.reduced ? 'Pause' : 'Play'}</Button>
             <Button size="small" startIcon={<VideocamOutlined />} disabled={props.reduced} aria-pressed={props.tour} onClick={props.toggleTour}>{props.tour ? 'Stop tour' : 'Camera tour'}</Button>
-            <Select size="small" value={props.speed} inputProps={{ 'aria-label': 'Animation speed' }} onChange={event => props.setSpeed(Number(event.target.value))} sx={{ height: 36, minWidth: 68, fontSize: 12 }}>
+            <Select size="small" value={props.speed} inputProps={{ 'aria-label': uiText("Animation speed", 'forms') }} onChange={event => props.setSpeed(Number(event.target.value))} sx={{ height: 36, minWidth: 68, fontSize: 12 }}>
               {[0.5, 1, 2].map(speed => <MenuItem key={speed} value={speed}>{speed}×</MenuItem>)}
             </Select>
             <IconButton aria-label="Reset camera" onClick={props.reset} sx={{ color: textPrimary }}><RestartAltRounded fontSize="small" /></IconButton>
@@ -234,7 +235,7 @@ export default function CampusWorkspace(props: Props) {
                 <Box component="dl" sx={{ m: 0 }}>
                   {props.zone.facts.map(([label, value]) => (
                     <Box key={label} sx={{ py: 1.2, display: 'flex', gap: 1, justifyContent: 'space-between', borderTop: `1px solid ${resourceBorder}` }}>
-                      <Typography component="dt" fontSize={11} sx={{ color: textMuted }}>{label}</Typography>
+                      <Typography component="dt" fontSize={11} sx={{ color: textMuted }}>{uiText(label, 'forms')}</Typography>
                       <Typography component="dd" sx={{ m: 0, fontSize: 12, fontWeight: 700, textAlign: 'right', color: textPrimary }}>{value}</Typography>
                     </Box>
                   ))}

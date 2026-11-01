@@ -1,4 +1,5 @@
 import { createTheme, type PaletteMode } from '@mui/material/styles';
+import { defaultTamilPreferences, type TamilPreferences } from './i18n';
 
 export type ThemeName = 'emerald' | 'forest' | 'mint' | 'sage' | 'olive';
 
@@ -60,9 +61,13 @@ const themePalettes: Record<ThemeName, ThemePalette> = {
   },
 };
 
-const getTheme = (mode: PaletteMode, themeName: ThemeName = 'emerald') => {
+const getTheme = (mode: PaletteMode, themeName: ThemeName = 'emerald', language: 'en' | 'ta' = 'en', preferences: TamilPreferences = defaultTamilPreferences) => {
   const p = themePalettes[themeName];
   const isDark = mode === 'dark';
+  const paginationNumber = (value: number) => value.toLocaleString(
+    language === 'ta' && preferences.numbers ? 'ta-IN-u-nu-tamldec' : 'en-IN',
+    { useGrouping: language !== 'ta' || preferences.grouping },
+  );
   const primary = isDark
     ? { main: p.primaryLight, light: p.primaryMain, dark: p.primaryDark }
     : { main: p.primaryMain, light: p.primaryLight, dark: p.primaryDark };
@@ -92,7 +97,7 @@ const getTheme = (mode: PaletteMode, themeName: ThemeName = 'emerald') => {
       divider: isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.07)',
     },
     typography: {
-      fontFamily: '"Outfit", "Inter", -apple-system, sans-serif',
+      fontFamily: language === 'ta' ? '"Nirmala UI", "Latha", "Noto Sans Tamil", sans-serif' : '"Outfit", "Inter", -apple-system, sans-serif',
       h1: { fontWeight: 800, letterSpacing: '-0.03em' },
       h2: { fontWeight: 800, letterSpacing: '-0.025em' },
       h3: { fontWeight: 700, letterSpacing: '-0.025em' },
@@ -321,7 +326,18 @@ const getTheme = (mode: PaletteMode, themeName: ThemeName = 'emerald') => {
         },
       },
       MuiAlert: {
+        defaultProps: { closeText: language === 'ta' && preferences.interface && preferences.feedback ? 'மூடு' : 'Close' },
         styleOverrides: { root: { borderRadius: 16 } },
+      },
+      MuiTablePagination: {
+        defaultProps: language === 'ta' && preferences.interface && preferences.tables ? {
+          labelRowsPerPage: 'ஒரு பக்கத்தில் வரிசைகள்:',
+          labelDisplayedRows: ({ from, to, count }) => `${paginationNumber(from)}–${paginationNumber(to)} / ${count === -1 ? `${paginationNumber(to)} க்கும் மேல்` : paginationNumber(count)}`,
+          getItemAriaLabel: type => ({ first: 'முதல் பக்கம்', last: 'கடைசிப் பக்கம்', next: 'அடுத்த பக்கம்', previous: 'முந்தைய பக்கம்' })[type],
+        } : {},
+      },
+      MuiAutocomplete: {
+        defaultProps: language === 'ta' && preferences.interface && preferences.forms ? { clearText: 'அழி', closeText: 'மூடு', openText: 'திற', loadingText: 'ஏற்றப்படுகிறது…', noOptionsText: 'தேர்வுகள் இல்லை' } : {},
       },
     },
   });

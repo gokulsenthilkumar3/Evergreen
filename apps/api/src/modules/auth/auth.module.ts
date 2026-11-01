@@ -8,6 +8,10 @@ import { EmailService } from './email.service';
 import { WebAuthnService } from './webauthn.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { requireJwtSecret } from './jwt-secret';
+import { AccountFlowsController } from './account-flows.controller';
+import { AccountFlowsService } from './account-flows.service';
+import { OidcController } from './oidc.controller';
+import { OidcService } from './oidc.service';
 
 @Module({
   imports: [
@@ -21,8 +25,8 @@ import { requireJwtSecret } from './jwt-secret';
       inject: [ConfigService],
     }),
   ],
-  providers: [AuthService, JwtStrategy, EmailService, WebAuthnService],
-  controllers: [AuthController],
-  exports: [AuthService],
+  providers: [AuthService, JwtStrategy, EmailService, WebAuthnService, AccountFlowsService, OidcService],
+  controllers: [AuthController, AccountFlowsController, OidcController],
+  exports: [AuthService, EmailService],
 })
 export class AuthModule {}

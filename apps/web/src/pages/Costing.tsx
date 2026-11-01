@@ -1,3 +1,5 @@
+import { dateKey } from '../utils/dateKey';
+import { uiText, useUiLanguage, uiLocale, uiMetric, getUiRevision, uiDateLocale } from "../i18n";
 import React, { useState } from 'react';
 import {
     Box,
@@ -53,6 +55,7 @@ interface TabPanelProps {
 }
 
 function TabPanel(props: TabPanelProps) {
+  useUiLanguage();
     const { children, value, index, ...other } = props;
     return (
         <div role="tabpanel" hidden={value !== index} {...other}>
@@ -71,6 +74,7 @@ interface CostingKPI {
 }
 
 const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole = 'admin', username }) => {
+  useUiLanguage();
     const [tabValue, setTabValue] = useState(0); // 0 = Dashboard
     const [openWizard, setOpenWizard] = useState(false);
     const queryClient = useQueryClient();
@@ -128,29 +132,29 @@ const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole 
         const avgPerKg = totalProductionKg > 0 ? (totalCost / totalProductionKg) : 0;
 
         return [
-            { label: 'Total Cost', value: `₹${totalCost.toLocaleString('en-IN')}`, color: 'primary.main', hasData: true },
+            { label: 'Total Cost', value: `₹${totalCost.toLocaleString(uiLocale())}`, color: 'primary.main', hasData: true },
             { 
                 label: 'Avg Cost/Kg', 
                 value: avgPerKg > 0 ? `₹${avgPerKg.toFixed(2)}/kg` : '—', 
-                subValue: productionUnavailable ? 'Production data unavailable' : totalProductionKg > 0 ? `${Number(totalProductionKg).toLocaleString('en-IN')} kg` : 'No production',
+                subValue: productionUnavailable ? 'Production data unavailable' : totalProductionKg > 0 ? `${Number(totalProductionKg).toLocaleString(uiLocale())} kg` : 'No production',
                 color: 'secondary.main', 
                 hasData: avgPerKg > 0 
             },
-            { label: 'Electricity Cost', value: `₹${ebCost.toLocaleString('en-IN')}`, color: 'warning.main', hasData: true },
-            { label: 'Labor Cost', value: `₹${laborCost.toLocaleString('en-IN')}`, color: 'success.main', hasData: true },
+            { label: 'Electricity Cost', value: `₹${ebCost.toLocaleString(uiLocale())}`, color: 'warning.main', hasData: true },
+            { label: 'Labor Cost', value: `₹${laborCost.toLocaleString(uiLocale())}`, color: 'success.main', hasData: true },
         ];
-    }, [costingData, totalProductionKg, productionUnavailable]);
+    }, [costingData, totalProductionKg, productionUnavailable, getUiRevision()]);
 
     const chartData = React.useMemo(() => {
         if (!costingData.length) return [];
         const grouped: Record<string, any> = {};
         costingData.forEach((item: any) => {
-            const d = new Date(item.date).toLocaleDateString();
-            if (!grouped[d]) grouped[d] = { date: d, cost: 0 };
+            const d = dateKey(item.date);
+            if (!grouped[d]) grouped[d] = { date: new Date(d + 'T12:00:00').toLocaleDateString(uiDateLocale()), sortDate: d, cost: 0 };
             grouped[d].cost += (parseFloat(item.totalCost || item.amount) || 0);
         });
-        return Object.values(grouped).sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    }, [costingData]);
+        return Object.values(grouped).sort((a: any, b: any) => a.sortDate.localeCompare(b.sortDate));
+    }, [costingData, getUiRevision()]);
 
     const dashboardData = React.useMemo(() => {
         const eb = costingData.filter((i: any) => i.category === 'EB (Electricity)').reduce((sum: number, item: any) => sum + (parseFloat(item.totalCost || item.amount) || 0), 0);
@@ -166,19 +170,19 @@ const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole 
         ].filter(i => i.value > 0);
 
         const packagingTrend = costingData.filter((i: any) => i.category === 'Packaging').map((item: any) => ({
-            date: new Date(item.date).toLocaleDateString(),
+            date: new Date(item.date).toLocaleDateString(uiDateLocale()), sortDate: dateKey(item.date),
             cost: parseFloat(item.totalCost || item.amount) || 0
-        })).sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        })).sort((a: any, b: any) => a.sortDate.localeCompare(b.sortDate));
 
         const maintenanceTrend = costingData.filter((i: any) => i.category === 'Maintenance').map((item: any) => ({
-            date: new Date(item.date).toLocaleDateString(),
+            date: new Date(item.date).toLocaleDateString(uiDateLocale()), sortDate: dateKey(item.date),
             cost: parseFloat(item.totalCost || item.amount) || 0
-        })).sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        })).sort((a: any, b: any) => a.sortDate.localeCompare(b.sortDate));
 
         const expensesTrend = costingData.filter((i: any) => i.category === 'Expenses').map((item: any) => ({
-            date: new Date(item.date).toLocaleDateString(),
+            date: new Date(item.date).toLocaleDateString(uiDateLocale()), sortDate: dateKey(item.date),
             cost: parseFloat(item.totalCost || item.amount) || 0
-        })).sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        })).sort((a: any, b: any) => a.sortDate.localeCompare(b.sortDate));
 
         return {
             kpis,
@@ -188,7 +192,7 @@ const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole 
             maintenanceTrend,
             expensesTrend
         };
-    }, [kpis, costingData, chartData]);
+    }, [kpis, costingData, chartData, getUiRevision()]);
 
     const handleSuccess = () => {
         setOpenWizard(false);
@@ -216,21 +220,20 @@ const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole 
             {/* Header */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
                 <Typography variant="h4" fontWeight="bold">
-                    Costing Module
-                    {isLoading && <LinearProgress sx={{ mt: 1, borderRadius: 1 }} />}
+                    {uiText("Costing Module ")}{isLoading && <LinearProgress sx={{ mt: 1, borderRadius: 1 }} />}
                 </Typography>
 
                 <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
                     <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
                         <FormControl sx={{ minWidth: 200 }} size="small">
-                            <InputLabel>Date Filter</InputLabel>
+                            <InputLabel>{uiText("Date Filter", 'forms')}</InputLabel>
                             <Select
                                 value={dateFilter}
-                                label="Date Filter"
+                                label={uiText("Date Filter", 'forms')}
                                 onChange={(e) => setDateFilter(e.target.value as DateFilterType)}
                             >
                                 {DATE_FILTER_OPTIONS.map(opt => (
-                                    <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
+                                    <MenuItem key={opt.value} value={opt.value}>{uiText(opt.label, 'forms')}</MenuItem>
                                 ))}
                             </Select>
                         </FormControl>
@@ -239,7 +242,7 @@ const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole 
                             <>
                                 <GlassDatePicker
                                     
-                                    label="From"
+                                    label={uiText("From", 'forms')}
                                     size="small"
                                     value={customFrom}
                                     onChange={(e) => setCustomFrom(e.target.value)}
@@ -247,7 +250,7 @@ const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole 
                                 />
                                 <GlassDatePicker
                                     
-                                    label="To"
+                                    label={uiText("To", 'forms')}
                                     size="small"
                                     value={customTo}
                                     onChange={(e) => setCustomTo(e.target.value)}
@@ -264,19 +267,18 @@ const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole 
                             setOpenWizard(true);
                         }}
                     >
-                        Add Cost
-                    </Button>
+                        {uiText("Add Cost ")}</Button>
                 </Box>
             </Box>
 
             <Paper sx={{ width: '100%', mb: 2 }}>
                 <Tabs value={tabValue} onChange={(_, newValue) => setTabValue(newValue)} variant="scrollable" scrollButtons="auto">
-                    <Tab label="Dashboard" />
-                    <Tab label="EB (Electricity)" />
-                    <Tab label="Employee" />
-                    <Tab label="Packaging" />
-                    <Tab label="Maintenance" />
-                    <Tab label="Expenses" />
+                    <Tab label={uiText("Dashboard", 'tabs')} />
+                    <Tab label={uiText("EB (Electricity)", 'tabs')} />
+                    <Tab label={uiText("Employee", 'tabs')} />
+                    <Tab label={uiText("Packaging", 'tabs')} />
+                    <Tab label={uiText("Maintenance", 'tabs')} />
+                    <Tab label={uiText("Expenses", 'tabs')} />
                 </Tabs>
 
                 {/* Tab 0: Dashboard */}
@@ -287,12 +289,12 @@ const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole 
                             {dashboardData?.kpis?.map((kpi: CostingKPI, index: number) => (
                                 <Box key={index} sx={{ flex: '1 1 calc(25% - 18px)', minWidth: 250 }}>
                                     <Paper sx={{ p: 3, borderRadius: 2, borderLeft: `6px solid ${kpi.color}`, height: '100%' }}>
-                                        <Typography variant="subtitle2" color="text.secondary">{kpi.label}</Typography>
+                                        <Typography variant="subtitle2" color="text.secondary">{uiText(kpi.label, 'metrics')}</Typography>
                                         {kpi.hasData ? (
                                             <>
                                                 <Box sx={{ display: 'flex', alignItems: 'baseline', mt: 1 }}>
-                                                    <Typography variant="h4" sx={{ fontWeight: 'bold' }}>{kpi.value}</Typography>
-                                                    {kpi.subValue && <Typography variant="caption" sx={{ ml: 1, color: 'text.secondary' }}>{kpi.subValue}</Typography>}
+                                                    <Typography variant="h4" sx={{ fontWeight: 'bold' }}>{uiMetric(kpi.value)}</Typography>
+                                                    {kpi.subValue && <Typography variant="caption" sx={{ ml: 1, color: 'text.secondary' }}>{uiMetric(kpi.subValue)}</Typography>}
                                                 </Box>
                                                 {kpi.trend && (
                                                     <Box sx={{ display: 'flex', alignItems: 'center', mt: 1, color: kpi.trend.startsWith('+') ? 'success.main' : 'error.main' }}>
@@ -303,7 +305,7 @@ const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole 
                                             </>
                                         ) : (
                                             <Box sx={{ mt: 2 }}>
-                                                <Typography variant="body2" color="text.secondary">No data available</Typography>
+                                                <Typography variant="body2" color="text.secondary">{uiText("No data available")}</Typography>
                                             </Box>
                                         )}
                                     </Paper>
@@ -316,7 +318,7 @@ const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole 
                             {/* Cost Breakdown */}
                             <Box sx={{ flex: '1 1 400px' }}>
                                 <Paper sx={{ p: 3, borderRadius: 2, height: 400 }}>
-                                    <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>Cost Distribution</Typography>
+                                    <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>{uiText("Cost Distribution")}</Typography>
                                     <ResponsiveContainer width="100%" height="100%">
                                         <PieChart>
                                             <Pie
@@ -341,7 +343,7 @@ const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole 
                             {/* Daily Trend */}
                             <Box sx={{ flex: '1 1 400px' }}>
                                 <Paper sx={{ p: 3, borderRadius: 2, height: 400 }}>
-                                    <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>Daily Cost Trend</Typography>
+                                    <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>{uiText("Daily Cost Trend")}</Typography>
                                     <ResponsiveContainer width="100%" height="100%">
                                         <LineChart data={dashboardData?.dailyTrend}>
                                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
@@ -357,7 +359,7 @@ const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole 
                             {/* Packaging Trend */}
                             <Box sx={{ flex: '1 1 400px' }}>
                                 <Paper sx={{ p: 3, borderRadius: 2, height: 400 }}>
-                                    <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>Packaging Costs</Typography>
+                                    <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>{uiText("Packaging Costs")}</Typography>
                                     <ResponsiveContainer width="100%" height="100%">
                                         <BarChart data={dashboardData?.packagingTrend}>
                                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
@@ -373,7 +375,7 @@ const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole 
                             {/* Maintenance Trend */}
                             <Box sx={{ flex: '1 1 400px' }}>
                                 <Paper sx={{ p: 3, borderRadius: 2, height: 400 }}>
-                                    <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>Maintenance Costs</Typography>
+                                    <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>{uiText("Maintenance Costs")}</Typography>
                                     <ResponsiveContainer width="100%" height="100%">
                                         <LineChart data={dashboardData?.maintenanceTrend}>
                                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
@@ -389,7 +391,7 @@ const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole 
                             {/* Other Expenses Trend */}
                             <Box sx={{ flex: '1 1 400px' }}>
                                 <Paper sx={{ p: 3, borderRadius: 2, height: 400 }}>
-                                    <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>Other Expenses</Typography>
+                                    <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>{uiText("Other Expenses")}</Typography>
                                     <ResponsiveContainer width="100%" height="100%">
                                         <BarChart data={dashboardData?.expensesTrend}>
                                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
@@ -417,21 +419,21 @@ const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole 
                                             {index === 0 ? (
                                                 // EB (Electricity) columns
                                                 <>
-                                                    <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Date</TableCell>
-                                                    <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Units Usage (kWh)</TableCell>
-                                                    <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Cost/Unit (₹)</TableCell>
-                                                    <TableCell align="center" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Shifts</TableCell>
-                                                    <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Amount (₹)</TableCell>
-                                                    <TableCell align="center" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Actions</TableCell>
+                                                    <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>{uiText("Date", 'tables')}</TableCell>
+                                                    <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>{uiText("Units Usage (kWh)", 'tables')}</TableCell>
+                                                    <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>{uiText("Cost/Unit (₹)", 'tables')}</TableCell>
+                                                    <TableCell align="center" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>{uiText("Shifts", 'tables')}</TableCell>
+                                                    <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>{uiText("Amount (₹)", 'tables')}</TableCell>
+                                                    <TableCell align="center" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>{uiText("Actions", 'tables')}</TableCell>
                                                 </>
                                             ) : (
                                                 // Other categories
                                                 <>
-                                                    <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Date</TableCell>
-                                                    <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Details</TableCell>
-                                                    <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Amount (₹)</TableCell>
-                                                    {index === 4 && <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Type</TableCell>}
-                                                    <TableCell align="center" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Actions</TableCell>
+                                                    <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>{uiText("Date", 'tables')}</TableCell>
+                                                    <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>{uiText("Details", 'tables')}</TableCell>
+                                                    <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>{uiText("Amount (₹)", 'tables')}</TableCell>
+                                                    {index === 4 && <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>{uiText("Type", 'tables')}</TableCell>}
+                                                    <TableCell align="center" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>{uiText("Actions", 'tables')}</TableCell>
                                                 </>
                                             )}
                                         </TableRow>
@@ -443,16 +445,16 @@ const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole 
                                                     // EB (Electricity) data
                                                     <>
                                                         <TableCell>
-                                                            <MuiTooltip title={entry.entryTimestamp ? new Date(entry.entryTimestamp).toLocaleString() : (entry.createdAt ? new Date(entry.createdAt).toLocaleString() : new Date(entry.date).toLocaleString())} arrow placement="top">
+                                                            <MuiTooltip title={entry.entryTimestamp ? new Date(entry.entryTimestamp).toLocaleString(uiLocale()) : (entry.createdAt ? new Date(entry.createdAt).toLocaleString(uiLocale()) : new Date(entry.date).toLocaleString(uiLocale()))} arrow placement="top">
                                                                 <Box component="span" sx={{ cursor: 'help', borderBottom: '1px dotted', borderColor: 'divider' }}>
-                                                                    {new Date(entry.date || entry.createdAt).toLocaleDateString()}
+                                                                    {new Date(entry.date || entry.createdAt).toLocaleDateString(uiDateLocale())}
                                                                 </Box>
                                                             </MuiTooltip>
                                                         </TableCell>
                                                         <TableCell align="right">{entry.unitsConsumed || '-'}</TableCell>
-                                                        <TableCell align="right">₹{entry.ratePerUnit || '-'}</TableCell>
+                                                        <TableCell align="right">{uiText("₹", 'tables')}{entry.ratePerUnit || '-'}</TableCell>
                                                         <TableCell align="center">{entry.noOfShifts || '-'}</TableCell>
-                                                        <TableCell align="right">₹{entry.totalCost?.toLocaleString()}</TableCell>
+                                                        <TableCell align="right">{uiText("₹", 'tables')}{entry.totalCost?.toLocaleString(uiLocale())}</TableCell>
                                                         <TableCell align="center">
                                                             {(userRole === 'ADMIN') && !entry.posted && (
                                                                 <IconButton
@@ -469,14 +471,14 @@ const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole 
                                                     // Other categories data
                                                     <>
                                                         <TableCell>
-                                                            <MuiTooltip title={entry.entryTimestamp ? new Date(entry.entryTimestamp).toLocaleString() : (entry.createdAt ? new Date(entry.createdAt).toLocaleString() : new Date(entry.date).toLocaleString())} arrow placement="top">
+                                                            <MuiTooltip title={entry.entryTimestamp ? new Date(entry.entryTimestamp).toLocaleString(uiLocale()) : (entry.createdAt ? new Date(entry.createdAt).toLocaleString(uiLocale()) : new Date(entry.date).toLocaleString(uiLocale()))} arrow placement="top">
                                                                 <Box component="span" sx={{ cursor: 'help', borderBottom: '1px dotted', borderColor: 'divider' }}>
-                                                                    {new Date(entry.date || entry.createdAt).toLocaleDateString()}
+                                                                    {new Date(entry.date || entry.createdAt).toLocaleDateString(uiDateLocale())}
                                                                 </Box>
                                                             </MuiTooltip>
                                                         </TableCell>
                                                         <TableCell>{entry.details}</TableCell>
-                                                        <TableCell align="right">₹{entry.totalCost?.toLocaleString()}</TableCell>
+                                                        <TableCell align="right">{uiText("₹", 'tables')}{entry.totalCost?.toLocaleString(uiLocale())}</TableCell>
                                                         {index === 4 && (
                                                             <TableCell>
                                                                 <Chip label={entry.type || 'Expense'} size="small" />
@@ -500,8 +502,8 @@ const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole 
                                         {(!currentEntries || currentEntries.length === 0) && (
                                             <TableRow>
                                                 <TableCell colSpan={index === 0 ? 6 : (index === 4 ? 5 : 4)} align="center" sx={{ py: 8 }}>
-                                                    <Typography color="text.secondary" variant="body1">No {category} entries found</Typography>
-                                                    <Typography color="text.secondary" variant="caption">Start by adding a new costing record using the button above</Typography>
+                                                    <Typography color="text.secondary" variant="body1">{uiText("No ", 'tables')}{category} {uiText(" entries found", 'tables')}</Typography>
+                                                    <Typography color="text.secondary" variant="caption">{uiText("Start by adding a new costing record using the button above", 'tables')}</Typography>
                                                 </TableCell>
                                             </TableRow>
                                         )}
@@ -520,7 +522,7 @@ const Costing: React.FC<{ userRole?: string; username?: string }> = ({ userRole 
                 fullWidth
             >
                 <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography variant="h6" fontWeight="bold">Add Costing Entry</Typography>
+                    <Typography variant="h6" fontWeight="bold">{uiText("Add Costing Entry")}</Typography>
                     <IconButton onClick={() => setOpenWizard(false)} size="small">
                         <CloseIcon />
                     </IconButton>

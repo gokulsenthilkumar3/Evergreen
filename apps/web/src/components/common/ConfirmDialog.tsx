@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage } from "../../i18n";
 import React from 'react';
 import {
     Dialog,
@@ -31,6 +32,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     onCancel,
     severity = 'warning'
 }) => {
+  useUiLanguage();
     return (
         <Dialog
             open={open}
@@ -48,12 +50,12 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
                 {severity === 'error' && <WarningIcon color="error" />}
                 {severity === 'warning' && <WarningIcon color="warning" />}
                 <Typography component="span" variant="h6" fontWeight="bold">
-                    {title}
+                    {uiText(title, 'feedback')}
                 </Typography>
             </DialogTitle>
             <DialogContent>
                 <DialogContentText sx={{ color: 'text.primary', fontSize: '1rem' }}>
-                    {message}
+                    {uiText(message, 'feedback')}
                 </DialogContentText>
             </DialogContent>
             <DialogActions sx={{ p: 2 }}>
@@ -63,7 +65,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
                     color="inherit"
                     sx={{ borderRadius: 2 }}
                 >
-                    {cancelText}
+                    {uiText(cancelText, 'feedback')}
                 </Button>
                 <Button
                     onClick={onConfirm}
@@ -72,7 +74,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
                     autoFocus
                     sx={{ borderRadius: 2, px: 3 }}
                 >
-                    {confirmText}
+                    {uiText(confirmText, 'feedback')}
                 </Button>
             </DialogActions>
         </Dialog>

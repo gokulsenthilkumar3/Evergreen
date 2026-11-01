@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage } from "../i18n";
 import React, { Suspense, useMemo, useRef } from 'react';
 import { Box, useMediaQuery, useTheme } from '@mui/material';
 import { Canvas, useFrame } from '@react-three/fiber';
@@ -5,6 +6,7 @@ import { Float, OrbitControls, Environment, Lightformer } from '@react-three/dre
 import * as THREE from 'three';
 
 const YarnCore = () => {
+  useUiLanguage();
   const core = useRef<THREE.Group>(null);
   const accent = useRef<THREE.Mesh>(null);
   const theme = useTheme();
@@ -48,6 +50,7 @@ const YarnCore = () => {
 };
 
 const DashboardScene: React.FC = () => {
+  useUiLanguage();
   const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
   const theme = useTheme();
 

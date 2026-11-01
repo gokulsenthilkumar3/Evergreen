@@ -1,0 +1,14 @@
+CREATE TABLE "AuditLedger" ("seq" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "id" TEXT NOT NULL, "sourceKey" TEXT NOT NULL, "entityType" TEXT NOT NULL, "entityId" TEXT NOT NULL, "title" TEXT NOT NULL, "actor" TEXT NOT NULL, "action" TEXT NOT NULL, "state" TEXT NOT NULL, "evidenceRef" TEXT, "payloadDigest" TEXT NOT NULL, "hashPrev" TEXT NOT NULL, "hashCurr" TEXT NOT NULL, "at" TEXT NOT NULL);
+CREATE UNIQUE INDEX "AuditLedger_id_key" ON "AuditLedger"("id");
+CREATE UNIQUE INDEX "AuditLedger_sourceKey_key" ON "AuditLedger"("sourceKey");
+CREATE INDEX "AuditLedger_entityType_entityId_seq_idx" ON "AuditLedger"("entityType", "entityId", "seq");
+CREATE TRIGGER "ledger_no_update" BEFORE UPDATE ON "AuditLedger" BEGIN SELECT RAISE(ABORT, 'Audit ledger is append-only'); END;
+CREATE TRIGGER "ledger_no_delete" BEFORE DELETE ON "AuditLedger" BEGIN SELECT RAISE(ABORT, 'Audit ledger is append-only'); END;
+CREATE TABLE "EvidenceObservation" ("seq" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "id" TEXT NOT NULL, "entityType" TEXT NOT NULL, "entityId" TEXT NOT NULL, "entityDigest" TEXT NOT NULL, "ok" BOOLEAN NOT NULL, "source" TEXT NOT NULL, "scope" TEXT NOT NULL, "observedAt" TEXT NOT NULL, "ttlSeconds" INTEGER NOT NULL, "latencyMs" INTEGER, "statusCode" INTEGER);
+CREATE UNIQUE INDEX "EvidenceObservation_id_key" ON "EvidenceObservation"("id");
+CREATE INDEX "EvidenceObservation_entityType_entityId_seq_idx" ON "EvidenceObservation"("entityType", "entityId", "seq");
+CREATE TRIGGER "evidence_no_update" BEFORE UPDATE ON "EvidenceObservation" BEGIN SELECT RAISE(ABORT, 'Evidence is immutable'); END;
+CREATE TRIGGER "evidence_no_delete" BEFORE DELETE ON "EvidenceObservation" BEGIN SELECT RAISE(ABORT, 'Evidence is immutable'); END;
+CREATE TABLE "OperationRequest" ("id" TEXT NOT NULL PRIMARY KEY, "requestKey" TEXT NOT NULL, "kind" TEXT NOT NULL, "entityId" TEXT NOT NULL, "actor" TEXT NOT NULL, "payload" TEXT NOT NULL, "state" TEXT NOT NULL DEFAULT 'requested', "at" TEXT NOT NULL);
+CREATE UNIQUE INDEX "OperationRequest_requestKey_key" ON "OperationRequest"("requestKey");
+CREATE INDEX "OperationRequest_kind_at_idx" ON "OperationRequest"("kind", "at");

@@ -1,5 +1,8 @@
 import { AssistantsController } from './modules/assistants/assistants.controller';
 import { HelpdeskController, HelpdeskService } from './modules/helpdesk/helpdesk.controller';
+import { HelpdeskOperationsController } from './modules/helpdesk/helpdesk-operations.controller';
+import { HelpdeskOperationsService } from './modules/helpdesk/helpdesk-operations.service';
+import { HelpdeskIngressController } from './modules/helpdesk/helpdesk-ingress';
 import { InstallationLeaseService } from './services/installation-lease.service';
 import { InstallationLicenseGuard } from './guards/installation-license.guard';
 import { Module } from '@nestjs/common';
@@ -62,10 +65,11 @@ import { IntegrationsModule } from './modules/integrations/integrations.module';
     WorkflowsModule,
     AdminOpsModule,
   ],
-  controllers: [AppController, AssistantsController, HelpdeskController],
+  controllers: [AppController, AssistantsController, HelpdeskIngressController, HelpdeskOperationsController, HelpdeskController],
   providers: [
     InstallationLeaseService,
     HelpdeskService,
+    HelpdeskOperationsService,
     InstallationLicenseGuard,
     { provide: APP_GUARD, useExisting: InstallationLicenseGuard },
     AppService,

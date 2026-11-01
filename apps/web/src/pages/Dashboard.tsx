@@ -1,3 +1,5 @@
+import { dateKey } from '../utils/dateKey';
+import { uiText, useUiLanguage, uiLocale, formatUiDecimal, uiTemplate, uiMetric, uiDateLocale } from "../i18n";
 import React, { useState, useEffect, useRef, lazy } from 'react';
 import {
     Box,
@@ -128,6 +130,7 @@ const Sparkline = ({ data, color, dataKey }: { data: any[]; color: string; dataK
 // ─── Activity helpers ─────────────────────────────────────────────────────────
 
 const ActivityIcon = ({ type }: { type: string }) => {
+  useUiLanguage();
     const icons: Record<string, { icon: React.ReactNode; bg: string }> = {
         production: { icon: <FactoryIcon sx={{ fontSize: 16 }} />, bg: '#059669' },
         inward:     { icon: <DownloadIcon sx={{ fontSize: 16 }} />, bg: '#0ea5e9' },
@@ -144,8 +147,10 @@ const ActivityIcon = ({ type }: { type: string }) => {
 
 function groupByDay(items: any[]): { label: string; items: any[] }[] {
     if (!Array.isArray(items)) return [];
-    const today = new Date().toLocaleDateString('en-CA');
-    const yesterday = new Date(Date.now() - 86_400_000).toLocaleDateString('en-CA');
+    const today = dateKey();
+    const previousDay = new Date();
+    previousDay.setDate(previousDay.getDate() - 1);
+    const yesterday = dateKey(previousDay);
     const groups: Record<string, any[]> = {};
     items.forEach((item) => {
         const day = item.date?.slice(0, 10) ?? '';
@@ -162,15 +167,16 @@ function groupByDay(items: any[]): { label: string; items: any[] }[] {
 // ─── Tooltip components ───────────────────────────────────────────────────────
 
 const CustomTooltip = ({ active, payload, label }: any) => {
+  useUiLanguage();
     if (active && payload && payload.length) {
         return (
             <Paper sx={{ p: 1.5, minWidth: 140 }} elevation={3}>
-                <Typography variant="caption" fontWeight="bold" display="block" mb={0.5}>{label}</Typography>
+                <Typography variant="caption" fontWeight="bold" display="block" mb={0.5}>{uiText(label, 'forms')}</Typography>
                 {payload.map((p: any) => (
                     <Box key={p.name} sx={{ display: 'flex', justifyContent: 'space-between', gap: 2 }}>
                         <Typography variant="caption" color="text.secondary">{p.name}</Typography>
                         <Typography variant="caption" fontWeight={600} color={p.color}>
-                            {p.name === 'Cost' ? `₹${Number(p.value).toLocaleString('en-IN')}` : `${Number(p.value).toFixed(1)} kg`}
+                            {p.name === 'Cost' ? uiTemplate`₹${Number(p.value).toLocaleString(uiLocale())}` : uiTemplate`${formatUiDecimal(Number(p.value), 1)} kg`}
                         </Typography>
                     </Box>
                 ))}
@@ -181,15 +187,16 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 const CostTooltip = ({ active, payload, label }: any) => {
+  useUiLanguage();
     if (active && payload && payload.length) {
         return (
             <Paper sx={{ p: 1.5, minWidth: 150 }} elevation={3}>
-                <Typography variant="caption" fontWeight="bold" display="block" mb={0.5}>{label}</Typography>
+                <Typography variant="caption" fontWeight="bold" display="block" mb={0.5}>{uiText(label, 'forms')}</Typography>
                 {payload.map((p: any) => (
                     <Box key={p.name} sx={{ display: 'flex', justifyContent: 'space-between', gap: 2 }}>
                         <Typography variant="caption" color="text.secondary">{p.name}</Typography>
                         <Typography variant="caption" fontWeight={600} color={p.color}>
-                            ₹{Number(p.value).toLocaleString('en-IN')}
+                            {uiText("₹")}{Number(p.value).toLocaleString(uiLocale())}
                         </Typography>
                     </Box>
                 ))}
@@ -202,12 +209,13 @@ const CostTooltip = ({ active, payload, label }: any) => {
 // ─── Donut centre label ───────────────────────────────────────────────────────
 
 const DonutCentreLabel = ({ viewBox, total }: any) => {
+  useUiLanguage();
     const { cx, cy } = viewBox ?? { cx: 0, cy: 0 };
     return (
         <text x={cx} y={cy} textAnchor="middle" dominantBaseline="central">
-            <tspan x={cx} dy="-0.4em" fontSize="11" fill="#888">Total</tspan>
+            <tspan x={cx} dy="-0.4em" fontSize="11" fill="#888">{uiText("Total")}</tspan>
             <tspan x={cx} dy="1.4em" fontSize="13" fontWeight="700" fill="currentColor">
-                ₹{Number(total / 1000).toFixed(0)}k
+                {uiText("₹")}{formatUiDecimal(Number(total / 1000), 0)}k
             </tspan>
         </text>
     );
@@ -227,7 +235,7 @@ const EfficiencyStat = ({ label, value, unit, color, tooltip }: { label: string;
             }}
         >
             <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', mb: 0.5 }}>
-                {label}
+                {uiText(label, 'forms')}
             </Typography>
             <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5 }}>
                 <Typography variant="h5" fontWeight={800} sx={{ color }}>
@@ -242,6 +250,7 @@ const EfficiencyStat = ({ label, value, unit, color, tooltip }: { label: string;
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 
 const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
+  useUiLanguage();
     const navigate = (page: string) => onNavigate?.(page);
     const [dateFilter, setDateFilter] = useState<DateFilterType>('month');
     const [customFrom, setCustomFrom] = useState<string>('');
@@ -304,7 +313,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
     };
 
     const formatDate = (dateStr: string) => {
-        return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-IN', { month: 'short', day: 'numeric' });
+        return new Date(dateStr + 'T00:00:00').toLocaleDateString(uiDateLocale(), { month: 'short', day: 'numeric' });
     };
 
     const formatRelativeTime = (dateStr: string) => {
@@ -386,7 +395,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                 transition: 'all 0.2s',
             }}
         >
-            {label}
+            {uiText(label, 'forms')}
         </Button>
     );
 
@@ -396,8 +405,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
         return (
             <Box sx={{ maxWidth: '100%', width: '100%' }}>
                 <Box sx={{ mb: 5 }}>
-                    <Typography variant="h4" fontWeight={900}>Welcome to EverGreen</Typography>
-                    <Typography color="text.secondary">You're all set up! Let's start by adding some data to your workspace.</Typography>
+                    <Typography variant="h4" fontWeight={900}>{uiText("Welcome to EverGreen")}</Typography>
+                    <Typography color="text.secondary">{uiText("You're all set up! Let's start by adding some data to your workspace.")}</Typography>
                 </Box>
 
                 <Grid container spacing={4}>
@@ -405,24 +414,21 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                         <Paper sx={{ p: 4, borderRadius: 3, border: '1px dashed', borderColor: 'divider', bgcolor: 'transparent', textAlign: 'center' }}>
                             <Box sx={{ py: 6 }}>
                                 <ChartIcon sx={{ fontSize: 80, color: 'text.disabled', opacity: 0.3, mb: 3 }} />
-                                <Typography variant="h5" fontWeight={700} gutterBottom>No data to display yet</Typography>
+                                <Typography variant="h5" fontWeight={700} gutterBottom>{uiText("No data to display yet")}</Typography>
                                 <Typography color="text.secondary" sx={{ maxWidth: 450, mx: 'auto', mb: 4 }}>
-                                    Your dashboard will come alive once you start recording production, costs, and inventory movements.
-                                </Typography>
+                                    {uiText("Your dashboard will come alive once you start recording production, costs, and inventory movements. ")}</Typography>
                                 <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
                                     <Button variant="contained" size="large" onClick={() => navigate('production')} startIcon={<FactoryIcon />}>
-                                        Record Production
-                                    </Button>
+                                        {uiText("Record Production ")}</Button>
                                     <Button variant="outlined" size="large" onClick={() => navigate('inward')} startIcon={<DownloadIcon />}>
-                                        Add Inward
-                                    </Button>
+                                        {uiText("Add Inward ")}</Button>
                                 </Box>
                             </Box>
                         </Paper>
                     </Grid>
 
                     <Grid size={{ xs: 12, lg: 4 }}>
-                        <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>Next Steps</Typography>
+                        <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>{uiText("Next Steps")}</Typography>
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                             {[
                                 { label: 'Add Operational Costs', desc: 'Log EB, employee and packing costs...', page: 'costing', color: 'warning', icon: <WalletIcon /> },
@@ -460,20 +466,18 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                             : 'linear-gradient(135deg, rgba(5,150,105,0.06), transparent 45%)',
                         pointerEvents: 'none',
                     }} />
-                    <Typography variant="overline" color="primary.main">Overview</Typography>
+                    <Typography variant="overline" color="primary.main">{uiText("Overview")}</Typography>
                     <Typography variant="h4" fontWeight={900} sx={{ mb: 1, maxWidth: 720 }}>
-                        Live operations with a calmer, more premium flow.
-                    </Typography>
+                        {uiText("Live operations with a calmer, more premium flow. ")}</Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ mb: 3, maxWidth: 640, lineHeight: 1.7 }}>
-                        Track inventory, production, costing, and sales from one smooth dashboard with motion that stays light on the CPU.
-                    </Typography>
+                        {uiText("Track inventory, production, costing, and sales from one smooth dashboard with motion that stays light on the CPU. ")}</Typography>
                     <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
-                        <Button variant="contained" onClick={() => navigate('production')} startIcon={<FactoryIcon />}>Record Production</Button>
-                        <Button variant="outlined" onClick={() => navigate('inward')} startIcon={<DownloadIcon />}>Add Inward</Button>
-                        <Button variant="outlined" onClick={() => navigate('inventory')} startIcon={<InventoryIcon />}>View Stock</Button>
+                        <Button variant="contained" onClick={() => navigate('production')} startIcon={<FactoryIcon />}>{uiText("Record Production")}</Button>
+                        <Button variant="outlined" onClick={() => navigate('inward')} startIcon={<DownloadIcon />}>{uiText("Add Inward")}</Button>
+                        <Button variant="outlined" onClick={() => navigate('inventory')} startIcon={<InventoryIcon />}>{uiText("View Stock")}</Button>
                     </Box>
                 </Paper>
-                <SafeScene height={260} label="Yarn cone illustration">
+                <SafeScene height={260} label={uiText("Yarn cone illustration")}>
                     <DashboardScene />
                 </SafeScene>
             </Box>
@@ -500,12 +504,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                         <Box>
                             <Typography variant="subtitle1" fontWeight={800} sx={{ color: uninvoicedData.overdueCount > 0 ? '#F59E0B' : 'text.primary' }}>
                                 {uninvoicedData.overdueCount > 0
-                                    ? `Missing Invoices Alert: ${uninvoicedData.overdueCount} Delivery Challans (>7 Days) Dispatched Without Invoices`
-                                    : `Pending Invoicing: ${uninvoicedData.totalCount} Delivery Challans Ready for GST Invoicing`}
+                                    ? uiTemplate`Missing Invoices Alert: ${uninvoicedData.overdueCount} Delivery Challans (>7 Days) Dispatched Without Invoices`
+                                    : uiTemplate`Pending Invoicing: ${uninvoicedData.totalCount} Delivery Challans Ready for GST Invoicing`}
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
-                                Cash flow at risk: <strong>₹{uninvoicedData.totalCashAtRisk.toLocaleString('en-IN')}</strong> ({uninvoicedData.totalWeightKg.toLocaleString()} kg yarn). Convert delivery challans into GST invoices to avoid uncollected revenue.
-                            </Typography>
+                                {uiText("Cash flow at risk: ")}<strong>{uiText("₹")}{uninvoicedData.totalCashAtRisk.toLocaleString(uiLocale())}</strong> ({uninvoicedData.totalWeightKg.toLocaleString(uiLocale())} {uiText(" kg yarn). Convert delivery challans into GST invoices to avoid uncollected revenue. ")}</Typography>
                         </Box>
                     </Box>
                     <Button
@@ -520,8 +523,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                             '&:hover': { bgcolor: '#D97706' },
                         }}
                     >
-                        Review Challans &amp; Generate Invoices
-                    </Button>
+                        {uiText("Review Challans & Generate Invoices ")}</Button>
                 </Paper>
             )}
 
@@ -544,28 +546,28 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             >
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
                     <Box>
-                        <Typography variant="h4" sx={{ fontWeight: 800 }}>Dashboard</Typography>
+                        <Typography variant="h4" sx={{ fontWeight: 800 }}>{uiText("Dashboard")}</Typography>
                         <Typography variant="body2" color="text.secondary">
                             {dateRange.from === dateRange.to
                                 ? formatDate(dateRange.from)
-                                : `${formatDate(dateRange.from)} – ${formatDate(dateRange.to)}`}
+                                : uiTemplate`${formatDate(dateRange.from)} – ${formatDate(dateRange.to)}`}
                         </Typography>
                     </Box>
 
                     <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
                         <FormControl sx={{ minWidth: 180 }} size="small">
-                            <InputLabel>Period</InputLabel>
-                            <Select value={dateFilter} label="Period" onChange={handleDateFilterChange}>
+                            <InputLabel>{uiText("Period", 'forms')}</InputLabel>
+                            <Select value={dateFilter} label={uiText("Period", 'forms')} onChange={handleDateFilterChange}>
                                 {DATE_FILTER_OPTIONS.map(opt => (
-                                    <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
+                                    <MenuItem key={opt.value} value={opt.value}>{uiText(opt.label, 'forms')}</MenuItem>
                                 ))}
                             </Select>
                         </FormControl>
                         {dateFilter === 'custom' && (
                             <>
-                                <GlassDatePicker label="From" size="small" value={customFrom}
+                                <GlassDatePicker label={uiText("From", 'forms')} size="small" value={customFrom}
                                     onChange={(e) => setCustomFrom(e.target.value)} />
-                                <GlassDatePicker label="To" size="small" value={customTo}
+                                <GlassDatePicker label={uiText("To", 'forms')} size="small" value={customTo}
                                     onChange={(e) => setCustomTo(e.target.value)} />
                             </>
                         )}
@@ -613,23 +615,23 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                                 }} />
 
                                 <Typography variant="overline" sx={{ fontWeight: 700, color: 'text.secondary', letterSpacing: '0.1em', display: 'block', mb: 1 }}>
-                                    {kpi.label}
+                                    {uiText(kpi.label, 'metrics')}
                                 </Typography>
 
                                 {kpi.hasData ? (
                                     <>
                                         <Typography variant="h4" sx={{ fontWeight: 800, fontSize: { xs: '1.6rem', md: '2rem' }, letterSpacing: '-0.03em' }}>
-                                            {kpi.value.split(' ')[0]}
+                                            {uiMetric(kpi.value.split(' ')[0])}
                                             {kpi.value.split(' ').length > 1 && (
                                                 <Box component="span" sx={{ fontSize: '1rem', fontWeight: 500, color: 'text.secondary', ml: 0.5 }}>
-                                                    {kpi.value.split(' ').slice(1).join(' ')}
+                                                    {uiMetric(kpi.value.split(' ').slice(1).join(' '))}
                                                 </Box>
                                             )}
                                         </Typography>
 
                                         {kpi.subValue && (
                                             <Typography variant="caption" sx={{ display: 'block', mt: 0.5, color: 'text.secondary', fontStyle: 'italic' }}>
-                                                {kpi.subValue}
+                                                {uiMetric(kpi.subValue)}
                                             </Typography>
                                         )}
 
@@ -660,7 +662,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                                     </>
                                 ) : (
                                     <Box sx={{ mt: 2 }}>
-                                        <Typography variant="body2" color="text.disabled">No data for this period</Typography>
+                                        <Typography variant="body2" color="text.disabled">{uiText("No data for this period")}</Typography>
                                     </Box>
                                 )}
                             </Paper>
@@ -673,28 +675,28 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             {!chartsLoading && totalProduced > 0 && (
                 <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 3 }}>
                     <EfficiencyStat
-                        label="Efficiency"
+                        label={uiText("Efficiency")}
                         value={efficiencyPct === '—' ? '—' : efficiencyPct}
                         unit="%"
                         color="#059669"
                         tooltip="Production efficiency = produced ÷ consumed × 100"
                     />
                     <EfficiencyStat
-                        label="Waste Rate"
+                        label={uiText("Waste Rate")}
                         value={wastePct === '—' ? '—' : wastePct}
                         unit="%"
                         color="#ef4444"
                         tooltip="Waste rate = waste ÷ consumed × 100"
                     />
                     <EfficiencyStat
-                        label="Cost / kg"
+                        label={uiText("Cost / kg")}
                         value={costPerKg === '—' ? '—' : `₹${costPerKg}`}
                         unit="/ kg"
                         color="#6366f1"
                         tooltip="Total cost ÷ total kg produced in the selected period"
                     />
                     <EfficiencyStat
-                        label="Avg Daily Output"
+                        label={uiText("Avg Daily Output")}
                         value={avgDailyKg}
                         unit="kg"
                         color="#0ea5e9"
@@ -707,10 +709,9 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '3fr 2fr' }, gap: 3, mb: 3 }}>
                 {/* Production Trend Area Chart */}
                 <Paper className="clay-card anim-slide-up stagger-2" sx={{ p: 3, position: 'relative', borderRadius: 4 }}>
-                    <Typography variant="h6" fontWeight="bold" mb={0.5}>Production Trend</Typography>
+                    <Typography variant="h6" fontWeight="bold" mb={0.5}>{uiText("Production Trend")}</Typography>
                     <Typography variant="caption" color="text.secondary" display="block" mb={2}>
-                        Daily output vs. waste (kg)
-                    </Typography>
+                        {uiText("Daily output vs. waste (kg) ")}</Typography>
                     {chartsLoading ? (
                         <Skeleton variant="rectangular" height={240} sx={{ borderRadius: 2 }} />
                     ) : prodTrend.some((d: any) => d.produced > 0) ? (
@@ -739,8 +740,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                                         label={{ value: 'Target', position: 'insideTopRight', fontSize: 10, fill: '#f59e0b' }}
                                     />
                                 )}
-                                <Area type="monotone" dataKey="produced" name="Produced" stroke="#059669" fill="url(#gradProd)" strokeWidth={2} dot={false} />
-                                <Area type="monotone" dataKey="waste" name="Waste" stroke="#ef4444" fill="url(#gradWaste)" strokeWidth={2} dot={false} />
+                                <Area type="monotone" dataKey="produced" name={uiText("Produced", 'charts')} stroke="#059669" fill="url(#gradProd)" strokeWidth={2} dot={false} />
+                                <Area type="monotone" dataKey="waste" name={uiText("Waste", 'charts')} stroke="#ef4444" fill="url(#gradWaste)" strokeWidth={2} dot={false} />
                                 {prodTrend.length > 10 && (
                                     <Brush dataKey="date" height={20} stroke="rgba(128,128,128,0.2)" tickFormatter={formatDate} travellerWidth={6} />
                                 )}
@@ -750,8 +751,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                         <Box sx={{ height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'action.hover', borderRadius: 2, border: '1px dashed', borderColor: 'divider' }}>
                             <Box sx={{ textAlign: 'center' }}>
                                 <HistoryIcon sx={{ color: 'text.disabled', fontSize: 32, mb: 1, opacity: 0.5 }} />
-                                <Typography color="text.disabled" variant="body2" display="block">No production data for this period</Typography>
-                                <Typography variant="caption" color="text.disabled">Entries from Production Module will appear here</Typography>
+                                <Typography color="text.disabled" variant="body2" display="block">{uiText("No production data for this period")}</Typography>
+                                <Typography variant="caption" color="text.disabled">{uiText("Entries from Production Module will appear here")}</Typography>
                             </Box>
                         </Box>
                     )}
@@ -759,10 +760,9 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
 
                 {/* Cost by Category Donut Chart */}
                 <Paper className="clay-card anim-slide-up stagger-3" sx={{ p: 3, position: 'relative', borderRadius: 4 }}>
-                    <Typography variant="h6" fontWeight="bold" mb={0.5}>Cost Breakdown</Typography>
+                    <Typography variant="h6" fontWeight="bold" mb={0.5}>{uiText("Cost Breakdown")}</Typography>
                     <Typography variant="caption" color="text.secondary" display="block" mb={2}>
-                        By category for selected period
-                    </Typography>
+                        {uiText("By category for selected period ")}</Typography>
                     {chartsLoading ? (
                         <Skeleton variant="circular" width={180} height={180} sx={{ mx: 'auto' }} />
                     ) : costPie.length > 0 ? (
@@ -781,7 +781,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                                         ))}
                                         <DonutCentreLabel viewBox={{ cx: '50%', cy: '50%' }} total={totalCost} />
                                     </Pie>
-                                    <ChartTooltip formatter={(val: any) => `₹${Number(val).toLocaleString('en-IN')}`} />
+                                    <ChartTooltip formatter={(val: any) => `₹${Number(val).toLocaleString(uiLocale())}`} />
                                 </PieChart>
                             </ResponsiveContainer>
                             <Box sx={{ width: '100%', mt: 1 }}>
@@ -793,10 +793,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                                         </Box>
                                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                                             <Typography variant="caption" color="text.disabled">
-                                                {totalCost > 0 ? `${((c.value / totalCost) * 100).toFixed(0)}%` : ''}
+                                                {totalCost > 0 ? uiTemplate`${formatUiDecimal(((c.value / totalCost) * 100), 0)}%` : ''}
                                             </Typography>
                                             <Typography variant="caption" fontWeight={700}>
-                                                ₹{Number(c.value).toLocaleString('en-IN')}
+                                                {uiText("₹")}{Number(c.value).toLocaleString(uiLocale())}
                                             </Typography>
                                         </Box>
                                     </Box>
@@ -807,8 +807,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                         <Box sx={{ height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'action.hover', borderRadius: 2, border: '1px dashed', borderColor: 'divider' }}>
                             <Box sx={{ textAlign: 'center' }}>
                                 <WalletIcon sx={{ color: 'text.disabled', fontSize: 32, mb: 1, opacity: 0.5 }} />
-                                <Typography color="text.disabled" variant="body2" display="block">No cost breakdown available</Typography>
-                                <Typography variant="caption" color="text.disabled">Costing entries are required for this analysis</Typography>
+                                <Typography color="text.disabled" variant="body2" display="block">{uiText("No cost breakdown available")}</Typography>
+                                <Typography variant="caption" color="text.disabled">{uiText("Costing entries are required for this analysis")}</Typography>
                             </Box>
                         </Box>
                     )}
@@ -819,10 +819,9 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '5fr 4fr' }, gap: 3, mb: 3 }}>
                 {/* Stacked Cost Trend Bar Chart */}
                 <Paper className="clay-card anim-slide-up stagger-4" sx={{ p: 3, position: 'relative', borderRadius: 4 }}>
-                    <Typography variant="h6" fontWeight="bold" mb={0.5}>Cost Trend</Typography>
+                    <Typography variant="h6" fontWeight="bold" mb={0.5}>{uiText("Cost Trend")}</Typography>
                     <Typography variant="caption" color="text.secondary" display="block" mb={2}>
-                        Daily cost breakdown by category
-                    </Typography>
+                        {uiText("Daily cost breakdown by category ")}</Typography>
                     {chartsLoading ? (
                         <Skeleton variant="rectangular" height={220} sx={{ borderRadius: 2 }} />
                     ) : costTrend.some((d: any) => d.total > 0) ? (
@@ -833,19 +832,19 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                                 <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`} />
                                 <ChartTooltip content={<CostTooltip />} />
                                 <Legend />
-                                <Bar dataKey="eb"          name="Electricity"  fill="#059669" stackId="cost" radius={[0, 0, 0, 0]} />
-                                <Bar dataKey="employee"    name="Employee"     fill="#6366f1" stackId="cost" />
-                                <Bar dataKey="packaging"   name="Packaging"    fill="#0ea5e9" stackId="cost" />
-                                <Bar dataKey="maintenance" name="Maintenance"  fill="#f59e0b" stackId="cost" />
-                                <Bar dataKey="expenses"    name="Expenses"     fill="#ef4444" stackId="cost" radius={[4, 4, 0, 0]} />
+                                <Bar dataKey="eb"          name={uiText("Electricity", 'charts')}  fill="#059669" stackId="cost" radius={[0, 0, 0, 0]} />
+                                <Bar dataKey="employee"    name={uiText("Employee", 'charts')}     fill="#6366f1" stackId="cost" />
+                                <Bar dataKey="packaging"   name={uiText("Packaging", 'charts')}    fill="#0ea5e9" stackId="cost" />
+                                <Bar dataKey="maintenance" name={uiText("Maintenance", 'charts')}  fill="#f59e0b" stackId="cost" />
+                                <Bar dataKey="expenses"    name={uiText("Expenses", 'charts')}     fill="#ef4444" stackId="cost" radius={[4, 4, 0, 0]} />
                             </BarChart>
                         </ResponsiveContainer>
                     ) : (
                         <Box sx={{ height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'action.hover', borderRadius: 2, border: '1px dashed', borderColor: 'divider' }}>
                             <Box sx={{ textAlign: 'center' }}>
                                 <EnergyIcon sx={{ color: 'text.disabled', fontSize: 32, mb: 1, opacity: 0.5 }} />
-                                <Typography color="text.disabled" variant="body2" display="block">No cost trend found</Typography>
-                                <Typography variant="caption" color="text.disabled">Daily costs will appear as they are recorded</Typography>
+                                <Typography color="text.disabled" variant="body2" display="block">{uiText("No cost trend found")}</Typography>
+                                <Typography variant="caption" color="text.disabled">{uiText("Daily costs will appear as they are recorded")}</Typography>
                             </Box>
                         </Box>
                     )}
@@ -854,14 +853,13 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                 {/* Yarn Stock by Count — bars turn red when below threshold */}
                 <Paper className="clay-card anim-slide-up stagger-5" sx={{ p: 3, position: 'relative', borderRadius: 4 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 0.5 }}>
-                        <Typography variant="h6" fontWeight="bold">Yarn Stock</Typography>
+                        <Typography variant="h6" fontWeight="bold">{uiText("Yarn Stock")}</Typography>
                         {yarnStockData.some(d => d.low) && (
-                            <Chip label="Low Stock" size="small" color="error" variant="outlined" sx={{ fontSize: '0.65rem', height: 20 }} />
+                            <Chip label={uiText("Low Stock")} size="small" color="error" variant="outlined" sx={{ fontSize: '0.65rem', height: 20 }} />
                         )}
                     </Box>
                     <Typography variant="caption" color="text.secondary" display="block" mb={2}>
-                        Current balance by count (red = below {lowStockThreshold} kg threshold)
-                    </Typography>
+                        {uiText("Current balance by count (red = below ")}{lowStockThreshold} {uiText(" kg threshold) ")}</Typography>
                     {chartsLoading ? (
                         <Skeleton variant="rectangular" height={220} sx={{ borderRadius: 2 }} />
                     ) : yarnStockData.length > 0 ? (
@@ -871,7 +869,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                                 <XAxis type="number" tick={{ fontSize: 11 }} tickFormatter={(v) => `${v}kg`} />
                                 <YAxis type="category" dataKey="count" tick={{ fontSize: 11 }} width={65} />
                                 <ChartTooltip formatter={(val: any, name: any) => [`${val} kg`, name]} />
-                                <Bar dataKey="total" name="Stock (kg)" radius={[0, 4, 4, 0]}>
+                                <Bar dataKey="total" name={uiText("Stock (kg)", 'charts')} radius={[0, 4, 4, 0]}>
                                     {yarnStockData.map((entry, index) => (
                                         <Cell key={index} fill={entry.low ? '#ef4444' : '#059669'} />
                                     ))}
@@ -883,8 +881,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                         <Box sx={{ height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'action.hover', borderRadius: 2, border: '1px dashed', borderColor: 'divider', flexDirection: 'column', gap: 1 }}>
                             <InventoryIcon sx={{ fontSize: 40, color: 'text.disabled', opacity: 0.5 }} />
                             <Box sx={{ textAlign: 'center' }}>
-                                <Typography color="text.disabled" variant="body2" display="block">Warehouse is empty</Typography>
-                                <Typography variant="caption" color="text.disabled">Recorded production adds to your yarn stock</Typography>
+                                <Typography color="text.disabled" variant="body2" display="block">{uiText("Warehouse is empty")}</Typography>
+                                <Typography variant="caption" color="text.disabled">{uiText("Recorded production adds to your yarn stock")}</Typography>
                             </Box>
                         </Box>
                     )}
@@ -896,8 +894,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <TimeIcon color="action" fontSize="small" />
-                        <Typography variant="h6" fontWeight="bold">Recent Activity</Typography>
-                        <Chip label="Live" size="small" color="success" variant="outlined" sx={{ ml: 1, fontSize: '0.65rem', height: 20 }} />
+                        <Typography variant="h6" fontWeight="bold">{uiText("Recent Activity")}</Typography>
+                        <Chip label={uiText("Live")} size="small" color="success" variant="outlined" sx={{ ml: 1, fontSize: '0.65rem', height: 20 }} />
                     </Box>
                     <Button
                         size="small"
@@ -905,8 +903,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                         onClick={() => navigate('logs')}
                         sx={{ textTransform: 'none', fontSize: '0.75rem', color: 'text.secondary' }}
                     >
-                        View all logs
-                    </Button>
+                        {uiText("View all logs ")}</Button>
                 </Box>
                 <Divider sx={{ mb: 2 }} />
 
@@ -972,8 +969,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                 ) : (
                     <Box sx={{ py: 6, textAlign: 'center', bgcolor: 'action.hover', borderRadius: 2 }}>
                         <HistoryIcon sx={{ fontSize: 40, color: 'text.disabled', mb: 1, opacity: 0.5 }} />
-                        <Typography color="text.disabled" display="block">No activity yet</Typography>
-                        <Typography variant="caption" color="text.disabled">Transactions across all modules will show up here live</Typography>
+                        <Typography color="text.disabled" display="block">{uiText("No activity yet")}</Typography>
+                        <Typography variant="caption" color="text.disabled">{uiText("Transactions across all modules will show up here live")}</Typography>
                     </Box>
                 )}
             </Paper>
@@ -981,13 +978,12 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             {/* ── Quick Actions ── */}
             <Box sx={{ mt: 4, mb: 2 }}>
                 <Typography variant="h6" fontWeight={700} sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <AddIcon color="primary" /> Quick Actions
-                </Typography>
+                    <AddIcon color="primary" /> {uiText(" Quick Actions ")}</Typography>
                 <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                    <QuickAction icon={<FactoryIcon sx={{ color: '#059669' }} />} label="Record Production" onClick={() => navigate('production')} color="#059669" />
-                    <QuickAction icon={<DownloadIcon sx={{ color: '#0ea5e9' }} />} label="Add Inward"          onClick={() => navigate('inward')}     color="#0ea5e9" />
-                    <QuickAction icon={<UploadIcon   sx={{ color: '#6366f1' }} />} label="Record Outward"      onClick={() => navigate('outward')}    color="#6366f1" />
-                    <QuickAction icon={<WalletIcon   sx={{ color: '#f59e0b' }} />} label="Add Costing"         onClick={() => navigate('costing')}    color="#f59e0b" />
+                    <QuickAction icon={<FactoryIcon sx={{ color: '#059669' }} />} label={uiText("Record Production")} onClick={() => navigate('production')} color="#059669" />
+                    <QuickAction icon={<DownloadIcon sx={{ color: '#0ea5e9' }} />} label={uiText("Add Inward")}          onClick={() => navigate('inward')}     color="#0ea5e9" />
+                    <QuickAction icon={<UploadIcon   sx={{ color: '#6366f1' }} />} label={uiText("Record Outward")}      onClick={() => navigate('outward')}    color="#6366f1" />
+                    <QuickAction icon={<WalletIcon   sx={{ color: '#f59e0b' }} />} label={uiText("Add Costing")}         onClick={() => navigate('costing')}    color="#f59e0b" />
                 </Box>
             </Box>
         </Box>

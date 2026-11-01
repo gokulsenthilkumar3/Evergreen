@@ -1,3 +1,5 @@
+import { dateKey } from '../utils/dateKey';
+import { uiText, useUiLanguage, uiLocale, uiTemplate, uiMetric, uiDateLocale, uiScopedTemplate } from "../i18n";
 import React, { useMemo, useState } from 'react';
 import {
   Add as AddIcon,
@@ -58,6 +60,7 @@ type Row = {
 const newRow = (): Row => ({ itemId: '', quantity: '', unitCost: '' });
 
 const OperationsDesk: React.FC = () => {
+  useUiLanguage();
   const client = useQueryClient();
   const [tab, setTab] = useState(0);
   const [inwardOpen, setInwardOpen] = useState(false);
@@ -84,7 +87,7 @@ const OperationsDesk: React.FC = () => {
   const [inward, setInward] = useState({
     supplierName: '',
     referenceNumber: '',
-    date: new Date().toLocaleDateString('en-CA'),
+    date: dateKey(),
     notes: '',
     lines: [newRow()],
   });
@@ -135,13 +138,13 @@ const OperationsDesk: React.FC = () => {
   const saveInward = once(async () => {
     try {
       if (!inward.supplierName.trim()) {
-        return toast.error('Supplier name is required');
+        return toast.error(uiText('Supplier name is required', 'feedback'));
       }
       const validLines = inward.lines.filter(
         (l) => l.itemId !== '' && Number(l.quantity) > 0
       );
       if (validLines.length === 0) {
-        return toast.error('Please specify at least one valid item line');
+        return toast.error(uiText('Please specify at least one valid item line', 'feedback'));
       }
 
       await api.post('/commerce/inward-receipts', {
@@ -157,21 +160,21 @@ const OperationsDesk: React.FC = () => {
       setInward({
         supplierName: '',
         referenceNumber: '',
-        date: new Date().toLocaleDateString('en-CA'),
+        date: dateKey(),
         notes: '',
         lines: [newRow()],
       });
       await refresh();
-      toast.success('Inward receipt posted to stock successfully');
+      toast.success(uiText('Inward receipt posted to stock successfully', 'feedback'));
     } catch (e: any) {
-      toast.error(e.response?.data?.message || 'Could not save receipt');
+      toast.error(uiText(e.response?.data?.message || 'Could not save receipt', 'feedback'));
     }
   });
 
   const saveCost = once(async () => {
     try {
       if (!costing.styleCode.trim()) {
-        return toast.error('Style code is required');
+        return toast.error(uiText('Style code is required', 'feedback'));
       }
       await api.post('/commerce/costing-sheets', {
         ...costing,
@@ -189,9 +192,9 @@ const OperationsDesk: React.FC = () => {
         components: [{ type: 'MATERIAL', description: '', quantity: '', rate: '' }],
       });
       await refresh();
-      toast.success('Costing sheet saved');
+      toast.success(uiText('Costing sheet saved', 'feedback'));
     } catch (e: any) {
-      toast.error(e.response?.data?.message || 'Could not save costing');
+      toast.error(uiText(e.response?.data?.message || 'Could not save costing', 'feedback'));
     }
   });
 
@@ -272,11 +275,9 @@ const OperationsDesk: React.FC = () => {
       >
         <Box>
           <Typography variant="h4" fontWeight={800}>
-            Operations Desk
-          </Typography>
+            {uiText("Operations Desk ")}</Typography>
           <Typography color="text.secondary">
-            Process inward raw material receipts, calculate garment style costing sheets, and audit the stock movement ledger.
-          </Typography>
+            {uiText("Process inward raw material receipts, calculate garment style costing sheets, and audit the stock movement ledger. ")}</Typography>
         </Box>
         <Stack direction="row" spacing={1.5}>
           <Button
@@ -284,15 +285,13 @@ const OperationsDesk: React.FC = () => {
             startIcon={<ShippingIcon />}
             onClick={() => setInwardOpen(true)}
           >
-            Receive Stock
-          </Button>
+            {uiText("Receive Stock ")}</Button>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => setCostOpen(true)}
           >
-            New Costing Sheet
-          </Button>
+            {uiText("New Costing Sheet ")}</Button>
         </Stack>
       </Box>
 
@@ -322,7 +321,7 @@ const OperationsDesk: React.FC = () => {
                   }}
                 >
                   <Typography variant="body2" color="text.secondary" fontWeight={600}>
-                    {stat.label}
+                    {uiText(stat.label, 'metrics')}
                   </Typography>
                   <Box
                     sx={{
@@ -338,10 +337,10 @@ const OperationsDesk: React.FC = () => {
                   </Box>
                 </Box>
                 <Typography variant="h5" fontWeight={800} sx={{ mb: 0.5 }}>
-                  {stat.value}
+                  {uiMetric(stat.value)}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  {stat.subtitle}
+                  {uiText(stat.subtitle, 'metrics')}
                 </Typography>
               </CardContent>
             </Card>
@@ -373,17 +372,17 @@ const OperationsDesk: React.FC = () => {
             <Tab
               icon={<ShippingIcon fontSize="small" />}
               iconPosition="start"
-              label={`Inward Receipts (${receipts.length})`}
+              label={uiScopedTemplate('tabs')`Inward Receipts (${receipts.length})`}
             />
             <Tab
               icon={<CostIcon fontSize="small" />}
               iconPosition="start"
-              label={`Costing History (${costings.length})`}
+              label={uiScopedTemplate('tabs')`Costing History (${costings.length})`}
             />
             <Tab
               icon={<HistoryIcon fontSize="small" />}
               iconPosition="start"
-              label={`Stock Traceability (${items.length})`}
+              label={uiScopedTemplate('tabs')`Stock Traceability (${items.length})`}
             />
           </Tabs>
 
@@ -391,7 +390,7 @@ const OperationsDesk: React.FC = () => {
             <Stack direction="row" spacing={1} alignItems="center">
               <TextField
                 size="small"
-                placeholder="Search..."
+                placeholder={uiText("Search...", 'forms')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 InputProps={{
@@ -403,7 +402,7 @@ const OperationsDesk: React.FC = () => {
                 }}
                 sx={{ width: { xs: '100%', sm: 220 } }}
               />
-              <IconButton onClick={refresh} title="Refresh records">
+              <IconButton onClick={refresh} title={uiText("Refresh records")}>
                 <RefreshIcon fontSize="small" />
               </IconButton>
             </Stack>
@@ -416,16 +415,14 @@ const OperationsDesk: React.FC = () => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Receipt #</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Supplier Name</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>PO / Reference</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Date</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>{uiText("Receipt #", 'tables')}</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>{uiText("Supplier Name", 'tables')}</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>{uiText("PO / Reference", 'tables')}</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>{uiText("Date", 'tables')}</TableCell>
                   <TableCell align="right" sx={{ fontWeight: 'bold' }}>
-                    Total Value
-                  </TableCell>
+                    {uiText("Total Value ", 'tables')}</TableCell>
                   <TableCell align="right" sx={{ fontWeight: 'bold' }}>
-                    Actions
-                  </TableCell>
+                    {uiText("Actions ", 'tables')}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -438,7 +435,7 @@ const OperationsDesk: React.FC = () => {
                 ) : filteredReceipts.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
-                      <Typography color="text.secondary">No inward receipts found.</Typography>
+                      <Typography color="text.secondary">{uiText("No inward receipts found.", 'tables')}</Typography>
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -447,13 +444,13 @@ const OperationsDesk: React.FC = () => {
                       <TableCell>
                         <Typography fontWeight={700}>{r.receiptNo}</Typography>
                         <Typography variant="caption" color="text.secondary">
-                          ID #{r.id}
+                          {uiText("ID #", 'tables')}{r.id}
                         </Typography>
                       </TableCell>
                       <TableCell sx={{ fontWeight: 600 }}>{r.supplierName}</TableCell>
                       <TableCell>{r.referenceNumber || '—'}</TableCell>
                       <TableCell>
-                        {new Date(r.date).toLocaleDateString('en-IN', {
+                        {new Date(r.date).toLocaleDateString(uiDateLocale(), {
                           year: 'numeric',
                           month: 'short',
                           day: 'numeric',
@@ -461,7 +458,7 @@ const OperationsDesk: React.FC = () => {
                       </TableCell>
                       <TableCell align="right">
                         <Typography fontWeight={700} sx={{ color: 'primary.main' }}>
-                          ₹{Number(r.total).toLocaleString('en-IN')}
+                          {uiText("₹", 'tables')}{Number(r.total).toLocaleString(uiLocale())}
                         </Typography>
                       </TableCell>
                       <TableCell align="right">
@@ -471,8 +468,7 @@ const OperationsDesk: React.FC = () => {
                           startIcon={<PrintIcon />}
                           onClick={print}
                         >
-                          Print
-                        </Button>
+                          {uiText("Print ", 'tables')}</Button>
                       </TableCell>
                     </TableRow>
                   ))
@@ -488,15 +484,13 @@ const OperationsDesk: React.FC = () => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Style Code</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Description</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Status</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>{uiText("Style Code", 'tables')}</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>{uiText("Description", 'tables')}</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>{uiText("Status", 'tables')}</TableCell>
                   <TableCell align="right" sx={{ fontWeight: 'bold' }}>
-                    Total Estimated Cost
-                  </TableCell>
+                    {uiText("Total Estimated Cost ", 'tables')}</TableCell>
                   <TableCell align="right" sx={{ fontWeight: 'bold' }}>
-                    Actions
-                  </TableCell>
+                    {uiText("Actions ", 'tables')}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -509,7 +503,7 @@ const OperationsDesk: React.FC = () => {
                 ) : filteredCostings.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={5} align="center" sx={{ py: 6 }}>
-                      <Typography color="text.secondary">No garment costing sheets recorded.</Typography>
+                      <Typography color="text.secondary">{uiText("No garment costing sheets recorded.", 'tables')}</Typography>
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -529,7 +523,7 @@ const OperationsDesk: React.FC = () => {
                       </TableCell>
                       <TableCell align="right">
                         <Typography fontWeight={800}>
-                          ₹{Number(c.total).toLocaleString('en-IN')}
+                          {uiText("₹", 'tables')}{Number(c.total).toLocaleString(uiLocale())}
                         </Typography>
                       </TableCell>
                       <TableCell align="right">
@@ -552,12 +546,11 @@ const OperationsDesk: React.FC = () => {
                               });
                               setCostOpen(true);
                             } catch {
-                              toast.error('Could not parse costing components');
+                              toast.error(uiText('Could not parse costing components', 'feedback'));
                             }
                           }}
                         >
-                          Duplicate
-                        </Button>
+                          {uiText("Duplicate ", 'tables')}</Button>
                       </TableCell>
                     </TableRow>
                   ))
@@ -573,13 +566,11 @@ const OperationsDesk: React.FC = () => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Item Name & SKU</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>{uiText("Item Name & SKU", 'tables')}</TableCell>
                   <TableCell align="right" sx={{ fontWeight: 'bold' }}>
-                    Available Stock
-                  </TableCell>
+                    {uiText("Available Stock ", 'tables')}</TableCell>
                   <TableCell align="right" sx={{ fontWeight: 'bold' }}>
-                    Audit Ledger
-                  </TableCell>
+                    {uiText("Audit Ledger ", 'tables')}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -592,7 +583,7 @@ const OperationsDesk: React.FC = () => {
                 ) : filteredItems.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={3} align="center" sx={{ py: 6 }}>
-                      <Typography color="text.secondary">No items found.</Typography>
+                      <Typography color="text.secondary">{uiText("No items found.", 'tables')}</Typography>
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -601,12 +592,12 @@ const OperationsDesk: React.FC = () => {
                       <TableCell>
                         <Typography fontWeight={700}>{i.name}</Typography>
                         <Typography variant="caption" color="text.secondary">
-                          SKU: {i.sku}
+                          {uiText("SKU: ", 'tables')}{i.sku}
                         </Typography>
                       </TableCell>
                       <TableCell align="right">
                         <Chip
-                          label={`${i.stock.available} ${i.uom}`}
+                          label={uiScopedTemplate('tables')`${i.stock.available} ${i.uom}`}
                           color={i.stock.available > 0 ? 'success' : 'error'}
                           variant="outlined"
                           size="small"
@@ -623,12 +614,11 @@ const OperationsDesk: React.FC = () => {
                               const res = await api.get(`/commerce/items/${i.id}/movements`);
                               setHistory(res.data);
                             } catch {
-                              toast.error('Could not load movements ledger');
+                              toast.error(uiText('Could not load movements ledger', 'feedback'));
                             }
                           }}
                         >
-                          View History
-                        </Button>
+                          {uiText("View History ", 'tables')}</Button>
                       </TableCell>
                     </TableRow>
                   ))
@@ -647,28 +637,27 @@ const OperationsDesk: React.FC = () => {
         maxWidth="md"
       >
         <DialogTitle sx={{ fontWeight: 800 }}>
-          Receive Stock from Supplier
-        </DialogTitle>
+          {uiText("Receive Stock from Supplier ")}</DialogTitle>
         <DialogContent>
           <Stack spacing={2.5} sx={{ pt: 1 }}>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
               <TextField
-                label="Supplier Name"
-                placeholder="e.g. Vardhman Textiles"
+                label={uiText("Supplier Name", 'forms')}
+                placeholder={uiText("e.g. Vardhman Textiles", 'forms')}
                 value={inward.supplierName}
                 onChange={(e) => setInward({ ...inward, supplierName: e.target.value })}
                 fullWidth
               />
               <TextField
-                label="Reference / PO Number"
-                placeholder="PO-2026-081"
+                label={uiText("Reference / PO Number", 'forms')}
+                placeholder={uiText("PO-2026-081", 'forms')}
                 value={inward.referenceNumber}
                 onChange={(e) => setInward({ ...inward, referenceNumber: e.target.value })}
                 fullWidth
               />
               <TextField
                 type="date"
-                label="Receipt Date"
+                label={uiText("Receipt Date", 'forms')}
                 InputLabelProps={{ shrink: true }}
                 value={inward.date}
                 onChange={(e) => setInward({ ...inward, date: e.target.value })}
@@ -677,14 +666,13 @@ const OperationsDesk: React.FC = () => {
             </Stack>
 
             <Typography variant="subtitle2" fontWeight={700}>
-              Received Items:
-            </Typography>
+              {uiText("Received Items: ")}</Typography>
 
             {inward.lines.map((line, index) => (
               <Stack key={index} direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
                 <TextField
                   select
-                  label="Catalogue Item"
+                  label={uiText("Catalogue Item", 'forms')}
                   value={line.itemId}
                   onChange={(e) =>
                     setInward({
@@ -704,7 +692,7 @@ const OperationsDesk: React.FC = () => {
                 </TextField>
 
                 <TextField
-                  label="Quantity"
+                  label={uiText("Quantity", 'forms')}
                   type="number"
                   value={line.quantity}
                   onChange={(e) =>
@@ -719,7 +707,7 @@ const OperationsDesk: React.FC = () => {
                 />
 
                 <TextField
-                  label="Unit Cost (₹)"
+                  label={uiText("Unit Cost (₹)", 'forms')}
                   type="number"
                   value={line.unitCost}
                   onChange={(e) =>
@@ -744,8 +732,7 @@ const OperationsDesk: React.FC = () => {
                       })
                     }
                   >
-                    Remove
-                  </Button>
+                    {uiText("Remove ")}</Button>
                 )}
               </Stack>
             ))}
@@ -754,21 +741,19 @@ const OperationsDesk: React.FC = () => {
               onClick={() => setInward({ ...inward, lines: [...inward.lines, newRow()] })}
               sx={{ alignSelf: 'start' }}
             >
-              + Add Item Line
-            </Button>
+              {uiText("+ Add Item Line ")}</Button>
 
             <Paper variant="outlined" sx={{ p: 2, borderRadius: 2, bgcolor: 'action.hover' }}>
               <Typography variant="subtitle1" fontWeight={800}>
-                Receipt Total Value: ₹{total.toLocaleString('en-IN')}
+                {uiText("Receipt Total Value: ₹")}{total.toLocaleString(uiLocale())}
               </Typography>
             </Paper>
           </Stack>
         </DialogContent>
         <DialogActions sx={{ p: 2.5 }}>
-          <Button onClick={() => setInwardOpen(false)}>Cancel</Button>
+          <Button onClick={() => setInwardOpen(false)}>{uiText("Cancel")}</Button>
           <Button variant="contained" disabled={busy} onClick={saveInward}>
-            Post Receipt to Stock
-          </Button>
+            {uiText("Post Receipt to Stock ")}</Button>
         </DialogActions>
       </Dialog>
 
@@ -780,21 +765,20 @@ const OperationsDesk: React.FC = () => {
         maxWidth="md"
       >
         <DialogTitle sx={{ fontWeight: 800 }}>
-          Garment & Style Costing Sheet
-        </DialogTitle>
+          {uiText("Garment & Style Costing Sheet ")}</DialogTitle>
         <DialogContent>
           <Stack spacing={2.5} sx={{ pt: 1 }}>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
               <TextField
-                label="Style Code"
-                placeholder="e.g. STY-POLO-2026"
+                label={uiText("Style Code", 'forms')}
+                placeholder={uiText("e.g. STY-POLO-2026", 'forms')}
                 value={costing.styleCode}
                 onChange={(e) => setCosting({ ...costing, styleCode: e.target.value })}
                 fullWidth
               />
               <TextField
-                label="Garment Description"
-                placeholder="100% Combed Cotton Polo Shirt"
+                label={uiText("Garment Description", 'forms')}
+                placeholder={uiText("100% Combed Cotton Polo Shirt", 'forms')}
                 value={costing.description}
                 onChange={(e) => setCosting({ ...costing, description: e.target.value })}
                 fullWidth
@@ -802,14 +786,13 @@ const OperationsDesk: React.FC = () => {
             </Stack>
 
             <Typography variant="subtitle2" fontWeight={700}>
-              Cost Components:
-            </Typography>
+              {uiText("Cost Components: ")}</Typography>
 
             {costing.components.map((line, index) => (
               <Stack key={index} direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
                 <TextField
                   select
-                  label="Category"
+                  label={uiText("Category", 'forms')}
                   value={line.type}
                   onChange={(e) =>
                     setCosting({
@@ -829,8 +812,8 @@ const OperationsDesk: React.FC = () => {
                 </TextField>
 
                 <TextField
-                  label="Component Description"
-                  placeholder="Yarn / Knitting / Stitching / Buttons"
+                  label={uiText("Component Description", 'forms')}
+                  placeholder={uiText("Yarn / Knitting / Stitching / Buttons", 'forms')}
                   value={line.description}
                   onChange={(e) =>
                     setCosting({
@@ -844,7 +827,7 @@ const OperationsDesk: React.FC = () => {
                 />
 
                 <TextField
-                  label="Consumption"
+                  label={uiText("Consumption", 'forms')}
                   type="number"
                   value={line.quantity}
                   onChange={(e) =>
@@ -859,7 +842,7 @@ const OperationsDesk: React.FC = () => {
                 />
 
                 <TextField
-                  label="Rate (₹)"
+                  label={uiText("Rate (₹)", 'forms')}
                   type="number"
                   value={line.rate}
                   onChange={(e) =>
@@ -884,8 +867,7 @@ const OperationsDesk: React.FC = () => {
                       })
                     }
                   >
-                    Remove
-                  </Button>
+                    {uiText("Remove ")}</Button>
                 )}
               </Stack>
             ))}
@@ -902,21 +884,19 @@ const OperationsDesk: React.FC = () => {
               }
               sx={{ alignSelf: 'start' }}
             >
-              + Add Component
-            </Button>
+              {uiText("+ Add Component ")}</Button>
 
             <Paper variant="outlined" sx={{ p: 2, borderRadius: 2, bgcolor: 'action.hover' }}>
               <Typography variant="subtitle1" fontWeight={800}>
-                Total Estimated Unit Cost: ₹{costTotal.toLocaleString('en-IN')}
+                {uiText("Total Estimated Unit Cost: ₹")}{costTotal.toLocaleString(uiLocale())}
               </Typography>
             </Paper>
           </Stack>
         </DialogContent>
         <DialogActions sx={{ p: 2.5 }}>
-          <Button onClick={() => setCostOpen(false)}>Cancel</Button>
+          <Button onClick={() => setCostOpen(false)}>{uiText("Cancel")}</Button>
           <Button variant="contained" disabled={busy} onClick={saveCost}>
-            Save Costing Sheet
-          </Button>
+            {uiText("Save Costing Sheet ")}</Button>
         </DialogActions>
       </Dialog>
 
@@ -928,19 +908,17 @@ const OperationsDesk: React.FC = () => {
         maxWidth="md"
       >
         <DialogTitle sx={{ fontWeight: 800 }}>
-          {historyName} — Stock Movement Audit
-        </DialogTitle>
+          {historyName} {uiText(" — Stock Movement Audit ")}</DialogTitle>
         <DialogContent>
           <TableContainer sx={{ mt: 1 }}>
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Date</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Movement Type</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Reference</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>{uiText("Date", 'tables')}</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>{uiText("Movement Type", 'tables')}</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>{uiText("Reference", 'tables')}</TableCell>
                   <TableCell align="right" sx={{ fontWeight: 'bold' }}>
-                    Quantity
-                  </TableCell>
+                    {uiText("Quantity ", 'tables')}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -948,15 +926,14 @@ const OperationsDesk: React.FC = () => {
                   <TableRow>
                     <TableCell colSpan={4} align="center" sx={{ py: 4 }}>
                       <Typography color="text.secondary">
-                        No recorded movements for this item yet.
-                      </Typography>
+                        {uiText("No recorded movements for this item yet. ", 'tables')}</Typography>
                     </TableCell>
                   </TableRow>
                 ) : (
                   history?.map((r) => (
                     <TableRow key={r.id} hover>
                       <TableCell>
-                        {new Date(r.date || r.createdAt).toLocaleDateString('en-IN', {
+                        {new Date(r.date || r.createdAt).toLocaleDateString(uiDateLocale(), {
                           year: 'numeric',
                           month: 'short',
                           day: 'numeric',
@@ -994,7 +971,7 @@ const OperationsDesk: React.FC = () => {
           </TableContainer>
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setHistory(null)}>Close</Button>
+          <Button onClick={() => setHistory(null)}>{uiText("Close")}</Button>
         </DialogActions>
       </Dialog>
     </Box>

@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage, uiLocale, uiTemplate, uiScopedTemplate, uiDateLocale } from "../../i18n";
 import React, { useState } from 'react';
 import {
   Add as AddIcon,
@@ -91,6 +92,7 @@ const initialPayrollForm = {
 };
 
 const HRManagement: React.FC = () => {
+  useUiLanguage();
   const [tab, setTab] = useState(0);
   const [openStaffDialog, setOpenStaffDialog] = useState(false);
   const [openPayrollDialog, setOpenPayrollDialog] = useState(false);
@@ -135,12 +137,12 @@ const HRManagement: React.FC = () => {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['hr-staff'] });
-      toast.success('Staff member registered successfully');
+      toast.success(uiText('Staff member registered successfully', 'feedback'));
       setOpenStaffDialog(false);
       setStaffForm(initialStaffForm);
     },
     onError: (err: any) => {
-      toast.error(err?.response?.data?.message || 'Failed to add staff member');
+      toast.error(uiText(err?.response?.data?.message || 'Failed to add staff member', 'feedback'));
     },
   });
 
@@ -164,12 +166,12 @@ const HRManagement: React.FC = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['hr-payroll'] });
-      toast.success('Payroll entry recorded successfully');
+      toast.success(uiText('Payroll entry recorded successfully', 'feedback'));
       setOpenPayrollDialog(false);
       setPayrollForm(initialPayrollForm);
     },
     onError: (err: any) => {
-      toast.error(err?.response?.data?.message || 'Failed to record payroll entry');
+      toast.error(uiText(err?.response?.data?.message || 'Failed to record payroll entry', 'feedback'));
     },
   });
 
@@ -211,11 +213,9 @@ const HRManagement: React.FC = () => {
           <HRIcon color="primary" sx={{ fontSize: 36 }} />
           <Box>
             <Typography variant="h4" fontWeight={800}>
-              HR & Payroll
-            </Typography>
+              {uiText("HR & Payroll ")}</Typography>
             <Typography color="text.secondary">
-              Staff directory, attendance tracking & salary processing
-            </Typography>
+              {uiText("Staff directory, attendance tracking & salary processing ")}</Typography>
           </Box>
         </Box>
 
@@ -229,8 +229,7 @@ const HRManagement: React.FC = () => {
               queryClient.invalidateQueries({ queryKey: ['hr-payroll'] });
             }}
           >
-            Refresh
-          </Button>
+            {uiText("Refresh ")}</Button>
 
           {tab === 0 ? (
             <Button
@@ -238,8 +237,7 @@ const HRManagement: React.FC = () => {
               startIcon={<AddIcon />}
               onClick={() => setOpenStaffDialog(true)}
             >
-              Add Staff
-            </Button>
+              {uiText("Add Staff ")}</Button>
           ) : (
             <Button
               variant="contained"
@@ -247,8 +245,7 @@ const HRManagement: React.FC = () => {
               onClick={() => setOpenPayrollDialog(true)}
               disabled={employees.length === 0}
             >
-              Process Payroll
-            </Button>
+              {uiText("Process Payroll ")}</Button>
           )}
         </Box>
       </Box>
@@ -256,8 +253,7 @@ const HRManagement: React.FC = () => {
       {/* Error Notices */}
       {(staffError || payrollError) && (
         <Alert severity="error" sx={{ mb: 2 }}>
-          Failed to load HR and payroll records from server.
-        </Alert>
+          {uiText("Failed to load HR and payroll records from server. ")}</Alert>
       )}
 
       {/* KPI Cards */}
@@ -266,8 +262,7 @@ const HRManagement: React.FC = () => {
           <Card variant="outlined" sx={{ borderRadius: 3 }}>
             <CardContent sx={{ py: 2 }}>
               <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                TOTAL STAFF
-              </Typography>
+                {uiText("TOTAL STAFF ")}</Typography>
               <Typography variant="h5" fontWeight={800} color="#3b82f6">
                 {employees.length}
               </Typography>
@@ -279,8 +274,7 @@ const HRManagement: React.FC = () => {
           <Card variant="outlined" sx={{ borderRadius: 3 }}>
             <CardContent sx={{ py: 2 }}>
               <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                ACTIVE ON SHIFT
-              </Typography>
+                {uiText("ACTIVE ON SHIFT ")}</Typography>
               <Typography variant="h5" fontWeight={800} color="#059669">
                 {activeCount}
               </Typography>
@@ -292,10 +286,9 @@ const HRManagement: React.FC = () => {
           <Card variant="outlined" sx={{ borderRadius: 3 }}>
             <CardContent sx={{ py: 2 }}>
               <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                MONTHLY SALARY COMMITMENT
-              </Typography>
+                {uiText("MONTHLY SALARY COMMITMENT ")}</Typography>
               <Typography variant="h5" fontWeight={800} color="#8b5cf6">
-                ₹{totalSalary.toLocaleString('en-IN')}
+                {uiText("₹")}{totalSalary.toLocaleString(uiLocale())}
               </Typography>
             </CardContent>
           </Card>
@@ -305,10 +298,9 @@ const HRManagement: React.FC = () => {
           <Card variant="outlined" sx={{ borderRadius: 3 }}>
             <CardContent sx={{ py: 2 }}>
               <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                {currentMonth} DISBURSED PAYROLL
-              </Typography>
+                {currentMonth} {uiText(" DISBURSED PAYROLL ")}</Typography>
               <Typography variant="h5" fontWeight={800} color="#f59e0b">
-                ₹{totalPayrollMonth.toLocaleString('en-IN')}
+                {uiText("₹")}{totalPayrollMonth.toLocaleString(uiLocale())}
               </Typography>
             </CardContent>
           </Card>
@@ -328,8 +320,8 @@ const HRManagement: React.FC = () => {
             '& .MuiTab-root': { textTransform: 'none', fontWeight: 600 },
           }}
         >
-          <Tab label={`Staff Directory (${employees.length})`} />
-          <Tab label={`Payroll Processing (${payroll.length})`} />
+          <Tab label={uiScopedTemplate('tabs')`Staff Directory (${employees.length})`} />
+          <Tab label={uiScopedTemplate('tabs')`Payroll Processing (${payroll.length})`} />
         </Tabs>
 
         {/* Tab 0: Employee Directory */}
@@ -338,16 +330,15 @@ const HRManagement: React.FC = () => {
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 700 }}>Employee</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Emp ID</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Department</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Designation</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Salary Type</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{uiText("Employee", 'tables')}</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{uiText("Emp ID", 'tables')}</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{uiText("Department", 'tables')}</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{uiText("Designation", 'tables')}</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{uiText("Salary Type", 'tables')}</TableCell>
                   <TableCell align="right" sx={{ fontWeight: 700 }}>
-                    Monthly Salary
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Date of Joining</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
+                    {uiText("Monthly Salary ", 'tables')}</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{uiText("Date of Joining", 'tables')}</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{uiText("Status", 'tables')}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -360,8 +351,7 @@ const HRManagement: React.FC = () => {
                 ) : employees.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={8} align="center" sx={{ color: 'text.secondary', py: 4 }}>
-                      No staff records found. Click &quot;Add Staff&quot; to register team members.
-                    </TableCell>
+                      {uiText("No staff records found. Click \"Add Staff\" to register team members. ", 'tables')}</TableCell>
                   </TableRow>
                 ) : (
                   employees.map((e) => (
@@ -409,16 +399,16 @@ const HRManagement: React.FC = () => {
                         />
                       </TableCell>
                       <TableCell align="right" sx={{ fontWeight: 700 }}>
-                        ₹{(e.monthlySalary || 0).toLocaleString('en-IN')}
+                        {uiText("₹", 'tables')}{(e.monthlySalary || 0).toLocaleString(uiLocale())}
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2" color="text.secondary">
-                          {e.joinDate ? new Date(e.joinDate).toLocaleDateString('en-IN') : '—'}
+                          {e.joinDate ? new Date(e.joinDate).toLocaleDateString(uiDateLocale()) : '—'}
                         </Typography>
                       </TableCell>
                       <TableCell>
                         <Chip
-                          label={e.active ? 'Active' : 'Inactive'}
+                          label={e.active ? uiText("Active", 'tables') : uiText("Inactive", 'tables')}
                           size="small"
                           color={e.active ? 'success' : 'warning'}
                           variant="outlined"
@@ -438,24 +428,19 @@ const HRManagement: React.FC = () => {
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 700 }}>Employee</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Month</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{uiText("Employee", 'tables')}</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{uiText("Month", 'tables')}</TableCell>
                   <TableCell align="right" sx={{ fontWeight: 700 }}>
-                    Days Worked
-                  </TableCell>
+                    {uiText("Days Worked ", 'tables')}</TableCell>
                   <TableCell align="right" sx={{ fontWeight: 700 }}>
-                    Basic Pay (₹)
-                  </TableCell>
+                    {uiText("Basic Pay (₹) ", 'tables')}</TableCell>
                   <TableCell align="right" sx={{ fontWeight: 700 }}>
-                    Overtime (₹)
-                  </TableCell>
+                    {uiText("Overtime (₹) ", 'tables')}</TableCell>
                   <TableCell align="right" sx={{ fontWeight: 700 }}>
-                    Deductions (₹)
-                  </TableCell>
+                    {uiText("Deductions (₹) ", 'tables')}</TableCell>
                   <TableCell align="right" sx={{ fontWeight: 700 }}>
-                    Net Pay (₹)
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Payment Status</TableCell>
+                    {uiText("Net Pay (₹) ", 'tables')}</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{uiText("Payment Status", 'tables')}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -468,37 +453,36 @@ const HRManagement: React.FC = () => {
                 ) : payroll.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={8} align="center" sx={{ color: 'text.secondary', py: 4 }}>
-                      No payroll entries for {currentMonth}. Click &quot;Process Payroll&quot; to add.
-                    </TableCell>
+                      {uiText("No payroll entries for ", 'tables')}{currentMonth}{uiText(". Click \"Process Payroll\" to add. ", 'tables')}</TableCell>
                   </TableRow>
                 ) : (
                   payroll.map((p) => (
                     <TableRow key={p.id} hover>
                       <TableCell>
                         <Typography variant="body2" fontWeight={600}>
-                          {p.staff?.name || `Staff #${p.staffId}`}
+                          {p.staff?.name || uiScopedTemplate('tables')`Staff #${p.staffId}`}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
                           {p.staff?.employeeId || p.staff?.department}
                         </Typography>
                       </TableCell>
                       <TableCell>{p.month}</TableCell>
-                      <TableCell align="right">{p.daysWorked} days</TableCell>
-                      <TableCell align="right">₹{(p.basicPay || 0).toLocaleString('en-IN')}</TableCell>
+                      <TableCell align="right">{p.daysWorked} {uiText(" days", 'tables')}</TableCell>
+                      <TableCell align="right">{uiText("₹", 'tables')}{(p.basicPay || 0).toLocaleString(uiLocale())}</TableCell>
                       <TableCell align="right" sx={{ color: 'info.main' }}>
-                        ₹{(p.overtime || 0).toLocaleString('en-IN')}
+                        {uiText("₹", 'tables')}{(p.overtime || 0).toLocaleString(uiLocale())}
                       </TableCell>
                       <TableCell align="right" sx={{ color: 'error.main' }}>
-                        -₹{(p.deductions || 0).toLocaleString('en-IN')}
+                        {uiText("-₹", 'tables')}{(p.deductions || 0).toLocaleString(uiLocale())}
                       </TableCell>
                       <TableCell align="right">
                         <Typography variant="body2" fontWeight={800} color="success.main">
-                          ₹{(p.netPay || 0).toLocaleString('en-IN')}
+                          {uiText("₹", 'tables')}{(p.netPay || 0).toLocaleString(uiLocale())}
                         </Typography>
                       </TableCell>
                       <TableCell>
                         <Chip
-                          label={p.paid ? 'Disbursed' : 'Pending'}
+                          label={p.paid ? uiText("Disbursed", 'tables') : uiText("Pending", 'tables')}
                           size="small"
                           color={p.paid ? 'success' : 'warning'}
                           variant="outlined"
@@ -522,14 +506,13 @@ const HRManagement: React.FC = () => {
         PaperProps={{ sx: { borderRadius: 3 } }}
       >
         <DialogTitle sx={{ fontWeight: 700, borderBottom: 1, borderColor: 'divider' }}>
-          Register New Staff Member
-        </DialogTitle>
+          {uiText("Register New Staff Member ")}</DialogTitle>
         <DialogContent sx={{ pt: 3 }}>
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
-                label="Employee ID"
-                placeholder="EMP-101"
+                label={uiText("Employee ID", 'forms')}
+                placeholder={uiText("EMP-101", 'forms')}
                 fullWidth
                 size="small"
                 required
@@ -539,7 +522,7 @@ const HRManagement: React.FC = () => {
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
-                label="Full Name"
+                label={uiText("Full Name", 'forms')}
                 fullWidth
                 size="small"
                 required
@@ -549,25 +532,25 @@ const HRManagement: React.FC = () => {
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
               <FormControl fullWidth size="small">
-                <InputLabel>Department</InputLabel>
+                <InputLabel>{uiText("Department", 'forms')}</InputLabel>
                 <Select
                   value={staffForm.department}
-                  label="Department"
+                  label={uiText("Department", 'forms')}
                   onChange={(e) => setStaffForm({ ...staffForm, department: e.target.value })}
                 >
-                  <MenuItem value="Spinning">Spinning</MenuItem>
-                  <MenuItem value="Weaving">Weaving</MenuItem>
-                  <MenuItem value="Quality Control">Quality Control</MenuItem>
-                  <MenuItem value="Maintenance">Maintenance</MenuItem>
-                  <MenuItem value="Warehouse">Warehouse</MenuItem>
-                  <MenuItem value="Administration">Administration</MenuItem>
+                  <MenuItem value="Spinning">{uiText("Spinning", 'forms')}</MenuItem>
+                  <MenuItem value="Weaving">{uiText("Weaving", 'forms')}</MenuItem>
+                  <MenuItem value="Quality Control">{uiText("Quality Control", 'forms')}</MenuItem>
+                  <MenuItem value="Maintenance">{uiText("Maintenance", 'forms')}</MenuItem>
+                  <MenuItem value="Warehouse">{uiText("Warehouse", 'forms')}</MenuItem>
+                  <MenuItem value="Administration">{uiText("Administration", 'forms')}</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
-                label="Designation / Role"
-                placeholder="e.g. Ring Frame Operator"
+                label={uiText("Designation / Role", 'forms')}
+                placeholder={uiText("e.g. Ring Frame Operator", 'forms')}
                 fullWidth
                 size="small"
                 required
@@ -577,21 +560,21 @@ const HRManagement: React.FC = () => {
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
               <FormControl fullWidth size="small">
-                <InputLabel>Salary Structure</InputLabel>
+                <InputLabel>{uiText("Salary Structure", 'forms')}</InputLabel>
                 <Select
                   value={staffForm.salaryType}
-                  label="Salary Structure"
+                  label={uiText("Salary Structure", 'forms')}
                   onChange={(e) => setStaffForm({ ...staffForm, salaryType: e.target.value })}
                 >
-                  <MenuItem value="MONTHLY">Monthly Fixed</MenuItem>
-                  <MenuItem value="DAILY">Daily Wage</MenuItem>
+                  <MenuItem value="MONTHLY">{uiText("Monthly Fixed", 'forms')}</MenuItem>
+                  <MenuItem value="DAILY">{uiText("Daily Wage", 'forms')}</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 type="number"
-                label={staffForm.salaryType === 'DAILY' ? 'Daily Wage Rate (₹)' : 'Monthly Base Salary (₹)'}
+                label={staffForm.salaryType === 'DAILY' ? uiText("Daily Wage Rate (₹)", 'forms') : uiText("Monthly Base Salary (₹)", 'forms')}
                 fullWidth
                 size="small"
                 value={staffForm.salaryType === 'DAILY' ? staffForm.dailyRate : staffForm.monthlySalary}
@@ -607,7 +590,7 @@ const HRManagement: React.FC = () => {
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
-                label="Contact Phone"
+                label={uiText("Contact Phone", 'forms')}
                 fullWidth
                 size="small"
                 value={staffForm.phone}
@@ -617,7 +600,7 @@ const HRManagement: React.FC = () => {
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 type="date"
-                label="Date of Joining"
+                label={uiText("Date of Joining", 'forms')}
                 InputLabelProps={{ shrink: true }}
                 fullWidth
                 size="small"
@@ -629,14 +612,13 @@ const HRManagement: React.FC = () => {
         </DialogContent>
         <DialogActions sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
           <Button onClick={() => setOpenStaffDialog(false)} color="inherit">
-            Cancel
-          </Button>
+            {uiText("Cancel ")}</Button>
           <Button
             variant="contained"
             disabled={!staffForm.name.trim() || !staffForm.employeeId.trim() || !staffForm.role.trim() || createStaffMutation.isPending}
             onClick={() => createStaffMutation.mutate(staffForm)}
           >
-            {createStaffMutation.isPending ? 'Saving...' : 'Register Staff'}
+            {createStaffMutation.isPending ? uiText("Saving...") : uiText("Register Staff")}
           </Button>
         </DialogActions>
       </Dialog>
@@ -650,16 +632,15 @@ const HRManagement: React.FC = () => {
         PaperProps={{ sx: { borderRadius: 3 } }}
       >
         <DialogTitle sx={{ fontWeight: 700, borderBottom: 1, borderColor: 'divider' }}>
-          Record Payroll Entry
-        </DialogTitle>
+          {uiText("Record Payroll Entry ")}</DialogTitle>
         <DialogContent sx={{ pt: 3 }}>
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, sm: 8 }}>
               <FormControl fullWidth size="small" required>
-                <InputLabel>Select Employee</InputLabel>
+                <InputLabel>{uiText("Select Employee", 'forms')}</InputLabel>
                 <Select
                   value={payrollForm.staffId}
-                  label="Select Employee"
+                  label={uiText("Select Employee", 'forms')}
                   onChange={(e) => handleStaffSelectForPayroll(Number(e.target.value))}
                 >
                   {employees.map((emp) => (
@@ -672,7 +653,7 @@ const HRManagement: React.FC = () => {
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
               <TextField
-                label="Month (YYYY-MM)"
+                label={uiText("Month (YYYY-MM)", 'forms')}
                 fullWidth
                 size="small"
                 required
@@ -683,7 +664,7 @@ const HRManagement: React.FC = () => {
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 type="number"
-                label="Days Worked"
+                label={uiText("Days Worked", 'forms')}
                 fullWidth
                 size="small"
                 value={payrollForm.daysWorked}
@@ -693,7 +674,7 @@ const HRManagement: React.FC = () => {
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 type="number"
-                label="Overtime Hours"
+                label={uiText("Overtime Hours", 'forms')}
                 fullWidth
                 size="small"
                 value={payrollForm.overtimeHrs}
@@ -703,7 +684,7 @@ const HRManagement: React.FC = () => {
             <Grid size={{ xs: 12, sm: 4 }}>
               <TextField
                 type="number"
-                label="Basic Pay (₹)"
+                label={uiText("Basic Pay (₹)", 'forms')}
                 fullWidth
                 size="small"
                 value={payrollForm.basicPay}
@@ -713,7 +694,7 @@ const HRManagement: React.FC = () => {
             <Grid size={{ xs: 12, sm: 4 }}>
               <TextField
                 type="number"
-                label="Overtime Pay (₹)"
+                label={uiText("Overtime Pay (₹)", 'forms')}
                 fullWidth
                 size="small"
                 value={payrollForm.overtime}
@@ -723,7 +704,7 @@ const HRManagement: React.FC = () => {
             <Grid size={{ xs: 12, sm: 4 }}>
               <TextField
                 type="number"
-                label="Deductions (₹)"
+                label={uiText("Deductions (₹)", 'forms')}
                 fullWidth
                 size="small"
                 value={payrollForm.deductions}
@@ -734,10 +715,9 @@ const HRManagement: React.FC = () => {
               <Paper variant="outlined" sx={{ p: 2, bgcolor: 'action.hover', borderRadius: 2 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Typography variant="subtitle2" fontWeight={700}>
-                    Calculated Net Pay:
-                  </Typography>
+                    {uiText("Calculated Net Pay: ")}</Typography>
                   <Typography variant="h6" fontWeight={800} color="success.main">
-                    ₹{calculatedNetPay.toLocaleString('en-IN')}
+                    {uiText("₹")}{calculatedNetPay.toLocaleString(uiLocale())}
                   </Typography>
                 </Box>
               </Paper>
@@ -746,14 +726,13 @@ const HRManagement: React.FC = () => {
         </DialogContent>
         <DialogActions sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
           <Button onClick={() => setOpenPayrollDialog(false)} color="inherit">
-            Cancel
-          </Button>
+            {uiText("Cancel ")}</Button>
           <Button
             variant="contained"
             disabled={!payrollForm.staffId || !payrollForm.month || createPayrollMutation.isPending}
             onClick={() => createPayrollMutation.mutate(payrollForm)}
           >
-            {createPayrollMutation.isPending ? 'Processing...' : 'Submit Payroll'}
+            {createPayrollMutation.isPending ? uiText("Processing...") : uiText("Submit Payroll")}
           </Button>
         </DialogActions>
       </Dialog>

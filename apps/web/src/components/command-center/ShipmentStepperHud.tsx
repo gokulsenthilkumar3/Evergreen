@@ -1,3 +1,4 @@
+import { uiTemplate, uiText } from "../../i18n";
 import React, { useState } from 'react';
 import {
   Box,
@@ -161,7 +162,7 @@ export const ShipmentStepperHud: React.FC<ShipmentStepperHudProps> = ({
           </Typography>
         </Box>
         <Chip
-          label={`ETA ${activeShipment.eta}`}
+          label={uiTemplate`ETA ${activeShipment.eta}`}
           size="small"
           sx={{
             fontWeight: 800,
@@ -276,7 +277,7 @@ export const ShipmentStepperHud: React.FC<ShipmentStepperHudProps> = ({
                       lineHeight: 1.15,
                     }}
                   >
-                    {label}
+                    {uiText(label, 'forms')}
                   </Typography>
                 </Box>
               );

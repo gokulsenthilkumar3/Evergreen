@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage, uiLocale, uiTemplate } from "../i18n";
 import { useMemo, useState } from 'react';
 import { Add as AddIcon, Remove as RemoveIcon, ShoppingCart as CartIcon } from '@mui/icons-material';
 import { Box, Button, Chip, Grid, IconButton, MenuItem, Paper, Stack, TextField, Typography } from '@mui/material';
@@ -8,9 +9,10 @@ import api from '../utils/api';
 type StoreItem = { id: number; sku: string; name: string; type: string; uom: string; salePrice: number; gstRate: number; active: boolean; stock: { available: number } };
 type StoreCustomer = { id: number; name: string; active: boolean };
 type CartLine = { itemId: number; quantity: number };
-const money = (value: number) => `₹${value.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const money = (value: number) => `₹${value.toLocaleString(uiLocale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 export default function Store({ onNavigate }: { onNavigate?: (page: string) => void }) {
+  useUiLanguage();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [customerId, setCustomerId] = useState<number | ''>('');
@@ -32,46 +34,46 @@ export default function Store({ onNavigate }: { onNavigate?: (page: string) => v
     });
   };
   const reserveOrder = async () => {
-    if (!customerId || !cart.length) { toast.error('Choose a customer and at least one item'); return; }
+    if (!customerId || !cart.length) { toast.error(uiText('Choose a customer and at least one item', 'feedback')); return; }
     setSaving(true);
     try {
       await api.post('/commerce/orders', { customerId, notes, lines: cart.map(line => ({ itemId: line.itemId, quantity: line.quantity })) });
       setCart([]); setNotes('');
       await Promise.all([queryClient.invalidateQueries({ queryKey: ['commerce-items'] }), queryClient.invalidateQueries({ queryKey: ['commerce-orders'] })]);
-      toast.success('Sales order created and stock reserved');
-    } catch (error: any) { toast.error(error.response?.data?.message || 'Could not create order'); }
+      toast.success(uiText('Sales order created and stock reserved', 'feedback'));
+    } catch (error: any) { toast.error(uiText(error.response?.data?.message || 'Could not create order', 'feedback')); }
     finally { setSaving(false); }
   };
 
   return <Box sx={{ maxWidth: 1280, mx: 'auto', width: '100%' }}>
     <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ sm: 'center' }} justifyContent="space-between" spacing={2} sx={{ mb: 3 }}>
-      <Box><Typography variant="h4" fontWeight={800}>Store</Typography><Typography color="text.secondary">Sell from the shared catalogue and reserve stock in a sales order.</Typography></Box>
-      <Stack direction="row" spacing={1}><Button variant="contained" href="/shop" target="_blank" rel="noopener noreferrer">Open public shop</Button><Button variant="outlined" onClick={() => onNavigate?.('catalogue')}>Manage catalogue</Button><Button variant="outlined" onClick={() => onNavigate?.('orders')}>Sales orders</Button></Stack>
+      <Box><Typography variant="h4" fontWeight={800}>{uiText("Store")}</Typography><Typography color="text.secondary">{uiText("Sell from the shared catalogue and reserve stock in a sales order.")}</Typography></Box>
+      <Stack direction="row" spacing={1}><Button variant="contained" href="/shop" target="_blank" rel="noopener noreferrer">{uiText("Open public shop")}</Button><Button variant="outlined" onClick={() => onNavigate?.('catalogue')}>{uiText("Manage catalogue")}</Button><Button variant="outlined" onClick={() => onNavigate?.('orders')}>{uiText("Sales orders")}</Button></Stack>
     </Stack>
     <Grid container spacing={2}>
       <Grid size={{ xs: 12, lg: 8 }}>
-        <TextField label="Search products or SKU" value={search} onChange={event => setSearch(event.target.value)} size="small" fullWidth sx={{ mb: 2 }} />
+        <TextField label={uiText("Search products or SKU", 'forms')} value={search} onChange={event => setSearch(event.target.value)} size="small" fullWidth sx={{ mb: 2 }} />
         <Grid container spacing={2}>
           {visibleItems.map(item => <Grid key={item.id} size={{ xs: 12, sm: 6, xl: 4 }}><Paper variant="outlined" sx={{ p: 2, height: '100%', borderRadius: 2 }}>
             <Stack direction="row" justifyContent="space-between" spacing={1}><Typography fontWeight={700}>{item.name}</Typography><Chip label={item.type.replaceAll('_', ' ')} size="small" /></Stack>
             <Typography variant="caption" color="text.secondary">{item.sku}</Typography>
-            <Typography sx={{ mt: 1 }}>{money(item.salePrice)} <Typography component="span" variant="caption">+ {item.gstRate}% GST</Typography></Typography>
-            <Typography variant="body2" color="text.secondary">{item.type === 'SERVICE' ? 'Service' : `${item.stock.available} ${item.uom} available`}</Typography>
-            <Button sx={{ mt: 2 }} variant="outlined" fullWidth startIcon={<AddIcon />} onClick={() => changeQuantity(item, 1)}>Add to order</Button>
+            <Typography sx={{ mt: 1 }}>{money(item.salePrice)} <Typography component="span" variant="caption">+ {item.gstRate}{uiText("% GST")}</Typography></Typography>
+            <Typography variant="body2" color="text.secondary">{item.type === 'SERVICE' ? uiText("Service") : uiTemplate`${item.stock.available} ${item.uom} available`}</Typography>
+            <Button sx={{ mt: 2 }} variant="outlined" fullWidth startIcon={<AddIcon />} onClick={() => changeQuantity(item, 1)}>{uiText("Add to order")}</Button>
           </Paper></Grid>)}
         </Grid>
-        {!isLoading && !visibleItems.length && <Paper variant="outlined" sx={{ p: 4, textAlign: 'center' }}>No available items match your search. Add stock or manage the catalogue.</Paper>}
+        {!isLoading && !visibleItems.length && <Paper variant="outlined" sx={{ p: 4, textAlign: 'center' }}>{uiText("No available items match your search. Add stock or manage the catalogue.")}</Paper>}
       </Grid>
       <Grid size={{ xs: 12, lg: 4 }}><Paper variant="outlined" sx={{ p: 2, borderRadius: 2, position: { lg: 'sticky' }, top: 16 }}>
-        <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}><CartIcon color="primary" /><Typography variant="h6" fontWeight={700}>Current order</Typography></Stack>
-        <TextField select label="Customer" value={customerId} onChange={event => setCustomerId(Number(event.target.value))} fullWidth size="small" sx={{ mb: 2 }}><MenuItem value="">Choose customer</MenuItem>{customers.filter(customer => customer.active).map(customer => <MenuItem key={customer.id} value={customer.id}>{customer.name}</MenuItem>)}</TextField>
-        {!customers.length && <Button onClick={() => onNavigate?.('customers')} sx={{ mb: 1 }}>Add customer</Button>}
-        {cartRows.map(row => <Stack key={row.itemId} direction="row" alignItems="center" spacing={1} sx={{ py: 1, borderBottom: '1px solid', borderColor: 'divider' }}><Box sx={{ flex: 1 }}><Typography fontWeight={600}>{row.item!.name}</Typography><Typography variant="caption">{money(row.item!.salePrice)} / {row.item!.uom}</Typography></Box><IconButton size="small" aria-label={`Remove ${row.item!.name}`} onClick={() => changeQuantity(row.item!, -1)}><RemoveIcon fontSize="small" /></IconButton><Typography>{row.quantity}</Typography><IconButton size="small" aria-label={`Add ${row.item!.name}`} onClick={() => changeQuantity(row.item!, 1)}><AddIcon fontSize="small" /></IconButton></Stack>)}
-        {!cartRows.length && <Typography color="text.secondary" sx={{ py: 3, textAlign: 'center' }}>No items selected.</Typography>}
-        <TextField label="Order notes" value={notes} onChange={event => setNotes(event.target.value)} multiline minRows={2} fullWidth size="small" sx={{ mt: 2 }} />
-        <Stack direction="row" justifyContent="space-between" sx={{ my: 2 }}><Typography fontWeight={700}>Estimated total incl. GST</Typography><Typography fontWeight={800}>{money(estimatedTotal)}</Typography></Stack>
-        <Button variant="contained" fullWidth disabled={saving || !customerId || !cart.length} onClick={reserveOrder}>{saving ? 'Reserving…' : 'Create sales order'}</Button>
-        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>Final tax and payment are recorded when the order is converted in Invoice Studio.</Typography>
+        <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}><CartIcon color="primary" /><Typography variant="h6" fontWeight={700}>{uiText("Current order")}</Typography></Stack>
+        <TextField select label={uiText("Customer", 'forms')} value={customerId} onChange={event => setCustomerId(Number(event.target.value))} fullWidth size="small" sx={{ mb: 2 }}><MenuItem value="">{uiText("Choose customer", 'forms')}</MenuItem>{customers.filter(customer => customer.active).map(customer => <MenuItem key={customer.id} value={customer.id}>{customer.name}</MenuItem>)}</TextField>
+        {!customers.length && <Button onClick={() => onNavigate?.('customers')} sx={{ mb: 1 }}>{uiText("Add customer")}</Button>}
+        {cartRows.map(row => <Stack key={row.itemId} direction="row" alignItems="center" spacing={1} sx={{ py: 1, borderBottom: '1px solid', borderColor: 'divider' }}><Box sx={{ flex: 1 }}><Typography fontWeight={600}>{row.item!.name}</Typography><Typography variant="caption">{money(row.item!.salePrice)} / {row.item!.uom}</Typography></Box><IconButton size="small" aria-label={uiTemplate`Remove ${row.item!.name}`} onClick={() => changeQuantity(row.item!, -1)}><RemoveIcon fontSize="small" /></IconButton><Typography>{row.quantity}</Typography><IconButton size="small" aria-label={uiTemplate`Add ${row.item!.name}`} onClick={() => changeQuantity(row.item!, 1)}><AddIcon fontSize="small" /></IconButton></Stack>)}
+        {!cartRows.length && <Typography color="text.secondary" sx={{ py: 3, textAlign: 'center' }}>{uiText("No items selected.")}</Typography>}
+        <TextField label={uiText("Order notes", 'forms')} value={notes} onChange={event => setNotes(event.target.value)} multiline minRows={2} fullWidth size="small" sx={{ mt: 2 }} />
+        <Stack direction="row" justifyContent="space-between" sx={{ my: 2 }}><Typography fontWeight={700}>{uiText("Estimated total incl. GST")}</Typography><Typography fontWeight={800}>{money(estimatedTotal)}</Typography></Stack>
+        <Button variant="contained" fullWidth disabled={saving || !customerId || !cart.length} onClick={reserveOrder}>{saving ? uiText("Reserving…") : uiText("Create sales order")}</Button>
+        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>{uiText("Final tax and payment are recorded when the order is converted in Invoice Studio.")}</Typography>
       </Paper></Grid>
     </Grid>
   </Box>;

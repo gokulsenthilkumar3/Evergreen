@@ -1,3 +1,4 @@
+import { uiText } from "../../i18n";
 import React, { Component, type ErrorInfo, type ReactNode } from 'react';
 import { Box, Typography, Button, Paper, Alert } from '@mui/material';
 import { Refresh as RefreshIcon, BugReport as BugIcon } from '@mui/icons-material';
@@ -78,12 +79,10 @@ class ErrorBoundary extends Component<Props, State> {
             <BugIcon sx={{ fontSize: 64, color: 'error.main', mb: 2 }} />
             
             <Typography variant="h4" gutterBottom sx={{ fontWeight: 700 }}>
-              Something Went Wrong
-            </Typography>
+              {uiText("Something Went Wrong ")}</Typography>
             
             <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-              We apologize for the inconvenience. The application encountered an unexpected error.
-            </Typography>
+              {uiText("We apologize for the inconvenience. The application encountered an unexpected error. ")}</Typography>
 
             <Alert severity="error" sx={{ mb: 3, textAlign: 'left' }}>
               <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.875rem' }}>
@@ -115,19 +114,17 @@ class ErrorBoundary extends Component<Props, State> {
                 startIcon={<RefreshIcon />}
                 onClick={this.handleRetry}
               >
-                Reload Application
-              </Button>
+                {uiText("Reload Application ")}</Button>
               
               <Button
                 variant="outlined"
                 onClick={() => window.location.href = '/'}
               >
-                Go to Dashboard
-              </Button>
+                {uiText("Go to Dashboard ")}</Button>
             </Box>
 
             <Typography variant="caption" color="text.secondary" sx={{ mt: 3, display: 'block' }}>
-              Error ID: {Math.random().toString(36).substring(2, 15)}
+              {uiText("Error ID: ")}{Math.random().toString(36).substring(2, 15)}
             </Typography>
           </Paper>
         </Box>

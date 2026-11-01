@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage, uiLocale, uiTemplate, uiDateLocale, uiScopedTemplate } from "../i18n";
 import React, { useState, useMemo } from 'react';
 import {
   Box,
@@ -49,6 +50,7 @@ interface BookRecord {
 }
 
 export default function BookEllam() {
+  useUiLanguage();
   const [activeTab, setActiveTab] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [dateFilter, setDateFilter] = useState<string>('');
@@ -235,7 +237,7 @@ export default function BookEllam() {
     ];
 
     const rows = filteredRecords.map(r => [
-      new Date(r.date).toLocaleDateString(),
+      new Date(r.date).toLocaleDateString(uiDateLocale()),
       r.bookType,
       r.referenceNo || '',
       r.partyName || '',
@@ -251,23 +253,21 @@ export default function BookEllam() {
 
   return (
     <Box sx={{ p: 3, maxWidth: 1400, mx: 'auto' }}>
-      {(inwardError || outwardError) && <Alert severity="error" sx={{ mb: 2 }}>Some registers could not be loaded. These totals are incomplete; reload before reconciling.</Alert>}
-      {inwardLoading && <Alert severity="info" sx={{ mb: 2 }}>Loading inward receipts…</Alert>}
+      {(inwardError || outwardError) && <Alert severity="error" sx={{ mb: 2 }}>{uiText("Some registers could not be loaded. These totals are incomplete; reload before reconciling.")}</Alert>}
+      {inwardLoading && <Alert severity="info" sx={{ mb: 2 }}>{uiText("Loading inward receipts…")}</Alert>}
       {/* HEADER */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3, flexWrap: 'wrap', gap: 2 }}>
         <Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <BookIcon sx={{ fontSize: 36, color: 'primary.main' }} />
             <Typography variant="h4" fontWeight={700}>
-              Book-Ellam (புக் எல்லாம்)
-            </Typography>
+              {uiText("Book-Ellam (புக் எல்லாம்) ")}</Typography>
           </Box>
           <Typography variant="body1" color="text.secondary" sx={{ mt: 0.5 }}>
-            Comprehensive Books & Ledger Research Tool — Cross-examine Day Book, Inward (Varavu), Outward (Vilpanai), Stock, Spinning & Khata in one unified register.
-          </Typography>
+            {uiText("Comprehensive Books & Ledger Research Tool — Cross-examine Day Book, Inward (Varavu), Outward (Vilpanai), Stock, Spinning & Khata in one unified register. ")}</Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
-          <Tooltip describeChild title="Administrator export of sales and receipt vouchers. Purchase export awaits approved supplier bills.">
+          <Tooltip describeChild title={uiText("Administrator export of sales and receipt vouchers. Purchase export awaits approved supplier bills.")}>
             <Button 
               variant="contained" 
               startIcon={<BookIcon />} 
@@ -279,14 +279,13 @@ export default function BookEllam() {
                   link.href = url; link.download = 'Tally-Sales-Receipts.xml';
                   document.body.appendChild(link); link.click(); link.remove();
                   setTimeout(() => URL.revokeObjectURL(url), 1000);
-                } catch { toast.error('Tally export failed. An administrator account is required.'); }
+                } catch { toast.error(uiText('Tally export failed. An administrator account is required.', 'feedback')); }
               }}
               sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 700, bgcolor: '#F59E0B', color: '#070B14', '&:hover': { bgcolor: '#D97706' } }}
             >
-              Export Sales / Receipts XML
-            </Button>
+              {uiText("Export Sales / Receipts XML ")}</Button>
           </Tooltip>
-          <Tooltip title="Export filtered rows to CSV for Statutory Auditor or GST reconciliation">
+          <Tooltip title={uiText("Export filtered rows to CSV for Statutory Auditor or GST reconciliation")}>
             <Button 
               variant="contained" 
               color="primary"
@@ -294,8 +293,7 @@ export default function BookEllam() {
               onClick={exportToCSV}
               sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600 }}
             >
-              Export CSV Audit
-            </Button>
+              {uiText("Export CSV Audit ")}</Button>
           </Tooltip>
           <Button 
             variant="outlined" 
@@ -303,8 +301,7 @@ export default function BookEllam() {
             onClick={() => window.print()}
             sx={{ borderRadius: 2, textTransform: 'none' }}
           >
-            Print Ledger Book
-          </Button>
+            {uiText("Print Ledger Book ")}</Button>
         </Box>
       </Box>
 
@@ -318,43 +315,36 @@ export default function BookEllam() {
         <Card sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
           <CardContent>
             <Typography variant="caption" color="text.secondary" fontWeight={600} textTransform="uppercase">
-              Transactions Listed
-            </Typography>
+              {uiText("Transactions Listed ")}</Typography>
             <Typography variant="h5" fontWeight={700} sx={{ mt: 0.5 }}>
-              {filteredRecords.length} Records
-            </Typography>
+              {filteredRecords.length} {uiText(" Records ")}</Typography>
           </CardContent>
         </Card>
 
         <Card sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
           <CardContent>
             <Typography variant="caption" color="text.secondary" fontWeight={600} textTransform="uppercase">
-              Total Inward Weight (Varavu)
-            </Typography>
+              {uiText("Total Inward Weight (Varavu) ")}</Typography>
             <Typography variant="h5" fontWeight={700} color="success.main" sx={{ mt: 0.5 }}>
-              {totalInwardKg.toLocaleString()} Kg
-            </Typography>
+              {totalInwardKg.toLocaleString(uiLocale())} {uiText(" Kg ")}</Typography>
           </CardContent>
         </Card>
 
         <Card sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
           <CardContent>
             <Typography variant="caption" color="text.secondary" fontWeight={600} textTransform="uppercase">
-              Total Outward Dispatched (Selavu)
-            </Typography>
+              {uiText("Total Outward Dispatched (Selavu) ")}</Typography>
             <Typography variant="h5" fontWeight={700} color="info.main" sx={{ mt: 0.5 }}>
-              {totalOutwardKg.toLocaleString()} Kg
-            </Typography>
+              {totalOutwardKg.toLocaleString(uiLocale())} {uiText(" Kg ")}</Typography>
           </CardContent>
         </Card>
 
         <Card sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
           <CardContent>
             <Typography variant="caption" color="text.secondary" fontWeight={600} textTransform="uppercase">
-              Book Amount / Ledger Value
-            </Typography>
+              {uiText("Book Amount / Ledger Value ")}</Typography>
             <Typography variant="h5" fontWeight={700} color="warning.main" sx={{ mt: 0.5 }}>
-              ₹{totalValuation.toLocaleString()}
+              {uiText("₹")}{totalValuation.toLocaleString(uiLocale())}
             </Typography>
           </CardContent>
         </Card>
@@ -372,7 +362,7 @@ export default function BookEllam() {
             <TextField
               fullWidth
               size="small"
-              placeholder="Search across all books by Party, Challan #, Lot #, Vehicle #, or Status..."
+              placeholder={uiText("Search across all books by Party, Challan #, Lot #, Vehicle #, or Status...", 'forms')}
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               InputProps={{
@@ -389,7 +379,7 @@ export default function BookEllam() {
               fullWidth
               size="small"
               type="date"
-              label="Filter by Date"
+              label={uiText("Filter by Date", 'forms')}
               value={dateFilter}
               onChange={e => setDateFilter(e.target.value)}
               InputLabelProps={{ shrink: true }}
@@ -402,8 +392,7 @@ export default function BookEllam() {
                 color="secondary"
                 onClick={() => { setSearchQuery(''); setDateFilter(''); }}
               >
-                Clear Filters
-              </Button>
+                {uiText("Clear Filters ")}</Button>
             </Box>
           )}
         </Box>
@@ -416,12 +405,12 @@ export default function BookEllam() {
             variant="scrollable"
             scrollButtons="auto"
           >
-            <Tab label={`All Books (${allRecords.length})`} value="ALL" icon={<FilterIcon />} iconPosition="start" />
-            <Tab label="Inward Book (வரவு)" value="INWARD" icon={<InwardIcon />} iconPosition="start" />
-            <Tab label="Outward Book (செலவு)" value="OUTWARD" icon={<OutwardIcon />} iconPosition="start" />
-            <Tab label="Stock & Waste (சரக்கு)" value="STOCK" icon={<StockIcon />} iconPosition="start" />
-            <Tab label="Spinning Runs (உற்பத்தி)" value="MACHINES" icon={<SpinningIcon />} iconPosition="start" />
-            <Tab label="Party Ledger (பேரேடு / Khata)" value="LEDGER" icon={<LedgerIcon />} iconPosition="start" />
+            <Tab label={uiScopedTemplate('tabs')`All Books (${allRecords.length})`} value="ALL" icon={<FilterIcon />} iconPosition="start" />
+            <Tab label={uiText("Inward Book (வரவு)", 'tabs')} value="INWARD" icon={<InwardIcon />} iconPosition="start" />
+            <Tab label={uiText("Outward Book (செலவு)", 'tabs')} value="OUTWARD" icon={<OutwardIcon />} iconPosition="start" />
+            <Tab label={uiText("Stock & Waste (சரக்கு)", 'tabs')} value="STOCK" icon={<StockIcon />} iconPosition="start" />
+            <Tab label={uiText("Spinning Runs (உற்பத்தி)", 'tabs')} value="MACHINES" icon={<SpinningIcon />} iconPosition="start" />
+            <Tab label={uiText("Party Ledger (பேரேடு / Khata)", 'tabs')} value="LEDGER" icon={<LedgerIcon />} iconPosition="start" />
           </Tabs>
         </Box>
       </Paper>
@@ -431,21 +420,21 @@ export default function BookEllam() {
         <Table sx={{ minWidth: 750 }}>
           <TableHead sx={{ bgcolor: 'action.hover' }}>
             <TableRow>
-              <TableCell sx={{ fontWeight: 700 }}>Date</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Book Register</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Ref / Challan #</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Party / Mill Contact</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Material / Particulars</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 700 }}>Inward (Kg)</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 700 }}>Outward (Kg)</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 700 }}>Amount (₹)</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>{uiText("Date", 'tables')}</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>{uiText("Book Register", 'tables')}</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>{uiText("Ref / Challan #", 'tables')}</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>{uiText("Party / Mill Contact", 'tables')}</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>{uiText("Material / Particulars", 'tables')}</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 700 }}>{uiText("Inward (Kg)", 'tables')}</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 700 }}>{uiText("Outward (Kg)", 'tables')}</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 700 }}>{uiText("Amount (₹)", 'tables')}</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>{uiText("Status", 'tables')}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {filteredRecords.map((row) => (
               <TableRow key={row.id} hover>
-                <TableCell>{new Date(row.date).toLocaleDateString()}</TableCell>
+                <TableCell>{new Date(row.date).toLocaleDateString(uiDateLocale())}</TableCell>
                 <TableCell>
                   <Chip 
                     label={row.bookType} 
@@ -464,13 +453,13 @@ export default function BookEllam() {
                 <TableCell>{row.partyName}</TableCell>
                 <TableCell>{row.description}</TableCell>
                 <TableCell align="right" sx={{ color: 'success.main', fontWeight: 600 }}>
-                  {row.inwardKg ? `${row.inwardKg.toLocaleString()} kg` : '—'}
+                  {row.inwardKg ? uiScopedTemplate('tables')`${row.inwardKg.toLocaleString(uiLocale())} kg` : '—'}
                 </TableCell>
                 <TableCell align="right" sx={{ color: 'info.main', fontWeight: 600 }}>
-                  {row.outwardKg ? `${row.outwardKg.toLocaleString()} kg` : '—'}
+                  {row.outwardKg ? uiScopedTemplate('tables')`${row.outwardKg.toLocaleString(uiLocale())} kg` : '—'}
                 </TableCell>
                 <TableCell align="right" sx={{ fontWeight: 600 }}>
-                  {row.amount ? `₹${row.amount.toLocaleString()}` : '—'}
+                  {row.amount ? uiScopedTemplate('tables')`₹${row.amount.toLocaleString(uiLocale())}` : '—'}
                 </TableCell>
                 <TableCell>
                   <Chip 
@@ -484,8 +473,7 @@ export default function BookEllam() {
             {filteredRecords.length === 0 && (
               <TableRow>
                 <TableCell colSpan={9} align="center" sx={{ py: 4, color: 'text.secondary' }}>
-                  No records match your Book-Ellam search query. Try broadening your keyword or date filter.
-                </TableCell>
+                  {uiText("No records match your Book-Ellam search query. Try broadening your keyword or date filter. ", 'tables')}</TableCell>
               </TableRow>
             )}
           </TableBody>

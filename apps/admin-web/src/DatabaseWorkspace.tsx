@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import DatabaseFleet from './DatabaseFleet';
+import SystemConsole from './SystemConsole';
 type Snapshot = {
   engine: string;
   scope: string;
@@ -80,7 +82,7 @@ export default function DatabaseWorkspace({ apiBase }: { apiBase: string }) {
       <div className="page-toolbar">
         <div>
           <p className="workspace-eyebrow">OWNER / DATA</p>
-          <h1 className="page-title">Database studio</h1>
+          <h1 className="page-title">Database console</h1>
           <p className="workspace-subtitle">
             Live provider diagnostics and Prisma schema. Refresh before making
             an operational decision.
@@ -100,6 +102,8 @@ export default function DatabaseWorkspace({ apiBase }: { apiBase: string }) {
           {error}
         </p>
       )}
+      <DatabaseFleet apiBase={apiBase} />
+      <SystemConsole apiBase={apiBase} />
       {data && (
         <>
           <div className="database-health-grid">

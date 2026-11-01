@@ -10,6 +10,7 @@ Start with the [Quick Start](../QUICK_START.md). Inside the app, the searchable 
 | [Architecture decision](decisions/0001-installation-and-data-boundaries.md) | Why the modular monolith and separate customer installations are retained, with rollout and rollback gates |
 | [Business flow](BUSINESS_FLOW.md) | How material and money move, who owns each handoff, and the end-to-end acceptance check |
 | [Integrations](INTEGRATIONS.md) | CSV import, Tally export, and the webhook and e-Way Bill designs |
+| [Helpdesk setup](HELPDESK_SETUP.md) | Queues, SLA calendars, SMTP replies, local antivirus, signed connectors and implementation limits |
 | [Desktop delivery](DESKTOP_DELIVERY.md) | Electron development, packaging and customer installation |
 | [Installation, deployment and updates](ONE_CLICK_DELIVERY.md) | Windows installer, hosted commands, provider runner setup and recovery |
 | [Weighbridge agent](WEIGHBRIDGE_AGENT_ARCHITECTURE.md) | Indicator protocols, receipt signing and label printing |
@@ -66,3 +67,7 @@ The [Integrations operating guide](wiki/pages/Integrations.md) is the exception 
 - When a workflow changes, update its code, the in-app guide and its acceptance checks together.
 - Describe what the code does today. Label anything proposed as proposed.
 - Never infer readiness from a document's title or from a passing build.
+# Cloud delivery planning
+
+See [cloud, web, desktop and assisted installation](CLOUD_WEB_DESKTOP_PLAN.md) for the current runtime, prerequisite setup steps, owner credential boundary and implementation gates.
+

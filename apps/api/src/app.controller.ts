@@ -1,5 +1,5 @@
 import { requireInstallationLicence } from '@evergreen/types/licensing';
-import { Controller, Get, Res } from '@nestjs/common';
+import { Controller, Get, Res, Logger } from '@nestjs/common';
 import type { Response } from 'express';
 import { AppService } from './app.service';
 import { Public } from './decorators/public.decorator';
@@ -7,6 +7,7 @@ import { Roles } from './decorators/roles.decorator';
 
 @Controller()
 export class AppController {
+  private readonly logger = new Logger(AppController.name);
   constructor(private readonly appService: AppService) {}
 
   @Get('license/status')
@@ -15,7 +16,8 @@ export class AppController {
     try {
       requireInstallationLicence('tenant');
       return { active: true };
-    } catch {
+    } catch (error) {
+      this.logger.warn(`Installation authorization unavailable: ${error instanceof Error ? error.message.slice(0,200) : 'unknown error'}`);
       return { active: false };
     }
   }

@@ -1,0 +1,15 @@
+@keyframes workspace-reveal { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes modal-reveal { from { opacity: 0; transform: perspective(1000px) rotateX(-3deg) translateY(12px) scale(.985); } to { opacity: 1; transform: perspective(1000px) rotateX(0) translateY(0) scale(1); } }
+@media(prefers-reduced-motion: no-preference) {
+ .ops-overview,.database-workspace { animation: workspace-reveal 280ms ease-out both; }
+ .modal-dialog-box { animation: modal-reveal 220ms ease-out both; transform-origin: 50% 25%; }
+ .ops-stat,.record-card-grid > .glass-panel,.database-health-card { transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease; }
+ .ops-stat:hover,.record-card-grid > .glass-panel:hover { transform: perspective(1100px) translateY(-3px) rotateX(1deg) rotateY(-1deg); border-color: var(--adm-border-hover); box-shadow: 0 12px 28px #0004; }
+ .database-health-card:hover { transform: translateY(-2px); }
+ .nav-tab-btn,.btn-table-action,.btn-provision-trigger { transition: background-color 150ms ease, transform 150ms ease; }
+ .btn-table-action:active,.btn-provision-trigger:active { transform: scale(.98); }
+ .meter-fill { transition: width 400ms ease; }
+}
+@media(prefers-reduced-motion: reduce) { *,*::before,*::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
+.system-db-path { padding: 14px; background: #050a14; border: 1px solid var(--adm-border); border-radius: 8px; overflow-wrap: anywhere; }
+.system-console { margin-block: 24px; }.system-console table code { white-space: normal; overflow-wrap: anywhere; }

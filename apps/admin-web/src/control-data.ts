@@ -1,5 +1,5 @@
 export type Kind = 'TASK'|'MAINTENANCE'|'DATABASE'|'API'|'WEBHOOK'|'INTEGRATION'|'PAYMENT'|'AGREEMENT'|'INCIDENT'|'RUNBOOK'|'CHAT'|'AGENT'|'RELEASE'|'DEPLOYMENT'|'INQUIRY'|'DASHBOARD';
-export interface RecordItem { id:string; kind:Kind; title:string; status:string; priority:string; owner:string; companyId?:string|null; dueAt?:string|null; payload:Record<string, string|number|boolean>; version:number; createdAt:string; updatedAt:string; requestKey?:string }
+export interface RecordItem { id:string; kind:Kind; title:string; status:string; priority:string; owner:string; companyId?:string|null; dueAt?:string|null; payload:Record<string, string|number|boolean>; version:number; createdAt:string; updatedAt:string; requestKey?:string; proof?: import('./redesign/ProofBadge').Proof }
 export interface Tenant { id:string; name:string; cloudProvider:string; plan:string; status:string; appVersion:string; activeStaff:number; docsPosted:number; maxUsers:number; maxMachines:number; maxDocsPerMonth:number; expiresAt:string|null; isMaintenance:boolean; lastSyncAt:string|null }
 export interface Audit { id:string; action:string; actor:string; details:string; createdAt:string }
 export interface Connector { id:string; name:string; category:string; mark:string; color:string; description:string; docs:string; auth:string; events:string }

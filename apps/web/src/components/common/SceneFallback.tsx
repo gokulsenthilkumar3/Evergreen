@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage } from "../../i18n";
 import { Suspense, type ReactNode } from 'react';
 import { Box, keyframes, useTheme } from '@mui/material';
 import ErrorBoundary from './ErrorBoundary';
@@ -37,6 +38,7 @@ interface SceneFallbackProps {
  * It needs no network or GPU, and holds still when the viewer prefers reduced motion.
  */
 export default function SceneFallback({ height = 240, label = 'Yarn cone illustration' }: SceneFallbackProps) {
+  useUiLanguage();
   const theme = useTheme();
   const dark = theme.palette.mode === 'dark';
   const primary = theme.palette.primary.main;
@@ -101,7 +103,8 @@ export default function SceneFallback({ height = 240, label = 'Yarn cone illustr
 
 /** Render a decorative 3D scene only where it can work; otherwise, and while it loads or if it fails, show the 2D cone. */
 export function SafeScene({ children, height = 240, label }: SceneFallbackProps & { children: ReactNode }) {
-  const fallback = <SceneFallback height={height} label={label} />;
+  useUiLanguage();
+  const fallback = <SceneFallback height={height} label={typeof label === 'string' ? uiText(label, 'forms') : label} />;
   if (!canUseWebGL()) return fallback;
   return (
     <ErrorBoundary fallback={fallback}>

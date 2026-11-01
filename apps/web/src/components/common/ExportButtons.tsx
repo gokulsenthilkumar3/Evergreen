@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage } from "../../i18n";
 import React from 'react';
 import { Box, Button, Tooltip } from '@mui/material';
 import {
@@ -39,6 +40,7 @@ const ExportButtons: React.FC<ExportButtonsProps> = ({
   showPdf   = true,
   showImage = false,
 }) => {
+  useUiLanguage();
   const buttons: ExportBtn[] = [
     {
       key:    'email',

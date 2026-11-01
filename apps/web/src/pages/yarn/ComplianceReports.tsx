@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage, uiLocale, uiMetric } from "../../i18n";
 import React from 'react';
 import { Refresh as RefreshIcon } from '@mui/icons-material';
 import {
@@ -22,6 +23,7 @@ interface PayrollEntry {
 }
 
 const ComplianceReports: React.FC = () => {
+  useUiLanguage();
   const queryClient = useQueryClient();
   const month = new Date().toISOString().slice(0, 7); // YYYY-MM
 
@@ -45,12 +47,12 @@ const ComplianceReports: React.FC = () => {
   const cards = [
     {
       label: 'Recorded invoiced value',
-      value: `₹${Number(report.data?.invoicedValue ?? 0).toLocaleString('en-IN')}`,
+      value: `₹${Number(report.data?.invoicedValue ?? 0).toLocaleString(uiLocale())}`,
       detail: 'Internal invoice records',
     },
     {
       label: 'Current receivables',
-      value: `₹${Number(report.data?.receivables ?? 0).toLocaleString('en-IN')}`,
+      value: `₹${Number(report.data?.receivables ?? 0).toLocaleString(uiLocale())}`,
       detail: 'Internal ledger balance',
     },
     {
@@ -66,40 +68,34 @@ const ComplianceReports: React.FC = () => {
       <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, mb: 3 }}>
         <Box>
           <Typography variant="h4" fontWeight={800}>
-            Compliance Readiness
-          </Typography>
+            {uiText("Compliance Readiness ")}</Typography>
           <Typography color="text.secondary">
-            Operational source records that may support your filings.
-          </Typography>
+            {uiText("Operational source records that may support your filings. ")}</Typography>
         </Box>
         <Button startIcon={<RefreshIcon />} onClick={refresh}>
-          Refresh
-        </Button>
+          {uiText("Refresh ")}</Button>
       </Box>
 
       {(report.error || payroll.error) && (
         <Alert severity="error" sx={{ mb: 2 }}>
-          Some readiness data could not be loaded.
-        </Alert>
+          {uiText("Some readiness data could not be loaded. ")}</Alert>
       )}
 
       <Alert severity="warning" sx={{ mb: 2 }}>
-        No statutory filing provider is connected. These figures show internal records only;
-        they do not indicate that a return was prepared, submitted, or accepted.
-      </Alert>
+        {uiText("No statutory filing provider is connected. These figures show internal records only; they do not indicate that a return was prepared, submitted, or accepted. ")}</Alert>
 
       {loading ? (
-        <CircularProgress aria-label="Loading readiness data" />
+        <CircularProgress aria-label={uiText("Loading readiness data")} />
       ) : (
         <Grid container spacing={2}>
           {cards.map((card) => (
             <Grid key={card.label} size={{ xs: 12, md: 4 }}>
               <Paper variant="outlined" sx={{ p: 2.5, height: '100%' }}>
                 <Typography variant="body2" color="text.secondary">
-                  {card.label}
+                  {uiText(card.label, 'metrics')}
                 </Typography>
                 <Typography variant="h5" fontWeight={800} sx={{ my: 1 }}>
-                  {card.value}
+                  {uiMetric(card.value)}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
                   {card.detail}

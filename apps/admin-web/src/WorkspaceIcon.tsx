@@ -1,6 +1,6 @@
 import type { TabId } from "./App";
 
-const paths: Record<TabId, string> = {
+const paths: Partial<Record<TabId, string>> = {
   MARKETING_SETTINGS: 'M3 4h18v16H3zM3 9h18M8 9v11m4-7h6m-6 3h4',
   DASHBOARD: "M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h7v7h-7z",
   TENANTS: "M3 21V8l6 3V8l6 3V3h5v18H3 M6 16h1m4 0h1m4 0h1",
@@ -36,7 +36,7 @@ export function WorkspaceIcon({ name }: { name: TabId }) {
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      <path d={paths[name]} />
+      <path d={paths[name] || 'M12 3 21 8v9l-9 5-9-5V8l9-5 M12 3v19M3 8l9 5 9-5'} />
     </svg>
   );
 }

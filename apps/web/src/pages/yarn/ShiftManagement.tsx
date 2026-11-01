@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage } from "../../i18n";
 import React, { useState } from 'react';
 import { Add as AddIcon, Refresh as RefreshIcon } from '@mui/icons-material';
 import {
@@ -30,6 +31,7 @@ type ShiftForm = { name: string; startTime: string; endTime: string };
 const EMPTY_FORM: ShiftForm = { name: '', startTime: '', endTime: '' };
 
 const ShiftManagement: React.FC = () => {
+  useUiLanguage();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<ShiftForm>(EMPTY_FORM);
@@ -45,10 +47,10 @@ const ShiftManagement: React.FC = () => {
       await queryClient.invalidateQueries({ queryKey: ['hr-shifts'] });
       setOpen(false);
       setForm(EMPTY_FORM);
-      toast.success('Shift saved');
+      toast.success(uiText('Shift saved', 'feedback'));
     },
     onError: (err: any) =>
-      toast.error(err.response?.data?.message ?? 'Could not save shift'),
+      toast.error(uiText(err.response?.data?.message ?? 'Could not save shift', 'feedback')),
   });
 
   const handleOpen = () => {
@@ -73,30 +75,25 @@ const ShiftManagement: React.FC = () => {
       >
         <Box>
           <Typography variant="h4" fontWeight={800}>
-            Shift Management
-          </Typography>
+            {uiText("Shift Management ")}</Typography>
           <Typography color="text.secondary">
-            Shift schedules from the shared HR records.
-          </Typography>
+            {uiText("Shift schedules from the shared HR records. ")}</Typography>
         </Box>
         <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
           <Button
             startIcon={<RefreshIcon />}
             onClick={() => queryClient.invalidateQueries({ queryKey: ['hr-shifts'] })}
           >
-            Refresh
-          </Button>
+            {uiText("Refresh ")}</Button>
           <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpen}>
-            Add Shift
-          </Button>
+            {uiText("Add Shift ")}</Button>
         </Stack>
       </Box>
 
       {/* Error */}
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
-          Could not load shifts. Refresh to try again.
-        </Alert>
+          {uiText("Could not load shifts. Refresh to try again. ")}</Alert>
       )}
 
       {/* Shifts table */}
@@ -104,9 +101,9 @@ const ShiftManagement: React.FC = () => {
         <Table size="small">
           <TableHead>
             <TableRow>
-              <TableCell>Shift</TableCell>
-              <TableCell>Start</TableCell>
-              <TableCell>End</TableCell>
+              <TableCell>{uiText("Shift", 'tables')}</TableCell>
+              <TableCell>{uiText("Start", 'tables')}</TableCell>
+              <TableCell>{uiText("End", 'tables')}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -119,8 +116,7 @@ const ShiftManagement: React.FC = () => {
             ) : shifts.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={3} align="center">
-                  No shifts configured.
-                </TableCell>
+                  {uiText("No shifts configured. ", 'tables')}</TableCell>
               </TableRow>
             ) : (
               shifts.map((shift) => (
@@ -136,24 +132,22 @@ const ShiftManagement: React.FC = () => {
       </Paper>
 
       <Alert severity="info" sx={{ mt: 2 }}>
-        Attendance assignments are not exposed by the current API; this page only shows saved
-        shift schedules.
-      </Alert>
+        {uiText("Attendance assignments are not exposed by the current API; this page only shows saved shift schedules. ")}</Alert>
 
       {/* Add Shift Dialog */}
       <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="xs">
-        <DialogTitle>Add shift</DialogTitle>
+        <DialogTitle>{uiText("Add shift")}</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ pt: 1 }}>
             <TextField
-              label="Shift name"
+              label={uiText("Shift name", 'forms')}
               required
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               fullWidth
             />
             <TextField
-              label="Start time"
+              label={uiText("Start time", 'forms')}
               type="time"
               required
               value={form.startTime}
@@ -162,7 +156,7 @@ const ShiftManagement: React.FC = () => {
               fullWidth
             />
             <TextField
-              label="End time"
+              label={uiText("End time", 'forms')}
               type="time"
               required
               value={form.endTime}
@@ -173,14 +167,13 @@ const ShiftManagement: React.FC = () => {
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpen(false)}>Cancel</Button>
+          <Button onClick={() => setOpen(false)}>{uiText("Cancel")}</Button>
           <Button
             variant="contained"
             disabled={createShift.isPending || !isFormValid}
             onClick={() => createShift.mutate()}
           >
-            Save shift
-          </Button>
+            {uiText("Save shift ")}</Button>
         </DialogActions>
       </Dialog>
     </Box>

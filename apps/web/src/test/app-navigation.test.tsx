@@ -10,6 +10,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "../App";
 import api from "../utils/api";
+import { defaultTamilPreferences, setUiLanguage, setTamilPreferences } from '../i18n';
 
 vi.mock("../utils/api", () => ({
   default: { get: vi.fn(), put: vi.fn(), delete: vi.fn() },
@@ -25,6 +26,8 @@ const clients: QueryClient[] = [];
 let compact = false;
 
 beforeEach(() => {
+  setUiLanguage('en');
+  setTamilPreferences({ ...defaultTamilPreferences });
   compact = false;
   localStorage.clear();
   sessionStorage.clear();
@@ -72,6 +75,21 @@ function mount(role = "ADMIN") {
 }
 
 describe("application navigation shell", () => {
+  it('switches the shell into Tamil and never renders the retired floating bar', async () => {
+    localStorage.setItem('floatingNav', 'true');
+    vi.mocked(api.put).mockResolvedValue({ data: {} });
+    mount();
+    await screen.findByText('Workspace content');
+    expect(document.querySelector('.floating-bottom-nav')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'தமிழ்' }));
+    expect(await screen.findByRole('link', { name: 'வணிகப் பணித்தளம்' })).toBeVisible();
+    expect(screen.getByRole('textbox', { name: 'வணிகப் பதிவுகளைத் தேடு' })).toBeVisible();
+    expect(document.documentElement.lang).toBe('ta');
+    expect(localStorage.getItem('language')).toBe('ta');
+    await waitFor(() => expect(api.put).toHaveBeenCalledWith('/settings', { language: 'ta' }));
+    fireEvent.click(screen.getByRole('button', { name: 'English' }));
+    expect(await screen.findByRole('link', { name: 'Business Workspace' })).toBeVisible();
+  });
   it("shows page context and remembers the desktop rail preference", async () => {
     mount();
     expect(await screen.findByText("Workspace content")).toBeVisible();
@@ -138,13 +156,15 @@ describe("application navigation shell", () => {
         screen.queryByRole("navigation", { name: "Main navigation" }),
       ).not.toBeInTheDocument(),
     );
+    expect(screen.getByRole('button',{name:'English'})).toBeVisible();
+    expect(screen.getByRole('button',{name:'தமிழ்'})).toBeVisible();
     fireEvent.click(screen.getByRole("button", { name: "Account menu" }));
     expect(
       await screen.findByRole("menuitem", { name: "Refresh all data" }),
     ).toBeVisible();
     expect(screen.getByRole("menuitem", { name: "Dark theme" })).toBeVisible();
     expect(
-      screen.getByRole("menuitem", { name: "தமிழில் காண்க" }),
-    ).toBeVisible();
+      screen.queryByRole("menuitem", { name: "தமிழில் காண்க" }),
+    ).not.toBeInTheDocument();
   });
 });

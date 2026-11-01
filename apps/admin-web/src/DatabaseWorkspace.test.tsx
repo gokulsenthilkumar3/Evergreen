@@ -26,11 +26,15 @@ const snapshot = {
     },
   ],
 };
+const sourceResponse = (url: unknown) => new Response(JSON.stringify(
+ String(url).endsWith('/control/database') ? snapshot :
+ String(url).endsWith('/control/system') ? { checkedAt:'2026-11-01T00:00:00Z',database:{engine:'SQLite',location:'/private/provider.db',scope:'Provider',cloudManaged:false},tables:[],modules:[] } : []
+));
 describe("Live provider database workspace", () => {
   it("shows actual diagnostics and schema without simulated maintenance", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue(new Response(JSON.stringify(snapshot))),
+      vi.fn(async url => sourceResponse(url)),
     );
     render(<DatabaseWorkspace apiBase="/admin-api" />);
     await screen.findByText("SQLite / Prisma 5.22.0");
@@ -42,10 +46,11 @@ describe("Live provider database workspace", () => {
     expect(screen.queryByText(/Vacuum & Checkpoint/)).not.toBeInTheDocument();
   });
   it("recovers from a failed request through explicit retry", async () => {
-    const fetcher = vi
-      .fn()
-      .mockRejectedValueOnce(new Error("Connection unavailable"))
-      .mockResolvedValueOnce(new Response(JSON.stringify(snapshot)));
+    let attempts = 0;
+    const fetcher = vi.fn(async url => {
+      if (String(url).endsWith('/control/database') && attempts++ === 0) throw new Error('Connection unavailable');
+      return sourceResponse(url);
+    });
     vi.stubGlobal("fetch", fetcher);
     render(<DatabaseWorkspace apiBase="/admin-api" />);
     await screen.findByRole("alert");

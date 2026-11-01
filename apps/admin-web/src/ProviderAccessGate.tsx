@@ -106,10 +106,7 @@ export default function ProviderAccessGate({
   };
   if (checking)
     return (
-      <main
-        className="gate-checking-root"
-        role="status"
-      >
+      <main className="gate-checking-root" role="status">
         <div className="gate-checking-spinner" />
         Checking owner session...
       </main>
@@ -129,15 +126,54 @@ export default function ProviderAccessGate({
     );
   return (
     <main className="gate-root">
+      <aside className="gate-story">
+        <div className="gate-wordmark">
+          <svg viewBox="0 0 40 40" aria-hidden="true">
+            <path d="M20 3 35 12v17L20 37 5 29V12Z" />
+            <path d="m5 12 15 9 15-9M20 21v16M20 3v18" />
+          </svg>
+          EverGreen<span>PROVIDER WORKSPACE</span>
+        </div>
+        <div className="gate-story-copy">
+          <span className="gate-story-eyebrow">
+            THE PERSPECTIVE BEHIND YOUR OPERATIONS
+          </span>
+          <h2>
+            Your estate.
+            <br />
+            Your decisions.
+            <br />
+            <em>A clearer view.</em>
+          </h2>
+          <p>
+            Bring companies, releases and operational evidence into one
+            considered workspace.
+          </p>
+        </div>
+        <div className="gate-story-art" aria-hidden="true">
+          <div className="gate-art-orbit" />
+          <svg viewBox="0 0 240 170">
+            <path d="m120 15 68 39v77l-68 39-68-39V54Z" />
+            <path d="m52 54 68 39 68-39M120 93v77M120 15v78" />
+            <path d="m120 49 37 21v42l-37 21-37-21V70Z" />
+          </svg>
+          <span className="gate-art-label label-a">COMPANIES</span>
+          <span className="gate-art-label label-b">EVIDENCE</span>
+          <span className="gate-art-label label-c">RELEASES</span>
+        </div>
+        <div className="gate-story-footer">
+          <span>Designed for the owner.</span>
+          <span>Built around evidence.</span>
+        </div>
+      </aside>
       <section className="gate-card">
         <div className="gate-badge">
           <span className="gate-badge-dot" />
-          EVERGREEN OWNER
+          OWNER ACCESS
         </div>
         <h1 className="gate-title">Provider sign-in</h1>
         <p className="gate-subtitle">
-          Use your protected owner access key. It is exchanged for an eight-hour
-          protected session and is not saved in browser storage.
+          Welcome back. Enter your owner access key to open your workspace.
         </p>
         <form onSubmit={login} className="gate-form">
           <label htmlFor="provider-access-key" className="gate-label">
@@ -152,7 +188,7 @@ export default function ProviderAccessGate({
             required
             disabled={busy}
             value={key}
-            placeholder="Paste your 64-character owner access key"
+            placeholder="Enter your owner access key"
             onChange={(event) => setKey(event.target.value)}
           />
           {error && (
@@ -160,20 +196,15 @@ export default function ProviderAccessGate({
               {error}
             </p>
           )}
-          <button
-            disabled={busy || !key.trim()}
-            className="gate-submit-btn"
-          >
+          <button disabled={busy || !key.trim()} className="gate-submit-btn">
             {busy ? "Verifying..." : "Open provider console"}
           </button>
         </form>
         <details className="gate-details">
-          <summary className="gate-summary">
-            Find your owner access key
-          </summary>
+          <summary className="gate-summary">Find your owner access key</summary>
           <p>
-            Run this in your own PowerShell terminal from D:\Projects\EverGreen,
-            under the Windows account that owns the protected services.
+            Run this in PowerShell from the repository root, under the Windows
+            account that owns the protected services.
           </p>
           <code className="gate-code">
             {
@@ -187,9 +218,8 @@ export default function ProviderAccessGate({
           </p>
         </details>
         <p className="gate-footer">
-          Retrieve this key in your own Windows terminal using the owner
-          licensing guide. Do not put it into source code or frontend build
-          variables.
+          Protected session · Eight-hour access · Key never saved in browser
+          storage
         </p>
       </section>
     </main>

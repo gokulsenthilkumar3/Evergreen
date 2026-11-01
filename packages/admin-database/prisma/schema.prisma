@@ -132,3 +132,48 @@ model ControlAudit {
   createdAt DateTime @default(now())
   @@index([createdAt])
 }
+
+// Immutable observations and append-only hash chain. SQL triggers reject mutation.
+model AuditLedger {
+  seq Int @id @default(autoincrement())
+  id String @unique
+  sourceKey String @unique
+  entityType String
+  entityId String
+  title String
+  actor String
+  action String
+  state String
+  evidenceRef String?
+  payloadDigest String
+  hashPrev String
+  hashCurr String
+  at String
+  @@index([entityType, entityId, seq])
+}
+model EvidenceObservation {
+  seq Int @id @default(autoincrement())
+  id String @unique
+  entityType String
+  entityId String
+  entityDigest String
+  ok Boolean
+  source String
+  scope String
+  observedAt String
+  ttlSeconds Int
+  latencyMs Int?
+  statusCode Int?
+  @@index([entityType, entityId, seq])
+}
+model OperationRequest {
+  id String @id
+  requestKey String @unique
+  kind String
+  entityId String
+  actor String
+  payload String
+  state String @default("requested")
+  at String
+  @@index([kind, at])
+}

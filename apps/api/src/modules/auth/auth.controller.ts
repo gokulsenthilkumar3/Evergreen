@@ -1,3 +1,4 @@
+import { appendUserAudit } from '../../utils/user-audit';
 import {
   Controller,
   Post,
@@ -9,6 +10,8 @@ import {
   Req,
   UnauthorizedException,
   ForbiddenException,
+  NotFoundException,
+  Param,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
@@ -24,6 +27,7 @@ import type { Request } from 'express';
 import { Public } from '../../decorators/public.decorator';
 import { Roles } from '../../decorators/roles.decorator';
 import { PublicAuthRateLimitGuard } from '../../guards/public-order-rate-limit.guard';
+import { GenerateRecoveryCodesDto } from './account-flows.dto';
 
 @Controller('auth')
 @Roles('VIEWER')
@@ -62,7 +66,7 @@ export class AuthController {
     const ip = req.ip || req.socket.remoteAddress || 'Unknown';
     const userAgent = req.headers['user-agent'] || 'Unknown';
 
-    return this.authService.login(user, { ip, userAgent }, loginDto.totpCode);
+    return this.authService.login(user, { ip, userAgent }, loginDto.totpCode, loginDto.recoveryCode);
   }
 
   /**
@@ -74,9 +78,9 @@ export class AuthController {
   async logout(@Req() req: any) {
     const sessionId = req.user?.sessionId;
     if (sessionId) {
-      await this.prisma.session.updateMany({
-        where: { id: sessionId },
-        data: { isValid: false },
+      await this.prisma.$transaction(async tx => {
+        await tx.session.updateMany({where:{id:sessionId,userId:req.user.userId},data:{isValid:false}});
+        await appendUserAudit(tx,{data:{username:req.user.username,action:'LOGOUT',module:'AUTH',details:`User ${req.user.userId} signed out of the current session`}},req.user.userId);
       });
     }
     return { message: 'Logged out successfully' };
@@ -118,25 +122,27 @@ export class AuthController {
     return user;
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Get('totp/generate')
-  async generateTotp(@Req() req: any) {
+  @UseGuards(JwtAuthGuard, PublicAuthRateLimitGuard)
+  @Post('totp/generate')
+  async generateTotp(@Req() req: any, @Body() body: GenerateRecoveryCodesDto) {
+    await this.authService.assertOwnerProof(req.user.userId,body.currentPassword,body.code);
     return this.authService.generateTotpSecret(
       req.user.userId,
       req.user.username,
     );
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PublicAuthRateLimitGuard)
   @Post('totp/verify')
   async verifyTotp(@Req() req: any, @Body() body: TotpCodeDto) {
-    return this.authService.verifyAndEnableTotp(req.user.userId, body.code);
+    return this.authService.verifyAndEnableTotp(req.user.userId, body.code, req.user.sessionId);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PublicAuthRateLimitGuard)
   @Post('totp/disable')
-  async disableTotp(@Req() req: any, @Body() body: TotpCodeDto) {
-    return this.authService.disableTotp(req.user.userId, body.code);
+  async disableTotp(@Req() req: any, @Body() body: GenerateRecoveryCodesDto) {
+    await this.authService.assertOwnerProof(req.user.userId,body.currentPassword,body.code);
+    return this.authService.disableTotp(req.user.userId, body.code || '', req.user.sessionId);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -163,15 +169,34 @@ export class AuthController {
   // WebAuthn Passkeys Endpoints
 
   @UseGuards(JwtAuthGuard)
-  @Get('passkey/register-options')
-  async generatePasskeyRegistrationOptions(@Req() req: any) {
+  @Get('passkeys')
+  async listPasskeys(@Req() req: any) {
+    return this.prisma.webAuthnCredential.findMany({ where: { userId: req.user.userId }, select: { id: true, deviceType: true, backedUp: true, createdAt: true, lastUsed: true }, orderBy: { createdAt: 'desc' } });
+  }
+
+  @UseGuards(JwtAuthGuard, PublicAuthRateLimitGuard)
+  @Delete('passkeys/:id')
+  async removePasskey(@Param('id') id: string, @Req() req: any, @Body() body: GenerateRecoveryCodesDto) {
+    await this.authService.assertOwnerProof(req.user.userId,body.currentPassword,body.code);
+    return this.prisma.$transaction(async tx => {
+      const result = await tx.webAuthnCredential.deleteMany({ where: { id, userId: req.user.userId } });
+      if (result.count === 0) throw new NotFoundException('Passkey not found');
+      await appendUserAudit(tx, { data: { username: req.user.username, action: 'REMOVE_PASSKEY', module: 'AUTH', details: `Removed passkey from user ${req.user.userId}` } });
+      return { removed: true };
+    });
+  }
+
+  @UseGuards(JwtAuthGuard, PublicAuthRateLimitGuard)
+  @Post('passkey/register-options')
+  async generatePasskeyRegistrationOptions(@Req() req: any, @Body() body: GenerateRecoveryCodesDto) {
+    await this.authService.assertOwnerProof(req.user.userId,body.currentPassword,body.code);
     return this.webAuthnService.getRegistrationOptions(
       req.user.userId,
       req.user.username,
     );
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PublicAuthRateLimitGuard)
   @Post('passkey/register-verify')
   async verifyPasskeyRegistration(@Req() req: any, @Body() body: any) {
     return this.webAuthnService.verifyRegistration(req.user.userId, body);
@@ -198,7 +223,7 @@ export class AuthController {
     if (result.verified) {
       const ip = req.ip || req.socket.remoteAddress || 'Unknown';
       const userAgent = req.headers['user-agent'] || 'Unknown';
-      return this.authService.login(result.user, { ip, userAgent });
+      return this.authService.login(result.user, { ip, userAgent }, undefined, undefined, true);
     }
     throw new UnauthorizedException('Passkey verification failed');
   }

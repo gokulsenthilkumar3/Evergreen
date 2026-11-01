@@ -37,3 +37,21 @@ export class CreateUserDto {
 export class UpdateUserDto extends PartialType(CreateUserDto, {
   skipNullProperties: false,
 }) {}
+
+export class RevokeUserSessionsDto {
+  @IsString()
+  @MinLength(5)
+  @MaxLength(500)
+  @Matches(/\S.{3,}\S/)
+  reason!: string;
+}
+
+export class UserStatusDto {
+  @IsIn(['PENDING', 'ACTIVE', 'SUSPENDED', 'DISABLED', 'DELETED'])
+  status!: string;
+
+  @IsString()
+  @MinLength(5)
+  @MaxLength(500)
+  reason!: string;
+}

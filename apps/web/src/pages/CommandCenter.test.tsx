@@ -47,7 +47,7 @@ describe('Command Center API records', () => {
     expect(screen.getByText('Dispatch — 120 kg')).toBeInTheDocument();
     expect(screen.queryByText(/94% OEE/)).not.toBeInTheDocument();
     expect(screen.queryByText('Lakshmi Weaving Mills')).not.toBeInTheDocument();
-    expect(screen.getByText(/Shipment tracking is not connected/)).toBeInTheDocument();
+    expect(screen.getByText(/OEE: telemetry not connected/)).toBeInTheDocument();
     cleanup();
     client.clear();
     scroll.mockRestore();

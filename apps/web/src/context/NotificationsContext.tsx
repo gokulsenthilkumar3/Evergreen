@@ -1,4 +1,8 @@
+import { uiText, useUiLanguage, uiLocale, uiDateLocale } from "../i18n";
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import api from '../utils/api';
+import { getStoredUser, getToken } from '../utils/authStorage';
+import { toast } from 'sonner';
 import {
     Badge, IconButton, Tooltip, Box, Typography, Divider, Button,
     Drawer, List, ListItem, ListItemText, Avatar, Chip, Fade,
@@ -72,7 +76,18 @@ export const useNotifications = () => {
 };
 
 export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  useUiLanguage();
     const [notifications, setNotifications] = useState<Notification[]>(loadFromStorage);
+    const [supportNotifications,setSupportNotifications]=useState<Notification[]>([]);
+    useEffect(()=>{
+      let active=true;
+      const sync=async()=>{const identity=getStoredUser();if(!getToken()||!identity){if(active)setSupportNotifications([]);return;}try{const response=await api.get('/helpdesk/resources/NOTIFICATION');if(!active||getStoredUser()!==identity)return;if(Array.isArray(response.data))setSupportNotifications(response.data.filter((row:any)=>row.kind==='NOTIFICATION'&&row.status==='ACTIVE').slice(0,50).map((row:any)=>({id:'support:'+row.id,title:row.title,message:uiText('New activity on your support ticket'),type:'info',timestamp:row.updatedAt,read:false,link:'helpdesk/tickets/'+encodeURIComponent(row.data.ticketId)})));}catch{/* Other notifications stay usable if support is unavailable. */}};
+      void sync();const timer=window.setInterval(()=>void sync(),30000);return()=>{active=false;window.clearInterval(timer);};
+    },[]);
+    const readSupport=useCallback((id:string)=>{
+      if(!id.startsWith('support:'))return;
+      void api.post(`/helpdesk/notifications/${encodeURIComponent(id.slice(8))}/read`).then(()=>setSupportNotifications(previous=>previous.filter(item=>item.id!==id))).catch(()=>toast.error(uiText('Could not mark support notification as read.')));
+    },[]);
 
     // Persist every change to localStorage
     useEffect(() => {
@@ -94,27 +109,32 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
     }, []);
 
     const markAsRead = useCallback((id: string) => {
+        readSupport(id);
         setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
-    }, []);
+    }, [readSupport]);
 
     const markAllAsRead = useCallback(() => {
+        if(supportNotifications.length)void api.post('/helpdesk/notifications/read-all').then(()=>setSupportNotifications([])).catch(()=>toast.error(uiText('Could not mark support notification as read.')));
         setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-    }, []);
+    }, [supportNotifications,readSupport]);
 
     const removeNotification = useCallback((id: string) => {
+        readSupport(id);
         setNotifications(prev => prev.filter(n => n.id !== id));
-    }, []);
+    }, [readSupport]);
 
     const clearAll = useCallback(() => {
+        markAllAsRead();
         setNotifications([]);
         localStorage.removeItem(STORAGE_KEY);
-    }, []);
+    }, [markAllAsRead]);
 
-    const unreadCount = notifications.filter(n => !n.read).length;
+    const allNotifications=[...supportNotifications,...notifications];
+    const unreadCount = allNotifications.filter(n => !n.read).length;
 
     return (
         <NotificationsContext.Provider
-            value={{ notifications, unreadCount, addNotification, markAsRead, markAllAsRead, removeNotification, clearAll }}
+            value={{ notifications:allNotifications, unreadCount, addNotification, markAsRead, markAllAsRead, removeNotification, clearAll }}
         >
             {children}
         </NotificationsContext.Provider>
@@ -138,7 +158,7 @@ function formatTime(isoStr: string): string {
     if (mins < 60) return `${mins}m ago`;
     const hrs = Math.floor(mins / 60);
     if (hrs < 24) return `${hrs}h ago`;
-    return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+    return d.toLocaleDateString(uiDateLocale(), { day: 'numeric', month: 'short' });
 }
 
 // ─── Bell + Drawer Component ──────────────────────────────────────────────────
@@ -148,6 +168,7 @@ interface NotificationsBellProps {
 }
 
 export const NotificationsBell: React.FC<NotificationsBellProps> = ({ onNavigate }) => {
+  useUiLanguage();
     const { notifications, unreadCount, markAsRead, markAllAsRead, removeNotification, clearAll } = useNotifications();
     const [open, setOpen] = useState(false);
 
@@ -157,12 +178,15 @@ export const NotificationsBell: React.FC<NotificationsBellProps> = ({ onNavigate
     const handleItemClick = (n: Notification) => {
         markAsRead(n.id);
         if (n.link && onNavigate) {
-            onNavigate(n.link);
+            if(/^helpdesk\/tickets\/[a-zA-Z0-9%_-]+$/.test(n.link)){
+                onNavigate('helpdesk');window.history.pushState(null,'','/'+n.link);window.dispatchEvent(new PopStateEvent('popstate'));
+            }else onNavigate(n.link);
             setOpen(false);
         }
     };
 
     const NotifItem = ({ n }: { n: Notification }) => {
+  useUiLanguage();
         const cfg = TYPE_CONFIG[n.type];
         return (
             <Fade in timeout={300}>
@@ -216,7 +240,7 @@ export const NotificationsBell: React.FC<NotificationsBellProps> = ({ onNavigate
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3, mt: 0.5 }}>
                                         <NavIcon sx={{ fontSize: 12, color: cfg.color }} />
                                         <Typography variant="caption" sx={{ color: cfg.color, fontSize: '0.7rem', fontWeight: 600 }}>
-                                            Go to {n.link}
+                                            {uiText("Go to ")}{n.link}
                                         </Typography>
                                     </Box>
                                 )}
@@ -244,8 +268,8 @@ export const NotificationsBell: React.FC<NotificationsBellProps> = ({ onNavigate
 
     return (
         <>
-            <Tooltip title="Notifications" arrow>
-                <IconButton aria-label="Notifications" onClick={() => setOpen(true)} sx={{ width: 40, height: 40 }}>
+            <Tooltip title={uiText("Notifications")} arrow>
+                <IconButton aria-label={uiText("Notifications")} onClick={() => setOpen(true)} sx={{ width: 40, height: 40 }}>
                     <Badge
                         badgeContent={unreadCount > 0 ? unreadCount : undefined}
                         color="error"
@@ -291,7 +315,7 @@ export const NotificationsBell: React.FC<NotificationsBellProps> = ({ onNavigate
                     }}
                 >
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Typography variant="h6" fontWeight={700} fontSize="1rem">Notifications</Typography>
+                        <Typography variant="h6" fontWeight={700} fontSize="1rem">{uiText("Notifications")}</Typography>
                         {unreadCount > 0 && (
                             <Chip
                                 label={unreadCount}
@@ -303,20 +327,20 @@ export const NotificationsBell: React.FC<NotificationsBellProps> = ({ onNavigate
                     </Box>
                     <Box sx={{ display: 'flex', gap: 0.5 }}>
                         {unreadCount > 0 && (
-                            <Tooltip title="Mark all as read">
+                            <Tooltip title={uiText("Mark all as read")}>
                                 <IconButton size="small" onClick={markAllAsRead}>
                                     <MarkAllReadIcon fontSize="small" />
                                 </IconButton>
                             </Tooltip>
                         )}
                         {notifications.length > 0 && (
-                            <Tooltip title="Clear all">
+                            <Tooltip title={uiText("Clear all")}>
                                 <IconButton size="small" onClick={clearAll}>
                                     <ClearAllIcon fontSize="small" />
                                 </IconButton>
                             </Tooltip>
                         )}
-                        <Tooltip title="Close">
+                        <Tooltip title={uiText("Close")}>
                             <IconButton size="small" onClick={() => setOpen(false)}>
                                 <CloseIcon fontSize="small" />
                             </IconButton>
@@ -329,10 +353,9 @@ export const NotificationsBell: React.FC<NotificationsBellProps> = ({ onNavigate
                     {notifications.length === 0 ? (
                         <Box sx={{ py: 8, textAlign: 'center', px: 3 }}>
                             <EmptyIcon sx={{ fontSize: 52, color: 'text.disabled', opacity: 0.4, mb: 1 }} />
-                            <Typography color="text.secondary" fontWeight={500}>All caught up!</Typography>
+                            <Typography color="text.secondary" fontWeight={500}>{uiText("All caught up!")}</Typography>
                             <Typography variant="caption" color="text.disabled">
-                                Alerts for low stock, overdue invoices, and production will appear here.
-                            </Typography>
+                                {uiText("Alerts for low stock, overdue invoices, and production will appear here. ")}</Typography>
                         </Box>
                     ) : (
                         <List disablePadding>
@@ -341,7 +364,7 @@ export const NotificationsBell: React.FC<NotificationsBellProps> = ({ onNavigate
                                 <>
                                     <Box sx={{ px: 2, py: 0.8, bgcolor: 'action.hover' }}>
                                         <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                                            New · {unread.length}
+                                            {uiText("New · ")}{unread.length}
                                         </Typography>
                                     </Box>
                                     {unread.map(n => <NotifItem key={n.id} n={n} />)}
@@ -354,7 +377,7 @@ export const NotificationsBell: React.FC<NotificationsBellProps> = ({ onNavigate
                                     {unread.length > 0 && <Divider />}
                                     <Box sx={{ px: 2, py: 0.8, bgcolor: 'action.hover' }}>
                                         <Typography variant="caption" fontWeight={700} color="text.disabled" sx={{ textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                                            Earlier · {read.length}
+                                            {uiText("Earlier · ")}{read.length}
                                         </Typography>
                                     </Box>
                                     {read.map(n => <NotifItem key={n.id} n={n} />)}
@@ -376,8 +399,7 @@ export const NotificationsBell: React.FC<NotificationsBellProps> = ({ onNavigate
                             onClick={clearAll}
                             sx={{ textTransform: 'none', color: 'text.secondary', fontSize: '0.75rem' }}
                         >
-                            Clear all notifications
-                        </Button>
+                            {uiText("Clear all notifications ")}</Button>
                     </Box>
                 )}
             </Drawer>
