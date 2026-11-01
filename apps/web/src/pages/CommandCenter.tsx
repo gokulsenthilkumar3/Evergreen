@@ -28,8 +28,6 @@ import api from '../utils/api';
 import FloorCanvas, { type MachineData } from '../components/command-center/FloorCanvas';
 import CampusScene from '../components/command-center/CampusScene';
 import WarRoomView from '../components/command-center/WarRoomView';
-import ShipmentStepperHud from '../components/command-center/ShipmentStepperHud';
-import FleetDockTableHud from '../components/command-center/FleetDockTableHud';
 import KpiRibbon, { type KpiCard } from '../components/command-center/KpiRibbon';
 import ActivityFeed, { type FeedEvent } from '../components/command-center/ActivityFeed';
 import { sfx } from '../utils/sfx';
@@ -979,21 +977,6 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onNavigate }) => {
             </Box>
           </motion.div>
         )}
-      </Box>
-
-      {/* ── Strategy Cockpit HUDs (Video Replication: Bottom Stepper & Fleet/Docks) ── */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'repeat(2, minmax(0, 1fr))' }, gap: 2, mt: 1 }}>
-        <ShipmentStepperHud />
-        <FleetDockTableHud
-          machines={floorMachines}
-          dispatchCount={dispatchCount}
-          cottonBales={cottonBales}
-          yarnBags={yarnBags}
-          onMachineClick={(m) => {
-            sfx.playChirp();
-            setSelectedMachine(m);
-          }}
-        />
       </Box>
 
       {/* ── Footer Strategy Hint ───────────────────────────────────────────── */}

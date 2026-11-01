@@ -77,6 +77,7 @@ import { lowStockThreshold } from './utils/alerts';
 import getTheme from './theme';
 import type { ThemeName } from './theme';
 import Login from './components/Login';
+import InstallationGate from './components/InstallationGate';
 import ProfileModal from './components/ProfileModal';
 import { KeyboardShortcutsProvider } from './context/KeyboardShortcutsContext';
 import { ScreenReaderAnnouncer } from './components/common/ScreenReaderAnnouncer';
@@ -87,6 +88,7 @@ import { useNotificationSync } from './hooks/useNotificationSync';
 import { useDebounce } from './hooks/useDebounce';
 import { LinearProgress } from '@mui/material';
 import NotFound404 from './components/common/NotFound404';
+import { clearAuth, getStoredUser, saveUser } from './utils/authStorage';
 
 const NotificationSyncRunner = ({ settings }: { settings: any }) => {
   useNotificationSync(settings);
