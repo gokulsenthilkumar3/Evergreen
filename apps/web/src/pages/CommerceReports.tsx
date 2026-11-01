@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage, uiLocale, uiTemplate, uiScopedTemplate, uiDateLocale, uiMetric } from "../i18n";
 import React, { useMemo, useState } from 'react';
 import {
   Box,
@@ -52,6 +53,7 @@ const statusColorMap: Record<string, 'default' | 'primary' | 'secondary' | 'erro
 };
 
 const CommerceReports: React.FC = () => {
+  useUiLanguage();
   const queryClient = useQueryClient();
   const [tabIndex, setTabIndex] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
@@ -146,7 +148,7 @@ const CommerceReports: React.FC = () => {
   const cards = [
     {
       title: 'Invoiced Revenue',
-      value: `₹${Number(reportData?.invoicedValue ?? 0).toLocaleString('en-IN')}`,
+      value: `₹${Number(reportData?.invoicedValue ?? 0).toLocaleString(uiLocale())}`,
       subtitle: `${invoices.length} invoices generated`,
       icon: <ReportIcon />,
       color: '#059669',
@@ -154,7 +156,7 @@ const CommerceReports: React.FC = () => {
     },
     {
       title: 'Receivables Outstanding',
-      value: `₹${Number(reportData?.receivables ?? 0).toLocaleString('en-IN')}`,
+      value: `₹${Number(reportData?.receivables ?? 0).toLocaleString(uiLocale())}`,
       subtitle: `${debtorCustomers.length} accounts with balance`,
       icon: <MoneyIcon />,
       color: '#dc2626',
@@ -193,11 +195,9 @@ const CommerceReports: React.FC = () => {
       >
         <Box>
           <Typography variant="h4" fontWeight={800}>
-            Business & Financial Reports
-          </Typography>
+            {uiText("Business & Financial Reports ")}</Typography>
           <Typography color="text.secondary">
-            Consolidated intelligence covering sales invoices, debtor receivables, catalogue alerts, and job-work commitments.
-          </Typography>
+            {uiText("Consolidated intelligence covering sales invoices, debtor receivables, catalogue alerts, and job-work commitments. ")}</Typography>
         </Box>
         <Stack direction="row" spacing={1.5}>
           <Button
@@ -206,15 +206,13 @@ const CommerceReports: React.FC = () => {
             onClick={handleRefresh}
             disabled={isReportRefetching}
           >
-            Refresh
-          </Button>
+            {uiText("Refresh ")}</Button>
           <Button
             variant="outlined"
             startIcon={<PrintIcon />}
             onClick={handlePrint}
           >
-            Print Report
-          </Button>
+            {uiText("Print Report ")}</Button>
         </Stack>
       </Box>
 
@@ -244,7 +242,7 @@ const CommerceReports: React.FC = () => {
                   }}
                 >
                   <Typography variant="body2" color="text.secondary" fontWeight={600}>
-                    {card.title}
+                    {uiText(card.title, 'metrics')}
                   </Typography>
                   <Box
                     sx={{
@@ -260,10 +258,10 @@ const CommerceReports: React.FC = () => {
                   </Box>
                 </Box>
                 <Typography variant="h5" fontWeight={800} sx={{ mb: 0.5 }}>
-                  {isReportLoading ? '—' : card.value}
+                  {isReportLoading ? '—' : uiMetric(card.value)}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  {card.subtitle}
+                  {uiMetric(card.subtitle)}
                 </Typography>
               </CardContent>
             </Card>
@@ -295,29 +293,29 @@ const CommerceReports: React.FC = () => {
             <Tab
               icon={<MoneyIcon fontSize="small" />}
               iconPosition="start"
-              label={`Outstanding Receivables (${debtorCustomers.length})`}
+              label={uiScopedTemplate('tabs')`Outstanding Receivables (${debtorCustomers.length})`}
             />
             <Tab
               icon={<StockIcon fontSize="small" />}
               iconPosition="start"
-              label={`Low Stock Watchlist (${reportData?.lowStock?.length || 0})`}
+              label={uiScopedTemplate('tabs')`Low Stock Watchlist (${reportData?.lowStock?.length || 0})`}
             />
             <Tab
               icon={<InvoiceIcon fontSize="small" />}
               iconPosition="start"
-              label={`Recent Invoices (${invoices.length})`}
+              label={uiScopedTemplate('tabs')`Recent Invoices (${invoices.length})`}
             />
             <Tab
               icon={<OrderIcon fontSize="small" />}
               iconPosition="start"
-              label={`Sales Orders (${orders.length})`}
+              label={uiScopedTemplate('tabs')`Sales Orders (${orders.length})`}
             />
           </Tabs>
 
           <Box sx={{ pb: 1 }}>
             <TextField
               size="small"
-              placeholder="Search in tab..."
+              placeholder={uiText("Search in tab...", 'forms')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               InputProps={{
@@ -338,13 +336,12 @@ const CommerceReports: React.FC = () => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Customer Name</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Phone & Contact</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>State & GSTIN</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Status</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>{uiText("Customer Name", 'tables')}</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>{uiText("Phone & Contact", 'tables')}</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>{uiText("State & GSTIN", 'tables')}</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>{uiText("Status", 'tables')}</TableCell>
                   <TableCell align="right" sx={{ fontWeight: 'bold' }}>
-                    Balance Due
-                  </TableCell>
+                    {uiText("Balance Due ", 'tables')}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -358,10 +355,9 @@ const CommerceReports: React.FC = () => {
                   <TableRow>
                     <TableCell colSpan={5} align="center" sx={{ py: 6 }}>
                       <PaidIcon sx={{ color: 'success.main', fontSize: 40, mb: 1 }} />
-                      <Typography fontWeight={700}>All Customer Balances Cleared</Typography>
+                      <Typography fontWeight={700}>{uiText("All Customer Balances Cleared", 'tables')}</Typography>
                       <Typography variant="body2" color="text.secondary">
-                        No outstanding receivables matched the search criteria.
-                      </Typography>
+                        {uiText("No outstanding receivables matched the search criteria. ", 'tables')}</Typography>
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -370,7 +366,7 @@ const CommerceReports: React.FC = () => {
                       <TableCell>
                         <Typography fontWeight={700}>{cust.name}</Typography>
                         <Typography variant="caption" color="text.secondary">
-                          Customer ID #{cust.id}
+                          {uiText("Customer ID #", 'tables')}{cust.id}
                         </Typography>
                       </TableCell>
                       <TableCell>{cust.phone || '—'}</TableCell>
@@ -383,7 +379,7 @@ const CommerceReports: React.FC = () => {
                       <TableCell>
                         <Chip
                           size="small"
-                          label={cust.active ? 'Active' : 'Inactive'}
+                          label={cust.active ? uiText("Active", 'tables') : uiText("Inactive", 'tables')}
                           color={cust.active ? 'success' : 'default'}
                           variant="outlined"
                         />
@@ -394,7 +390,7 @@ const CommerceReports: React.FC = () => {
                           fontWeight={800}
                           sx={{ color: 'error.main' }}
                         >
-                          ₹{Number(cust.balance).toLocaleString('en-IN')}
+                          {uiText("₹", 'tables')}{Number(cust.balance).toLocaleString(uiLocale())}
                         </Typography>
                       </TableCell>
                     </TableRow>
@@ -411,16 +407,14 @@ const CommerceReports: React.FC = () => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Item Name & SKU</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Type</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>HSN / SAC</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>{uiText("Item Name & SKU", 'tables')}</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>{uiText("Type", 'tables')}</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>{uiText("HSN / SAC", 'tables')}</TableCell>
                   <TableCell align="right" sx={{ fontWeight: 'bold' }}>
-                    Available Stock
-                  </TableCell>
+                    {uiText("Available Stock ", 'tables')}</TableCell>
                   <TableCell align="right" sx={{ fontWeight: 'bold' }}>
-                    Reorder Threshold
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Stock Health</TableCell>
+                    {uiText("Reorder Threshold ", 'tables')}</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>{uiText("Stock Health", 'tables')}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -434,10 +428,9 @@ const CommerceReports: React.FC = () => {
                   <TableRow>
                     <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
                       <PaidIcon sx={{ color: 'success.main', fontSize: 40, mb: 1 }} />
-                      <Typography fontWeight={700}>Inventory Levels Optimal</Typography>
+                      <Typography fontWeight={700}>{uiText("Inventory Levels Optimal", 'tables')}</Typography>
                       <Typography variant="body2" color="text.secondary">
-                        All catalogue items are above their minimum reorder thresholds.
-                      </Typography>
+                        {uiText("All catalogue items are above their minimum reorder thresholds. ", 'tables')}</Typography>
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -450,7 +443,7 @@ const CommerceReports: React.FC = () => {
                         <TableCell>
                           <Typography fontWeight={700}>{item.name}</Typography>
                           <Typography variant="caption" color="text.secondary">
-                            SKU: {item.sku}
+                            {uiText("SKU: ", 'tables')}{item.sku}
                           </Typography>
                         </TableCell>
                         <TableCell>
@@ -501,17 +494,15 @@ const CommerceReports: React.FC = () => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Invoice #</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Customer</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Date</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Status</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Taxes (GST)</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>{uiText("Invoice #", 'tables')}</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>{uiText("Customer", 'tables')}</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>{uiText("Date", 'tables')}</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>{uiText("Status", 'tables')}</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>{uiText("Taxes (GST)", 'tables')}</TableCell>
                   <TableCell align="right" sx={{ fontWeight: 'bold' }}>
-                    Total Amount
-                  </TableCell>
+                    {uiText("Total Amount ", 'tables')}</TableCell>
                   <TableCell align="right" sx={{ fontWeight: 'bold' }}>
-                    Paid / Balance
-                  </TableCell>
+                    {uiText("Paid / Balance ", 'tables')}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -524,7 +515,7 @@ const CommerceReports: React.FC = () => {
                 ) : filteredInvoices.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
-                      <Typography color="text.secondary">No invoices found.</Typography>
+                      <Typography color="text.secondary">{uiText("No invoices found.", 'tables')}</Typography>
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -535,12 +526,12 @@ const CommerceReports: React.FC = () => {
                         <TableCell>
                           <Typography fontWeight={700}>{inv.invoiceNo}</Typography>
                           <Typography variant="caption" color="text.secondary">
-                            Ref #{inv.id}
+                            {uiText("Ref #", 'tables')}{inv.id}
                           </Typography>
                         </TableCell>
                         <TableCell>{inv.customerName || inv.customer?.name || '—'}</TableCell>
                         <TableCell>
-                          {new Date(inv.date).toLocaleDateString('en-IN', {
+                          {new Date(inv.date).toLocaleDateString(uiDateLocale(), {
                             year: 'numeric',
                             month: 'short',
                             day: 'numeric',
@@ -555,12 +546,12 @@ const CommerceReports: React.FC = () => {
                         </TableCell>
                         <TableCell>
                           <Typography variant="caption" color="text.secondary">
-                            CGST ₹{inv.cgst || 0} | SGST ₹{inv.sgst || 0} | IGST ₹{inv.igst || 0}
+                            {uiText("CGST ₹", 'tables')}{inv.cgst || 0} {uiText(" | SGST ₹", 'tables')}{inv.sgst || 0} {uiText(" | IGST ₹", 'tables')}{inv.igst || 0}
                           </Typography>
                         </TableCell>
                         <TableCell align="right">
                           <Typography fontWeight={700}>
-                            ₹{Number(inv.total).toLocaleString('en-IN')}
+                            {uiText("₹", 'tables')}{Number(inv.total).toLocaleString(uiLocale())}
                           </Typography>
                         </TableCell>
                         <TableCell align="right">
@@ -569,8 +560,7 @@ const CommerceReports: React.FC = () => {
                             fontWeight={600}
                             sx={{ color: balance > 0 ? 'error.main' : 'success.main' }}
                           >
-                            ₹{Number(inv.amountPaid || 0).toLocaleString('en-IN')} / ₹
-                            {balance.toLocaleString('en-IN')}
+                            {uiText("₹", 'tables')}{Number(inv.amountPaid || 0).toLocaleString(uiLocale())} {uiText("/ ₹", 'tables')}{balance.toLocaleString(uiLocale())}
                           </Typography>
                         </TableCell>
                       </TableRow>
@@ -588,14 +578,13 @@ const CommerceReports: React.FC = () => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Order #</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Customer</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Date</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Status</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Line Items</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>{uiText("Order #", 'tables')}</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>{uiText("Customer", 'tables')}</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>{uiText("Date", 'tables')}</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>{uiText("Status", 'tables')}</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>{uiText("Line Items", 'tables')}</TableCell>
                   <TableCell align="right" sx={{ fontWeight: 'bold' }}>
-                    Total Value
-                  </TableCell>
+                    {uiText("Total Value ", 'tables')}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -608,7 +597,7 @@ const CommerceReports: React.FC = () => {
                 ) : filteredOrders.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
-                      <Typography color="text.secondary">No sales orders found.</Typography>
+                      <Typography color="text.secondary">{uiText("No sales orders found.", 'tables')}</Typography>
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -617,12 +606,12 @@ const CommerceReports: React.FC = () => {
                       <TableCell>
                         <Typography fontWeight={700}>{ord.orderNo}</Typography>
                         <Typography variant="caption" color="text.secondary">
-                          PO #{ord.id}
+                          {uiText("PO #", 'tables')}{ord.id}
                         </Typography>
                       </TableCell>
                       <TableCell>{ord.customer?.name || '—'}</TableCell>
                       <TableCell>
-                        {new Date(ord.date).toLocaleDateString('en-IN', {
+                        {new Date(ord.date).toLocaleDateString(uiDateLocale(), {
                           year: 'numeric',
                           month: 'short',
                           day: 'numeric',
@@ -636,11 +625,10 @@ const CommerceReports: React.FC = () => {
                         />
                       </TableCell>
                       <TableCell>
-                        {ord.lines?.length || 0} line item(s)
-                      </TableCell>
+                        {ord.lines?.length || 0} {uiText(" line item(s) ", 'tables')}</TableCell>
                       <TableCell align="right">
                         <Typography fontWeight={700}>
-                          ₹{Number(ord.total).toLocaleString('en-IN')}
+                          {uiText("₹", 'tables')}{Number(ord.total).toLocaleString(uiLocale())}
                         </Typography>
                       </TableCell>
                     </TableRow>

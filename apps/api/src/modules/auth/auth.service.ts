@@ -1,3 +1,4 @@
+import { appendUserAudit } from '../../utils/user-audit';
 import {
   Injectable,
   UnauthorizedException,
@@ -9,14 +10,15 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../services/prisma.service';
 import { EmailService } from './email.service';
-import * as bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
 import type { User } from '@prisma/client';
 import { TOTP, generateURI } from 'otplib';
 import { omit } from '../../utils/omit';
+import { hashPassword, verifyPassword } from './passwords';
+import { createHash } from 'node:crypto';
+import { DEFAULT_SESSION_POLICY } from '../../utils/session-policy';
 const authenticator = new TOTP();
 
-const SALT_ROUNDS = 10;
 
 @Injectable()
 export class AuthService implements OnModuleInit {
@@ -29,144 +31,73 @@ export class AuthService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    try {
-      const count = await this.prisma.user.count();
-      if (count === 0) {
-        const username = this.configService.get<string>(
-          'BOOTSTRAP_ADMIN_USERNAME',
-        );
-        const password = this.configService.get<string>(
-          'BOOTSTRAP_ADMIN_PASSWORD',
-        );
-        const email = this.configService.get<string>('BOOTSTRAP_ADMIN_EMAIL');
-        if (!username || !email || !password || password.length < 12) {
-          this.logger.warn(
-            'No users exist. Set BOOTSTRAP_ADMIN_USERNAME, BOOTSTRAP_ADMIN_EMAIL and a 12+ character BOOTSTRAP_ADMIN_PASSWORD for one-time setup.',
-          );
-          return;
-        }
-        const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-        await this.prisma.user.create({
-          data: {
-            username,
-            password: hashedPassword,
-            role: 'ADMIN',
-            name: 'System Admin',
-            email,
-          },
-        });
-        this.logger.warn(
-          'One-time administrator created. Remove bootstrap variables now.',
-        );
-      }
-    } catch (e) {
-      console.error('Failed to seed default user:', e);
-    }
-  }
-
-  private async logActivity(username: string, action: string, details: string) {
-    try {
-      await this.prisma.activityLog.create({
-        data: {
-          username,
-          action,
-          module: 'USER_MANAGEMENT',
-          details,
-        },
-      });
-    } catch (e) {
-      console.error('Failed to create log:', e);
-    }
-  }
-
-  async signup(data: Pick<User, 'username' | 'email' | 'name' | 'password'>) {
-    const { username, email, name, password } = data;
-
-    // Check if username or email already exists
-    const existingUser = await this.prisma.user.findFirst({
-      where: {
-        OR: [{ username }, { email }],
-      },
+  try {
+    if (await this.prisma.user.count() !== 0) return;
+    const username=this.configService.get<string>('BOOTSTRAP_ADMIN_USERNAME');
+    const password=this.configService.get<string>('BOOTSTRAP_ADMIN_PASSWORD');
+    const email=this.configService.get<string>('BOOTSTRAP_ADMIN_EMAIL');
+    if (!username||!password||!email) { this.logger.warn('Configure the one-time bootstrap administrator before first use.'); return; }
+    const hashedPassword=await hashPassword(password);
+    await this.prisma.$transaction(async tx=>{
+      const user=await tx.user.create({data:{username,email,password:hashedPassword,name:'System Admin',role:'ADMIN',status:'ACTIVE'}});
+      await appendUserAudit(tx,{data:{username,action:'BOOTSTRAP_ADMIN',module:'USER_MANAGEMENT',details:'Created user '+user.id+' (ADMIN): owner-controlled bootstrap'}},user.id);
     });
+    this.logger.warn('One-time administrator created. Remove bootstrap variables now.');
+  } catch { this.logger.error('Administrator bootstrap failed; no unaudited account was created.'); }
+}
 
-    if (existingUser) {
-      if (existingUser.username === username) {
-        throw new BadRequestException('Username is already taken');
-      }
-      if (existingUser.email === email) {
-        throw new BadRequestException('Email is already registered');
-      }
-    }
+  
 
-    // License Quota: Single-email vs Multi-email license limits
-    const settings = await this.prisma.systemSettings.findFirst();
-    if (settings && typeof settings.maxUsers === 'number') {
-      const currentUserCount = await this.prisma.user.count();
-      if (currentUserCount >= settings.maxUsers) {
-        throw new ForbiddenException(
-          `User limit reached: Your current license plan allows a maximum of ${settings.maxUsers} user/email(s). Please upgrade to add more staff.`,
-        );
-      }
-    }
-
-    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-
-    const newUser = await this.prisma.user.create({
-      data: {
-        username,
-        email,
-        name,
-        password: hashedPassword,
-        role: 'VIEWER',
-      },
-    });
-
-    const result = omit(newUser, ['password']);
-    return { message: 'Signup successful', user: result };
-  }
+  async signup(_data: Pick<User, 'username' | 'email' | 'name' | 'password'>) { throw new ForbiddenException('Public staff signup is disabled; use an administrator invitation'); }
 
   async validateUser(
     username: string,
     pass: string,
   ): Promise<Omit<User, 'password'> | null> {
-    const user = await this.prisma.user.findUnique({
+    let user = await this.prisma.user.findUnique({
       where: { username },
     });
 
-    if (!user) return null;
+    if (!user || user.status !== 'ACTIVE' || user.lockedUntil && user.lockedUntil > new Date()) return null;
 
     // Support both bcrypt hashes and legacy plain-text passwords (for migration)
-    let passwordMatch = false;
-    if (user.password.startsWith('$2b$') || user.password.startsWith('$2a$')) {
-      // Already bcrypt-hashed
-      passwordMatch = await bcrypt.compare(pass, user.password);
-    } else {
-      // Legacy plain-text: compare directly, then auto-upgrade to bcrypt
-      passwordMatch = user.password === pass;
-      if (passwordMatch) {
-        const hashed = await bcrypt.hash(pass, SALT_ROUNDS);
-        await this.prisma.user.update({
-          where: { id: user.id },
-          data: { password: hashed },
-        });
-        console.log(`🔒 Auto-upgraded password hash for user: ${username}`);
-      }
+    const passwordMatch = await verifyPassword(user.password, pass);
+    if (passwordMatch && !user.password.startsWith('$argon2id$')) {
+      const old=user;const password=await hashPassword(pass,false);
+      user=await this.prisma.$transaction(async tx=>{
+        const changed=await tx.user.updateMany({where:{id:old.id,status:'ACTIVE',password:old.password},data:{password}});
+        if(changed.count!==1)throw new UnauthorizedException('Credentials changed; retry sign-in');
+        await appendUserAudit(tx,{data:{username:old.username,action:'PASSWORD_REHASH',module:'AUTH',details:'Updated user '+old.id+': upgraded verified legacy password hash'}},old.id);
+        return tx.user.findUniqueOrThrow({where:{id:old.id}});
+      });
     }
-
     if (passwordMatch) {
       return omit(user, ['password']);
     }
+    await this.recordFailedLogin(user.id, user.username);
     return null;
+  }
+
+  private async recordFailedLogin(id: number, username: string) {
+    await this.prisma.$transaction(async tx => {
+      const updated = await tx.user.update({ where: { id }, data: { failedLogins: { increment: 1 } }, select: { failedLogins: true } });
+      if (updated.failedLogins >= 5) await tx.user.update({ where: { id }, data: { lockedUntil: new Date(Date.now() + Math.min(60, 2 ** Math.min(6, updated.failedLogins - 5)) * 60000) } });
+      await appendUserAudit(tx, { data: { username, action: 'AUTH_FAILED', module: 'AUTH', details: `Updated user ${id}: failed authentication` } });
+    });
   }
 
   async login(
     user: Omit<User, 'password'>,
     requestInfo?: { ip?: string; userAgent?: string; device?: string },
     totpCode?: string,
+    recoveryCode?: string,
+    verifiedPasskey = false,
   ) {
+    if (user.status !== 'ACTIVE' || user.lockedUntil && user.lockedUntil > new Date()) throw new UnauthorizedException('Account is not active');
+    let recoveryId: string | undefined;
     // If TOTP is enabled, verify it
-    if (user.isTotpEnabled) {
-      if (!totpCode || !user.totpSecret) {
+    if (user.isTotpEnabled && !verifiedPasskey) {
+      if (!totpCode && !recoveryCode) {
         // Return a special error indicating TOTP is required
         throw new UnauthorizedException({
           message: 'TOTP_REQUIRED',
@@ -174,10 +105,13 @@ export class AuthService implements OnModuleInit {
         });
       }
 
-      const isValid = await authenticator.verify(totpCode, {
-        secret: user.totpSecret,
-      });
-      if (!isValid.valid) {
+      const isValid = totpCode && user.totpSecret ? await authenticator.verify(totpCode, { secret: user.totpSecret }) : { valid: false };
+      if (!isValid.valid && recoveryCode) {
+        const backup = await this.prisma.userRecoveryCode.findUnique({ where: { codeHash: createHash('sha256').update(recoveryCode.replaceAll('-', '').toUpperCase()).digest('hex') } });
+        if (backup && backup.userId === user.id && !backup.usedAt) recoveryId = backup.id;
+      }
+      if (!isValid.valid && !recoveryId) {
+        await this.recordFailedLogin(user.id, user.username);
         throw new UnauthorizedException('Invalid 2FA code');
       }
     }
@@ -207,7 +141,25 @@ export class AuthService implements OnModuleInit {
     }
 
     // Create a new session record
-    const session = await this.prisma.session.create({
+    let absoluteMinutes: number = DEFAULT_SESSION_POLICY.absoluteMinutes;
+    const session = await this.prisma.$transaction(async tx => {
+      const current = await tx.user.findUnique({ where: { id: user.id } });
+      if (!current || current.status !== 'ACTIVE' || current.lockedUntil && current.lockedUntil > new Date() || current.isTotpEnabled !== user.isTotpEnabled || current.totpSecret !== user.totpSecret) throw new UnauthorizedException('Account state changed');
+      if (current.updatedAt.getTime() !== user.updatedAt.getTime()) throw new UnauthorizedException('Account changed during sign-in; please retry');
+      const policy = await tx.userSessionPolicy.findUnique({ where: { role: current.role } }) || DEFAULT_SESSION_POLICY;
+      absoluteMinutes = policy.absoluteMinutes;
+      const now = new Date();
+      const active = await tx.session.findMany({ where: { userId: user.id, isValid: true, createdAt: { gt: new Date(now.getTime()-policy.absoluteMinutes*60000) }, OR: [{expiresAt:null},{expiresAt:{gt:now}}], ...(policy.idleMinutes>0?{lastActive:{gt:new Date(now.getTime()-policy.idleMinutes*60000)}}:{}) }, orderBy: [{lastActive:'asc'},{id:'asc'}], select: {id:true} });
+      if (active.length >= policy.maxConcurrent) {
+        if (policy.limitAction === 'REJECT') throw new UnauthorizedException('Concurrent session limit reached; revoke an existing session or use account recovery');
+        await tx.session.updateMany({ where: { id: { in: active.slice(0,active.length-policy.maxConcurrent+1).map(item=>item.id) } }, data: { isValid: false } });
+      }
+      if (recoveryId) {
+        const consumed = await tx.userRecoveryCode.updateMany({ where: { id: recoveryId, userId: user.id, usedAt: null }, data: { usedAt: new Date() } });
+        if (consumed.count !== 1) throw new UnauthorizedException('Recovery code already used');
+      }
+      await tx.user.update({ where: { id: user.id }, data: { failedLogins: 0, lockedUntil: null } });
+      const created = await tx.session.create({
       data: {
         userId: user.id,
         ipAddress: ip,
@@ -215,7 +167,12 @@ export class AuthService implements OnModuleInit {
         userAgent: requestInfo?.userAgent || 'Unknown',
         device: requestInfo?.device || 'Unknown',
         isValid: true,
+        expiresAt: new Date(now.getTime()+policy.absoluteMinutes*60000),
+        lastSeenAt: now,
       },
+      });
+      await appendUserAudit(tx, { data: { username: user.username, action: 'LOGIN', module: 'AUTH', details: `User ${user.id} signed in using ${verifiedPasskey ? 'passkey' : recoveryId ? 'recovery code' : 'password'}` } });
+      return created;
     });
 
     // Fire and forget email notification
@@ -238,7 +195,7 @@ export class AuthService implements OnModuleInit {
     };
 
     return {
-      access_token: this.jwtService.sign(payload),
+      access_token: this.jwtService.sign(payload, { expiresIn: absoluteMinutes*60 }),
       user: {
         id: user.id,
         username: user.username,
@@ -248,172 +205,79 @@ export class AuthService implements OnModuleInit {
     };
   }
 
-  async generateTotpSecret(userId: number, email: string) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
-    if (!user || user.isTotpEnabled) {
-      throw new BadRequestException(
-        'Disable existing two-factor authentication before setting it up again',
-      );
-    }
-    const secret = authenticator.generateSecret();
-    const otpauth = generateURI({
-      issuer: this.configService.get<string>('TOTP_ISSUER') || 'EverGreen',
-      label: email,
-      secret,
-    });
-
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: { totpSecret: secret },
-    });
-
-    return { secret, otpauth };
+  async assertOwnerProof(userId:number,password:string,code?:string) {
+    const user=await this.prisma.user.findUnique({where:{id:userId}});
+    if(!user||user.status!=='ACTIVE'||user.lockedUntil&&user.lockedUntil>new Date())throw new BadRequestException('Current password is incorrect or the account is locked');
+    if(!await verifyPassword(user.password,password)){await this.recordFailedLogin(user.id,user.username);throw new BadRequestException('Current password is incorrect or the account is locked');}
+    if(user.isTotpEnabled&&(!code||!user.totpSecret||!(await authenticator.verify(code,{secret:user.totpSecret})).valid)){await this.recordFailedLogin(user.id,user.username);throw new BadRequestException('Authenticator code is required');}
+    return user;
   }
 
-  async verifyAndEnableTotp(userId: number, code: string) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
-    if (!user || !user.totpSecret) {
-      throw new BadRequestException('TOTP not setup');
-    }
+  async generateTotpSecret(userId:number,email:string) {
+  const secret=authenticator.generateSecret();
+  const otpauth=generateURI({issuer:this.configService.get<string>('TOTP_ISSUER')||'EverGreen',label:email,secret});
+  await this.prisma.$transaction(async tx=>{
+    const user=await tx.user.findUnique({where:{id:userId}});
+    if(!user||user.status!=='ACTIVE'||user.isTotpEnabled)throw new BadRequestException('Disable existing two-factor authentication before setting it up again');
+    await tx.user.update({where:{id:userId},data:{totpSecret:secret}});
+    await appendUserAudit(tx,{data:{username:user.username,action:'MFA_SETUP_STARTED',module:'AUTH',details:'Updated user '+userId+': started authenticator enrollment'}},userId);
+  });
+  return {secret,otpauth};
+}
 
-    const isValid = await authenticator.verify(code, {
-      secret: user.totpSecret,
-    });
-    if (!isValid.valid) {
-      throw new BadRequestException('Invalid authentication code');
-    }
+  async verifyAndEnableTotp(userId:number,code:string,currentSessionId?:string) {
+  const user=await this.prisma.user.findUnique({where:{id:userId}});
+  if(!user||user.status!=='ACTIVE'||!user.totpSecret)throw new BadRequestException('TOTP not setup');
+  if(!(await authenticator.verify(code,{secret:user.totpSecret})).valid)throw new BadRequestException('Invalid authentication code');
+  await this.prisma.$transaction(async tx=>{
+    const changed=await tx.user.updateMany({where:{id:userId,status:'ACTIVE',totpSecret:user.totpSecret,isTotpEnabled:false},data:{isTotpEnabled:true}});
+    if(changed.count!==1)throw new BadRequestException('Authenticator state changed; reload before retrying');
+    await tx.session.updateMany({where:{userId,isValid:true,...(currentSessionId?{id:{not:currentSessionId}}:{})},data:{isValid:false}});
+    await appendUserAudit(tx,{data:{username:user.username,action:'MFA_ENABLED',module:'AUTH',details:'Updated user '+userId+': enabled authenticator; other sessions revoked'}},userId);
+  });
+  return {success:true};
+}
 
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: { isTotpEnabled: true },
-    });
+  async disableTotp(userId:number,code:string,currentSessionId?:string) {
+  const user=await this.prisma.user.findUnique({where:{id:userId}});
+  if(!user||user.status!=='ACTIVE'||!user.isTotpEnabled||!user.totpSecret||!/^\d{6}$/.test(code))throw new BadRequestException('A valid current authentication code is required');
+  if(!(await authenticator.verify(code,{secret:user.totpSecret})).valid)throw new BadRequestException('Invalid authentication code');
+  await this.prisma.$transaction(async tx=>{
+    const changed=await tx.user.updateMany({where:{id:userId,status:'ACTIVE',totpSecret:user.totpSecret,isTotpEnabled:true},data:{isTotpEnabled:false,totpSecret:null}});
+    if(changed.count!==1)throw new BadRequestException('Authenticator state changed; retry');
+    await tx.session.updateMany({where:{userId,isValid:true,...(currentSessionId?{id:{not:currentSessionId}}:{})},data:{isValid:false}});
+    await appendUserAudit(tx,{data:{username:user.username,action:'MFA_DISABLED',module:'AUTH',details:'Updated user '+userId+': disabled authenticator; other sessions revoked'}},userId);
+  });
+  return {success:true};
+}
 
-    return { success: true };
-  }
-
-  async disableTotp(userId: number, code: string) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
-    if (!user?.isTotpEnabled || !user.totpSecret || !/^\d{6}$/.test(code)) {
-      throw new BadRequestException(
-        'A valid current authentication code is required',
-      );
-    }
-    const result = await authenticator.verify(code, {
-      secret: user.totpSecret,
-    });
-    if (!result.valid)
-      throw new BadRequestException('Invalid authentication code');
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: { isTotpEnabled: false, totpSecret: null },
-    });
-    return { success: true };
-  }
-
-  async updateProfile(
-    userId: number,
-    username: string,
-    data: { name?: string; email?: string },
-  ) {
-    if (data.email) {
-      const existing = await this.prisma.user.findFirst({
-        where: { email: data.email, NOT: { id: userId } },
-      });
-      if (existing) {
-        throw new BadRequestException(
-          'Email is already in use by another account',
-        );
-      }
-    }
-
-    const updated = await this.prisma.user.update({
-      where: { id: userId },
-      data: {
-        ...(data.name !== undefined && { name: data.name.trim() }),
-        ...(data.email !== undefined && { email: data.email.trim() }),
-        updatedBy: username,
-      },
-      select: {
-        id: true,
-        username: true,
-        name: true,
-        email: true,
-        role: true,
-        isTotpEnabled: true,
-      },
-    });
-
-    await this.logActivity(
-      username,
-      'PROFILE_UPDATE',
-      `User ${username} updated personal profile details`,
-    );
+  async updateProfile(userId:number,username:string,data:{name?:string;email?:string}) {
+  return this.prisma.$transaction(async tx=>{
+    const current=await tx.user.findUnique({where:{id:userId}});
+    if(!current||current.status!=='ACTIVE')throw new UnauthorizedException('Account is not active');
+    if(data.email!==undefined&&data.email.trim()!==current.email)throw new BadRequestException('Email changes require mailbox verification in Security Settings');
+    const updated=await tx.user.update({where:{id:userId},data:{...(data.name!==undefined?{name:data.name.trim()}:{}),updatedBy:username},select:{id:true,publicId:true,username:true,name:true,email:true,role:true,isTotpEnabled:true}});
+    await appendUserAudit(tx,{data:{username,action:'PROFILE_UPDATE',module:'USER_MANAGEMENT',details:'Updated user '+userId+': personal profile'}},userId);
     return updated;
-  }
+  });
+}
 
   /**
    * Change the caller's password and sign out every other session, so a session opened with the
    * old password (for example by someone who learned it) stops working. The current session stays.
    */
-  async changePassword(
-    userId: number,
-    username: string,
-    data: { currentPassword: string; newPassword: string },
-    currentSessionId?: string,
-  ) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
-
-    let passwordMatch = false;
-    if (user.password.startsWith('$2b$') || user.password.startsWith('$2a$')) {
-      passwordMatch = await bcrypt.compare(data.currentPassword, user.password);
-    } else {
-      passwordMatch = user.password === data.currentPassword;
-    }
-
-    if (!passwordMatch) {
-      throw new BadRequestException('Current password is incorrect');
-    }
-
-    if (data.newPassword === data.currentPassword) {
-      throw new BadRequestException(
-        'New password must be different from current password',
-      );
-    }
-
-    const hashedPassword = await bcrypt.hash(data.newPassword, SALT_ROUNDS);
-    const [, revoked] = await this.prisma.$transaction([
-      this.prisma.user.update({
-        where: { id: userId },
-        data: {
-          password: hashedPassword,
-          updatedBy: username,
-        },
-      }),
-      this.prisma.session.updateMany({
-        where: {
-          userId,
-          isValid: true,
-          ...(currentSessionId ? { id: { not: currentSessionId } } : {}),
-        },
-        data: { isValid: false },
-      }),
-    ]);
-
-    await this.logActivity(
-      username,
-      'PASSWORD_CHANGE',
-      `User ${username} changed account password and signed out ${revoked.count} other session(s)`,
-    );
-    return {
-      success: true,
-      message:
-        revoked.count > 0
-          ? `Password changed. ${revoked.count} other session(s) were signed out.`
-          : 'Password changed successfully',
-      signedOutSessions: revoked.count,
-    };
-  }
+  async changePassword(userId:number,username:string,data:{currentPassword:string;newPassword:string},currentSessionId?:string) {
+  const user=await this.prisma.user.findUnique({where:{id:userId}});
+  if(!user||user.status!=='ACTIVE')throw new UnauthorizedException('Account is not active');
+  if(!await verifyPassword(user.password,data.currentPassword))throw new BadRequestException('Current password is incorrect');
+  if(data.newPassword===data.currentPassword)throw new BadRequestException('New password must be different from current password');
+  const password=await hashPassword(data.newPassword);
+  return this.prisma.$transaction(async tx=>{
+    const changed=await tx.user.updateMany({where:{id:userId,status:'ACTIVE',password:user.password},data:{password,updatedBy:username}});
+    if(changed.count!==1)throw new BadRequestException('Account credentials changed; retry');
+    const revoked=await tx.session.updateMany({where:{userId,isValid:true,...(currentSessionId?{id:{not:currentSessionId}}:{})},data:{isValid:false}});
+    await appendUserAudit(tx,{data:{username,action:'PASSWORD_CHANGE',module:'AUTH',details:'Updated user '+userId+': password changed; '+revoked.count+' other sessions revoked'}},userId);
+    return {success:true,message:'Password changed successfully',signedOutSessions:revoked.count};
+  });
+}
 }

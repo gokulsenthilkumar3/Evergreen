@@ -9,6 +9,9 @@ type Props = {
   prompts: string[];
   authorization?: () => string | undefined;
   compact?: boolean;
+  embedded?: boolean;
+  translate?: (text: string) => string;
+  onBusyChange?: (busy: boolean) => void;
 };
 export default function AiAssistant({
   endpoint,
@@ -17,7 +20,11 @@ export default function AiAssistant({
   prompts,
   authorization,
   compact = false,
+  embedded = false,
+  translate = (text) => text,
+  onBusyChange,
 }: Props) {
+  const t = translate;
   const id = useId();
   const [open, setOpen] = useState(!compact);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -32,6 +39,7 @@ export default function AiAssistant({
   const mounted = useRef(true);
   const transcript = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  useEffect(() => { onBusyChange?.(busy); }, [busy, onBusyChange]);
   const headers = (): Record<string, string> => {
     const value = authorization?.();
     return value ? { Authorization: value } : {};
@@ -67,7 +75,7 @@ export default function AiAssistant({
   }, [endpoint]);
   useEffect(() => {
     transcript.current?.scrollTo?.({
-      top: transcript.current.scrollHeight,
+      top: messages.length || busy ? transcript.current.scrollHeight : 0,
       behavior: "auto",
     });
   }, [messages, busy]);
@@ -141,46 +149,46 @@ export default function AiAssistant({
   };
   const panel = (
     <section
-      className={`eg-assistant ${compact ? "eg-assistant-floating" : ""}`}
+      className={`eg-assistant ${compact ? "eg-assistant-floating" : ""} ${embedded ? "eg-assistant-embedded" : ""}`}
       aria-label={title}
     >
-      <header className="eg-assistant-header">
+      {!embedded && <header className="eg-assistant-header">
         <div>
-          <span className="eg-assistant-eyebrow">EVERGREEN AI / GROQ</span>
+          <span className="eg-assistant-eyebrow">{t('EVERGREEN AI / GROQ')}</span>
           <h2>{title}</h2>
           <p>{purpose}</p>
         </div>
         {compact && (
           <button
             type="button"
-            aria-label="Close assistant"
+            aria-label={t('Close assistant')}
             onClick={() => setOpen(false)}
           >
-            Close
+            {t('Close')}
           </button>
         )}
-      </header>
+      </header>}
       <div className="eg-assistant-status" role="status">
-        {status === "loading"
+        {t(status === "loading"
           ? "Checking connection..."
           : status === "ready"
             ? "Ready - guidance only"
             : status === "setup"
               ? "Setup needed: the owner must configure the server-side Groq key."
-              : "Assistant unavailable. Check the API connection and refresh to retry."}
+              : "Assistant unavailable. Check the API connection and refresh to retry.")}
       </div>
       <div
         className="eg-assistant-messages"
         ref={transcript}
         role="log"
-        aria-label="Conversation"
+        aria-label={t('Conversation')}
         aria-live="polite"
         aria-relevant="additions"
       >
         {!messages.length && (
           <div className="eg-assistant-welcome">
-            <strong>Where would you like to start?</strong>
-            <p>Ask a question or choose a starting point.</p>
+            <strong>{t('Where would you like to start?')}</strong>
+            <p>{t('Ask a question or choose a starting point.')}</p>
             <div className="eg-assistant-prompts">
               {prompts.map((prompt) => (
                 <button
@@ -203,11 +211,11 @@ export default function AiAssistant({
             key={index}
             className={`eg-assistant-message eg-assistant-${item.role}`}
           >
-            <span>{item.role === "user" ? "You" : title}</span>
+            <span>{item.role === "user" ? t('You') : title}</span>
             <p>{item.content}</p>
           </div>
         ))}
-        {busy && <p role="status">Thinking...</p>}
+        {busy && <p role="status">{t('Thinking...')}</p>}
       </div>
       <form
         onSubmit={(event) => void send(event)}
@@ -220,10 +228,9 @@ export default function AiAssistant({
             onChange={(event) => setConsent(event.target.checked)}
             disabled={busy}
           />
-          Send this conversation to Groq. Keep passwords, keys and personal data
-          out of your messages.
+          {t('Send this conversation to Groq. Keep passwords, keys and personal data out of your messages.')}
         </label>
-        <label htmlFor={`${id}-question`}>Your question</label>
+        <label htmlFor={`${id}-question`}>{t('Your question')}</label>
         <textarea
           ref={inputRef}
           id={`${id}-question`}
@@ -232,11 +239,11 @@ export default function AiAssistant({
           maxLength={2000}
           rows={3}
           disabled={busy}
-          placeholder="Ask for a workflow, explanation or next step..."
+          placeholder={t('Ask for a workflow, explanation or next step...')}
         />
         {error && (
           <p className="eg-assistant-error" role="alert">
-            {error}
+            {t(error)}
           </p>
         )}
         <div className="eg-assistant-actions">
@@ -248,24 +255,23 @@ export default function AiAssistant({
               setError("");
             }}
           >
-            Clear conversation
+            {t('Clear conversation')}
           </button>
           {busy ? (
             <button type="button" onClick={() => request.current?.abort()}>
-              Stop
+              {t('Stop')}
             </button>
           ) : (
             <button
               type="submit"
               disabled={!consent || !input.trim() || status !== "ready"}
             >
-              Send question
+              {t('Send question')}
             </button>
           )}
         </div>
         <p className="eg-assistant-note">
-          AI guidance can be wrong. Verify before acting. This assistant cannot
-          change records or execute operations.
+          {t('AI guidance can be wrong. Verify before acting. This assistant cannot change records or execute operations.')}
         </p>
       </form>
     </section>
@@ -279,7 +285,7 @@ export default function AiAssistant({
         aria-expanded={open}
         onClick={() => setOpen((previous) => !previous)}
       >
-        {open ? "Hide" : `Ask ${title}`}
+        {open ? t('Hide') : `${t('Ask')} ${title}`}
       </button>
     </div>
   ) : (

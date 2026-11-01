@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { formatUiCurrency, uiLocale } from '../i18n';
 
 /** Persist a list of items to localStorage. Each item must have an `id` string field. */
 export function usePersist<T extends { id: string }>(key: string, initial: T[] = []) {
@@ -34,5 +35,5 @@ export function usePersist<T extends { id: string }>(key: string, initial: T[] =
 }
 
 export const today = () => new Date().toLocaleDateString('en-CA');
-export const fmtDate = (d: string) => d ? new Date(d + 'T00:00:00').toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
-export const fmtAmt = (n: number) => `₹${(n || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+export const fmtDate = (d: string) => d ? new Date(d + 'T00:00:00').toLocaleDateString(uiLocale(), { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+export const fmtAmt = (n: number) => formatUiCurrency(n || 0);

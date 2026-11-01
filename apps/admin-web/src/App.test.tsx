@@ -54,14 +54,14 @@ afterEach(() => {
 
 async function openApp() {
   render(<App />);
-  await screen.findByRole("heading", { level: 1, name: "Operations overview" });
+  await screen.findByRole("heading", { level: 1, name: "Command deck" });
   return within(screen.getByRole("navigation", { name: "Provider modules" }));
 }
 
 describe("Provider admin workspace", () => {
   it("does not offer a made-up release when the registry is empty", async () => {
     const nav = await openApp();
-    fireEvent.click(nav.getByRole("button", { name: /^Deployments/ }));
+    fireEvent.click(nav.getByRole("button", { name: /^Rollouts/ }));
     fireEvent.click(screen.getByRole("button", { name: /Trigger New Deployment/ }));
     const dialog = screen.getByRole("dialog");
     expect(within(dialog).getByRole("button", { name: "Deploy release" })).toBeDisabled();
@@ -78,7 +78,7 @@ describe("Provider admin workspace", () => {
       return { ok: true, json: async () => url.endsWith('/companies') ? DEMO_TENANTS : url.endsWith('/cicd/releases') ? [{ id: 'release-1', version: 'v1.0.0', name: 'Release fixture', targets: ['DOCKER'], artifacts: [], createdAt: '2026-10-19T00:00:00Z' }] : [] } as Response;
     });
     const nav = await openApp();
-    fireEvent.click(nav.getByRole('button', { name: /^Deployments/ }));
+    fireEvent.click(nav.getByRole('button', { name: /^Rollouts/ }));
     fireEvent.click(screen.getByRole('button', { name: /Trigger New Deployment/ }));
     const dialog = screen.getByRole('dialog');
     await waitFor(() => expect(within(dialog).getByLabelText('Release Package')).toHaveValue('v1.0.0'));
@@ -151,22 +151,22 @@ describe("Provider admin workspace", () => {
   it("renders every module with one page heading and an active navigation item", async () => {
     const nav = await openApp();
     const pages = [
-      ["Spinning mills", "Spinning mills"],
-      ["Tasks", "Tasks"],
-      ["Deployments", "Deployments"],
+      ["Companies", "Companies"],
+      ["Workboard", "Tasks"],
+      ["Rollouts", "Rollouts"],
       ["Release registry", "Release registry"],
-      ["Database studio", "Database studio"],
+      ["Storage", "Database console"],
       ["Maintenance", "Maintenance & SLA"],
-      ["Integrations", "Integrations"],
-      ["API management", "API management"],
-      ["Webhooks", "Webhooks"],
-      ["Payments", "Payments & reconciliation"],
-      ["Agreements", "Agreements"],
-      ["AI studio", "AI studio"],
-      ["ChatOps", "ChatOps"],
-      ["Ops terminal", "Ops terminal"],
-      ["Console logs", "Console logs"],
-      ["Overview", "Operations overview"],
+      ["Connectors", "Integrations"],
+      ["Telemetry", "Customer API console"],
+      ["Event delivery", "Webhooks"],
+      ["Billing ledger", "Billing ledger"],
+      ["Contracts", "Contracts"],
+      ["Copilot", "Copilot"],
+      ["Channels", "Channels"],
+      ["Diagnostics", "Diagnostics"],
+      ["Log stream", "Console logs"],
+      ["Command deck", "Command deck"],
     ];
     for (const [link, heading] of pages) {
       const button = nav.getByRole("button", { name: new RegExp("^" + link) });
@@ -188,16 +188,16 @@ describe("Provider admin workspace", () => {
       target: { value: "FINANCE" },
     });
     expect(nav.getAllByRole("button")).toHaveLength(2);
-    fireEvent.click(nav.getByRole("button", { name: /^Agreements/ }));
+    fireEvent.click(nav.getByRole("button", { name: /^Contracts/ }));
     expect(menu).toHaveAttribute("aria-expanded", "false");
     expect(
-      screen.getByRole("heading", { level: 1, name: "Agreements" }),
+      screen.getByRole("heading", { level: 1, name: "Contracts" }),
     ).toBeInTheDocument();
   });
 
   it("shows an empty tenant search and restores records when filters are cleared", async () => {
     const nav = await openApp();
-    fireEvent.click(nav.getByRole("button", { name: /^Spinning mills/ }));
+    fireEvent.click(nav.getByRole("button", { name: /^Companies/ }));
     fireEvent.change(
       screen.getByRole("searchbox", { name: "Search spinning mills" }),
       { target: { value: "no-such-mill" } },
@@ -218,7 +218,7 @@ describe("Provider admin workspace", () => {
       return { ok: true, json: async () => url.endsWith("/companies") ? DEMO_TENANTS : [] } as Response;
     });
     const nav = await openApp();
-    fireEvent.click(nav.getByRole("button", { name: /^Ops terminal/ }));
+    fireEvent.click(nav.getByRole("button", { name: /^Diagnostics/ }));
     const input = screen.getByRole("textbox", { name: "Terminal command" });
     const run = async (command: string) => {
       fireEvent.change(input, { target: { value: command } });
@@ -243,7 +243,7 @@ describe("Provider admin workspace", () => {
       return { ok: true, json: async () => url.endsWith("/companies") ? DEMO_TENANTS : [] } as Response;
     });
     const nav = await openApp();
-    fireEvent.click(nav.getByRole("button", { name: /^Ops terminal/ }));
+    fireEvent.click(nav.getByRole("button", { name: /^Diagnostics/ }));
     await act(async () => { fireEvent.click(screen.getByRole("button", { name: /health$/ })); });
     expect(await screen.findByText(/Failed: the provider API did not answer \(HTTP 503\)/)).toBeInTheDocument();
   });

@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage, uiLocale, uiDateLocale } from "../../i18n";
 import React from 'react';
 import { Refresh as RefreshIcon } from '@mui/icons-material';
 import {
@@ -26,6 +27,7 @@ type Receipt = {
 };
 
 const SupplierPortal: React.FC = () => {
+  useUiLanguage();
   const queryClient = useQueryClient();
 
   const { data: receipts = [], isLoading, error } = useQuery<Receipt[]>({
@@ -42,59 +44,50 @@ const SupplierPortal: React.FC = () => {
       <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, mb: 3 }}>
         <Box>
           <Typography variant="h4" fontWeight={800}>
-            Supplier Activity
-          </Typography>
+            {uiText("Supplier Activity ")}</Typography>
           <Typography color="text.secondary">
-            Supplier names and receipt values from posted inward receipts.
-          </Typography>
+            {uiText("Supplier names and receipt values from posted inward receipts. ")}</Typography>
         </Box>
         <Button
           startIcon={<RefreshIcon />}
           onClick={() => queryClient.invalidateQueries({ queryKey: ['inward-receipts'] })}
         >
-          Refresh
-        </Button>
+          {uiText("Refresh ")}</Button>
       </Box>
 
       <Alert severity="info" sx={{ mb: 2 }}>
-        This view uses saved receipt records. Supplier scoring, onboarding and purchase orders
-        are not provided by the current API. Post or correct receipts in Operations Desk.
-      </Alert>
+        {uiText("This view uses saved receipt records. Supplier scoring, onboarding and purchase orders are not provided by the current API. Post or correct receipts in Operations Desk. ")}</Alert>
 
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
-          Could not load supplier receipts.
-        </Alert>
+          {uiText("Could not load supplier receipts. ")}</Alert>
       )}
 
       {isLoading ? (
-        <CircularProgress aria-label="Loading supplier receipts" />
+        <CircularProgress aria-label={uiText("Loading supplier receipts")} />
       ) : (
         <>
           {/* Summary cards */}
           <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
             <Paper variant="outlined" sx={{ p: 2, minWidth: 180 }}>
               <Typography variant="caption" color="text.secondary">
-                Suppliers in receipts
-              </Typography>
+                {uiText("Suppliers in receipts ")}</Typography>
               <Typography variant="h5" fontWeight={800}>
                 {suppliers.length}
               </Typography>
             </Paper>
             <Paper variant="outlined" sx={{ p: 2, minWidth: 180 }}>
               <Typography variant="caption" color="text.secondary">
-                Posted receipts
-              </Typography>
+                {uiText("Posted receipts ")}</Typography>
               <Typography variant="h5" fontWeight={800}>
                 {receipts.length}
               </Typography>
             </Paper>
             <Paper variant="outlined" sx={{ p: 2, minWidth: 180 }}>
               <Typography variant="caption" color="text.secondary">
-                Recorded receipt value
-              </Typography>
+                {uiText("Recorded receipt value ")}</Typography>
               <Typography variant="h5" fontWeight={800}>
-                ₹{totalReceived.toLocaleString('en-IN')}
+                {uiText("₹")}{totalReceived.toLocaleString(uiLocale())}
               </Typography>
             </Paper>
           </Box>
@@ -104,11 +97,11 @@ const SupplierPortal: React.FC = () => {
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell>Supplier</TableCell>
-                  <TableCell>Receipt</TableCell>
-                  <TableCell>Date</TableCell>
-                  <TableCell>Reference</TableCell>
-                  <TableCell align="right">Value</TableCell>
+                  <TableCell>{uiText("Supplier", 'tables')}</TableCell>
+                  <TableCell>{uiText("Receipt", 'tables')}</TableCell>
+                  <TableCell>{uiText("Date", 'tables')}</TableCell>
+                  <TableCell>{uiText("Reference", 'tables')}</TableCell>
+                  <TableCell align="right">{uiText("Value", 'tables')}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -117,19 +110,18 @@ const SupplierPortal: React.FC = () => {
                     <TableCell>{receipt.supplierName}</TableCell>
                     <TableCell>{receipt.receiptNo}</TableCell>
                     <TableCell>
-                      {new Date(receipt.date).toLocaleDateString('en-IN')}
+                      {new Date(receipt.date).toLocaleDateString(uiDateLocale())}
                     </TableCell>
                     <TableCell>{receipt.referenceNumber ?? '—'}</TableCell>
                     <TableCell align="right">
-                      ₹{Number(receipt.total).toLocaleString('en-IN')}
+                      {uiText("₹", 'tables')}{Number(receipt.total).toLocaleString(uiLocale())}
                     </TableCell>
                   </TableRow>
                 ))}
                 {!receipts.length && (
                   <TableRow>
                     <TableCell colSpan={5} align="center" sx={{ py: 5 }}>
-                      No supplier receipts have been recorded.
-                    </TableCell>
+                      {uiText("No supplier receipts have been recorded. ", 'tables')}</TableCell>
                   </TableRow>
                 )}
               </TableBody>

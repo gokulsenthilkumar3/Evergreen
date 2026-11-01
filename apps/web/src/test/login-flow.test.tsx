@@ -1,5 +1,5 @@
 import {
-  render,
+  render as testingRender,
   screen,
   fireEvent,
   waitFor,
@@ -7,6 +7,8 @@ import {
 } from "@testing-library/react";
 import { beforeEach, afterEach, it, expect, vi } from "vitest";
 import Login from "../components/Login";
+import type { ReactElement } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import api from "../utils/api";
 import { clearAuth, getToken, saveSession } from "../utils/authStorage";
 vi.mock("../utils/api", () => ({ default: { post: vi.fn() } }));
@@ -17,6 +19,11 @@ beforeEach(() => {
   sessionStorage.clear();
 });
 afterEach(cleanup);
+const render = (ui: ReactElement) => testingRender(
+  <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { retry: false, gcTime: 0 } } })}>
+    {ui}
+  </QueryClientProvider>,
+);
 const enter = () => {
   fireEvent.change(screen.getByLabelText(/Username/), {
     target: { value: " staff " },

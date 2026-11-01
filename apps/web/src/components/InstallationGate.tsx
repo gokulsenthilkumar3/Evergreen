@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage } from "../i18n";
 import {
   useCallback,
   useEffect,
@@ -12,6 +13,7 @@ export default function InstallationGate({
   url: string;
   children: ReactNode;
 }) {
+  useUiLanguage();
   const [state, setState] = useState<"checking" | "active" | "locked">(
     "checking",
   );
@@ -83,16 +85,16 @@ export default function InstallationGate({
         }}
         aria-live="polite"
       >
-        <p style={{ letterSpacing: 2, fontWeight: 800 }}>EVERGREEN</p>
+        <p style={{ letterSpacing: 2, fontWeight: 800 }}>{uiText("EVERGREEN")}</p>
         <h1>
           {state === "checking"
-            ? "Checking installation access"
-            : "Installation authorization required"}
+            ? uiText("Checking installation access")
+            : uiText("Installation authorization required")}
         </h1>
         <p>
           {state === "checking"
-            ? "Verifying this workspace before opening your data."
-            : "A valid owner-issued licence is required. Contact the EverGreen owner to activate or renew this installation. If already activated, check that the API is running."}
+            ? uiText("Verifying this workspace before opening your data.")
+            : uiText("A valid owner-issued licence is required. Contact the EverGreen owner to activate or renew this installation. If already activated, check that the API is running.")}
         </p>
         {state === "locked" && (
           <button
@@ -110,8 +112,7 @@ export default function InstallationGate({
               cursor: "pointer",
             }}
           >
-            Check again
-          </button>
+            {uiText("Check again ")}</button>
         )}
       </section>
     </main>

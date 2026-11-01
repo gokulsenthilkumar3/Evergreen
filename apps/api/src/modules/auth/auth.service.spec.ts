@@ -1,3 +1,4 @@
+jest.mock('../../utils/user-audit',()=>({appendUserAudit:(tx:any,args:any)=>tx.activityLog.create(args)}));
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -18,12 +19,15 @@ describe('MFA verification', () => {
   const user = {
     id: 1,
     username: 'staff',
+    status: 'ACTIVE',
     isTotpEnabled: true,
     totpSecret: 'SECRET',
   } as Omit<User, 'password'>;
   const prisma = {
-    session: { create: jest.fn() },
-    user: { findUnique: jest.fn(), update: jest.fn() },
+    $transaction: jest.fn(async (callback: any): Promise<any> => callback(prisma)),
+    activityLog: { create: jest.fn() },
+    session: { create: jest.fn(), updateMany: jest.fn() },
+    user: { findUnique: jest.fn(), update: jest.fn(), updateMany: jest.fn() },
   };
   const service = new AuthService(
     {} as JwtService,
@@ -35,6 +39,8 @@ describe('MFA verification', () => {
     jest.clearAllMocks();
     verify.mockResolvedValue({ valid: false });
     prisma.user.findUnique.mockResolvedValue(user);
+    prisma.user.update.mockResolvedValue({ failedLogins: 1 });
+    prisma.user.updateMany.mockResolvedValue({ count: 1 });
   });
   it('rejects an invalid code without creating a session', async () => {
     await expect(
@@ -53,8 +59,8 @@ describe('MFA verification', () => {
     await expect(service.verifyAndEnableTotp(1, '123456')).resolves.toEqual({
       success: true,
     });
-    expect(prisma.user.update).toHaveBeenCalledWith({
-      where: { id: 1 },
+    expect(prisma.user.updateMany).toHaveBeenCalledWith({
+      where: { id: 1, status: 'ACTIVE', totpSecret: 'SECRET', isTotpEnabled: false },
       data: { isTotpEnabled: true },
     });
   });
@@ -67,13 +73,14 @@ describe('password change', () => {
       user: {
         findUnique: jest.fn(async () => ({
           id: 7,
+          status: 'ACTIVE',
           password: await bcrypt.hash('Old-Password-123', 4),
         })),
-        update: jest.fn(() => 'user-update'),
+        updateMany: jest.fn(async () => ({ count: 1 })),
       },
-      session: { updateMany: jest.fn(() => 'session-revoke') },
+      session: { updateMany: jest.fn(async () => ({ count: 2 })) },
       activityLog: { create: jest.fn() },
-      $transaction: jest.fn(() => Promise.resolve([{}, { count: 2 }])),
+      $transaction: jest.fn(async (callback: any): Promise<any> => callback(prisma)),
     };
     const service = new AuthService(
       {} as JwtService,
@@ -91,10 +98,7 @@ describe('password change', () => {
       where: { userId: 7, isValid: true, id: { not: 'current-session' } },
       data: { isValid: false },
     });
-    expect(prisma.$transaction).toHaveBeenCalledWith([
-      'user-update',
-      'session-revoke',
-    ]);
+    expect(prisma.$transaction).toHaveBeenCalledWith(expect.any(Function));
     expect(result).toMatchObject({ success: true, signedOutSessions: 2 });
   });
 });

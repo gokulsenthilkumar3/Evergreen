@@ -6,6 +6,8 @@ import ShopPortal from './pages/ShopPortal.tsx'
 import InstallationGate from './components/InstallationGate.tsx'
 import './index.css'
 import { setMutationListener } from './utils/api'
+import AccountLinkDialog from './components/AccountRecovery'
+import OidcCompletion from './components/OidcAccess'
 
 // Keep server data fresh by default. Screens that benefit from caching set
 // their own staleTime/refetch policy at the query that owns that data.
@@ -15,6 +17,8 @@ setMutationListener(() => { void queryClient.invalidateQueries(); })
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
+    <AccountLinkDialog />
+    <OidcCompletion />
     {window.location.pathname.startsWith('/shop') ? <InstallationGate url={(import.meta.env.VITE_API_URL || '/api/backend').replace(/\/+$/, '') + '/license/status'}><ShopPortal /></InstallationGate> : <App />}
     </QueryClientProvider>
   </React.StrictMode>,

@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage, uiTemplate, uiScopedTemplate } from "../i18n";
 import { useEffect, useState, type ReactNode } from "react";
 import { alpha } from "@mui/material/styles";
 import {
@@ -65,6 +66,7 @@ function NavigationSection({
   group: NavGroup;
   searching: boolean;
 }) {
+  useUiLanguage();
   const active = group.items.some((item) => item.page === currentPage);
   const [open, setOpen] = useState(active || group.label === "Overview");
   useEffect(() => {
@@ -102,7 +104,7 @@ function NavigationSection({
               textAlign: "left",
             }}
           >
-            {group.label}
+            {labelFor(group.label || '')}
           </Typography>
           <ExpandMoreRounded
             sx={{
@@ -126,7 +128,7 @@ function NavigationSection({
       <Collapse in={!expanded || searching || open} timeout="auto">
         <List
           id={sectionId}
-          aria-label={group.label}
+          aria-label={labelFor(group.label || '')}
           disablePadding
           sx={{ display: "grid", gap: 0.25 }}
         >
@@ -140,7 +142,7 @@ function NavigationSection({
               >
                 <Tooltip
                   title={
-                    expanded ? item.description || "" : labelFor(item.text)
+                    expanded ? labelFor(item.description || "") : labelFor(item.text)
                   }
                   placement="right"
                   enterDelay={500}
@@ -241,7 +243,7 @@ function NavigationSection({
                         {!!item.badge && (
                           <Box
                             component="span"
-                            aria-label={`${item.badge} low-stock counts`}
+                            aria-label={uiScopedTemplate('navigation')`${item.badge} low-stock counts`}
                             sx={{
                               px: 0.75,
                               borderRadius: 1,
@@ -269,6 +271,7 @@ function NavigationSection({
 }
 
 export default function WorkspaceNavigation(props: Props) {
+  useUiLanguage();
   const [query, setQuery] = useState("");
   const term = props.expanded ? query.trim().toLocaleLowerCase() : "";
   const groups = props.groups
@@ -282,6 +285,8 @@ export default function WorkspaceNavigation(props: Props) {
             props.labelFor(item.text),
             item.description,
             group.label,
+            props.labelFor(group.label || ''),
+            props.labelFor(item.description || ''),
           ].some((value) => value?.toLocaleLowerCase().includes(term)),
       ),
     }))
@@ -337,28 +342,27 @@ export default function WorkspaceNavigation(props: Props) {
                 color="text.secondary"
                 sx={{ letterSpacing: ".12em" }}
               >
-                EVERGREEN WORKSPACE
-              </Typography>
+                {uiText("EVERGREEN WORKSPACE ", 'navigation')}</Typography>
             </Box>
           </>
         )}
         <Tooltip
           title={
             props.compact
-              ? "Close navigation"
+              ? uiText("Close navigation", 'navigation')
               : props.expanded
-                ? "Collapse navigation"
-                : "Expand navigation"
+                ? uiText("Collapse navigation", 'navigation')
+                : uiText("Expand navigation", 'navigation')
           }
         >
           <IconButton
             onClick={props.onToggle}
             aria-label={
               props.compact
-                ? "Close navigation"
+                ? uiText("Close navigation", 'navigation')
                 : props.expanded
-                  ? "Collapse navigation"
-                  : "Expand navigation"
+                  ? uiText("Collapse navigation", 'navigation')
+                  : uiText("Expand navigation", 'navigation')
             }
             sx={{ width: 44, height: 44, mx: props.expanded ? -0.75 : "auto" }}
           >
@@ -382,8 +386,8 @@ export default function WorkspaceNavigation(props: Props) {
             }}
             fullWidth
             size="small"
-            placeholder="Find a module…"
-            inputProps={{ "aria-label": "Find a module" }}
+            placeholder={uiText("Find a module…", 'navigation')}
+            inputProps={{ "aria-label": uiText("Find a module", 'navigation') }}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -394,7 +398,7 @@ export default function WorkspaceNavigation(props: Props) {
                 <InputAdornment position="end">
                   <IconButton
                     size="small"
-                    aria-label="Clear module filter"
+                    aria-label={uiText("Clear module filter", 'navigation')}
                     onClick={() => setQuery("")}
                   >
                     <CloseRounded fontSize="small" />
@@ -414,7 +418,7 @@ export default function WorkspaceNavigation(props: Props) {
       <Box
         component="nav"
         id="workspace-navigation"
-        aria-label="Main navigation"
+        aria-label={uiText("Main navigation", 'navigation')}
         sx={{
           overflowY: "auto",
           minHeight: 0,
@@ -440,10 +444,9 @@ export default function WorkspaceNavigation(props: Props) {
         ))}
         {!groups.length && (
           <Box role="status" sx={{ px: 1, py: 3 }}>
-            <Typography fontSize={13}>No matching modules</Typography>
+            <Typography fontSize={13}>{uiText("No matching modules", 'navigation')}</Typography>
             <Typography fontSize={12} color="text.secondary" sx={{ mt: 0.5 }}>
-              Try a different name or clear your filter.
-            </Typography>
+              {uiText("Try a different name or clear your filter. ", 'navigation')}</Typography>
           </Box>
         )}
       </Box>
@@ -458,9 +461,9 @@ export default function WorkspaceNavigation(props: Props) {
           flexShrink: 0,
         }}
       >
-        <Tooltip title="My profile">
+        <Tooltip title={uiText("My profile", 'navigation')}>
           <ButtonBase
-            aria-label="My profile"
+            aria-label={uiText("My profile", 'navigation')}
             onClick={props.onProfile}
             sx={{
               flex: 1,
@@ -502,9 +505,9 @@ export default function WorkspaceNavigation(props: Props) {
           </ButtonBase>
         </Tooltip>
         {props.expanded && (
-          <Tooltip title="Sign out">
+          <Tooltip title={uiText("Sign out", 'navigation')}>
             <IconButton
-              aria-label="Sign out"
+              aria-label={uiText("Sign out", 'navigation')}
               onClick={props.onLogout}
               sx={{ width: 40, height: 40 }}
             >

@@ -1,316 +1,430 @@
-/* ==========================================================================
-   EVERGREEN PROVIDER & INSTALLATION GATE — ULTRA-SHARP OBSIDIAN STYLES
-   ========================================================================== */
-
-.gate-root {
+/* Owner access: the same quiet visual language as the workspace. */
+.gate-root,
+.gate-checking-root {
   min-height: 100dvh;
-  position: relative;
+  box-sizing: border-box;
+  font-family: Inter, "Segoe UI", sans-serif;
+  color: #ecedf5;
+  background: #111217;
+  -webkit-font-smoothing: antialiased;
+}
+.gate-root {
   display: grid;
   place-items: center;
-  padding: 24px;
-  box-sizing: border-box;
-  background-color: #060a12;
-  background-image:
-    radial-gradient(ellipse 70% 50% at 50% 0%, rgba(16, 185, 129, 0.09) 0%, transparent 65%),
-    radial-gradient(ellipse 55% 45% at 85% 85%, rgba(56, 189, 248, 0.06) 0%, transparent 60%),
-    radial-gradient(circle at 15% 75%, rgba(124, 58, 237, 0.04) 0%, transparent 45%);
-  color: #f1f5f9;
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  overflow: hidden;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-.gate-card {
+  padding: 40px;
   position: relative;
-  max-width: 460px;
+}
+.gate-root:has(.gate-story) {
+  grid-template-columns: minmax(360px, 1.15fr) minmax(340px, 0.85fr);
+  gap: 70px;
+  max-width: 1400px;
+  margin: auto;
+  padding: 50px 8%;
+  min-height: 100dvh;
+}
+.gate-story {
+  align-self: stretch;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 630px;
+  padding-right: 30px;
+}
+.gate-wordmark {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: -0.7px;
+  color: #eef0fa;
+}
+.gate-wordmark svg {
+  width: 30px;
+  height: 30px;
+  fill: #aeb6ff0b;
+  stroke: #aeb6ff;
+  stroke-width: 1.2;
+}
+.gate-wordmark > span {
+  margin-left: 10px;
+  font-size: 7px;
+  color: #8c91a8;
+  letter-spacing: 0.15em;
+  font-weight: 500;
+}
+.gate-story-copy {
+  margin-top: 65px;
+}
+.gate-story-eyebrow {
+  font-size: 8px;
+  letter-spacing: 0.16em;
+  color: #878da5;
+}
+.gate-story h2 {
+  font-size: clamp(40px, 4.5vw, 64px);
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -2.6px;
+  margin: 22px 0;
+}
+.gate-story h2 em {
+  font-style: normal;
+  color: #b4bbef;
+}
+.gate-story-copy p {
+  font-size: 12px;
+  line-height: 1.9;
+  color: #9097ad;
+  max-width: 310px;
+}
+.gate-story-art {
+  height: 220px;
+  position: relative;
+  perspective: 900px;
+  margin-top: 20px;
+  isolation: isolate;
+}
+.gate-story-art::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  background: radial-gradient(ellipse, #8c9ade13, transparent 65%);
+  z-index: -1;
+}
+.gate-story-art svg {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) rotate(-8deg);
+  width: 220px;
+  height: 160px;
+  fill: #9ca7e906;
+  stroke: #9ca7e96b;
+  stroke-width: 0.7;
+  filter: drop-shadow(0 0 20px #9ca7e91a);
+}
+.gate-art-orbit {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 290px;
+  height: 100px;
+  border: 1px solid #9ca7e91c;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) rotate(-20deg);
+}
+.gate-art-label {
+  position: absolute;
+  background: #1c202d;
+  border: 1px solid #aab3ff12;
+  border-radius: 5px;
+  padding: 8px 12px;
+  color: #9ca7c1;
+  font-size: 7px;
+  letter-spacing: 0.1em;
+  box-shadow: 0 10px 30px #0002;
+}
+.label-a {
+  top: 26%;
+  left: 5%;
+}
+.label-b {
+  right: 0;
+  top: 40%;
+}
+.label-c {
+  bottom: 0;
+  left: 26%;
+}
+.gate-story-footer {
+  display: flex;
+  gap: 24px;
+  color: #626c85;
+  font-size: 9px;
+  padding-top: 40px;
+}
+.gate-card {
   width: 100%;
-  background: #101a2a;
-  border: 1px solid #304057;
-  border-top: 2px solid #34d399;
+  max-width: 390px;
+  position: relative;
+  padding: 34px;
+  background: #191b23;
+  border: 1px solid #ffffff0c;
   border-radius: 12px;
-  padding: clamp(24px, 6vw, 36px);
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
   box-sizing: border-box;
-  z-index: 2;
-  animation: gateCardFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 20px 70px #0000001a;
 }
-
-@keyframes gateCardFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px) scale(0.99);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
 .gate-badge {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 8px;
-  padding: 4px 12px;
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid rgba(16, 185, 129, 0.28);
-  border-radius: 9999px;
-  font-family: 'JetBrains Mono', 'Cascadia Code', monospace;
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  color: #34d399;
-  text-transform: uppercase;
-  margin-bottom: 14px;
+  font:
+    500 8px Inter,
+    "Segoe UI",
+    sans-serif;
+  letter-spacing: 0.16em;
+  color: #9aa2bb;
+  margin-bottom: 25px;
 }
-
 .gate-badge-dot {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
-  background: #10b981;
-  box-shadow: 0 0 8px #10b981;
-  animation: gatePulseDot 2s ease-in-out infinite;
+  background: #aeb6ed;
 }
-
-@keyframes gatePulseDot {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(0.85); }
-}
-
 .gate-title {
-  font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
-  font-size: 1.75rem;
-  font-weight: 800;
-  letter-spacing: -0.025em;
-  color: #ffffff;
-  margin: 0 0 10px;
-  line-height: 1.2;
+  font-size: 27px;
+  line-height: 1.25;
+  letter-spacing: -1px;
+  font-weight: 550;
+  margin: 0 0 12px;
+  color: #eef0f7;
 }
-
 .gate-subtitle {
-  font-size: 0.86rem;
-  line-height: 1.6;
-  color: #a8b6c9;
-  margin: 0 0 24px;
+  font-size: 11px;
+  line-height: 1.9;
+  color: #8f96ad;
+  margin-bottom: 26px;
 }
-
 .gate-form {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
-
 .gate-label {
-  display: block;
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: #cbd5e1;
+  font-size: 10px;
+  font-weight: 500;
+  color: #c4c8d8;
 }
-
 .gate-input {
-  display: block;
   width: 100%;
-  box-sizing: border-box;
-  padding: 13px 15px;
-  margin-top: 6px;
-  background: rgba(5, 9, 18, 0.95);
-  border: 1px solid #3a4a60;
+  padding: 13px 14px;
+  border: 1px solid #ffffff12;
   border-radius: 6px;
-  color: #f8fafc;
-  font-family: 'JetBrains Mono', 'Cascadia Code', monospace;
-  font-size: 1rem;
-  letter-spacing: 0.02em;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-}
-
-.gate-input:focus {
+  background: #111319;
+  color: #eef0f7;
+  font:
+    12px Inter,
+    "Segoe UI",
+    sans-serif;
+  box-sizing: border-box;
   outline: none;
-  background: rgba(7, 12, 24, 0.98);
-  border-color: #10b981;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18);
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
-
+.gate-input:focus {
+  border-color: #aeb6ed88;
+  box-shadow: 0 0 0 3px #aeb6ed0b;
+}
+.gate-input::placeholder {
+  color: #606b82;
+}
 .gate-input:disabled {
   opacity: 0.6;
-  cursor: not-allowed;
 }
-
-.gate-input::placeholder {
-  color: #8b9bb1;
-  font-family: inherit;
-}
-
-.gate-alert {
-  margin: 10px 0 2px;
-  padding: 10px 14px;
-  background: rgba(244, 63, 94, 0.12);
-  border: 1px solid rgba(244, 63, 94, 0.35);
-  border-radius: 8px;
-  color: #fecdd3;
-  font-size: 0.82rem;
-  line-height: 1.45;
-  font-weight: 500;
-}
-
 .gate-submit-btn {
-  margin-top: 18px;
-  width: 100%;
-  padding: 14px 20px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 13px 16px;
+  margin-top: 9px;
+  background: #bac2f8;
+  color: #1a2038;
+  border: 1px solid transparent;
   border-radius: 6px;
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: #021a11;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 0.92rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  font:
+    600 11px Inter,
+    "Segoe UI",
+    sans-serif;
   cursor: pointer;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease, opacity 0.15s ease;
+  transition:
+    background 0.2s,
+    transform 0.2s;
 }
-
 .gate-submit-btn:hover:not(:disabled) {
+  background: #ced3ff;
   transform: translateY(-1px);
-  filter: brightness(1.06);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
 }
-
-.gate-submit-btn:active:not(:disabled) {
-  transform: translateY(0);
-  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
-}
-
 .gate-submit-btn:disabled {
-  opacity: 0.55;
+  opacity: 0.5;
   cursor: not-allowed;
-  box-shadow: none;
 }
-
+.gate-alert {
+  padding: 10px 12px;
+  font-size: 11px;
+  line-height: 1.7;
+  color: #edb2be;
+  background: #dd81980b;
+  border: 1px solid #dd819826;
+  border-radius: 6px;
+}
 .gate-details {
-  margin-top: 24px;
-  padding: 14px 16px;
-  background: rgba(5, 9, 18, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  font-size: 0.8rem;
+  margin-top: 22px;
+  border-top: 1px solid #ffffff08;
+  padding-top: 18px;
+  font-size: 10px;
 }
-
 .gate-summary {
+  color: #a7b2e0;
+  font-size: 10px;
   cursor: pointer;
-  font-weight: 600;
-  color: #38bdf8;
-  font-size: 0.82rem;
-  user-select: none;
-  transition: color 0.15s ease;
 }
-
-.gate-summary:hover {
-  color: #7dd3fc;
-}
-
 .gate-details p {
-  color: #94a3b8;
-  line-height: 1.5;
-  margin: 10px 0 6px;
-  font-size: 0.78rem;
+  color: #8f96ad;
+  font-size: 10px;
+  line-height: 1.8;
+  margin: 12px 0;
 }
-
 .gate-code {
   display: block;
   overflow-wrap: anywhere;
-  padding: 12px 14px;
-  background: #030712;
-  border: 1px solid rgba(56, 189, 248, 0.22);
-  border-radius: 8px;
-  font-family: 'JetBrains Mono', 'Cascadia Code', monospace;
-  font-size: 0.75rem;
-  color: #7dd3fc;
-  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.6);
-  margin: 10px 0;
-  line-height: 1.5;
+  background: #111319;
+  border: 1px solid #ffffff08;
+  border-radius: 5px;
+  padding: 12px;
+  font:
+    9px/1.8 "Cascadia Code",
+    monospace;
+  color: #b0bbe3;
   user-select: all;
 }
-
 .gate-footer {
-  font-size: 0.78rem;
-  line-height: 1.5;
-  color: #8b9bb1;
-  margin-top: 22px;
-  margin-bottom: 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 8px;
+  line-height: 1.8;
+  color: #68738c;
+  margin: 22px 0 0;
+  border-top: 1px solid #ffffff08;
   padding-top: 16px;
 }
-
-/* Floating Lock button when authenticated */
 .gate-lock-btn {
   position: fixed;
-  right: 20px;
-  bottom: 20px;
-  z-index: 10000;
-  padding: 10px 18px;
-  border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(10, 16, 32, 0.88);
-  -webkit-backdrop-filter: blur(14px);
-  backdrop-filter: blur(14px);
-  color: #cbd5e1;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 0.82rem;
-  font-weight: 600;
-  letter-spacing: 0.01em;
+  right: 16px;
+  bottom: 14px;
+  z-index: 70;
+  padding: 8px 12px;
+  border: 1px solid #ffffff12;
+  border-radius: 6px;
+  background: #191b23ed;
+  color: #969db3;
+  font:
+    10px Inter,
+    "Segoe UI",
+    sans-serif;
   cursor: pointer;
-  box-shadow:
-    0 8px 24px rgba(0, 0, 0, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.09);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
 }
-
-.gate-lock-btn:hover:not(:disabled) {
-  background: rgba(244, 63, 94, 0.14);
-  border-color: rgba(244, 63, 94, 0.45);
-  color: #fda4af;
-  transform: translateY(-2px);
-  box-shadow:
-    0 12px 28px rgba(244, 63, 94, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+.gate-lock-btn:hover {
+  color: #e9c1ce;
+  border-color: #dd819840;
 }
-
-.gate-lock-btn:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-}
-
-/* Checking Status Screen */
 .gate-checking-root {
-  min-height: 100dvh;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-  padding: 40px;
-  box-sizing: border-box;
-  background-color: #060a12;
-  color: #94a3b8;
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-size: 0.95rem;
+  flex-direction: column;
+  gap: 18px;
+  font-size: 12px;
+  color: #919ab2;
 }
-
 .gate-checking-spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid rgba(16, 185, 129, 0.15);
-  border-top-color: #10b981;
+  width: 24px;
+  height: 24px;
+  border: 2px solid #aeb6ed1a;
+  border-top-color: #aeb6ed;
   border-radius: 50%;
-  animation: gateSpin 0.8s linear infinite;
+  animation: gate-spin 0.9s linear infinite;
 }
-
-@keyframes gateSpin {
-  to { transform: rotate(360deg); }
+@keyframes gate-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .gate-card {
+    animation: gate-enter 0.45s ease-out both;
+  }
+  .gate-story-art svg {
+    animation: gate-float 10s ease-in-out infinite;
+  }
+  @keyframes gate-enter {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes gate-float {
+    50% {
+      transform: translate(-50%, calc(-50% - 5px)) rotate(-4deg);
+    }
+  }
+}
+@media (max-width: 950px) {
+  .gate-root:has(.gate-story) {
+    gap: 35px;
+    padding: 35px 6%;
+  }
+  .gate-story {
+    padding-right: 0;
+  }
+  .gate-story h2 {
+    font-size: 44px;
+  }
+  .gate-wordmark > span {
+    display: none;
+  }
+  .gate-card {
+    padding: 28px;
+  }
+  .gate-story-footer {
+    gap: 12px;
+  }
+}
+@media (max-width: 720px) {
+  .gate-root:has(.gate-story) {
+    grid-template-columns: 1fr;
+    gap: 30px;
+    padding: 35px 24px;
+  }
+  .gate-story {
+    min-height: 0;
+  }
+  .gate-story-copy {
+    margin-top: 30px;
+  }
+  .gate-story h2 {
+    font-size: 36px;
+    letter-spacing: -1.5px;
+    margin: 16px 0;
+  }
+  .gate-story h2 br {
+    display: none;
+  }
+  .gate-story h2 em::before {
+    content: " ";
+  }
+  .gate-story-art,
+  .gate-story-footer {
+    display: none;
+  }
+  .gate-story-copy p {
+    max-width: 100%;
+  }
+  .gate-card {
+    max-width: none;
+  }
+  .gate-root {
+    padding: 24px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gate-card,
+  .gate-story-art svg {
+    animation: none;
+  }
+  .gate-submit-btn {
+    transition: none;
+  }
 }

@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage } from "../i18n";
 import React, { useState, useEffect } from 'react';
 import {
   Avatar,
@@ -9,7 +10,6 @@ import {
   DialogContent,
   DialogTitle,
   Divider,
-  Grid,
   IconButton,
   InputAdornment,
   Paper,
@@ -17,65 +17,43 @@ import {
   Tabs,
   TextField,
   Typography,
-  Switch,
-  FormControlLabel,
 } from '@mui/material';
 import {
   Close as CloseIcon,
   Person as PersonIcon,
   Lock as LockIcon,
   Security as SecurityIcon,
-  Palette as PaletteIcon,
+  Translate as LanguageIcon,
   Visibility,
   VisibilityOff,
-  CheckCircle as CheckIcon,
   Devices as DeviceIcon,
-  Translate as TranslateIcon,
 } from '@mui/icons-material';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import api from '../utils/api';
-import type { ThemeName } from '../theme';
+import TamilOptions from './TamilOptions';
 
 interface ProfileModalProps {
   open: boolean;
   onClose: () => void;
   currentUser: any;
   onUserUpdate?: (user: any) => void;
-  mode: 'light' | 'dark';
-  onToggleTheme: () => void;
-  themeName: ThemeName;
-  onThemeChange?: (name: ThemeName) => void;
   language: 'en' | 'ta';
   onToggleLanguage: () => void;
-  floatingNav: boolean;
-  onFloatingNavChange?: (val: boolean) => void;
   onNavigate?: (page: string) => void;
 }
 
-const THEME_OPTIONS: { name: ThemeName; label: string; color: string }[] = [
-  { name: 'emerald', label: 'Emerald', color: '#059669' },
-  { name: 'forest', label: 'Forest', color: '#2d6a4f' },
-  { name: 'mint', label: 'Mint', color: '#00897b' },
-  { name: 'sage', label: 'Sage', color: '#558b6e' },
-  { name: 'olive', label: 'Olive', color: '#6a7c59' },
-];
 
 const ProfileModal: React.FC<ProfileModalProps> = ({
   open,
   onClose,
   currentUser,
   onUserUpdate,
-  mode,
-  onToggleTheme,
-  themeName,
-  onThemeChange,
   language,
   onToggleLanguage,
-  floatingNav,
-  onFloatingNavChange,
   onNavigate,
 }) => {
+  useUiLanguage();
   const [tab, setTab] = useState(0);
   const queryClient = useQueryClient();
 
@@ -114,10 +92,10 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       const updated = res.data;
       if (onUserUpdate) onUserUpdate(updated);
-      toast.success('Profile details updated successfully');
+      toast.success(uiText('Profile details updated successfully', 'feedback'));
     },
     onError: (err: any) => {
-      toast.error(err?.response?.data?.message || 'Failed to update profile');
+      toast.error(uiText(err?.response?.data?.message || 'Failed to update profile', 'feedback'));
     },
   });
 
@@ -125,19 +103,19 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
     mutationFn: (data: { currentPassword: string; newPassword: string }) =>
       api.put('/auth/change-password', data),
     onSuccess: () => {
-      toast.success('Password changed successfully');
+      toast.success(uiText('Password changed successfully', 'feedback'));
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
     },
     onError: (err: any) => {
-      toast.error(err?.response?.data?.message || 'Failed to change password');
+      toast.error(uiText(err?.response?.data?.message || 'Failed to change password', 'feedback'));
     },
   });
 
   const handleSaveProfile = () => {
     if (!name.trim()) {
-      toast.error('Name cannot be empty');
+      toast.error(uiText('Name cannot be empty', 'feedback'));
       return;
     }
     updateProfileMutation.mutate({
@@ -148,15 +126,15 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
 
   const handleChangePassword = () => {
     if (!currentPassword) {
-      toast.error('Current password is required');
+      toast.error(uiText('Current password is required', 'feedback'));
       return;
     }
     if (newPassword.length < 8) {
-      toast.error('New password must be at least 8 characters long');
+      toast.error(uiText('New password must be at least 8 characters long', 'feedback'));
       return;
     }
     if (newPassword !== confirmPassword) {
-      toast.error('New password and confirmation do not match');
+      toast.error(uiText('New password and confirmation do not match', 'feedback'));
       return;
     }
     changePasswordMutation.mutate({ currentPassword, newPassword });
@@ -252,9 +230,9 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
           '& .MuiTab-root': { textTransform: 'none', fontWeight: 600, minHeight: 48 },
         }}
       >
-        <Tab icon={<PersonIcon fontSize="small" />} iconPosition="start" label="Profile" />
-        <Tab icon={<LockIcon fontSize="small" />} iconPosition="start" label="Security" />
-        <Tab icon={<PaletteIcon fontSize="small" />} iconPosition="start" label="Preferences" />
+        <Tab icon={<PersonIcon fontSize="small" />} iconPosition="start" label={uiText("Profile", 'tabs')} />
+        <Tab icon={<LockIcon fontSize="small" />} iconPosition="start" label={uiText("Security", 'tabs')} />
+        <Tab icon={<LanguageIcon fontSize="small" />} iconPosition="start" label={uiText("Preferences", 'tabs')} />
       </Tabs>
 
       <DialogContent sx={{ p: 3 }}>
@@ -262,41 +240,43 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
         {tab === 0 && (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
             <TextField
-              label="Display Name"
+              label={uiText("Display Name", 'forms')}
               fullWidth
               size="small"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Gokul Senthilkumar"
+              placeholder={uiText("e.g. Gokul Senthilkumar", 'forms')}
             />
             <TextField
-              label="Email Address"
+              label={uiText("Email Address", 'forms')}
               fullWidth
               type="email"
               size="small"
               value={email}
+              disabled
+              helperText={uiText('Email changes require mailbox verification in Security Settings', 'forms')}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="user@evergreen.com"
+              placeholder={uiText("user@evergreen.com", 'forms')}
             />
+            {onNavigate && <Button size="small" onClick={() => { onClose(); onNavigate('security'); }}>{uiText('Change verified email')}</Button>}
             <TextField
-              label="Username"
+              label={uiText("Username", 'forms')}
               fullWidth
               size="small"
               value={activeUser?.username || ''}
               disabled
-              helperText="Usernames cannot be changed after account creation."
+              helperText={uiText("Usernames cannot be changed after account creation.", 'forms')}
             />
 
             <Paper variant="outlined" sx={{ p: 2, borderRadius: 2.5, bgcolor: 'action.hover' }}>
               <Typography variant="caption" color="text.secondary" fontWeight={700} display="block">
-                ACCOUNT ROLE & PERMISSIONS
-              </Typography>
+                {uiText("ACCOUNT ROLE & PERMISSIONS ")}</Typography>
               <Typography variant="body2" sx={{ mt: 0.5 }}>
                 {activeUser?.role === 'ADMIN'
-                  ? 'Administrator: Full access to all business desks, financial costing, settings, and user management.'
+                  ? uiText("Administrator: Full access to all business desks, financial costing, settings, and user management.")
                   : activeUser?.role === 'MODIFIER'
-                  ? 'Modifier: Can create and update transactions, records, and operations logs.'
-                  : 'Viewer: Read-only access to records and reports.'}
+                  ? uiText("Modifier: Can create and update transactions, records, and operations logs.")
+                  : uiText("Viewer: Read-only access to records and reports.")}
               </Typography>
             </Paper>
 
@@ -306,7 +286,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
               disabled={updateProfileMutation.isPending}
               sx={{ alignSelf: 'flex-start' }}
             >
-              {updateProfileMutation.isPending ? 'Saving...' : 'Save Profile Changes'}
+              {updateProfileMutation.isPending ? uiText("Saving...") : uiText("Save Profile Changes")}
             </Button>
           </Box>
         )}
@@ -315,10 +295,9 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
         {tab === 1 && (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
             <Typography variant="subtitle2" fontWeight={700}>
-              Change Account Password
-            </Typography>
+              {uiText("Change Account Password ")}</Typography>
             <TextField
-              label="Current Password"
+              label={uiText("Current Password", 'forms')}
               type={showCurrentPass ? 'text' : 'password'}
               fullWidth
               size="small"
@@ -339,7 +318,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
               }}
             />
             <TextField
-              label="New Password (min 8 characters)"
+              label={uiText("New Password (min 8 characters)", 'forms')}
               type={showNewPass ? 'text' : 'password'}
               fullWidth
               size="small"
@@ -360,7 +339,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
               }}
             />
             <TextField
-              label="Confirm New Password"
+              label={uiText("Confirm New Password", 'forms')}
               type="password"
               fullWidth
               size="small"
@@ -379,7 +358,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
               }
               sx={{ alignSelf: 'flex-start' }}
             >
-              {changePasswordMutation.isPending ? 'Updating...' : 'Update Password'}
+              {changePasswordMutation.isPending ? uiText("Updating...") : uiText("Update Password")}
             </Button>
 
             <Divider sx={{ my: 1 }} />
@@ -390,10 +369,9 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
                   <SecurityIcon color="primary" />
                   <Box>
                     <Typography variant="body2" fontWeight={700}>
-                      Two-Factor Authentication (TOTP)
-                    </Typography>
+                      {uiText("Two-Factor Authentication (TOTP) ")}</Typography>
                     <Typography variant="caption" color="text.secondary">
-                      {activeUser?.isTotpEnabled ? 'Active & Protecting Account' : 'Not configured'}
+                      {activeUser?.isTotpEnabled ? uiText("Active & Protecting Account") : uiText("Not configured")}
                     </Typography>
                   </Box>
                 </Box>
@@ -405,8 +383,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
                     onNavigate?.('security');
                   }}
                 >
-                  Configure
-                </Button>
+                  {uiText("Configure ")}</Button>
               </Box>
             </Paper>
           </Box>
@@ -416,76 +393,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
         {tab === 2 && (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
             <Typography variant="subtitle2" fontWeight={700}>
-              Theme Palette
-            </Typography>
-            <Grid container spacing={1.5}>
-              {THEME_OPTIONS.map((th) => {
-                const selected = themeName === th.name;
-                return (
-                  <Grid key={th.name} size={{ xs: 6, sm: 4 }}>
-                    <Paper
-                      variant="outlined"
-                      onClick={() => onThemeChange?.(th.name)}
-                      sx={{
-                        p: 1.5,
-                        borderRadius: 2,
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        border: selected ? `2px solid ${th.color}` : '1px solid',
-                        borderColor: selected ? th.color : 'divider',
-                        bgcolor: selected ? `${th.color}10` : 'transparent',
-                        '&:hover': { bgcolor: `${th.color}15` },
-                      }}
-                    >
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Box sx={{ width: 18, height: 18, borderRadius: '50%', bgcolor: th.color }} />
-                        <Typography variant="body2" fontWeight={selected ? 700 : 500}>
-                          {th.label}
-                        </Typography>
-                      </Box>
-                      {selected && <CheckIcon sx={{ color: th.color, fontSize: 18 }} />}
-                    </Paper>
-                  </Grid>
-                );
-              })}
-            </Grid>
-
-            <Divider sx={{ my: 0.5 }} />
-
-            <Typography variant="subtitle2" fontWeight={700}>
-              Interface & Navigation
-            </Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={mode === 'dark'}
-                    onChange={onToggleTheme}
-                    color="primary"
-                  />
-                }
-                label={`Dark Mode (${mode === 'dark' ? 'Enabled' : 'Disabled'})`}
-              />
-
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={floatingNav}
-                    onChange={(e) => onFloatingNavChange?.(e.target.checked)}
-                    color="primary"
-                  />
-                }
-                label="Floating Bottom Navigation Bar (Mobile / Quick access)"
-              />
-            </Box>
-
-            <Divider sx={{ my: 0.5 }} />
-
-            <Typography variant="subtitle2" fontWeight={700}>
-              Language Preference
-            </Typography>
+              {uiText("Language Preference ")}</Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <Button
                 variant={language === 'en' ? 'contained' : 'outlined'}
@@ -494,8 +402,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
                   if (language !== 'en') onToggleLanguage();
                 }}
               >
-                English
-              </Button>
+                {uiText("English ")}</Button>
               <Button
                 variant={language === 'ta' ? 'contained' : 'outlined'}
                 size="small"
@@ -503,17 +410,16 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
                   if (language !== 'ta') onToggleLanguage();
                 }}
               >
-                தமிழ் (Tamil)
-              </Button>
+                {uiText("தமிழ் (Tamil) ")}</Button>
             </Box>
+            {language === 'ta' && <TamilOptions />}
           </Box>
         )}
       </DialogContent>
 
       <DialogActions sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
         <Button onClick={onClose} color="inherit">
-          Close
-        </Button>
+          {uiText("Close ")}</Button>
       </DialogActions>
     </Dialog>
   );

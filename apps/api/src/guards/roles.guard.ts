@@ -8,6 +8,7 @@ import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from '../decorators/roles.decorator';
 import { ROLE_HIERARCHY, normalizeRole } from '../utils/roles';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
+import { staffRouteAllowed } from '../utils/staff-access';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -64,6 +65,9 @@ export class RolesGuard implements CanActivate {
       );
     }
 
+    const route = String(request.route?.path || request.path || '');
+    const ownSecurity = route === '/auth' || route.startsWith('/auth/') || route === '/sessions' || route.startsWith('/sessions/');
+    if (!ownSecurity && !staffRouteAllowed(Boolean(user.scopedAccess), user.accessRules || [], method, route)) throw new ForbiddenException('This endpoint is not enabled for your staff account');
     return true;
   }
 }

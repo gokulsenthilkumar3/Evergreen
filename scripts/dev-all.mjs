@@ -266,8 +266,10 @@ async function preflightChecks() {
 
   // 4. Seed Admin DB if needed
   try {
-    spawnSync(process.execPath, [path.join(root, 'scripts', 'seed-admin.mjs')], { cwd: root, stdio: 'pipe' });
-    console.log('   ✅ Provider Admin DB seed verified');
+    if (process.env.EVERGREEN_SEED_DEMO === 'true') {
+      spawnSync(process.execPath, [path.join(root, 'scripts', 'seed-admin.mjs')], { cwd: root, stdio: 'pipe' });
+      console.log('   Demo seed explicitly enabled');
+    }
   } catch {}
 
   // 5. Backend Builds

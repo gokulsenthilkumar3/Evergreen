@@ -29,7 +29,7 @@ api.interceptors.response.use(
         return response;
     },
     (error) => {
-        const isSignInAttempt = /\/auth\/(login|passkey\/auth-options|passkey\/auth-verify)$/.test(String(error.config?.url || ''));
+        const isSignInAttempt = /\/auth\/(login|passkey\/auth-options|passkey\/auth-verify|oidc\/complete|account\/redeem|account\/onboarding|account\/request-reset)$/.test(String(error.config?.url || ''));
         if (error.response?.status === 401 && !isSignInAttempt) {
             // Clear stale credentials
             clearAuth();

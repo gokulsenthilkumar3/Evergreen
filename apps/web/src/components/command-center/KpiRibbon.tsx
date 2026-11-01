@@ -1,3 +1,4 @@
+import { uiLocale, formatUiDecimal, uiText, uiMetric, useUiLanguage } from "../../i18n";
 import React, { useEffect, useRef, useState } from 'react';
 import { Box, Typography, useTheme } from '@mui/material';
 import { motion, useReducedMotion } from 'framer-motion';
@@ -68,6 +69,7 @@ export interface KpiRibbonProps {
 // ─── Single KPI Card ──────────────────────────────────────────────────────────
 
 const StatCard: React.FC<{ card: KpiCard; index: number }> = ({ card, index }) => {
+  useUiLanguage();
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const count = useCountUp(card.hasData ? card.value : 0);
@@ -132,7 +134,7 @@ const StatCard: React.FC<{ card: KpiCard; index: number }> = ({ card, index }) =
               color: 'text.secondary',
             }}
           >
-            {card.label}
+            {uiText(card.label, 'metrics')}
           </Typography>
         </Box>
 
@@ -147,12 +149,12 @@ const StatCard: React.FC<{ card: KpiCard; index: number }> = ({ card, index }) =
                   fontVariantNumeric: 'tabular-nums',
                 }}
               >
-                {count.toLocaleString('en-IN', { maximumFractionDigits: card.unit === '%' ? 1 : 0 })}
+                {count.toLocaleString(uiLocale(), { maximumFractionDigits: card.unit === '%' ? 1 : 0 })}
               </Typography>
               <Typography
                 sx={{ fontSize: '0.8rem', fontWeight: 600, color: 'text.secondary', mb: 0.2 }}
               >
-                {card.unit}
+                {uiText(card.unit)}
               </Typography>
             </>
           ) : (
@@ -165,7 +167,7 @@ const StatCard: React.FC<{ card: KpiCard; index: number }> = ({ card, index }) =
         {/* Sub-value */}
         {card.subValue && card.hasData && (
           <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 500 }}>
-            {card.subValue}
+            {uiMetric(card.subValue)}
           </Typography>
         )}
 
@@ -173,7 +175,7 @@ const StatCard: React.FC<{ card: KpiCard; index: number }> = ({ card, index }) =
         {card.trend && card.trendPct !== undefined && card.hasData && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.75 }}>
             <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: trendColor }}>
-              {trendIcon} {Math.abs(card.trendPct).toFixed(1)}%
+              {trendIcon} {formatUiDecimal(Math.abs(card.trendPct), 1)}%
             </Typography>
             <Typography variant="caption" sx={{ color: 'text.disabled' }}>vs last</Typography>
           </Box>

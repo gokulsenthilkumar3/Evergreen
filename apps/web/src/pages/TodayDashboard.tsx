@@ -1,3 +1,5 @@
+import { dateKey } from '../utils/dateKey';
+import { uiText, useUiLanguage, uiLocale, formatUiDecimal, uiTemplate, uiDateLocale, uiScopedTemplate } from "../i18n";
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip as ChartTooltip, CartesianGrid } from 'recharts';
 import React from 'react';
 import {
@@ -60,7 +62,8 @@ interface TodayDashboardProps {
 }
 
 const TodayDashboard: React.FC<TodayDashboardProps> = ({ onNavigate }) => {
-    const today = new Date().toLocaleDateString('en-CA');
+  useUiLanguage();
+    const today = dateKey();
     const queryClient = useQueryClient();
     const navigate = (page: string) => onNavigate?.(page);
 
@@ -102,7 +105,7 @@ const TodayDashboard: React.FC<TodayDashboardProps> = ({ onNavigate }) => {
         return (
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 10, flexDirection: 'column', alignItems: 'center', gap: 2 }}>
                 <CircularProgress color="primary" />
-                <Typography color="text.secondary" variant="body2">Loading today's data...</Typography>
+                <Typography color="text.secondary" variant="body2">{uiText("Loading today's data...")}</Typography>
             </Box>
         );
     }
@@ -110,7 +113,7 @@ const TodayDashboard: React.FC<TodayDashboardProps> = ({ onNavigate }) => {
     const trend = Array.from({ length: 30 }, (_, index) => {
         const day = new Date();
         day.setDate(day.getDate() - 29 + index);
-        const date = day.toLocaleDateString('en-CA');
+        const date = dateKey(day);
         return {
             date,
             productionKg: (productionHistory ?? []).filter((entry: { date: string }) => entry.date?.startsWith(date))
@@ -118,38 +121,38 @@ const TodayDashboard: React.FC<TodayDashboardProps> = ({ onNavigate }) => {
         };
     });
 
-    const lastUpdated = prodUpdated ? new Date(prodUpdated).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : '--';
+    const lastUpdated = prodUpdated ? new Date(prodUpdated).toLocaleTimeString(uiDateLocale(), { hour: '2-digit', minute: '2-digit' }) : '--';
 
     return (
         <Box sx={{ maxWidth: '100%', width: '100%' }}>
             <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
-                <Typography variant="h6">Production over the last 30 days (kg)</Typography>
+                <Typography variant="h6">{uiText("Production over the last 30 days (kg)")}</Typography>
                 <Box sx={{ height: 240 }}><ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={trend}><CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="date" tickFormatter={date => date.slice(5)} /><YAxis />
-                        <ChartTooltip /><Area type="monotone" dataKey="productionKg" name="Production (kg)" stroke="#059669" fill="#059669" fillOpacity={0.15} />
+                        <XAxis dataKey="date" tickFormatter={date => new Date(date + 'T12:00:00').toLocaleDateString(uiDateLocale(), { day: 'numeric', month: 'short' })} /><YAxis />
+                        <ChartTooltip /><Area type="monotone" dataKey="productionKg" name={uiText("Production (kg)", 'charts')} stroke="#059669" fill="#059669" fillOpacity={0.15} />
                     </AreaChart>
                 </ResponsiveContainer></Box>
             </Paper>
             {/* Header */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 4 }}>
                 <Box>
-                    <Typography variant="h4" fontWeight="bold">Today's Summary</Typography>
+                    <Typography variant="h4" fontWeight="bold">{uiText("Today's Summary")}</Typography>
                     <Typography variant="subtitle2" color="text.secondary">
-                        {new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                        {new Date().toLocaleDateString(uiDateLocale(), { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                     </Typography>
                     <Typography variant="caption" color="text.disabled" display="block" mt={0.5}>
-                        Last updated: {lastUpdated}
+                        {uiText("Last updated: ")}{lastUpdated}
                     </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                     <Chip
-                        label={todayProduction ? "Production Recorded" : "Production Pending"}
+                        label={todayProduction ? uiText("Production Recorded") : uiText("Production Pending")}
                         color={todayProduction ? "success" : "warning"}
                         variant="filled"
                         sx={{ fontWeight: 'bold' }}
                     />
-                    <Tooltip title="Refresh data">
+                    <Tooltip title={uiText("Refresh data")}>
                         <IconButton onClick={handleRefresh} size="small">
                             <RefreshIcon />
                         </IconButton>
@@ -168,9 +171,9 @@ const TodayDashboard: React.FC<TodayDashboardProps> = ({ onNavigate }) => {
                                 <AccountBalance fontSize="medium" />
                             </Box>
                             <Box>
-                                <Typography variant="caption" sx={{ fontWeight: 700, opacity: 0.7, letterSpacing: '0.08em', display: 'block' }}>TOTAL COST</Typography>
-                                <Typography variant="h4" sx={{ fontWeight: 800 }}>₹{totalCost.toLocaleString('en-IN')}</Typography>
-                                <Typography variant="caption" sx={{ opacity: 0.7 }}>{todayCosts.length} entries</Typography>
+                                <Typography variant="caption" sx={{ fontWeight: 700, opacity: 0.7, letterSpacing: '0.08em', display: 'block' }}>{uiText("TOTAL COST")}</Typography>
+                                <Typography variant="h4" sx={{ fontWeight: 800 }}>{uiText("₹")}{totalCost.toLocaleString(uiLocale())}</Typography>
+                                <Typography variant="caption" sx={{ opacity: 0.7 }}>{todayCosts.length} {uiText(" entries")}</Typography>
                             </Box>
                         </Box>
                     </Paper>
@@ -185,14 +188,13 @@ const TodayDashboard: React.FC<TodayDashboardProps> = ({ onNavigate }) => {
                                 <Category fontSize="medium" />
                             </Box>
                             <Box>
-                                <Typography variant="caption" sx={{ fontWeight: 700, opacity: 0.7, letterSpacing: '0.08em', display: 'block' }}>YARN PRODUCED</Typography>
+                                <Typography variant="caption" sx={{ fontWeight: 700, opacity: 0.7, letterSpacing: '0.08em', display: 'block' }}>{uiText("YARN PRODUCED")}</Typography>
                                 <Typography variant="h4" sx={{ fontWeight: 800 }}>
-                                    {totalProduced.toLocaleString()}
-                                    <Box component="span" sx={{ fontSize: '1rem', fontWeight: 500, opacity: 0.8, ml: 0.5 }}>kg</Box>
+                                    {totalProduced.toLocaleString(uiLocale())}
+                                    <Box component="span" sx={{ fontSize: '1rem', fontWeight: 500, opacity: 0.8, ml: 0.5 }}>{uiText("kg")}</Box>
                                 </Typography>
                                 <Typography variant="caption" sx={{ opacity: 0.7 }}>
-                                    {Math.floor(totalProduced / BAG_WEIGHT_KG)} bags + {(totalProduced % BAG_WEIGHT_KG).toFixed(1)} kg
-                                </Typography>
+                                    {Math.floor(totalProduced / BAG_WEIGHT_KG)} {uiText(" bags + ")}{formatUiDecimal((totalProduced % BAG_WEIGHT_KG), 1)} {uiText(" kg ")}</Typography>
                             </Box>
                         </Box>
                     </Paper>
@@ -207,13 +209,13 @@ const TodayDashboard: React.FC<TodayDashboardProps> = ({ onNavigate }) => {
                                 <CottonIcon fontSize="medium" />
                             </Box>
                             <Box>
-                                <Typography variant="caption" sx={{ fontWeight: 700, opacity: 0.7, letterSpacing: '0.08em', display: 'block' }}>COTTON CONSUMED</Typography>
+                                <Typography variant="caption" sx={{ fontWeight: 700, opacity: 0.7, letterSpacing: '0.08em', display: 'block' }}>{uiText("COTTON CONSUMED")}</Typography>
                                 <Typography variant="h4" sx={{ fontWeight: 800 }}>
-                                    {totalConsumed.toLocaleString()}
-                                    <Box component="span" sx={{ fontSize: '1rem', fontWeight: 500, opacity: 0.8, ml: 0.5 }}>kg</Box>
+                                    {totalConsumed.toLocaleString(uiLocale())}
+                                    <Box component="span" sx={{ fontSize: '1rem', fontWeight: 500, opacity: 0.8, ml: 0.5 }}>{uiText("kg")}</Box>
                                 </Typography>
                                 <Typography variant="caption" sx={{ opacity: 0.7 }}>
-                                    Yield: {efficiency.toFixed(1)}%
+                                    {uiText("Yield: ")}{formatUiDecimal(efficiency, 1)}%
                                 </Typography>
                             </Box>
                         </Box>
@@ -229,10 +231,10 @@ const TodayDashboard: React.FC<TodayDashboardProps> = ({ onNavigate }) => {
                                 <Opacity fontSize="medium" />
                             </Box>
                             <Box>
-                                <Typography variant="caption" sx={{ fontWeight: 700, opacity: 0.7, letterSpacing: '0.08em', display: 'block' }}>AVG COST / KG</Typography>
-                                <Typography variant="h4" sx={{ fontWeight: 800 }}>₹{avgCostPerKg.toFixed(2)}</Typography>
+                                <Typography variant="caption" sx={{ fontWeight: 700, opacity: 0.7, letterSpacing: '0.08em', display: 'block' }}>{uiText("AVG COST / KG")}</Typography>
+                                <Typography variant="h4" sx={{ fontWeight: 800 }}>{uiText("₹")}{formatUiDecimal(avgCostPerKg, 2)}</Typography>
                                 <Typography variant="caption" sx={{ opacity: 0.7 }}>
-                                    {totalProduced > 0 ? 'actual' : 'no production'}
+                                    {totalProduced > 0 ? uiText("actual") : uiText("no production")}
                                 </Typography>
                             </Box>
                         </Box>
@@ -245,10 +247,9 @@ const TodayDashboard: React.FC<TodayDashboardProps> = ({ onNavigate }) => {
                     <Box sx={{ position: 'absolute', top: -30, right: -30, width: 200, height: 200, bgcolor: 'primary.main', opacity: 0.1, borderRadius: '50%' }} />
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 3, position: 'relative', zIndex: 1 }}>
                         <Box sx={{ flex: 1, minWidth: 300 }}>
-                            <Typography variant="h5" fontWeight={800} gutterBottom>Ready to start your day?</Typography>
+                            <Typography variant="h5" fontWeight={800} gutterBottom>{uiText("Ready to start your day?")}</Typography>
                             <Typography variant="body1" sx={{ opacity: 0.8, mb: 0 }}>
-                                No activity has been recorded for today yet. Start by recording production or adding your daily expenses.
-                            </Typography>
+                                {uiText("No activity has been recorded for today yet. Start by recording production or adding your daily expenses. ")}</Typography>
                         </Box>
                         <Box sx={{ display: 'flex', gap: 2 }}>
                             <Button
@@ -258,16 +259,14 @@ const TodayDashboard: React.FC<TodayDashboardProps> = ({ onNavigate }) => {
                                 onClick={() => navigate('production')}
                                 startIcon={<FactoryIcon />}
                             >
-                                Record Production
-                            </Button>
+                                {uiText("Record Production ")}</Button>
                             <Button
                                 variant="outlined"
                                 color="inherit"
                                 sx={{ fontWeight: 700, px: 3, borderColor: 'rgba(255,255,255,0.3)', '&:hover': { borderColor: 'white', bgcolor: 'rgba(255,255,255,0.05)' } }}
                                 onClick={() => navigate('costing')}
                             >
-                                Add Costs
-                            </Button>
+                                {uiText("Add Costs ")}</Button>
                         </Box>
                     </Box>
                 </Paper>
@@ -277,9 +276,9 @@ const TodayDashboard: React.FC<TodayDashboardProps> = ({ onNavigate }) => {
             {totalConsumed > 0 && (
                 <Paper sx={{ p: 2.5, mb: 3 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                        <Typography variant="body2" fontWeight={600}>Production Efficiency</Typography>
+                        <Typography variant="body2" fontWeight={600}>{uiText("Production Efficiency")}</Typography>
                         <Typography variant="body2" fontWeight={800} color={efficiency >= 90 ? 'success.main' : efficiency >= 80 ? 'warning.main' : 'error.main'}>
-                            {efficiency.toFixed(1)}%
+                            {formatUiDecimal(efficiency, 1)}%
                         </Typography>
                     </Box>
                     <LinearProgress
@@ -289,9 +288,9 @@ const TodayDashboard: React.FC<TodayDashboardProps> = ({ onNavigate }) => {
                         sx={{ height: 10, borderRadius: 5 }}
                     />
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.5 }}>
-                        <Typography variant="caption" color="text.secondary">Consumed: {totalConsumed.toFixed(1)} kg</Typography>
-                        <Typography variant="caption" color="text.secondary">Waste: {(todayProduction?.totalWaste || 0).toFixed(1)} kg</Typography>
-                        <Typography variant="caption" color="text.secondary">Produced: {totalProduced.toFixed(1)} kg</Typography>
+                        <Typography variant="caption" color="text.secondary">{uiText("Consumed: ")}{formatUiDecimal(totalConsumed, 1)} {uiText(" kg")}</Typography>
+                        <Typography variant="caption" color="text.secondary">{uiText("Waste: ")}{formatUiDecimal((todayProduction?.totalWaste || 0), 1)} {uiText(" kg")}</Typography>
+                        <Typography variant="caption" color="text.secondary">{uiText("Produced: ")}{formatUiDecimal(totalProduced, 1)} {uiText(" kg")}</Typography>
                     </Box>
                 </Paper>
             )}
@@ -301,16 +300,15 @@ const TodayDashboard: React.FC<TodayDashboardProps> = ({ onNavigate }) => {
                 <Grid size={{ xs: 12, lg: 8 }}>
                     <Paper sx={{ p: 3, borderRadius: 4 }}>
                         <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Category color="primary" /> Yarn Production by Count
-                        </Typography>
+                            <Category color="primary" /> {uiText(" Yarn Production by Count ")}</Typography>
                         <TableContainer>
                             <Table size="small">
                                 <TableHead>
                                     <TableRow>
-                                        <TableCell sx={{ fontWeight: 'bold' }}>Count</TableCell>
-                                        <TableCell align="right" sx={{ fontWeight: 'bold' }}>Bags (60kg)</TableCell>
-                                        <TableCell align="right" sx={{ fontWeight: 'bold' }}>Total Weight (kg)</TableCell>
-                                        <TableCell align="right" sx={{ fontWeight: 'bold' }}>Remaining Log (kg)</TableCell>
+                                        <TableCell sx={{ fontWeight: 'bold' }}>{uiText("Count", 'tables')}</TableCell>
+                                        <TableCell align="right" sx={{ fontWeight: 'bold' }}>{uiText("Bags (60kg)", 'tables')}</TableCell>
+                                        <TableCell align="right" sx={{ fontWeight: 'bold' }}>{uiText("Total Weight (kg)", 'tables')}</TableCell>
+                                        <TableCell align="right" sx={{ fontWeight: 'bold' }}>{uiText("Remaining Log (kg)", 'tables')}</TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
@@ -318,12 +316,12 @@ const TodayDashboard: React.FC<TodayDashboardProps> = ({ onNavigate }) => {
                                         todayProduction.producedYarn.map((p: any) => (
                                             <TableRow key={p.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                                                 <TableCell component="th" scope="row">
-                                                    <Chip label={`Count ${p.count}`} size="small" color="primary" variant="outlined" />
+                                                    <Chip label={uiScopedTemplate('tables')`Count ${p.count}`} size="small" color="primary" variant="outlined" />
                                                 </TableCell>
                                                 <TableCell align="right" sx={{ fontWeight: 600 }}>{p.bags || 0}</TableCell>
-                                                <TableCell align="right" sx={{ fontWeight: 600 }}>{parseFloat(p.weight || 0).toFixed(2)}</TableCell>
+                                                <TableCell align="right" sx={{ fontWeight: 600 }}>{formatUiDecimal(parseFloat(p.weight || 0), 2)}</TableCell>
                                                 <TableCell align="right" sx={{ color: (p.remainingLog || 0) > 0 ? 'warning.main' : 'text.secondary', fontWeight: 500 }}>
-                                                    {parseFloat(p.remainingLog || 0).toFixed(2)}
+                                                    {formatUiDecimal(parseFloat(p.remainingLog || 0), 2)}
                                                 </TableCell>
                                             </TableRow>
                                         ))
@@ -331,8 +329,8 @@ const TodayDashboard: React.FC<TodayDashboardProps> = ({ onNavigate }) => {
                                         <TableRow>
                                             <TableCell colSpan={4} align="center" sx={{ py: 6 }}>
                                                 <Category sx={{ fontSize: 40, color: 'text.disabled', mb: 1 }} />
-                                                <Typography color="text.secondary" display="block">No production data for today</Typography>
-                                                <Typography variant="caption" color="text.disabled">Add a production entry to see data here</Typography>
+                                                <Typography color="text.secondary" display="block">{uiText("No production data for today", 'tables')}</Typography>
+                                                <Typography variant="caption" color="text.disabled">{uiText("Add a production entry to see data here", 'tables')}</Typography>
                                             </TableCell>
                                         </TableRow>
                                     )}
@@ -346,8 +344,7 @@ const TodayDashboard: React.FC<TodayDashboardProps> = ({ onNavigate }) => {
                 <Grid size={{ xs: 12, lg: 4 }}>
                     <Paper sx={{ p: 3, borderRadius: 4, height: '100%' }}>
                         <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Opacity color="error" /> Waste Breakdown
-                        </Typography>
+                            <Opacity color="error" /> {uiText(" Waste Breakdown ")}</Typography>
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 2 }}>
                             {[
                                 { label: 'Blow Room', val: todayProduction?.wasteBlowRoom || 0, color: WASTE_COLORS['Blow Room'] },
@@ -361,7 +358,7 @@ const TodayDashboard: React.FC<TodayDashboardProps> = ({ onNavigate }) => {
                                             <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: w.color, flexShrink: 0 }} />
                                             <Typography variant="body2" fontWeight="medium">{w.label}</Typography>
                                         </Box>
-                                        <Typography variant="body2" fontWeight="bold">{parseFloat(String(w.val)).toFixed(2)} kg</Typography>
+                                        <Typography variant="body2" fontWeight="bold">{formatUiDecimal(parseFloat(String(w.val)), 2)} {uiText(" kg")}</Typography>
                                     </Box>
                                     <Box sx={{ width: '100%', height: 8, bgcolor: 'action.hover', borderRadius: 4, overflow: 'hidden' }}>
                                         <Box sx={{
@@ -375,10 +372,9 @@ const TodayDashboard: React.FC<TodayDashboardProps> = ({ onNavigate }) => {
                             ))}
                             <Divider sx={{ my: 0.5 }} />
                             <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <Typography variant="subtitle2" fontWeight="bold">Total Waste</Typography>
+                                <Typography variant="subtitle2" fontWeight="bold">{uiText("Total Waste")}</Typography>
                                 <Typography variant="subtitle2" fontWeight="bold" color="error.main">
-                                    {(todayProduction?.totalWaste || 0).toFixed(2)} kg
-                                </Typography>
+                                    {formatUiDecimal((todayProduction?.totalWaste || 0), 2)} {uiText(" kg ")}</Typography>
                             </Box>
                         </Box>
                     </Paper>
@@ -387,7 +383,7 @@ const TodayDashboard: React.FC<TodayDashboardProps> = ({ onNavigate }) => {
                 {/* Cost Breakdown Details */}
                 <Grid size={{ xs: 12 }}>
                     <Paper sx={{ p: 3, borderRadius: 4 }}>
-                        <Typography variant="h6" fontWeight="bold" sx={{ mb: 3 }}>Costing Entries (Today)</Typography>
+                        <Typography variant="h6" fontWeight="bold" sx={{ mb: 3 }}>{uiText("Costing Entries (Today)")}</Typography>
                         <Grid container spacing={2}>
                             {todayCosts.length > 0 ? todayCosts.map((c: any) => {
                                 const catConfig = CATEGORY_ICONS[c.category] || { icon: <OtherIcon fontSize="small" />, color: '#64748b' };
@@ -402,7 +398,7 @@ const TodayDashboard: React.FC<TodayDashboardProps> = ({ onNavigate }) => {
                                                         {c.category}
                                                     </Typography>
                                                 </Box>
-                                                <Typography variant="h6" fontWeight="bold">₹{parseFloat(c.totalCost || 0).toLocaleString('en-IN')}</Typography>
+                                                <Typography variant="h6" fontWeight="bold">{uiText("₹")}{parseFloat(c.totalCost || 0).toLocaleString(uiLocale())}</Typography>
                                                 <Typography variant="caption" sx={{ mt: 0.5, display: 'block', color: 'text.secondary' }} noWrap>
                                                     {c.details || c.description || '—'}
                                                 </Typography>
@@ -414,8 +410,8 @@ const TodayDashboard: React.FC<TodayDashboardProps> = ({ onNavigate }) => {
                                 <Grid size={{ xs: 12 }}>
                                     <Box sx={{ py: 5, textAlign: 'center' }}>
                                         <AccountBalance sx={{ fontSize: 40, color: 'text.disabled', mb: 1 }} />
-                                        <Typography color="text.secondary">No costing entries for today</Typography>
-                                        <Typography variant="caption" color="text.disabled">Navigate to Costing to add today's expenses</Typography>
+                                        <Typography color="text.secondary">{uiText("No costing entries for today")}</Typography>
+                                        <Typography variant="caption" color="text.disabled">{uiText("Navigate to Costing to add today's expenses")}</Typography>
                                     </Box>
                                 </Grid>
                             )}

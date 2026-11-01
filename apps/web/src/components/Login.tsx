@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage } from "../i18n";
 import React, { useState, useEffect } from 'react';
 import {
     Box,
@@ -30,6 +31,9 @@ import {
 } from '@mui/icons-material';
 import api from '../utils/api';
 import { startAuthentication } from '@simplewebauthn/browser';
+import { RequestPasswordReset } from './AccountRecovery';
+import { saveSession } from '../utils/authStorage';
+import { OidcSignIn } from './OidcAccess';
 
 // --- Animations ---
 const shake = keyframes`
@@ -64,12 +68,16 @@ interface LoginProps {
 }
 
 const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings, onSwitchToSignup }) => {
+  useUiLanguage();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [totpCode, setTotpCode] = useState('');
+    const [useRecoveryCode, setUseRecoveryCode] = useState(false);
+    const [recoveryCode, setRecoveryCode] = useState('');
     const [requiresTotp, setRequiresTotp] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
-    const [rememberMe, setRememberMe] = useState(true);
+    const [rememberMe, setRememberMe] = useState(false);
+    const [showHelp, setShowHelp] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
@@ -87,40 +95,33 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings, onSwitchToSignu
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (success) return;
+        if (success || loading) return;
 
         setLoading(true);
         setError(null);
 
-        const startTime = Date.now();
-
         try {
-            const payload = { username, password, ...(totpCode ? { totpCode } : {}) };
+            const payload = { username: username.trim(), password, ...(useRecoveryCode ? { recoveryCode } : totpCode ? { totpCode } : {}) };
             const response = await api.post('/auth/login', payload);
 
-            const elapsed = Date.now() - startTime;
-            if (elapsed < 800) await new Promise(r => setTimeout(r, 800 - elapsed));
-
             setSuccess(true);
-            localStorage.setItem('token', response.data.access_token);
-
-            setTimeout(() => {
-                onLoginSuccess(response.data.user);
-            }, 1200);
+            saveSession(response.data.access_token, response.data.user, rememberMe);
+            onLoginSuccess(response.data.user);
 
         } catch (err: any) {
             if (err.response?.data?.message === 'TOTP_REQUIRED') {
                 setRequiresTotp(true);
                 setError(null);
             } else {
-                setError(err.response?.data?.message || 'Invalid credentials');
+                setError(err.response?.data?.message || 'Check your connection and try again.');
             }
             setLoading(false);
         }
     };
 
     const handlePasskeyLogin = async () => {
-        if (!username) {
+        if (loading || success) return;
+        if (!username.trim()) {
             setError('Please enter your username first to use Passkey.');
             return;
         }
@@ -128,16 +129,14 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings, onSwitchToSignu
         setError(null);
         setLoading(true);
         try {
-            const optsRes = await api.post('/auth/passkey/auth-options', { username });
+            const optsRes = await api.post('/auth/passkey/auth-options', { username: username.trim() });
             const asseResp = await startAuthentication({ optionsJSON: optsRes.data });
             
-            const verifyRes = await api.post('/auth/passkey/auth-verify', { username, response: asseResp });
+            const verifyRes = await api.post('/auth/passkey/auth-verify', { username: username.trim(), response: asseResp });
             
             setSuccess(true);
-            localStorage.setItem('token', verifyRes.data.access_token);
-            setTimeout(() => {
-                onLoginSuccess(verifyRes.data.user);
-            }, 1200);
+            saveSession(verifyRes.data.access_token, verifyRes.data.user, rememberMe);
+            onLoginSuccess(verifyRes.data.user);
 
         } catch (err: any) {
             console.error(err);
@@ -164,16 +163,16 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings, onSwitchToSignu
             }}
         >
             <Box sx={{ display: { xs: 'none', md: 'flex' }, flexDirection: 'column', justifyContent: 'space-between', minHeight: '100dvh', p: { md: 5, lg: 8 }, bgcolor: '#0b332c', color: '#ecfdf5', zIndex: 1 }}>
-                <Typography sx={{ fontSize: 18, fontWeight: 800, letterSpacing: 2 }}>EVERGREEN</Typography>
+                <Typography sx={{ fontSize: 18, fontWeight: 800, letterSpacing: 2 }}>{uiText("EVERGREEN")}</Typography>
                 <Box sx={{ maxWidth: 560, py: 6 }}>
-                    <Typography sx={{ color: '#8cceba', fontSize: 12, fontWeight: 700, letterSpacing: 2, mb: 3 }}>YOUR BUSINESS WORKSPACE</Typography>
-                    <Typography component="h2" sx={{ fontSize: { md: 44, lg: 60 }, lineHeight: 1.1, letterSpacing: '-.04em', fontWeight: 700 }}>Every thread.<br />One connected business.</Typography>
-                    <Typography sx={{ mt: 3, color: '#b7d4ca', fontSize: 17, lineHeight: 1.7, maxWidth: 450 }}>Manage materials, production, inventory and accounts from a shared workspace.</Typography>
+                    <Typography sx={{ color: '#8cceba', fontSize: 12, fontWeight: 700, letterSpacing: 2, mb: 3 }}>{uiText("YOUR BUSINESS WORKSPACE")}</Typography>
+                    <Typography component="h2" sx={{ fontSize: { md: 44, lg: 60 }, lineHeight: 1.1, letterSpacing: '-.04em', fontWeight: 700 }}>{uiText("Every thread.")}<br />{uiText("One connected business.")}</Typography>
+                    <Typography sx={{ mt: 3, color: '#b7d4ca', fontSize: 17, lineHeight: 1.7, maxWidth: 450 }}>{uiText("Manage materials, production, inventory and accounts from a shared workspace.")}</Typography>
                     <Box sx={{ mt: 5, borderTop: '1px solid #ffffff25' }}>
-                        {['Material inward & inventory', 'Production & dispatch', 'Billing & business records'].map((label, index) => <Box key={label} sx={{ display: 'flex', gap: 3, py: 2, borderBottom: '1px solid #ffffff25', alignItems: 'center' }}><Typography sx={{ fontFamily: 'monospace', fontSize: 12, color: '#8cceba' }}>0{index + 1}</Typography><Typography sx={{ fontSize: 14 }}>{label}</Typography></Box>)}
+                        {['Material inward & inventory', 'Production & dispatch', 'Billing & business records'].map((label, index) => <Box key={label} sx={{ display: 'flex', gap: 3, py: 2, borderBottom: '1px solid #ffffff25', alignItems: 'center' }}><Typography sx={{ fontFamily: 'monospace', fontSize: 12, color: '#8cceba' }}>0{index + 1}</Typography><Typography sx={{ fontSize: 14 }}>{uiText(label, 'forms')}</Typography></Box>)}
                     </Box>
                 </Box>
-                <Typography sx={{ fontSize: 12, color: '#b7d4ca' }}>Built for the work behind your business.</Typography>
+                <Typography sx={{ fontSize: 12, color: '#b7d4ca' }}>{uiText("Built for the work behind your business.")}</Typography>
             </Box>
             {/* Animated Background Blobs */}
             <Box sx={{
@@ -250,7 +249,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings, onSwitchToSignu
                                 <Box
                                     component="img"
                                     src={settings.logo}
-                                    alt="Logo"
+                                    alt={uiText("Logo")}
                                     sx={{
                                         height: 80,
                                         width: 'auto',
@@ -263,18 +262,15 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings, onSwitchToSignu
                                 {settings?.companyName?.toUpperCase() || 'EVER GREEN'}
                             </Typography>
                             <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, opacity: 0.8 }}>
-                                Yarn Management Solution
-                            </Typography>
+                                {uiText("Yarn Management Solution ")}</Typography>
                         </Box>
                     </Box>
 
                     <Box sx={{ width: '100%', mb: 2, animation: `${fadeInUp} 0.6s ease-out 0.2s forwards`, opacity: 0 }}>
                         <Typography component="h1" variant="h5" sx={{ mb: 0.5, fontWeight: 800, ml: 1 }}>
-                            Sign In
-                        </Typography>
+                            {uiText("Sign In ")}</Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2, ml: 1 }}>
-                            Welcome back. Let’s pick up where you left off.
-                        </Typography>
+                            {uiText("Welcome back. Let’s pick up where you left off. ")}</Typography>
                         <Collapse in={!!error}>
                             <Alert
                                 severity="error"
@@ -289,7 +285,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings, onSwitchToSignu
                                     }
                                 }}
                             >
-                                {error}
+                                {uiText(error || '')}
                             </Alert>
                         </Collapse>
                     </Box>
@@ -312,7 +308,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings, onSwitchToSignu
                                     required
                                     fullWidth
                                     id="username"
-                                    label="Username"
+                                    label={uiText("Username", 'forms')}
                                     name="username"
                                     autoComplete="username"
                                     autoFocus
@@ -338,7 +334,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings, onSwitchToSignu
                                     required
                                     fullWidth
                                     name="password"
-                                    label="Password"
+                                    label={uiText("Password", 'forms')}
                                     type={showPassword ? 'text' : 'password'}
                                     id="password"
                                     autoComplete="current-password"
@@ -360,7 +356,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings, onSwitchToSignu
                                         },
                                         endAdornment: (
                                             <InputAdornment position="end">
-                                                <IconButton onClick={() => setShowPassword(!showPassword)} edge="end" size="small" aria-label={showPassword ? 'Hide password' : 'Show password'}>
+                                                <IconButton onClick={() => setShowPassword(!showPassword)} edge="end" size="small" aria-label={showPassword ? uiText("Hide password", 'forms') : uiText("Show password", 'forms')}>
                                                     {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
                                                 </IconButton>
                                             </InputAdornment>
@@ -369,16 +365,19 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings, onSwitchToSignu
                                 />
                             </>
                         ) : (
-                            <TextField
+                            <Box>
+                            {useRecoveryCode ? <TextField required fullWidth label={uiText('Recovery code', 'forms')} value={recoveryCode} onChange={event => setRecoveryCode(event.target.value)} autoComplete="off" /> : <TextField
                                 required
                                 fullWidth
-                                label="6-Digit Authenticator Code"
+                                label={uiText("Authenticator code", 'forms')}
                                 value={totpCode}
                                   onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                                   variant="outlined"
                                   autoFocus
                                   slotProps={{ htmlInput: { inputMode: 'numeric', pattern: '[0-9]{6}', maxLength: 6 } }}
-                            />
+                            />}
+                            <Button size="small" onClick={() => { setUseRecoveryCode(value => !value); setTotpCode(''); setRecoveryCode(''); }}>{uiText(useRecoveryCode ? 'Use authenticator instead' : 'Use a recovery code')}</Button>
+                            </Box>
                         )}
 
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -391,7 +390,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings, onSwitchToSignu
                                         size="small"
                                     />
                                 }
-                                label={<Typography variant="body2" color="text.secondary">Remember me</Typography>}
+                                label={<Typography variant="body2" color="text.secondary">{uiText("Remember me", 'forms')}</Typography>}
                             />
                             <Link
                                 href="#"
@@ -404,15 +403,14 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings, onSwitchToSignu
                                     '&:hover': { color: theme.palette.primary.dark }
                                 }}
                             >
-                                Forgot password?
-                            </Link>
+                                {uiText("Forgot password? ")}</Link>
                         </Box>
 
                         <Button
                             type="submit"
                             fullWidth
                             variant="contained"
-                              disabled={loading || success || (requiresTotp && !/^\d{6}$/.test(totpCode))}
+                              disabled={loading || success || (requiresTotp && (useRecoveryCode ? !recoveryCode.trim() : !/^\d{6}$/.test(totpCode)))}
                             color={success ? "success" : "primary"}
                             sx={{
                                 py: 1.5,
@@ -442,13 +440,12 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings, onSwitchToSignu
                                     <Fade in timeout={500}>
                                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                             <CheckCircleIcon sx={{ mr: 1 }} />
-                                            Success! Redirecting...
-                                        </Box>
+                                            {uiText("Success! Redirecting... ")}</Box>
                                     </Fade>
                                 ) : (
                                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                        {!loading && 'Sign In To Dashboard'}
-                                        {loading && 'Verifying...'}
+                                        {!loading && uiText(requiresTotp ? 'Verify and sign in' : 'Sign in')}
+                                        {loading && uiText('Verifying...')}
                                         {!loading && <ArrowIcon sx={{ ml: 1, fontSize: 20 }} />}
                                     </Box>
                                 )}
@@ -463,22 +460,24 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings, onSwitchToSignu
                                     disabled={loading || success}
                                     sx={{ mt: 1, borderRadius: 2, py: 1.1 }}
                                 >
-                                    Sign in with Passkey
-                                </Button>
+                                    {uiText("Sign in with Passkey ")}</Button>
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, justifyContent: 'center' }}>
                                     <SparkleIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
                                     <Typography variant="caption" color="text.secondary">
-                                        Secure login with biometrics or device passkey
-                                    </Typography>
+                                        {uiText("Secure login with biometrics or device passkey ")}</Typography>
                                 </Box>
                             </>
                         )}
                     </Box>
 
+                    <Box sx={{ textAlign: 'center', mt: 2 }}><RequestPasswordReset /></Box>
+                    <Button onClick={() => setShowHelp(value => !value)}>{uiText('Need help signing in?')}</Button>
+                    {showHelp && <Alert severity="info">{uiText('Contact your company administrator to recover access, unlock your account or reset MFA. Never share your password or recovery codes.')}</Alert>}
+                    <OidcSignIn />
                     {onSwitchToSignup && (
                         <Box sx={{ mt: 2, textAlign: 'center', animation: `${fadeInUp} 0.6s ease-out 0.4s forwards`, opacity: 0 }}>
                             <Typography variant="body2" color="text.secondary">
-                                Don't have an account?{' '}
+                                {uiText("Don't have an account?")}{' '}
                                 <Link
                                     component="button"
                                     variant="body2"
@@ -488,8 +487,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings, onSwitchToSignu
                                     }}
                                     sx={{ fontWeight: 600, cursor: 'pointer', textDecoration: 'none' }}
                                 >
-                                    Sign up
-                                </Link>
+                                    {uiText("Sign up ")}</Link>
                             </Typography>
                         </Box>
                     )}

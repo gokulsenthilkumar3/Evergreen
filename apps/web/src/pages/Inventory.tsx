@@ -1,3 +1,5 @@
+import { dateKey } from '../utils/dateKey';
+import { uiText, useUiLanguage, uiLocale, formatUiDecimal, uiMetric, uiDateLocale, getUiRevision } from "../i18n";
 import React, { useState, useMemo } from 'react';
 import {
     Box,
@@ -71,6 +73,7 @@ interface TabPanelProps {
 }
 
 function TabPanel(props: TabPanelProps) {
+  useUiLanguage();
     const { children, value, index, ...other } = props;
     return (
         <div
@@ -141,6 +144,7 @@ function formatRef(reference: string | undefined, type?: string): string {
 }
 
 const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
+  useUiLanguage();
     const [tabValue, setTabValue] = useState(0);
     const [dateFilter, setDateFilter] = useState<DateFilterType>('month');
     const [customFrom, setCustomFrom] = useState<string>('');
@@ -152,7 +156,7 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
     // Waste Management State
     const [wasteModalOpen, setWasteModalOpen] = useState(false);
     const [wasteAction, setWasteAction] = useState<'recycle' | 'export'>('recycle');
-    const [wasteForm, setWasteForm] = useState({ date: new Date().toLocaleDateString('en-CA'), quantity: '', buyer: '', price: '' });
+    const [wasteForm, setWasteForm] = useState({ date: dateKey(), quantity: '', buyer: '', price: '' });
 
     const handleDeleteWaste = async (id: number) => {
         if (!await confirmDialog({
@@ -189,7 +193,7 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
             }
             toast.success(SUCCESS_MESSAGES.WASTE_PROCESSED);
             setWasteModalOpen(false);
-            setWasteForm({ date: new Date().toLocaleDateString('en-CA'), quantity: '', buyer: '', price: '' });
+            setWasteForm({ date: dateKey(), quantity: '', buyer: '', price: '' });
             refetch();
         } catch (error: any) {
             toast.error(formatApiError(error, ERROR_MESSAGES.GENERIC));
@@ -221,7 +225,7 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
         return [
             ...(dashboardData?.history || []).map((h: any) => ({
                 id: h.id || Math.random().toString(),
-                date: new Date(h.date).toLocaleDateString('en-CA'),
+                date: new Date(h.date).toLocaleDateString(uiDateLocale()),
                 originalDate: h.entryTimestamp ? new Date(h.entryTimestamp) : (h.createdAt ? new Date(h.createdAt) : new Date(h.date)),
                 type: h.type as 'INWARD' | 'OUTWARD' | 'PRODUCTION' | 'WASTE',
                 item: h.material,
@@ -235,7 +239,7 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
             if (dateDiff !== 0) return dateDiff;
             return parseInt(b.id) - parseInt(a.id);
         });
-    }, [dashboardData?.history]);
+    }, [dashboardData?.history, getUiRevision()]);
 
     const filteredFullHistory = useMemo(() => {
         return fullHistory.filter(item => {
@@ -328,55 +332,48 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
                     {isCotton && (
                         <Box sx={{ display: 'flex', gap: 4, alignItems: 'center', flexWrap: 'wrap' }}>
                             <Box>
-                                <Typography variant="subtitle2" color="text.secondary">Balance Cotton Bales</Typography>
+                                <Typography variant="subtitle2" color="text.secondary">{uiText("Balance Cotton Bales")}</Typography>
                                 <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.light' }}>
-                                    {totalBales.toLocaleString()}
+                                    {totalBales.toLocaleString(uiLocale())}
                                 </Typography>
                             </Box>
                             <Box>
-                                <Typography variant="subtitle2" color="text.secondary">Total Balance (kg)</Typography>
+                                <Typography variant="subtitle2" color="text.secondary">{uiText("Total Balance (kg)")}</Typography>
                                 <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'success.light' }}>
-                                    {currentBalance.toLocaleString()} kg
-                                </Typography>
+                                    {currentBalance.toLocaleString(uiLocale())} {uiText(" kg ")}</Typography>
                             </Box>
                         </Box>
                     )}
                     {isYarn && (
                         <>
                             <Box sx={{ mb: 2 }}>
-                                <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>Balance Yarn Bags</Typography>
+                                <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>{uiText("Balance Yarn Bags")}</Typography>
                                 <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.light', mb: 2 }}>
-                                    {totalBags.toLocaleString()} bags
-                                    {remainderKg > 0 && (
+                                    {totalBags.toLocaleString(uiLocale())} {uiText(" bags ")}{remainderKg > 0 && (
                                         <Typography component="span" variant="h6" sx={{ ml: 2, color: 'warning.light' }}>
-                                            (+ {remainderKg.toFixed(2)} kg loose)
-                                        </Typography>
+                                            (+ {formatUiDecimal(remainderKg, 2)} {uiText(" kg loose) ")}</Typography>
                                     )}
                                 </Typography>
                             </Box>
                             <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', mb: 2 }}>
                                 {Object.entries(yarnByCount).map(([count, data]) => (
                                     <Box key={count} sx={{ minWidth: 120 }}>
-                                        <Typography variant="caption" color="text.secondary">Count {count}</Typography>
+                                        <Typography variant="caption" color="text.secondary">{uiText("Count ")}{count}</Typography>
                                         <Typography variant="body1" sx={{ fontWeight: 'bold', color: 'info.light' }}>
-                                            {data.bags} bags
-                                        </Typography>
+                                            {data.bags} {uiText(" bags ")}</Typography>
                                         {data.remainder > 0 && (
                                             <Typography variant="caption" color="text.secondary">
-                                                +{data.remainder.toFixed(2)} kg
-                                            </Typography>
+                                                +{formatUiDecimal(data.remainder, 2)} {uiText(" kg ")}</Typography>
                                         )}
                                     </Box>
                                 ))}
                             </Box>
                             <Box>
-                                <Typography variant="subtitle2" color="text.secondary">Total Balance (kg)</Typography>
+                                <Typography variant="subtitle2" color="text.secondary">{uiText("Total Balance (kg)")}</Typography>
                                 <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'success.light' }}>
-                                    {currentBalance.toLocaleString()} kg
-                                    {remainderKg > 0 && (
+                                    {currentBalance.toLocaleString(uiLocale())} {uiText(" kg ")}{remainderKg > 0 && (
                                         <Typography component="span" variant="caption" sx={{ ml: 1, color: 'text.secondary' }}>
-                                            (Incomplete bag: {remainderKg.toFixed(2)} kg)
-                                        </Typography>
+                                            {uiText("(Incomplete bag: ")}{formatUiDecimal(remainderKg, 2)} {uiText(" kg) ")}</Typography>
                                     )}
                                 </Typography>
                             </Box>
@@ -388,21 +385,21 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
                     <Table size="small">
                         <TableHead>
                             <TableRow>
-                                <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Date</TableCell>
-                                <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Type</TableCell>
-                                {isCotton && <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Bale</TableCell>}
-                                {isYarn && <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Bags</TableCell>}
-                                <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Quantity (kg)</TableCell>
-                                <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Balance (kg)</TableCell>
-                                <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Reference</TableCell>
+                                <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>{uiText("Date", 'tables')}</TableCell>
+                                <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>{uiText("Type", 'tables')}</TableCell>
+                                {isCotton && <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>{uiText("Bale", 'tables')}</TableCell>}
+                                {isYarn && <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>{uiText("Bags", 'tables')}</TableCell>}
+                                <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>{uiText("Quantity (kg)", 'tables')}</TableCell>
+                                <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>{uiText("Balance (kg)", 'tables')}</TableCell>
+                                <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>{uiText("Reference", 'tables')}</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
                             {data.length === 0 ? (
                                 <TableRow>
                                     <TableCell colSpan={isCotton || isYarn ? 7 : 6} align="center" sx={{ py: 8 }}>
-                                        <Typography color="text.secondary" variant="body1">No {title.toLowerCase()} records found</Typography>
-                                        <Typography color="text.secondary" variant="caption">Start by performing some inward or outward entries</Typography>
+                                        <Typography color="text.secondary" variant="body1">{uiText("No ", 'tables')}{title.toLowerCase()} {uiText(" records found", 'tables')}</Typography>
+                                        <Typography color="text.secondary" variant="caption">{uiText("Start by performing some inward or outward entries", 'tables')}</Typography>
                                     </TableCell>
                                 </TableRow>
                             ) : (
@@ -417,7 +414,7 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
                                             sx={{ animationDelay: `${Math.min(index * 20, 200)}ms` }}
                                         >
                                             <TableCell>
-                                                <MuiTooltip title={row.originalDate ? row.originalDate.toLocaleString() : row.date} arrow placement="top">
+                                                <MuiTooltip title={row.originalDate ? row.originalDate.toLocaleString(uiLocale()) : row.date} arrow placement="top">
                                                     <Box component="span" sx={{ cursor: 'help', borderBottom: '1px dotted', borderColor: 'divider' }}>
                                                         {row.date}
                                                     </Box>
@@ -474,22 +471,21 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
         <Box sx={{ maxWidth: '100%', width: '100%' }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                 <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-                    Inventory
-                    {isLoading && <LinearProgress sx={{ mt: 1, borderRadius: 1 }} />}
+                    {uiText("Inventory ")}{isLoading && <LinearProgress sx={{ mt: 1, borderRadius: 1 }} />}
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
                     <FormControl sx={{ minWidth: 200 }} size="small">
-                        <InputLabel>Date Filter</InputLabel>
-                        <Select value={dateFilter} label="Date Filter" onChange={handleDateFilterChange}>
+                        <InputLabel>{uiText("Date Filter", 'forms')}</InputLabel>
+                        <Select value={dateFilter} label={uiText("Date Filter", 'forms')} onChange={handleDateFilterChange}>
                             {DATE_FILTER_OPTIONS.map(opt => (
-                                <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
+                                <MenuItem key={opt.value} value={opt.value}>{uiText(opt.label, 'forms')}</MenuItem>
                             ))}
                         </Select>
                     </FormControl>
                     {dateFilter === 'custom' && (
                         <>
-                            <GlassDatePicker  label="From" size="small" value={customFrom} onChange={(e) => setCustomFrom(e.target.value)} />
-                            <GlassDatePicker  label="To" size="small" value={customTo} onChange={(e) => setCustomTo(e.target.value)} />
+                            <GlassDatePicker  label={uiText("From", 'forms')} size="small" value={customFrom} onChange={(e) => setCustomFrom(e.target.value)} />
+                            <GlassDatePicker  label={uiText("To", 'forms')} size="small" value={customTo} onChange={(e) => setCustomTo(e.target.value)} />
                         </>
                     )}
                 </Box>
@@ -497,11 +493,11 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
 
             <Paper sx={{ mb: 3 }}>
                 <Tabs value={tabValue} onChange={(_, newValue) => setTabValue(newValue)}>
-                    <Tab label="Dashboard" />
-                    <Tab label="Cotton Inventory" />
-                    <Tab label="Yarn Inventory" />
-                    <Tab label="Waste Logs" />
-                    <Tab label="All History" />
+                    <Tab label={uiText("Dashboard", 'tabs')} />
+                    <Tab label={uiText("Cotton Inventory", 'tabs')} />
+                    <Tab label={uiText("Yarn Inventory", 'tabs')} />
+                    <Tab label={uiText("Waste Logs", 'tabs')} />
+                    <Tab label={uiText("All History", 'tabs')} />
                 </Tabs>
 
                 <TabPanel value={tabValue} index={0}>
@@ -516,10 +512,10 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
                         const totalYarnKg = yarnStock.reduce((s: number, y: any) => s + (y.kg || y.bags * 60 || 0), 0);
 
                         const kpiCards = [
-                            { label: 'Cotton Received', value: `${totalCottonIn.toLocaleString('en-IN')} kg`, icon: '📦', gradient: 'linear-gradient(135deg, #059669 0%, #34d399 100%)', shadow: 'rgba(5,150,105,0.3)' },
-                            { label: 'Total Processed', value: `${totalProcessed.toLocaleString('en-IN')} kg`, icon: '⚙️', gradient: 'linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%)', shadow: 'rgba(124,58,237,0.3)' },
-                            { label: 'Cotton Remaining', value: `${Math.max(0, latestBalance).toLocaleString('en-IN')} kg`, icon: '🌿', gradient: 'linear-gradient(135deg, #0284c7 0%, #38bdf8 100%)', shadow: 'rgba(2,132,199,0.3)' },
-                            { label: 'Yarn Stock Total', value: `${totalYarnKg.toLocaleString('en-IN')} kg`, icon: '🧶', gradient: 'linear-gradient(135deg, #d97706 0%, #fbbf24 100%)', shadow: 'rgba(217,119,6,0.3)' },
+                            { label: 'Cotton Received', value: `${totalCottonIn.toLocaleString(uiLocale())} kg`, icon: '📦', gradient: 'linear-gradient(135deg, #059669 0%, #34d399 100%)', shadow: 'rgba(5,150,105,0.3)' },
+                            { label: 'Total Processed', value: `${totalProcessed.toLocaleString(uiLocale())} kg`, icon: '⚙️', gradient: 'linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%)', shadow: 'rgba(124,58,237,0.3)' },
+                            { label: 'Cotton Remaining', value: `${Math.max(0, latestBalance).toLocaleString(uiLocale())} kg`, icon: '🌿', gradient: 'linear-gradient(135deg, #0284c7 0%, #38bdf8 100%)', shadow: 'rgba(2,132,199,0.3)' },
+                            { label: 'Yarn Stock Total', value: `${totalYarnKg.toLocaleString(uiLocale())} kg`, icon: '🧶', gradient: 'linear-gradient(135deg, #d97706 0%, #fbbf24 100%)', shadow: 'rgba(217,119,6,0.3)' },
                         ];
 
                         return (
@@ -559,10 +555,10 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
                                                 color: 'rgba(255,255,255,0.8)', fontWeight: 700,
                                                 textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block',
                                             }}>
-                                                {kpi.label}
+                                                {uiText(kpi.label, 'metrics')}
                                             </Typography>
                                             <Typography variant="h5" sx={{ color: '#fff', fontWeight: 800, mt: 0.5, letterSpacing: '-0.02em' }}>
-                                                {kpi.value}
+                                                {uiMetric(kpi.value)}
                                             </Typography>
                                         </Box>
                                     </Box>
@@ -575,14 +571,14 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
                         <Box sx={{ flex: '1 1 100%', minWidth: { xs: 0, md: 500 } }}>
                             <Paper className="glass-card" sx={{ p: 3, borderRadius: 3, height: 380 }}>
-                                <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>🧶 Yarn Inventory by Count</Typography>
+                                <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>{uiText("🧶 Yarn Inventory by Count")}</Typography>
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart data={dashboardData?.yarnStockByCount || []} margin={{ bottom: 30 }}>
                                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(148,163,184,0.15)" />
                                         <XAxis dataKey="name" tick={{ fontWeight: 600, fontSize: 12 }} label={{ value: 'Yarn Count', position: 'insideBottom', offset: -15 }} />
                                         <YAxis tick={{ fontSize: 11 }} />
                                         <RechartsTooltip formatter={(v: any) => [`${v} bags`, 'Stock']} />
-                                        <Bar dataKey="bags" fill="url(#yarnGrad)" name="Bags in Stock" radius={[8, 8, 0, 0]} />
+                                        <Bar dataKey="bags" fill="url(#yarnGrad)" name={uiText("Bags in Stock", 'charts')} radius={[8, 8, 0, 0]} />
                                         <defs>
                                             <linearGradient id="yarnGrad" x1="0" y1="0" x2="0" y2="1">
                                                 <stop offset="0%" stopColor="#059669" />
@@ -595,7 +591,7 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
                         </Box>
                         <Box sx={{ flex: '1 1 calc(50% - 12px)', minWidth: { xs: '100%', md: 400 } }}>
                             <Paper className="glass-card" sx={{ p: 3, borderRadius: 3, height: 380 }}>
-                                <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>📈 Inward vs Outward Trends</Typography>
+                                <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>{uiText("📈 Inward vs Outward Trends")}</Typography>
                                 <ResponsiveContainer width="100%" height="100%">
                                     <LineChart data={dashboardData?.inwardHistory || []}>
                                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(148,163,184,0.15)" />
@@ -603,8 +599,8 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
                                         <YAxis tick={{ fontSize: 11 }} />
                                         <RechartsTooltip />
                                         <Legend />
-                                        <Line type="monotone" dataKey="kg" stroke="#f59e0b" strokeWidth={2.5} name="Inward (kg)" dot={false} />
-                                        <Line type="monotone" dataKey="outward" stroke="#059669" strokeWidth={2.5} name="Outward (kg)" dot={false} />
+                                        <Line type="monotone" dataKey="kg" stroke="#f59e0b" strokeWidth={2.5} name={uiText("Inward (kg)", 'charts')} dot={false} />
+                                        <Line type="monotone" dataKey="outward" stroke="#059669" strokeWidth={2.5} name={uiText("Outward (kg)", 'charts')} dot={false} />
                                     </LineChart>
                                 </ResponsiveContainer>
                             </Paper>
@@ -618,30 +614,28 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
                 <TabPanel value={tabValue} index={3}>
                     <Box sx={{ maxWidth: '100%', width: '100%' }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>Waste Logs</Typography>
+                            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>{uiText("Waste Logs")}</Typography>
                             <Button
                                 variant="contained"
                                 color="secondary"
                                 onClick={() => {
-                                    setWasteForm({ date: new Date().toLocaleDateString('en-CA'), quantity: '', buyer: '', price: '' });
+                                    setWasteForm({ date: dateKey(), quantity: '', buyer: '', price: '' });
                                     setWasteAction('recycle');
                                     setWasteModalOpen(true);
                                 }}
                                 sx={{ px: 4 }}
                             >
-                                Manage Waste stock
-                            </Button>
+                                {uiText("Manage Waste stock ")}</Button>
                         </Box>
 
                         {/* Waste Balance Summary */}
                         <Paper sx={{ p: 3, mb: 3, borderRadius: 2, bgcolor: 'error.dark' }}>
                             <Box>
-                                <Typography variant="subtitle2" color="rgba(255,255,255,0.7)">Total Waste Balance (kg)</Typography>
+                                <Typography variant="subtitle2" color="rgba(255,255,255,0.7)">{uiText("Total Waste Balance (kg)")}</Typography>
                                 <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'white' }}>
                                     {(dashboardData?.wasteHistory && dashboardData.wasteHistory.length > 0)
-                                        ? dashboardData.wasteHistory[0].balance.toLocaleString()
-                                        : '0'} kg
-                                </Typography>
+                                        ? dashboardData.wasteHistory[0].balance.toLocaleString(uiLocale())
+                                        : '0'} {uiText(" kg ")}</Typography>
                             </Box>
                         </Paper>
 
@@ -649,32 +643,32 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
                             <Table size="small">
                                 <TableHead>
                                     <TableRow>
-                                        <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Date</TableCell>
-                                        <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Total Waste (kg)</TableCell>
-                                        <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Blow Room (kg)</TableCell>
-                                        <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Carding (kg)</TableCell>
-                                        <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>OE (kg)</TableCell>
-                                        <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Others (kg)</TableCell>
-                                        <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Balance (kg)</TableCell>
-                                        <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Reference</TableCell>
-                                        <TableCell align="center" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Actions</TableCell>
+                                        <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>{uiText("Date", 'tables')}</TableCell>
+                                        <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>{uiText("Total Waste (kg)", 'tables')}</TableCell>
+                                        <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>{uiText("Blow Room (kg)", 'tables')}</TableCell>
+                                        <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>{uiText("Carding (kg)", 'tables')}</TableCell>
+                                        <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>{uiText("OE (kg)", 'tables')}</TableCell>
+                                        <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>{uiText("Others (kg)", 'tables')}</TableCell>
+                                        <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>{uiText("Balance (kg)", 'tables')}</TableCell>
+                                        <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>{uiText("Reference", 'tables')}</TableCell>
+                                        <TableCell align="center" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>{uiText("Actions", 'tables')}</TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
                                     {(dashboardData?.wasteHistory || []).length === 0 ? (
                                         <TableRow>
                                             <TableCell colSpan={9} align="center" sx={{ py: 8 }}>
-                                                <Typography color="text.secondary" variant="body1">No waste logs found</Typography>
-                                                <Typography color="text.secondary" variant="caption">Waste is automatically logged during production entries</Typography>
+                                                <Typography color="text.secondary" variant="body1">{uiText("No waste logs found", 'tables')}</Typography>
+                                                <Typography color="text.secondary" variant="caption">{uiText("Waste is automatically logged during production entries", 'tables')}</Typography>
                                             </TableCell>
                                         </TableRow>
                                     ) : (
                                         (dashboardData?.wasteHistory || []).map((row: any) => (
                                             <TableRow key={row.id}>
                                                 <TableCell>
-                                                    <MuiTooltip title={new Date(row.date).toLocaleString()} arrow placement="top">
+                                                    <MuiTooltip title={new Date(row.date).toLocaleString(uiLocale())} arrow placement="top">
                                                         <Box component="span" sx={{ cursor: 'help', borderBottom: '1px dotted', borderColor: 'divider' }}>
-                                                            {new Date(row.date).toLocaleDateString('en-CA')}
+                                                            {new Date(row.date).toLocaleDateString(uiDateLocale())}
                                                         </Box>
                                                     </MuiTooltip>
                                                 </TableCell>
@@ -709,7 +703,7 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
                                                                 onClick={() => {
                                                                     setWasteAction(row.type === 'EXPORT' ? 'export' : 'recycle');
                                                                     setWasteForm({
-                                                                        date: new Date(row.date).toLocaleDateString('en-CA'),
+                                                                        date: dateKey(row.date),
                                                                         quantity: Math.abs(row.quantity).toString(),
                                                                         buyer: row.reference.startsWith('SOLD-') ? row.reference.replace('SOLD-', '') : '',
                                                                         price: '' // Price is not stored in inventory log currently
@@ -733,8 +727,8 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
                                                         </>
                                                     )}
                                                     {row.type === 'PRODUCTION' && (
-                                                        <MuiTooltip title="Derived from Production. Edit production entry to change.">
-                                                            <Typography variant="caption" color="text.disabled">Derived</Typography>
+                                                        <MuiTooltip title={uiText("Derived from Production. Edit production entry to change.", 'tables')}>
+                                                            <Typography variant="caption" color="text.disabled">{uiText("Derived", 'tables')}</Typography>
                                                         </MuiTooltip>
                                                     )}
                                                 </TableCell>
@@ -751,19 +745,19 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
                         <Box sx={{ display: 'flex', gap: 2, flex: 1 }}>
                             <TextField
-                                placeholder="Search reference, material, type..."
+                                placeholder={uiText("Search reference, material, type...", 'forms')}
                                 size="small"
                                 sx={{ maxWidth: 300, flex: 1 }}
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
                             <FormControl sx={{ minWidth: 200 }} size="small">
-                                <InputLabel>Type Filter</InputLabel>
-                                <Select value={historyTypeFilter} label="Type Filter" onChange={(e) => setHistoryTypeFilter(e.target.value)}>
-                                    <MenuItem value="all">All Movements</MenuItem>
-                                    <MenuItem value="cotton">Cotton Only</MenuItem>
-                                    <MenuItem value="yarn">Yarn Only</MenuItem>
-                                    <MenuItem value="waste">Waste Movements</MenuItem>
+                                <InputLabel>{uiText("Type Filter", 'forms')}</InputLabel>
+                                <Select value={historyTypeFilter} label={uiText("Type Filter", 'forms')} onChange={(e) => setHistoryTypeFilter(e.target.value)}>
+                                    <MenuItem value="all">{uiText("All Movements", 'forms')}</MenuItem>
+                                    <MenuItem value="cotton">{uiText("Cotton Only", 'forms')}</MenuItem>
+                                    <MenuItem value="yarn">{uiText("Yarn Only", 'forms')}</MenuItem>
+                                    <MenuItem value="waste">{uiText("Waste Movements", 'forms')}</MenuItem>
                                 </Select>
                             </FormControl>
                         </Box>
@@ -775,19 +769,19 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
                         <Table>
                             <TableHead>
                                 <TableRow>
-                                    <TableCell>Date</TableCell>
-                                    <TableCell>Type</TableCell>
-                                    <TableCell>Material</TableCell>
-                                    <TableCell align="right">Amount (kg)</TableCell>
-                                    <TableCell align="right">Balance (kg)</TableCell>
-                                    <TableCell>Reference</TableCell>
+                                    <TableCell>{uiText("Date", 'tables')}</TableCell>
+                                    <TableCell>{uiText("Type", 'tables')}</TableCell>
+                                    <TableCell>{uiText("Material", 'tables')}</TableCell>
+                                    <TableCell align="right">{uiText("Amount (kg)", 'tables')}</TableCell>
+                                    <TableCell align="right">{uiText("Balance (kg)", 'tables')}</TableCell>
+                                    <TableCell>{uiText("Reference", 'tables')}</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
                                 {filteredFullHistory.map((row) => (
                                     <TableRow key={`${row.item}-${row.id}`}>
                                         <TableCell>
-                                            <MuiTooltip title={row.originalDate ? row.originalDate.toLocaleString() : row.date} arrow placement="top">
+                                            <MuiTooltip title={row.originalDate ? row.originalDate.toLocaleString(uiLocale()) : row.date} arrow placement="top">
                                                 <Box component="span" sx={{ cursor: 'help', borderBottom: '1px dotted', borderColor: 'divider' }}>
                                                     {row.date}
                                                 </Box>
@@ -802,10 +796,10 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
                                         </TableCell>
                                         <TableCell>{row.item}</TableCell>
                                         <TableCell align="right" sx={{ color: row.quantity >= 0 ? 'success.main' : 'error.main', fontWeight: 'bold' }}>
-                                            {row.quantity >= 0 ? '+' : ''}{row.quantity.toLocaleString()}
+                                            {row.quantity >= 0 ? '+' : ''}{row.quantity.toLocaleString(uiLocale())}
                                         </TableCell>
                                         <TableCell align="right" sx={{ fontWeight: 'bold' }}>
-                                            {row.balance?.toLocaleString() || '-'}
+                                            {row.balance?.toLocaleString(uiLocale()) || '-'}
                                         </TableCell>
                                         <TableCell>
                                             <Chip
@@ -826,7 +820,7 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
                                 ))}
                                 {filteredFullHistory.length === 0 && (
                                     <TableRow>
-                                        <TableCell colSpan={7} align="center">No movement history found</TableCell>
+                                        <TableCell colSpan={7} align="center">{uiText("No movement history found", 'tables')}</TableCell>
                                     </TableRow>
                                 )}
                             </TableBody>
@@ -839,39 +833,38 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
 
             {/* Waste Management Dialog */}
             <Dialog open={wasteModalOpen} onClose={() => setWasteModalOpen(false)}>
-                <DialogTitle>Manage Waste</DialogTitle>
+                <DialogTitle>{uiText("Manage Waste")}</DialogTitle>
                 <DialogContent>
                     <DialogContentText sx={{ mb: 2 }}>
-                        Select whether to recycle waste (add back to cotton stock) or export/sell it.
-                    </DialogContentText>
+                        {uiText("Select whether to recycle waste (add back to cotton stock) or export/sell it. ")}</DialogContentText>
 
                     <FormControl fullWidth sx={{ mb: 2 }}>
-                        <InputLabel>Action</InputLabel>
+                        <InputLabel>{uiText("Action", 'forms')}</InputLabel>
                         <Select
                             value={wasteAction}
-                            label="Action"
+                            label={uiText("Action", 'forms')}
                             onChange={(e) => setWasteAction(e.target.value as 'recycle' | 'export')}
                         >
-                            <MenuItem value="recycle">Recycle (Add to Cotton Stock)</MenuItem>
-                            <MenuItem value="export">Export / Sell</MenuItem>
+                            <MenuItem value="recycle">{uiText("Recycle (Add to Cotton Stock)", 'forms')}</MenuItem>
+                            <MenuItem value="export">{uiText("Export / Sell", 'forms')}</MenuItem>
                         </Select>
                     </FormControl>
 
                     <GlassDatePicker
                         
-                        label="Date"
+                        label={uiText("Date", 'forms')}
                         fullWidth
                         sx={{ mb: 2 }}
                         value={wasteForm.date}
                         onChange={(e) => setWasteForm({ ...wasteForm, date: e.target.value })}
                         inputProps={{
-                            min: new Date().toLocaleDateString('en-CA')
+                            min: dateKey()
                         }}
                     />
 
                     <TextField
                         type="number"
-                        label="Quantity (kg)"
+                        label={uiText("Quantity (kg)", 'forms')}
                         fullWidth
                         sx={{ mb: 2 }}
                         value={wasteForm.quantity}
@@ -881,7 +874,7 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
                     {wasteAction === 'export' && (
                         <>
                             <TextField
-                                label="Buyer Name"
+                                label={uiText("Buyer Name", 'forms')}
                                 fullWidth
                                 sx={{ mb: 2 }}
                                 value={wasteForm.buyer}
@@ -889,7 +882,7 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
                             />
                             <TextField
                                 type="number"
-                                label="Price (Total)"
+                                label={uiText("Price (Total)", 'forms')}
                                 fullWidth
                                 sx={{ mb: 2 }}
                                 value={wasteForm.price}
@@ -900,10 +893,9 @@ const Inventory: React.FC<InventoryProps> = ({ userRole, username }) => {
 
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setWasteModalOpen(false)}>Cancel</Button>
+                    <Button onClick={() => setWasteModalOpen(false)}>{uiText("Cancel")}</Button>
                     <Button onClick={handleWasteSubmit} variant="contained" color="primary" disabled={wasteSaving}>
-                        Submit
-                    </Button>
+                        {uiText("Submit ")}</Button>
                 </DialogActions>
             </Dialog>
         </Box >

@@ -1,5 +1,7 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../services/prisma.service';
+import { ConfigService } from '@nestjs/config';
+import { appendUserAudit } from '../../utils/user-audit';
 import {
   generateRegistrationOptions,
   verifyRegistrationResponse,
@@ -7,13 +9,32 @@ import {
   verifyAuthenticationResponse,
 } from '@simplewebauthn/server';
 
-const rpName = 'Ever Green Yarn Mills';
-const rpID = 'localhost'; // Should be from env in production
-const origin = `http://${rpID}:5173`; // Frontend URL
 
 @Injectable()
 export class WebAuthnService {
-  constructor(private prisma: PrismaService) {}
+  private readonly origin: string;
+  private readonly rpID: string;
+  private readChallenge(value:string,kind:string) {
+    const parts=value.split(':');const issued=Number(parts[1]);
+    if(parts.length!==3||parts[0]!==kind||!Number.isFinite(issued)||Date.now()-issued>300000||issued>Date.now()+5000)throw new BadRequestException('Passkey challenge is invalid or expired');
+    return parts[2];
+  }
+  private async saveChallenge(userId:number,username:string,kind:string,challenge:string) {
+    await this.prisma.$transaction(async tx=>{
+      const changed=await tx.user.updateMany({where:{id:userId,status:'ACTIVE'},data:{currentChallenge:kind+':'+Date.now()+':'+challenge}});
+      if(changed.count!==1)throw new BadRequestException('Account is not active');
+      await appendUserAudit(tx,{data:{username,action:'PASSKEY_CHALLENGE',module:'AUTH',details:'Updated user '+userId+': started '+kind+' passkey challenge'}},userId);
+    });
+  }
+  constructor(private prisma: PrismaService, config: ConfigService) {
+    const configured = config.get<string>('PUBLIC_APP_URL');
+    if (!configured && process.env.NODE_ENV === 'production') throw new Error('PUBLIC_APP_URL is required for passkeys');
+    const url = new URL(configured || 'http://localhost:4000');
+    if (url.protocol !== 'https:' && !(url.protocol === 'http:' && ['localhost','127.0.0.1'].includes(url.hostname))) throw new Error('Passkeys require HTTPS or localhost');
+    this.origin = url.origin;
+    this.rpID = config.get<string>('WEBAUTHN_RP_ID') || url.hostname;
+    if (url.hostname !== this.rpID && !url.hostname.endsWith('.'+this.rpID)) throw new Error('Passkey RP ID must match the application domain');
+  }
 
   async getRegistrationOptions(userId: number, username: string) {
     const user = await this.prisma.user.findUnique({
@@ -24,8 +45,8 @@ export class WebAuthnService {
     if (!user) throw new BadRequestException('User not found');
 
     const options = await generateRegistrationOptions({
-      rpName,
-      rpID,
+      rpName: 'EverGreen',
+      rpID: this.rpID,
       userID: new Uint8Array(Buffer.from(user.id.toString())),
       userName: username,
       attestationType: 'none',
@@ -36,14 +57,11 @@ export class WebAuthnService {
       })),
       authenticatorSelection: {
         residentKey: 'required',
-        userVerification: 'preferred',
+        userVerification: 'required',
       },
     });
 
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: { currentChallenge: options.challenge },
-    });
+    await this.saveChallenge(userId,user.username,'REGISTER',options.challenge);
 
     return options;
   }
@@ -57,9 +75,10 @@ export class WebAuthnService {
     try {
       verification = await verifyRegistrationResponse({
         response: body,
-        expectedChallenge: user.currentChallenge,
-        expectedOrigin: origin,
-        expectedRPID: rpID,
+        expectedChallenge: this.readChallenge(user.currentChallenge,'REGISTER'),
+        expectedOrigin: this.origin,
+        expectedRPID: this.rpID,
+        requireUserVerification: true,
       });
     } catch (error) {
       console.error(error);
@@ -76,7 +95,10 @@ export class WebAuthnService {
       const { credential, credentialDeviceType, credentialBackedUp } =
         registrationInfo;
 
-      await this.prisma.webAuthnCredential.create({
+      await this.prisma.$transaction(async tx=>{
+      const claimed=await tx.user.updateMany({where:{id:userId,status:'ACTIVE',currentChallenge:user.currentChallenge},data:{currentChallenge:null}});
+      if(claimed.count!==1)throw new BadRequestException('Passkey challenge was already used');
+      await tx.webAuthnCredential.create({
         data: {
           id: credential.id,
           userId: user.id,
@@ -88,9 +110,7 @@ export class WebAuthnService {
         },
       });
 
-      await this.prisma.user.update({
-        where: { id: userId },
-        data: { currentChallenge: null }, // clear challenge
+      await appendUserAudit(tx,{data:{username:user.username,action:'PASSKEY_REGISTERED',module:'AUTH',details:'Updated user '+userId+': registered a user-verified passkey'}},userId);
       });
 
       return { verified: true };
@@ -108,19 +128,16 @@ export class WebAuthnService {
     if (!user) throw new BadRequestException('User not found');
 
     const options = await generateAuthenticationOptions({
-      rpID,
+      rpID: this.rpID,
       allowCredentials: user.credentials.map((cred) => ({
         id: cred.id,
         type: 'public-key',
         transports: cred.transports ? JSON.parse(cred.transports) : [],
       })),
-      userVerification: 'preferred',
+      userVerification: 'required',
     });
 
-    await this.prisma.user.update({
-      where: { id: user.id },
-      data: { currentChallenge: options.challenge },
-    });
+    await this.saveChallenge(user.id,user.username,'AUTHENTICATE',options.challenge);
 
     return options;
   }
@@ -147,9 +164,10 @@ export class WebAuthnService {
     try {
       verification = await verifyAuthenticationResponse({
         response: body,
-        expectedChallenge: user.currentChallenge,
-        expectedOrigin: origin,
-        expectedRPID: rpID,
+        expectedChallenge: this.readChallenge(user.currentChallenge,'AUTHENTICATE'),
+        expectedOrigin: this.origin,
+        expectedRPID: this.rpID,
+        requireUserVerification: true,
         credential: {
           id: credential.id,
           publicKey: new Uint8Array(credential.publicKey),
@@ -171,17 +189,19 @@ export class WebAuthnService {
     if (verification.verified) {
       const { authenticationInfo } = verification;
 
-      await this.prisma.webAuthnCredential.update({
+      const currentUser=await this.prisma.$transaction(async tx=>{
+      const claimed=await tx.user.updateMany({where:{id:user.id,status:'ACTIVE',currentChallenge:user.currentChallenge},data:{currentChallenge:null}});
+      if(claimed.count!==1)throw new BadRequestException('Passkey challenge was already used');
+      await tx.webAuthnCredential.update({
         where: { id: credential.id },
         data: { counter: BigInt(authenticationInfo.newCounter) },
       });
 
-      await this.prisma.user.update({
-        where: { id: user.id },
-        data: { currentChallenge: null }, // clear challenge
+      await appendUserAudit(tx,{data:{username:user.username,action:'PASSKEY_AUTHENTICATED',module:'AUTH',details:'User '+user.id+' completed passkey authentication'}},user.id);
+      return tx.user.findUniqueOrThrow({where:{id:user.id}});
       });
 
-      return { verified: true, user };
+      return { verified: true, user: currentUser };
     }
 
     throw new BadRequestException('Passkey verification failed');

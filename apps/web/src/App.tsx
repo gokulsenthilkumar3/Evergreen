@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage, setUiLanguage, uiLocale, uiTemplate, uiDateLocale, useTamilPreferences } from "./i18n";
 import { useState, useMemo, useEffect, useRef, lazy, Suspense } from 'react';
 import { Toaster, toast } from 'sonner';
 import { SUCCESS_MESSAGES } from './utils/messages';
@@ -50,7 +51,6 @@ import {
   Insights as InsightsIcon,
   SupportAgent as HelpdeskIcon,
   School as TutorialIcon,
-  Translate as TranslateIcon,
   Factory as FactoryIcon,
   Speed as SpeedIcon,
   PrecisionManufacturing as MachineIcon,
@@ -75,12 +75,14 @@ import type { ThemeName } from './theme';
 import Login from './components/Login';
 import InstallationGate from './components/InstallationGate';
 import ProfileModal from './components/ProfileModal';
+import LanguageSelector from './components/LanguageSelector';
 import WorkspaceNavigation, { type NavGroup } from './components/WorkspaceNavigation';
 import { KeyboardShortcutsProvider } from './context/KeyboardShortcutsContext';
 import { ScreenReaderAnnouncer } from './components/common/ScreenReaderAnnouncer';
 import Breadcrumbs from './components/common/Breadcrumbs';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import { NotificationsProvider, NotificationsBell } from './context/NotificationsContext';
+import HelpdeskQuickReport from './components/HelpdeskQuickReport';
 import { useNotificationSync } from './hooks/useNotificationSync';
 import { useDebounce } from './hooks/useDebounce';
 import { LinearProgress } from '@mui/material';
@@ -126,6 +128,7 @@ const YarnSupplierPortal = lazy(() => import('./pages/yarn/SupplierPortal'));
 const YarnComplianceReports = lazy(() => import('./pages/yarn/ComplianceReports'));
 const CommandCenter = lazy(() => import('./pages/CommandCenter'));
 const Integrations = lazy(() => import('./pages/Integrations'));
+const FloatingAgent = lazy(() => import('./components/FloatingAgent'));
 const BookEllam = lazy(() => import('./pages/BookEllam'));
 
 /** Provider support number in international digits, e.g. 919800000000. Set VITE_SUPPORT_PHONE when packaging. */
@@ -151,6 +154,7 @@ const PrintStyles = () => (
 
 // --- Search Component ---
 const GlobalSearch = ({ onNavigate }: { onNavigate: (page: string) => void }) => {
+  useUiLanguage();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -271,8 +275,8 @@ const GlobalSearch = ({ onNavigate }: { onNavigate: (page: string) => void }) =>
     <Box sx={{ position: 'relative', width: '100%', minWidth: 0 }}>
       <TextField
         id="global-search-input"
-        placeholder="Search invoices, stock, customers…"
-        inputProps={{ 'aria-label': 'Search business records' }}
+        placeholder={uiText("Search invoices, stock, customers…", 'forms')}
+        inputProps={{ 'aria-label': uiText("Search business records", 'forms') }}
         fullWidth
         size="small"
         autoComplete="off"
@@ -288,11 +292,11 @@ const GlobalSearch = ({ onNavigate }: { onNavigate: (page: string) => void }) =>
           endAdornment: query ? (
             <InputAdornment position="end">
               {/* B-08: Use CloseIcon (not CollapseIcon/chevron) for semantic correctness */}
-              <IconButton size="small" aria-label="Clear search" onClick={() => { setQuery(''); setResults([]); }}>
+              <IconButton size="small" aria-label={uiText("Clear search", 'forms')} onClick={() => { setQuery(''); setResults([]); }}>
                 <CloseIcon fontSize="small" />
               </IconButton>
             </InputAdornment>
-          ) : <InputAdornment position="end"><Box component="kbd" sx={{ fontFamily: 'inherit', fontSize: 11, whiteSpace: 'nowrap', color: 'text.secondary', border: '1px solid', borderColor: 'divider', borderRadius: .75, px: .75, display: { xs: 'none', md: 'block' } }}>Ctrl K</Box></InputAdornment>,
+          ) : <InputAdornment position="end"><Box component="kbd" sx={{ fontFamily: 'inherit', fontSize: 11, whiteSpace: 'nowrap', color: 'text.secondary', border: '1px solid', borderColor: 'divider', borderRadius: .75, px: .75, display: { xs: 'none', md: 'block' } }}>{uiText("Ctrl K", 'forms')}</Box></InputAdornment>,
           sx: {
             bgcolor: 'action.hover',
             borderRadius: '8px',
@@ -311,8 +315,8 @@ const GlobalSearch = ({ onNavigate }: { onNavigate: (page: string) => void }) =>
         >
           <Typography variant="body2" color={searchFailed ? 'error' : 'text.secondary'}>
             {searchFailed
-              ? 'Search is unavailable right now. Check the connection and try again.'
-              : `No invoices, stock or customers match “${query}”.`}
+              ? uiText("Search is unavailable right now. Check the connection and try again.")
+              : uiTemplate`No invoices, stock or customers match “${query}”.`}
           </Typography>
         </Paper>
       )}
@@ -391,8 +395,8 @@ const App: React.FC = () => {
   });
   const [mode, setMode] = useState<PaletteMode>((localStorage.getItem('themeMode') as PaletteMode) || 'light');
   const [themeName, setThemeName] = useState<ThemeName>((localStorage.getItem('themeName') as ThemeName) || 'emerald');
-  const [floatingNav, setFloatingNav] = useState<boolean>(() => localStorage.getItem('floatingNav') === 'true');
-  const [language, setLanguage] = useState<'en' | 'ta'>((localStorage.getItem('language') as 'en' | 'ta') || 'en');
+  const language = useUiLanguage();
+  const tamilPreferences = useTamilPreferences();
   const getInitialPage = () => {
     const path = window.location.pathname.replace(/^\//, '').trim();
     if (!path || path === 'index.html') return 'dashboard';
@@ -451,7 +455,7 @@ const App: React.FC = () => {
 
   const profileMenuOpen = Boolean(anchorEl);
 
-  const theme = useMemo(() => getTheme(mode, themeName), [mode, themeName]);
+  const theme = useMemo(() => getTheme(mode, themeName, language, tamilPreferences), [mode, themeName, language, tamilPreferences]);
 
   useEffect(() => {
     localStorage.setItem('themeMode', mode);
@@ -459,7 +463,6 @@ const App: React.FC = () => {
     document.documentElement.dataset.themeMode = mode;
   }, [mode]);
   useEffect(() => { localStorage.setItem('themeName', themeName); }, [themeName]);
-  useEffect(() => { localStorage.setItem('floatingNav', String(floatingNav)); }, [floatingNav]);
   useEffect(() => { localStorage.setItem('language', language); }, [language]);
 
   // Update document title
@@ -485,10 +488,14 @@ const App: React.FC = () => {
     setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
   };
 
+  const [languageSaving,setLanguageSaving]=useState(false);
+  const languagePending=useRef(false);
   const toggleLanguage = async () => {
+    if(languagePending.current)return;
+    languagePending.current=true;setLanguageSaving(true);
     const next = language === 'en' ? 'ta' : 'en';
-    setLanguage(next);
-    try { await api.put('/settings', { language: next }); } catch { toast.error('Language changed on this device only; it could not be saved to your account.'); }
+    setUiLanguage(next);
+    try { await api.put('/settings', { language: next }); } catch { toast.error(uiText('Language changed on this device only; it could not be saved to your account.', 'feedback')); }finally{languagePending.current=false;setLanguageSaving(false);}
   };
 
 
@@ -581,7 +588,7 @@ const App: React.FC = () => {
       await queryClient.refetchQueries({ type: 'active' });
       toast.success(SUCCESS_MESSAGES.SYNC);
     } catch {
-      toast.error('Sync failed. Please try again.');
+      toast.error(uiText('Sync failed. Please try again.', 'feedback'));
     } finally {
       setIsSyncing(false);
     }
@@ -658,7 +665,7 @@ const App: React.FC = () => {
     {
       label: 'Support',
       items: [
-        { text: 'Helpdesk', icon: <HelpdeskIcon />, page: 'helpdesk', description: 'Frequently asked questions and ticket drafts kept in this browser' },
+        { text: 'Helpdesk', icon: <HelpdeskIcon />, page: 'helpdesk', description: 'Installation support tickets, conversations and resolution evidence' },
         { text: 'Tutorial', icon: <TutorialIcon />, page: 'tutorial', description: 'Step-by-step spinning mill workflows, standard operating procedures, and guides' },
       ]
     },
@@ -675,40 +682,7 @@ const App: React.FC = () => {
     },
   ];
 
-  const tamilLabels: Record<string, string> = {
-    'Business Workspace': 'வணிக மையம்',
-    'Business Desk': 'வணிக மேசை',
-    Dashboard: 'முகப்பு',
-    "Today's Summary": 'இன்றைய சுருக்கம்',
-    Store: 'கடை',
-    Inventory: 'சரக்கு',
-    'Inward / Batch': 'உள்வரவு / தொகுதி',
-    'Production & Job Work': 'உற்பத்தி மற்றும் வேலை ஒப்பந்தம்',
-    'Job Work Register': 'வேலை ஒப்பந்தப் பதிவு',
-    'Operations Desk': 'செயல்பாடுகள் மேசை',
-    Outwards: 'வெளியீடு',
-    Costing: 'செலவீனம்',
-    Insights: 'அறிக்கைகள்',
-    Settings: 'அமைப்புகள்',
-    Helpdesk: 'உதவி',
-    Tutorial: 'பயிற்சி',
-    'Payment Operations': 'பணப்பரிவர்த்தனை மேலாண்மை',
-    'Business Reports': 'வணிக அறிக்கைகள்',
-    'Yarn ERP Hub': 'நூல் ஆலை முதன்மை மையம்',
-    'Machine Status Overview': 'இயந்திர நிலை மேலோட்டம்',
-    'Machine Management': 'இயந்திர மேலாண்மை',
-    'Quality Control': 'தரக் கட்டுப்பாடு',
-    'Shift Management': 'பணி முறை மேலாண்மை',
-    Warehouse: 'கிடங்கு மேலாண்மை',
-    'HR & Payroll': 'பணியாளர் & ஊதிய மேலாண்மை',
-    'Demand Forecasting': 'தேவை முன்கணிப்பு',
-    'Supplier Activity': 'வழங்குநர் தளம்',
-    'Compliance Readiness': 'இணக்க அறிக்கைகள்',
-    'User Management': 'பயனர் மேலாண்மை',
-    Sessions: 'அமர்வுகள்',
-    'Security Settings': 'பாதுகாப்பு அமைப்புகள்',
-  };
-  const labelFor = (label: string) => language === 'ta' ? (tamilLabels[label] || label) : label;
+  const labelFor = (label: string) => uiText(label, 'navigation');
 
   if (!user) {
     return (
@@ -779,11 +753,9 @@ const App: React.FC = () => {
                   flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#fff'
                 }}>
                   <SecurityIcon sx={{ fontSize: 80, color: 'error.main', mb: 2 }} />
-                  <Typography variant="h3" gutterBottom>Service Suspended</Typography>
+                  <Typography variant="h3" gutterBottom>{uiText("Service Suspended")}</Typography>
                   <Typography variant="h6" color="text.secondary" sx={{ maxWidth: 600, textAlign: 'center' }}>
-                    Your account has been temporarily suspended due to billing or licensing issues. 
-                    Please contact the Provider Administrator to restore service.
-                  </Typography>
+                    {uiText("Your account has been temporarily suspended due to billing or licensing issues. Please contact the Provider Administrator to restore service. ")}</Typography>
                 </Box>
               )}
 
@@ -794,11 +766,9 @@ const App: React.FC = () => {
                   flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#fff'
                 }}>
                   <SyncIcon sx={{ fontSize: 80, color: 'warning.main', mb: 2 }} />
-                  <Typography variant="h3" gutterBottom>System Under Maintenance</Typography>
+                  <Typography variant="h3" gutterBottom>{uiText("System Under Maintenance")}</Typography>
                   <Typography variant="h6" sx={{ maxWidth: 600, textAlign: 'center', color: '#94a3b8' }}>
-                    Scheduled upgrades and database maintenance are currently in progress. 
-                    Normal operations will resume shortly.
-                  </Typography>
+                    {uiText("Scheduled upgrades and database maintenance are currently in progress. Normal operations will resume shortly. ")}</Typography>
                 </Box>
               )}
 
@@ -822,11 +792,9 @@ const App: React.FC = () => {
                 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                      ⏳ 30-Day Active Grace Quota:
-                    </Typography>
+                      {uiText("⏳ 30-Day Active Grace Quota: ")}</Typography>
                     <Typography variant="body2">
-                      Your license is pending renewal, but your mill operations are completely uninterrupted.
-                      {settings.graceExpiresAt && ` Grace protection active until ${new Date(settings.graceExpiresAt).toLocaleDateString()}.`}
+                      {uiText("Your license is pending renewal, but your mill operations are completely uninterrupted. ")}{settings.graceExpiresAt && uiTemplate` Grace protection active until ${new Date(settings.graceExpiresAt).toLocaleDateString(uiDateLocale())}.`}
                     </Typography>
                   </Box>
                   {/* The provider's real number is set at build time; without it, never offer a made-up contact. */}
@@ -842,8 +810,7 @@ const App: React.FC = () => {
                         rel="noopener noreferrer"
                         sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.75rem', borderRadius: 1.5 }}
                       >
-                        Connect with Licensing Desk (WhatsApp)
-                      </Button>
+                        {uiText("Connect with Licensing Desk (WhatsApp) ")}</Button>
                       <Button
                         size="small"
                         variant="outlined"
@@ -852,47 +819,11 @@ const App: React.FC = () => {
                         href={`tel:+${SUPPORT_PHONE}`}
                         sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.75rem', borderRadius: 1.5 }}
                       >
-                        Call Support
-                      </Button>
+                        {uiText("Call Support ")}</Button>
                     </Box>
                   ) : (
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>Contact your EverGreen provider to renew.</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>{uiText("Contact your EverGreen provider to renew.")}</Typography>
                   )}
-                </Box>
-              )}
-              {/* Floating bottom nav pill */}
-              {floatingNav && (
-                <Box className="floating-bottom-nav" component="nav" aria-label="Bottom navigation">
-                  {[
-                    { text: 'Workspace', icon: <StoreIcon />, page: 'workspace' },
-                    { text: 'Dashboard', icon: <DashboardIcon />, page: 'dashboard' },
-                    { text: 'Inventory', icon: <InventoryIcon />, page: 'inventory' },
-                    { text: 'Production',icon: <WasteIcon />,     page: 'production' },
-                    { text: 'Business Desk', icon: <StoreIcon />, page: 'business' },
-                  ].map(item => {
-                    const active = currentPage === item.page;
-                    return (
-                      <Tooltip key={item.page} title={item.text} arrow placement="top">
-                        <IconButton
-                          onClick={() => setCurrentPage(item.page)}
-                          size="small"
-                          sx={{
-                            width: 44,
-                            height: 44,
-                            borderRadius: '14px',
-                            color: active ? 'primary.main' : 'text.secondary',
-                            bgcolor: active ? (mode === 'dark' ? 'rgba(16,185,129,0.15)' : 'rgba(5,150,105,0.1)') : 'transparent',
-                            transform: active ? 'scale(1.12)' : 'scale(1)',
-                            transition: 'all 0.22s cubic-bezier(0.16,1,0.3,1)',
-                            boxShadow: active ? `0 0 0 3px ${theme.palette.primary.main}33` : 'none',
-                            '&:hover': { bgcolor: mode === 'dark' ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.05)', transform: 'scale(1.08)' },
-                          }}
-                        >
-                          {item.icon}
-                        </IconButton>
-                      </Tooltip>
-                    );
-                  })}
                 </Box>
               )}
               <Box sx={{
@@ -904,7 +835,7 @@ const App: React.FC = () => {
                 overflow: 'hidden'
               }}>
                 <Box component="a" href="#workspace-main" onClick={event => { event.preventDefault(); mainRef.current?.focus(); }}
-                  sx={{ position: 'fixed', top: 8, left: 16, zIndex: 1500, p: 1.5, bgcolor: 'background.paper', color: 'text.primary', border: '2px solid', borderColor: 'primary.main', borderRadius: 1, transform: 'translateY(-150%)', '&:focus': { transform: 'translateY(0)' } }}>Skip to content</Box>
+                  sx={{ position: 'fixed', top: 8, left: 16, zIndex: 1500, p: 1.5, bgcolor: 'background.paper', color: 'text.primary', border: '2px solid', borderColor: 'primary.main', borderRadius: 1, transform: 'translateY(-150%)', '&:focus': { transform: 'translateY(0)' } }}>{uiText("Skip to content")}</Box>
                 <AppBar
                   position="fixed"
                   sx={{
@@ -918,16 +849,16 @@ const App: React.FC = () => {
                   }}
                 >
                   <Toolbar sx={{ gap: { xs: 1, md: 2 }, px: { xs: '16px !important', md: '24px !important' }, py: { xs: 1, sm: 0 }, minHeight: { xs: 112, sm: 72 }, flexWrap: { xs: 'wrap', sm: 'nowrap' } }}>
-                    {isCompact && <Tooltip title="Open navigation">
+                    {isCompact && <Tooltip title={uiText("Open navigation")}>
                       <IconButton color="inherit"
-                        aria-label={isCompact ? 'Open navigation' : drawerOpen ? 'Collapse navigation' : 'Expand navigation'}
+                        aria-label={isCompact ? uiText("Open navigation") : drawerOpen ? uiText("Collapse navigation") : uiText("Expand navigation")}
                         aria-expanded={isCompact ? mobileNavOpen : drawerOpen} aria-controls="workspace-navigation"
                         onClick={handleDrawerToggle} sx={{ width: 40, height: 40, border: '1px solid', borderColor: 'divider', borderRadius: 1.5 }}>
                         <MenuIcon />
                       </IconButton>
                     </Tooltip>}
                     <Box sx={{ flex: { xs: 1, sm: '0 1 230px' }, minWidth: 0 }}>
-                      <Typography noWrap sx={{ fontSize: 10, color: 'text.secondary', letterSpacing: '.07em', textTransform: 'uppercase', display: { xs: 'none', md: 'block' } }}>{currentNavGroup?.label || 'Workspace'}</Typography>
+                      <Typography noWrap sx={{ fontSize: 10, color: 'text.secondary', letterSpacing: '.07em', textTransform: 'uppercase', display: { xs: 'none', md: 'block' } }}>{labelFor(currentNavGroup?.label || 'Workspace')}</Typography>
                       <Typography noWrap title={currentNavItem ? labelFor(currentNavItem.text) : currentPage} sx={{ fontSize: { xs: 15, md: 17 }, fontWeight: 700, lineHeight: 1.4 }}>{currentNavItem ? labelFor(currentNavItem.text) : currentPage}</Typography>
                     </Box>
                     <Box sx={{ order: { xs: 3, sm: 0 }, flex: { xs: '1 0 100%', sm: '1 1 220px' }, minWidth: 0, maxWidth: { sm: 440 }, ml: { sm: 'auto' } }}>
@@ -935,15 +866,12 @@ const App: React.FC = () => {
                     </Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: .5, ml: { sm: 'auto' }, '& > .MuiIconButton-root': { width: 40, height: 40 } }}>
                       <NotificationsBell onNavigate={setCurrentPage} />
+                      <HelpdeskQuickReport page={currentPage}/>
 
-                      <Tooltip title={language === 'en' ? 'தமிழில் காண்க' : 'View in English'} arrow>
-                        <IconButton onClick={toggleLanguage} color="inherit" aria-label="Toggle language" sx={{ display: { xs: 'none', md: 'inline-flex' } }}>
-                          <TranslateIcon />
-                        </IconButton>
-                      </Tooltip>
+                      <LanguageSelector language={language} disabled={languageSaving} onChange={selected=>{if(selected!==language)void toggleLanguage()}} />
 
-                      <Tooltip title="Sync All Data" arrow>
-                        <IconButton onClick={handleSync} color="primary" disabled={isSyncing} aria-label={isSyncing ? 'Refreshing data' : 'Refresh all data'} sx={{
+                      <Tooltip title={uiText("Sync All Data")} arrow>
+                        <IconButton onClick={handleSync} color="primary" disabled={isSyncing} aria-label={isSyncing ? uiText("Refreshing data") : uiText("Refresh all data")} sx={{
                           display: { xs: 'none', md: 'inline-flex' },
                           bgcolor: 'rgba(46, 125, 50, 0.08)',
                           '&:hover': { bgcolor: 'rgba(46, 125, 50, 0.15)' }
@@ -952,14 +880,14 @@ const App: React.FC = () => {
                         </IconButton>
                       </Tooltip>
 
-                      <Tooltip title="Toggle Theme" arrow>
-                        <IconButton onClick={toggleTheme} color="inherit" aria-label={mode === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'} sx={{ display: { xs: 'none', md: 'inline-flex' } }}>
+                      <Tooltip title={uiText("Toggle Theme")} arrow>
+                        <IconButton onClick={toggleTheme} color="inherit" aria-label={mode === 'dark' ? uiText("Switch to light theme") : uiText("Switch to dark theme")} sx={{ display: { xs: 'none', md: 'inline-flex' } }}>
                           {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
                         </IconButton>
                       </Tooltip>
 
-                      <Tooltip title="Account Settings" arrow>
-                        <Button onClick={handleProfileClick} color="inherit" aria-label="Account menu" aria-haspopup="menu" aria-expanded={profileMenuOpen} aria-controls={profileMenuOpen ? 'account-menu' : undefined} sx={{ p: .5, minWidth: 0, gap: 1, ml: .5, borderRadius: 1.5, border: '1px solid', borderColor: 'divider', textAlign: 'left', '&:hover': { transform: 'none', boxShadow: 'none' } }}>
+                      <Tooltip title={uiText("Account Settings")} arrow>
+                        <Button onClick={handleProfileClick} color="inherit" aria-label={uiText("Account menu")} aria-haspopup="menu" aria-expanded={profileMenuOpen} aria-controls={profileMenuOpen ? 'account-menu' : undefined} sx={{ p: .5, minWidth: 0, gap: 1, ml: .5, borderRadius: 1.5, border: '1px solid', borderColor: 'divider', textAlign: 'left', '&:hover': { transform: 'none', boxShadow: 'none' } }}>
                           <Avatar
                             alt={user.name || user.username}
                             sx={{
@@ -995,31 +923,25 @@ const App: React.FC = () => {
                         <Divider />
                         <MenuItem onClick={() => { handleProfileClose(); setProfileModalOpen(true); }} sx={{ borderRadius: '8px', py: 1 }}>
                           <ListItemIcon><PersonIcon fontSize="small" /></ListItemIcon>
-                          My Profile & Account
-                        </MenuItem>
+                          {uiText("My Profile & Account ", 'forms')}</MenuItem>
                         <MenuItem onClick={() => { handleProfileClose(); navigateTo('security'); }} sx={{ borderRadius: '8px', py: 1 }}>
                           <ListItemIcon><SecurityIcon fontSize="small" /></ListItemIcon>
-                          Security & 2FA
-                        </MenuItem>
+                          {uiText("Security & 2FA ", 'forms')}</MenuItem>
                         <MenuItem onClick={() => { handleProfileClose(); navigateTo('sessions'); }} sx={{ borderRadius: '8px', py: 1 }}>
                           <ListItemIcon><SessionsIcon fontSize="small" /></ListItemIcon>
-                          Active Sessions
-                        </MenuItem>
+                          {uiText("Active Sessions ", 'forms')}</MenuItem>
                         <MenuItem onClick={() => { handleProfileClose(); navigateTo('settings'); }} sx={{ borderRadius: '8px', py: 1 }}>
                           <ListItemIcon><SettingsIcon fontSize="small" /></ListItemIcon>
-                          System Settings
-                        </MenuItem>
+                          {uiText("System Settings ", 'forms')}</MenuItem>
                         <Divider sx={{ my: 0.5, display: { md: 'none' } }} />
-                        <MenuItem onClick={() => { handleProfileClose(); void handleSync(); }} disabled={isSyncing} sx={{ display: { md: 'none' } }}><ListItemIcon><SyncIcon fontSize="small" /></ListItemIcon>Refresh all data</MenuItem>
-                        <MenuItem onClick={() => { handleProfileClose(); toggleTheme(); }} sx={{ display: { md: 'none' } }}><ListItemIcon>{mode === 'dark' ? <LightModeIcon fontSize="small" /> : <DarkModeIcon fontSize="small" />}</ListItemIcon>{mode === 'dark' ? 'Light theme' : 'Dark theme'}</MenuItem>
-                        <MenuItem onClick={() => { handleProfileClose(); void toggleLanguage(); }} sx={{ display: { md: 'none' } }}><ListItemIcon><TranslateIcon fontSize="small" /></ListItemIcon>{language === 'en' ? 'தமிழில் காண்க' : 'View in English'}</MenuItem>
+                        <MenuItem onClick={() => { handleProfileClose(); void handleSync(); }} disabled={isSyncing} sx={{ display: { md: 'none' } }}><ListItemIcon><SyncIcon fontSize="small" /></ListItemIcon>{uiText("Refresh all data", 'forms')}</MenuItem>
+                        <MenuItem onClick={() => { handleProfileClose(); toggleTheme(); }} sx={{ display: { md: 'none' } }}><ListItemIcon>{mode === 'dark' ? <LightModeIcon fontSize="small" /> : <DarkModeIcon fontSize="small" />}</ListItemIcon>{mode === 'dark' ? uiText("Light theme", 'forms') : uiText("Dark theme", 'forms')}</MenuItem>
                         <Divider sx={{ my: 0.5 }} />
                         <MenuItem onClick={handleLogout} sx={{ color: 'error.main', py: 1.5, m: 0.5, borderRadius: '8px' }}>
                           <ListItemIcon sx={{ color: 'error.main' }}>
                             <LogoutIcon fontSize="small" />
                           </ListItemIcon>
-                          Logout
-                        </MenuItem>
+                          {uiText("Logout ", 'forms')}</MenuItem>
                       </Menu>
                     </Box>
                   </Toolbar>
@@ -1065,7 +987,6 @@ const App: React.FC = () => {
                   sx={{
                     flexGrow: 1,
                     p: { xs: 2, md: 3 },
-                    pb: floatingNav ? '100px !important' : undefined,
                     width: isCompact ? '100%' : `calc(100% - ${drawerOpen ? drawerWidth : drawerCollapsedWidth}px)`,
                     minWidth: 0,
                     height: '100dvh',
@@ -1132,8 +1053,6 @@ const App: React.FC = () => {
                           username={user.username}
                           themeName={themeName}
                           onThemeChange={setThemeName}
-                          floatingNav={floatingNav}
-                          onFloatingNavChange={setFloatingNav}
                         />
                       )}
                       {/* ── Merged sub-project pages ── */}
@@ -1147,14 +1066,14 @@ const App: React.FC = () => {
                       {currentPage === 'yarnsupplier' && <YarnSupplierPortal />}
                       {currentPage === 'yarncompliance' && <YarnComplianceReports />}
                       {currentPage === 'command-center' && <CommandCenter onNavigate={setCurrentPage} />}
-                      {currentPage === 'integrations' && (user.role === 'ADMIN' ? <Integrations /> : <Typography role="alert">Company administrator access is required.</Typography>)}
+                      {currentPage === 'integrations' && (user.role === 'ADMIN' ? <Integrations /> : <Typography role="alert">{uiText("Company administrator access is required.")}</Typography>)}
 
                       {!allPages.includes(currentPage) && (
                         <Box sx={{ p: 4, textAlign: 'center' }}>
                           <Typography variant="h4" sx={{ mb: 2, fontWeight: 'bold' }}>
                             {currentPage.charAt(0).toUpperCase() + currentPage.slice(1)}
                           </Typography>
-                          <Typography color="text.secondary">This page is currently under development.</Typography>
+                          <Typography color="text.secondary">{uiText("This page is currently under development.")}</Typography>
                         </Box>
                       )}
                     </Box>
@@ -1172,19 +1091,16 @@ const App: React.FC = () => {
                   setUser(newUser);
                   saveUser(newUser);
                 }}
-                mode={mode}
-                onToggleTheme={toggleTheme}
-                themeName={themeName}
-                onThemeChange={setThemeName}
                 language={language}
                 onToggleLanguage={toggleLanguage}
-                floatingNav={floatingNav}
-                onFloatingNavChange={setFloatingNav}
                 onNavigate={(pg) => {
                   setProfileModalOpen(false);
                   setCurrentPage(pg);
                 }}
               />
+              <Suspense fallback={null}>
+                <FloatingAgent key={`${user.username}:${user.role}`} username={user.username} />
+              </Suspense>
             </ConfirmProvider>
           </KeyboardShortcutsProvider>
         </NotificationsProvider>
@@ -1193,4 +1109,5 @@ const App: React.FC = () => {
   );
 };
 
-export default function LicensedApp() { return <InstallationGate url={(import.meta.env.VITE_API_URL || '/api/backend').replace(/\/+$/, '') + '/license/status'}><App /></InstallationGate>; }
+export default function LicensedApp() {
+  useUiLanguage(); return <InstallationGate url={(import.meta.env.VITE_API_URL || '/api/backend').replace(/\/+$/, '') + '/license/status'}><App /></InstallationGate>; }

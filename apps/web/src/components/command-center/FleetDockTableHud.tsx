@@ -1,3 +1,4 @@
+import { uiTemplate, uiScopedTemplate } from "../../i18n";
 import React, { useState } from 'react';
 import {
   Box,
@@ -161,7 +162,7 @@ export const FleetDockTableHud: React.FC<FleetDockTableHudProps> = ({
         >
           <Tab value="docks" label="Loading Docks (4)" />
           <Tab value="vehicles" label="Fleet & Forklifts (3)" />
-          <Tab value="machines" label={`Machine Lines (${machines.length || 8})`} />
+          <Tab value="machines" label={uiScopedTemplate('tabs')`Machine Lines (${machines.length || 8})`} />
         </Tabs>
       </Box>
 
@@ -320,7 +321,7 @@ export const FleetDockTableHud: React.FC<FleetDockTableHudProps> = ({
                     </Typography>
                   </Box>
                   <Chip
-                    label={hasAlert ? `${m.openInspections} Alert` : m.active ? 'Running' : 'Offline'}
+                    label={hasAlert ? uiTemplate`${m.openInspections} Alert` : m.active ? 'Running' : 'Offline'}
                     size="small"
                     sx={{
                       fontSize: '0.62rem',

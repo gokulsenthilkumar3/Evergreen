@@ -1,3 +1,5 @@
+import { dateKey } from '../utils/dateKey';
+import { uiText, useUiLanguage, uiLocale, formatUiDecimal, uiTemplate, uiDateLocale, uiScopedTemplate } from "../i18n";
 import React, { useState } from 'react';
 import {
     Box,
@@ -95,6 +97,7 @@ interface InwardEntryProps {
 }
 
 const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
+  useUiLanguage();
     const [dateFilter, setDateFilter] = useState<DateFilterType>('all');
     const [customFrom, setCustomFrom] = useState<string>('');
     const [customTo, setCustomTo] = useState<string>('');
@@ -108,7 +111,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
 
     const [formData, setFormData] = useState({
         batchId: '',
-        date: new Date().toLocaleDateString('en-CA'),
+        date: dateKey(),
         supplier: '',
         bale: '',
         kg: '',
@@ -197,7 +200,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
             return;
         }
 
-        if (!productionTimestamp(formData.date, receiptTime)) { toast.error('Enter a valid receipt time'); return; }
+        if (!productionTimestamp(formData.date, receiptTime)) { toast.error(uiText('Enter a valid receipt time', 'feedback')); return; }
         setIsSubmitting(true);
         try {
             await api.post('/inventory/inward', {
@@ -219,7 +222,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
             setTouched({});
             setFormData({
                 batchId: '',
-                date: new Date().toLocaleDateString('en-CA'),
+                date: dateKey(),
                 supplier: '',
                 bale: '',
                 kg: '',
@@ -233,7 +236,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
 
     const handleMergeBatches = async () => {
         if (selectedBatches.length < 2) {
-            toast.error('Select at least 2 batches to merge');
+            toast.error(uiText('Select at least 2 batches to merge', 'feedback'));
             return;
         }
 
@@ -250,10 +253,10 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
         try {
             await api.post('/inventory/inward/merge', {
                 batchIds: selectedBatches,
-                date: new Date().toLocaleDateString('en-CA'),
+                date: dateKey(),
                 createdBy: username
             });
-            toast.success('Batches merged successfully');
+            toast.success(uiText('Batches merged successfully', 'feedback'));
             setSelectedBatches([]);
             queryClient.invalidateQueries({ queryKey: ['inwardHistory'] });
             queryClient.invalidateQueries({ queryKey: ['dashboardSummary'] });
@@ -268,18 +271,18 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
     const handleExport = (type: 'email' | 'excel' | 'pdf' | 'image') => {
         const data = batchHistory;
         if (data.length === 0) { toast.error(ERROR_MESSAGES.NO_DATA); return; }
-        const filename = `Inward_Batch_Report_${new Date().toLocaleDateString('en-CA')}`;
+        const filename = `Inward_Batch_Report_${new Date().toLocaleDateString(uiDateLocale())}`;
         if (type === 'pdf') {
             const headers = ['Batch ID', 'Date', 'Supplier', 'Bale', 'Total Kg'];
-            const rows = data.map((row: BatchEntry) => [row.batchId, new Date(row.date).toLocaleDateString(), row.supplier, row.bale, row.kg?.toLocaleString() || '0']);
+            const rows = data.map((row: BatchEntry) => [row.batchId, new Date(row.date).toLocaleDateString(uiDateLocale()), row.supplier, row.bale, row.kg?.toLocaleString(uiLocale()) || '0']);
             generatePDF('Inward Batch History', headers, rows, filename);
             toast.success(SUCCESS_MESSAGES.EXPORT_PDF);
         } else if (type === 'excel') {
-            const excelData = data.map((row: BatchEntry) => ({ 'Batch ID': row.batchId, Date: new Date(row.date).toLocaleDateString(), Supplier: row.supplier, Bale: row.bale, 'Total Kg': row.kg }));
+            const excelData = data.map((row: BatchEntry) => ({ 'Batch ID': row.batchId, Date: new Date(row.date).toLocaleDateString(uiDateLocale()), Supplier: row.supplier, Bale: row.bale, 'Total Kg': row.kg }));
             generateExcel(excelData, filename);
             toast.success(SUCCESS_MESSAGES.EXPORT_EXCEL);
         } else {
-            window.location.href = `mailto:?subject=${encodeURIComponent(`Inward Report ${new Date().toLocaleDateString()}`)}&body=${encodeURIComponent('Please find the attached Inward Batch Report.')}`;
+            window.location.href = `mailto:?subject=${encodeURIComponent(`Inward Report ${new Date().toLocaleDateString(uiDateLocale())}`)}&body=${encodeURIComponent('Please find the attached Inward Batch Report.')}`;
         }
     };
 
@@ -300,11 +303,9 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
             }}>
                 <Box>
                     <Typography variant="h4" sx={{ fontWeight: 800, letterSpacing: '-0.5px', fontSize: { xs: '1.5rem', sm: '2rem' } }}>
-                        Inward Batch Entry
-                    </Typography>
+                        {uiText("Inward Batch Entry ")}</Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                        Track cotton bale receipts and update inventory automatically
-                    </Typography>
+                        {uiText("Track cotton bale receipts and update inventory automatically ")}</Typography>
                 </Box>
                 <Box sx={{
                     display: 'flex',
@@ -315,23 +316,23 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                     width: { xs: '100%', sm: 'auto' }
                 }}>
                     <FormControl sx={{ minWidth: { xs: '100%', sm: 180 } }} size="small">
-                        <InputLabel>Date Filter</InputLabel>
-                        <Select value={dateFilter} label="Date Filter" onChange={handleDateFilterChange}>
-                            <MenuItem value="all">All Batches</MenuItem>
-                            <MenuItem value="today">Today</MenuItem>
-                            <MenuItem value="yesterday">Yesterday</MenuItem>
-                            <MenuItem value="week">Past Week</MenuItem>
-                            <MenuItem value="month">Past Month</MenuItem>
-                            <MenuItem value="3months">Past 3 Months</MenuItem>
-                            <MenuItem value="6months">Past 6 Months</MenuItem>
-                            <MenuItem value="year">Past Year</MenuItem>
-                            <MenuItem value="custom">Custom Range</MenuItem>
+                        <InputLabel>{uiText("Date Filter", 'forms')}</InputLabel>
+                        <Select value={dateFilter} label={uiText("Date Filter", 'forms')} onChange={handleDateFilterChange}>
+                            <MenuItem value="all">{uiText("All Batches", 'forms')}</MenuItem>
+                            <MenuItem value="today">{uiText("Today", 'forms')}</MenuItem>
+                            <MenuItem value="yesterday">{uiText("Yesterday", 'forms')}</MenuItem>
+                            <MenuItem value="week">{uiText("Past Week", 'forms')}</MenuItem>
+                            <MenuItem value="month">{uiText("Past Month", 'forms')}</MenuItem>
+                            <MenuItem value="3months">{uiText("Past 3 Months", 'forms')}</MenuItem>
+                            <MenuItem value="6months">{uiText("Past 6 Months", 'forms')}</MenuItem>
+                            <MenuItem value="year">{uiText("Past Year", 'forms')}</MenuItem>
+                            <MenuItem value="custom">{uiText("Custom Range", 'forms')}</MenuItem>
                         </Select>
                     </FormControl>
                     {dateFilter === 'custom' && (
                         <>
                             <GlassDatePicker
-                                label="From"
+                                label={uiText("From", 'forms')}
                                 size="small"
                                 value={customFrom}
                                 onChange={(e) => setCustomFrom(e.target.value)}
@@ -339,7 +340,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                                 sx={{ width: { xs: '100%', sm: 145 } }}
                             />
                             <GlassDatePicker
-                                label="To"
+                                label={uiText("To", 'forms')}
                                 size="small"
                                 value={customTo}
                                 onChange={(e) => setCustomTo(e.target.value)}
@@ -350,7 +351,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                     )}
                     {(userRole === 'MODIFIER' || userRole === 'ADMIN') && (
                         <Box sx={{ display: 'flex', gap: 1 }}>
-                            <Button variant="outlined" startIcon={<ScaleOutlined />} onClick={() => setOpenWeighbridge(true)}>Weighbridge receipt</Button>
+                            <Button variant="outlined" startIcon={<ScaleOutlined />} onClick={() => setOpenWeighbridge(true)}>{uiText("Weighbridge receipt")}</Button>
                             {selectedBatches.length > 1 && (
                                 <Button
                                     variant="contained"
@@ -360,7 +361,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                                     sx={{ height: 40 }}
                                     disabled={isSubmitting}
                                 >
-                                    Merge ({selectedBatches.length})
+                                    {uiText("Merge (")}{selectedBatches.length})
                                 </Button>
                             )}
                             <Button
@@ -369,8 +370,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                                 onClick={() => { setReceiptTime(localTimeValue()); setOpenWizard(true); }}
                                 sx={{ height: 40, width: { xs: '100%', sm: 'auto' } }}
                             >
-                                Add Batch
-                            </Button>
+                                {uiText("Add Batch ")}</Button>
                         </Box>
                     )}
                 </Box>
@@ -379,16 +379,16 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
             {/* Summary Strip */}
             {batchHistory.length > 0 && (
                 <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
-                    <Chip label={`${batchHistory.length} Batches`} color="default" variant="outlined" />
-                    <Chip label={`${totalBales.toLocaleString()} Bales`} color="primary" variant="outlined" />
-                    <Chip label={`${totalKg.toLocaleString()} kg Cotton`} color="success" variant="filled" sx={{ fontWeight: 700 }} />
+                    <Chip label={uiTemplate`${batchHistory.length} Batches`} color="default" variant="outlined" />
+                    <Chip label={uiTemplate`${totalBales.toLocaleString(uiLocale())} Bales`} color="primary" variant="outlined" />
+                    <Chip label={uiTemplate`${totalKg.toLocaleString(uiLocale())} kg Cotton`} color="success" variant="filled" sx={{ fontWeight: 700 }} />
                 </Box>
             )}
 
             {openWeighbridge && <WeighbridgeReceiptDialog onClose={() => setOpenWeighbridge(false)} onSaved={() => {
                 setOpenWeighbridge(false);
                 queryClient.invalidateQueries();
-                toast.success('Weighbridge receipt saved');
+                toast.success(uiText('Weighbridge receipt saved', 'feedback'));
             }} />}
             {/* Add Batch Dialog */}
             <Dialog
@@ -399,19 +399,19 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                 aria-labelledby="add-batch-dialog-title"
                 aria-describedby="add-batch-dialog-title-description"
             >
-                <EntryWizardHeader id="add-batch-dialog-title" stage="01 · Cotton receipt" title="Add Cotton Batch"
+                <EntryWizardHeader id="add-batch-dialog-title" stage="01 · Cotton receipt" title={uiText("Add Cotton Batch")}
                     description="Give each receipt an identity. Record the cotton arriving at your mill."
                     icon={<Inventory2Outlined />} busy={isSubmitting} onClose={() => { setOpenWizard(false); setTouched({}); }} />
                 <DialogContent sx={{ p: { xs: 2, sm: 3 } }}>
                     {isSubmitting && <LinearProgress sx={{ mb: 2 }} />}
 
                     <Box component="fieldset" disabled={isSubmitting} sx={{ m: 0, p: 0, border: 0, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2.5, mt: 2 }}>
-                        <Typography variant="overline" color="text.secondary">01 / Batch identity</Typography>
+                        <Typography variant="overline" color="text.secondary">{uiText("01 / Batch identity")}</Typography>
                         <BatchCodeBuilder value={formData.batchId} date={formData.date} disabled={isSubmitting}
                             onChange={batchId => setFormData(prev => ({ ...prev, batchId }))} />
                         <Box sx={{ display: 'flex', gap: 2 }}>
                             <TextField type="date" size="small"
-                                label={<RequiredLabel label="Date" required />}
+                                label={<RequiredLabel label={uiText("Date", 'forms')} required />}
                                 name="date"
                                 value={formData.date}
                                 onChange={(e: any) => handleInputChange(e)}
@@ -422,7 +422,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                                 error={!!getFieldError('date')}
                                 helperText={getFieldError('date') || (isFutureDate(formData.date) ? '⚠️ Future date not allowed' : ' ')}
                             />
-                            <TextField type="time" label="Receipt time" value={receiptTime} onChange={e => setReceiptTime(e.target.value)} size="small" fullWidth slotProps={{ inputLabel: { shrink: true }, htmlInput: { step: 1 } }} helperText="Production starts after the receipt settling time." />
+                            <TextField type="time" label={uiText("Receipt time", 'forms')} value={receiptTime} onChange={e => setReceiptTime(e.target.value)} size="small" fullWidth slotProps={{ inputLabel: { shrink: true }, htmlInput: { step: 1 } }} helperText={uiText("Production starts after the receipt settling time.", 'forms')} />
                         </Box>
 
                         <Autocomplete
@@ -434,7 +434,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                             renderInput={(params) => (
                                 <TextField
                                     {...params}
-                                    label={<RequiredLabel label="Supplier Name" required />}
+                                    label={<RequiredLabel label={uiText("Supplier Name", 'forms')} required />}
                                     required
                                     error={!!getFieldError('supplier')}
                                     helperText={getFieldError('supplier') || 'Type to search existing suppliers or enter a new name'}
@@ -443,10 +443,10 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                             )}
                         />
 
-                        <Typography variant="overline" color="text.secondary">02 / Cotton received</Typography>
+                        <Typography variant="overline" color="text.secondary">{uiText("02 / Cotton received")}</Typography>
                         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
                             <TextField
-                                label={<RequiredLabel label="Total Bales" required />}
+                                label={<RequiredLabel label={uiText("Total Bales", 'forms')} required />}
                                 name="bale"
                                 type="number"
                                 value={formData.bale}
@@ -454,12 +454,12 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                                 onBlur={() => setTouched(p => ({ ...p, bale: true }))}
                                 required
                                 fullWidth
-                                InputProps={{ inputProps: { min: 1, step: 1 }, endAdornment: <InputAdornment position="end">bales</InputAdornment> }}
+                                InputProps={{ inputProps: { min: 1, step: 1 }, endAdornment: <InputAdornment position="end">{uiText("bales", 'forms')}</InputAdornment> }}
                                 error={!!getFieldError('bale')}
                                 helperText={getFieldError('bale') || 'Whole number (1–9999)'}
                             />
                             <TextField
-                                label={<RequiredLabel label="Total Weight (kg)" required />}
+                                label={<RequiredLabel label={uiText("Total Weight (kg)", 'forms')} required />}
                                 name="kg"
                                 type="number"
                                 value={formData.kg}
@@ -470,13 +470,13 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                                 InputProps={{
                                     inputProps: { min: 0.01, step: 0.01 },
                                     startAdornment: <InputAdornment position="start"><ScaleOutlined fontSize="small" /></InputAdornment>,
-                                    endAdornment: <InputAdornment position="end">kg</InputAdornment>
+                                    endAdornment: <InputAdornment position="end">{uiText("kg", 'forms')}</InputAdornment>
                                 }}
                                 error={!!getFieldError('weight')}
                                 helperText={
                                     getFieldError('weight') ||
                                     (formData.bale && formData.kg
-                                        ? `Avg: ${(safeParseFloat(formData.kg) / safeParseFloat(formData.bale)).toFixed(1)} kg/bale`
+                                        ? uiScopedTemplate('forms')`Avg: ${formatUiDecimal((safeParseFloat(formData.kg) / safeParseFloat(formData.bale)), 1)} kg/bale`
                                         : '0.01–999,999 kg')
                                 }
                             />
@@ -492,8 +492,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                 </DialogContent>
                 <DialogActions sx={{ p: 2.5, borderTop: 1, borderColor: 'divider', gap: 1 }}>
                     <Button onClick={() => { setOpenWizard(false); setTouched({}); }} color="inherit" disabled={isSubmitting}>
-                        Cancel
-                    </Button>
+                        {uiText("Cancel ")}</Button>
                     <Button
                         variant="contained"
                         startIcon={<SaveIcon />}
@@ -501,7 +500,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                         disabled={isSubmitting}
                         sx={{ minWidth: 140 }}
                     >
-                        {isSubmitting ? 'Saving...' : 'Add Batch'}
+                        {isSubmitting ? uiText("Saving...") : uiText("Add Batch")}
                     </Button>
                 </DialogActions>
             </Dialog>
@@ -510,8 +509,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
             <Paper sx={{ borderRadius: 2 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2.5, borderBottom: 1, borderColor: 'divider' }}>
                     <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                        Batch History
-                        {isLoading && <LinearProgress sx={{ mt: 1, borderRadius: 1 }} />}
+                        {uiText("Batch History ")}{isLoading && <LinearProgress sx={{ mt: 1, borderRadius: 1 }} />}
                     </Typography>
                     <Box sx={{ display: 'flex', gap: 1.5 }}>
                         <ExportButtons
@@ -537,14 +535,14 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                                             onChange={(e) => setSelectedBatches(e.target.checked ? batchHistory.map((b: any) => b.batchId) : [])}
                                         />
                                     </TableCell>
-                                    <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5, bgcolor: 'background.paper' }}>Batch ID</TableCell>
-                                    <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5, bgcolor: 'background.paper' }}>Date</TableCell>
-                                    <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5, bgcolor: 'background.paper' }}>Supplier</TableCell>
-                                    <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5, bgcolor: 'background.paper' }}>Orig Bales</TableCell>
-                                    <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5, bgcolor: 'background.paper' }}>Orig Kg</TableCell>
-                                    <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5, bgcolor: 'background.paper' }}>Rem Bales</TableCell>
-                                    <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5, bgcolor: 'background.paper' }}>Rem Kg</TableCell>
-                                    <TableCell align="center" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5, bgcolor: 'background.paper' }}>Actions</TableCell>
+                                    <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5, bgcolor: 'background.paper' }}>{uiText("Batch ID", 'tables')}</TableCell>
+                                    <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5, bgcolor: 'background.paper' }}>{uiText("Date", 'tables')}</TableCell>
+                                    <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5, bgcolor: 'background.paper' }}>{uiText("Supplier", 'tables')}</TableCell>
+                                    <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5, bgcolor: 'background.paper' }}>{uiText("Orig Bales", 'tables')}</TableCell>
+                                    <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5, bgcolor: 'background.paper' }}>{uiText("Orig Kg", 'tables')}</TableCell>
+                                    <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5, bgcolor: 'background.paper' }}>{uiText("Rem Bales", 'tables')}</TableCell>
+                                    <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5, bgcolor: 'background.paper' }}>{uiText("Rem Kg", 'tables')}</TableCell>
+                                    <TableCell align="center" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5, bgcolor: 'background.paper' }}>{uiText("Actions", 'tables')}</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -553,7 +551,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                                         <TableCell colSpan={7} sx={{ py: 4 }}>
                                             <EmptyState
                                                 type="empty"
-                                                title="No Batches Found"
+                                                title={uiText("No Batches Found", 'tables')}
                                                 message="No inward batches found for the selected period. Try changing the date filter or add a new batch."
                                                 actionLabel="Add First Batch"
                                                 onAction={() => setOpenWizard(true)}
@@ -584,7 +582,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                                             <TableCell>
                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
                                                     <Tooltip 
-                                                        title={row.mergedFrom ? `Merged from: ${row.mergedFrom}` : ''}
+                                                        title={row.mergedFrom ? uiScopedTemplate('tables')`Merged from: ${row.mergedFrom}` : ''}
                                                         arrow 
                                                         placement="top"
                                                     >
@@ -619,40 +617,38 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                                                         />
                                                     </Tooltip>
                                                     {(row.isMerged || row.batchId.startsWith('MB-')) && (
-                                                        <span className="merged-badge">⊕ merged</span>
+                                                        <span className="merged-badge">{uiText("⊕ merged", 'tables')}</span>
                                                     )}
                                                 </Box>
                                             </TableCell>
                                             <TableCell>
-                                                <Tooltip title={`Entry recorded: ${row.entryTimestamp ? new Date(row.entryTimestamp).toLocaleString() : 'N/A'}`} arrow>
+                                                <Tooltip title={uiScopedTemplate('tables')`Entry recorded: ${row.entryTimestamp ? new Date(row.entryTimestamp).toLocaleString(uiLocale()) : 'N/A'}`} arrow>
                                                     <Box component="span" sx={{ cursor: 'help', borderBottom: '1px dashed', borderColor: 'text.disabled' }}>
-                                                        {new Date(row.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                                        {new Date(row.date).toLocaleDateString(uiDateLocale(), { day: '2-digit', month: 'short', year: 'numeric' })}
                                                     </Box>
                                                 </Tooltip>
                                             </TableCell>
                                             <TableCell sx={{ fontWeight: 500 }}>{row.supplier}</TableCell>
                                             <TableCell align="right" sx={{ color: 'text.secondary' }}>{row.bale}</TableCell>
                                             <TableCell align="right" sx={{ color: 'text.secondary' }}>
-                                                {row.kg?.toLocaleString()} kg
-                                                {row.weighbridgeReceipt && <Typography variant="caption" display="block">
-                                                    {row.weighbridgeReceipt.finalBillableKg === null ? 'Billable: pending' : `Billable: ${row.weighbridgeReceipt.finalBillableKg.toLocaleString()} kg`}
+                                                {row.kg?.toLocaleString(uiLocale())} {uiText(" kg ", 'tables')}{row.weighbridgeReceipt && <Typography variant="caption" display="block">
+                                                    {row.weighbridgeReceipt.finalBillableKg === null ? uiText("Billable: pending", 'tables') : uiScopedTemplate('tables')`Billable: ${row.weighbridgeReceipt.finalBillableKg.toLocaleString(uiLocale())} kg`}
                                                 </Typography>}
                                             </TableCell>
                                             <TableCell align="right" sx={{ fontWeight: 600 }}>
                                                 {row.remainingBale ?? row.bale}
                                             </TableCell>
                                             <TableCell align="right" sx={{ fontWeight: 600, color: 'primary.main' }}>
-                                                {(row.remainingKg ?? row.kg).toLocaleString()} kg
-                                            </TableCell>
+                                                {(row.remainingKg ?? row.kg).toLocaleString(uiLocale())} {uiText(" kg ", 'tables')}</TableCell>
                                             <TableCell align="center">
                                                 <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
-                                                    <Tooltip title="View & Print QR / Barcode Tag">
+                                                    <Tooltip title={uiText("View & Print QR / Barcode Tag", 'tables')}>
                                                         <IconButton size="small" color="primary" onClick={() => setLabelBatch(row)}>
                                                             <QrIcon fontSize="small" />
                                                         </IconButton>
                                                     </Tooltip>
                                                     {(userRole === 'ADMIN') && (
-                                                        <Tooltip title="Delete Batch (Admin only)">
+                                                        <Tooltip title={uiText("Delete Batch (Admin only)", 'tables')}>
                                                             <IconButton size="small" color="error" onClick={() => handleDeleteBatch(row.id)}>
                                                                 <DeleteIcon fontSize="small" />
                                                             </IconButton>
@@ -672,13 +668,12 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                 {batchHistory.length > 0 && (
                     <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider', display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
                         <Typography variant="body2" color="text.secondary">
-                            Showing <strong>{batchHistory.length}</strong> batches
-                        </Typography>
+                            {uiText("Showing ")}<strong>{batchHistory.length}</strong> {uiText(" batches ")}</Typography>
                         <Typography variant="body2">
-                            Total Bales: <strong>{totalBales.toLocaleString()}</strong>
+                            {uiText("Total Bales: ")}<strong>{totalBales.toLocaleString(uiLocale())}</strong>
                         </Typography>
                         <Typography variant="body2" color="success.main">
-                            Total Weight: <strong>{totalKg.toLocaleString()} kg</strong>
+                            {uiText("Total Weight: ")}<strong>{totalKg.toLocaleString(uiLocale())} {uiText(" kg")}</strong>
                         </Typography>
                     </Box>
                 )}
@@ -689,14 +684,14 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                     open={Boolean(labelBatch)}
                     onClose={() => setLabelBatch(null)}
                     type="BATCH"
-                    title={`Batch Label: ${labelBatch.batchId}`}
+                    title={uiTemplate`Batch Label: ${labelBatch.batchId}`}
                     code={labelBatch.batchId}
                     qrPayload={buildBatchQRPayload(labelBatch)}
                     metadata={[
                         { label: 'Supplier', value: labelBatch.supplier },
-                        { label: 'Date', value: new Date(labelBatch.date).toLocaleDateString('en-IN') },
+                        { label: 'Date', value: new Date(labelBatch.date).toLocaleDateString(uiDateLocale()) },
                         { label: 'Total Bales', value: labelBatch.bale },
-                        { label: 'Physical net weight', value: `${labelBatch.kg.toLocaleString()} kg` },
+                        { label: 'Physical net weight', value: `${labelBatch.kg.toLocaleString(uiLocale())} kg` },
                         ...(labelBatch.weighbridgeReceipt ? [
                             { label: 'Gross / tare', value: `${labelBatch.weighbridgeReceipt.grossWeightKg} / ${labelBatch.weighbridgeReceipt.tareWeightKg} kg` },
                             { label: 'Moisture content', value: `${labelBatch.weighbridgeReceipt.moisturePercent}%` },
@@ -705,7 +700,7 @@ const InwardEntry: React.FC<InwardEntryProps> = ({ userRole, username }) => {
                             { label: 'Billable weight', value: labelBatch.weighbridgeReceipt.finalBillableKg === null ? 'Pending contract confirmation' : `${labelBatch.weighbridgeReceipt.finalBillableKg} kg` },
                             { label: 'Device verification', value: 'Unverified' },
                         ] : []),
-                        { label: 'Remaining Stock', value: `${(labelBatch.remainingKg ?? labelBatch.kg).toLocaleString()} kg` },
+                        { label: 'Remaining Stock', value: `${(labelBatch.remainingKg ?? labelBatch.kg).toLocaleString(uiLocale())} kg` },
                     ]}
                 />
             )}

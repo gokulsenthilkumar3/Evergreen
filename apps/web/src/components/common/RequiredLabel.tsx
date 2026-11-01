@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage } from "../../i18n";
 import React from 'react';
 import { Typography, Box, Tooltip } from '@mui/material';
 
@@ -12,9 +13,10 @@ interface RequiredLabelProps {
  * Shows label with red asterisk for required fields
  */
 const RequiredLabel: React.FC<RequiredLabelProps> = ({ label, required = false, tooltip }) => {
+  useUiLanguage();
   const labelContent = (
     <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
-      {label}
+      {uiText(label, 'forms')}
       {required && (
         <Box
           component="span"

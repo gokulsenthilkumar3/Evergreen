@@ -1,8 +1,12 @@
+jest.mock('../../utils/user-audit',()=>({appendUserAudit:(tx:any,args:any)=>tx.activityLog.create(args)}));
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { SessionsService } from './sessions.service';
 
 describe('SessionsService', () => {
   const prisma = {
+    userSessionPolicy: { findMany: jest.fn(async () => []) },
+    $transaction: jest.fn(async (callback: any): Promise<any> => callback(prisma)),
+    activityLog: { create: jest.fn() },
     session: {
       findMany: jest.fn(),
       findUnique: jest.fn(),
@@ -44,7 +48,9 @@ describe('SessionsService', () => {
     expect(prisma.session.update).toHaveBeenCalledWith({
       where: { id: 'other' },
       data: { isValid: false },
+      select: expect.objectContaining({ id: true, isValid: true }),
     });
+    expect(prisma.activityLog.create).toHaveBeenCalled();
   });
 
   it('returns not found for a missing session', async () => {

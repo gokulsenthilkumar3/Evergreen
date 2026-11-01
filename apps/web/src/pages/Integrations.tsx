@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage, uiLocale } from "../i18n";
 import { useRef, useState } from "react";
 import {
   Alert,
@@ -105,6 +106,7 @@ type Summary = {
   filename: string;
 };
 export default function Integrations() {
+  useUiLanguage();
   const client = useQueryClient();
   const [tab, setTab] = useState(0),
     [entity, setEntity] = useState<ImportEntity>("customers");
@@ -287,34 +289,30 @@ export default function Integrations() {
           <HubOutlined color="primary" sx={{ fontSize: 36 }} />
           <Box>
             <Typography variant="overline" color="primary">
-              CONNECTED OPERATIONS
-            </Typography>
+              {uiText("CONNECTED OPERATIONS ")}</Typography>
             <Typography component="h1" variant="h4" fontWeight={800}>
-              Integrations
-            </Typography>
+              {uiText("Integrations ")}</Typography>
           </Box>
         </Stack>
         <Typography color="text.secondary" sx={{ mt: 1 }}>
-          Bring in your records. Prepare your accounts. Know exactly what is
-          connected.
-        </Typography>
+          {uiText("Bring in your records. Prepare your accounts. Know exactly what is connected. ")}</Typography>
         <Stack direction="row" gap={1} flexWrap="wrap" sx={{ mt: 2 }}>
           <Chip
             size="small"
             color="success"
             variant="outlined"
-            label="CSV import available"
+            label={uiText("CSV import available")}
           />
           <Chip
             size="small"
             color="success"
             variant="outlined"
-            label="Tally XML export available"
+            label={uiText("Tally XML export available")}
           />
           <Chip
             size="small"
             variant="outlined"
-            label="Live connectors require setup"
+            label={uiText("Live connectors require setup")}
           />
         </Stack>
       </Paper>
@@ -326,7 +324,7 @@ export default function Integrations() {
         }}
         variant="scrollable"
         scrollButtons="auto"
-        aria-label="Integration workflows"
+        aria-label={uiText("Integration workflows")}
       >
         {[
           "Import data",
@@ -335,7 +333,7 @@ export default function Integrations() {
           "Regional connectors",
           "Import history",
         ].map((label) => (
-          <Tab key={label} label={label} disabled={busy} />
+          <Tab key={label} label={uiText(label, 'tabs')} disabled={busy} />
         ))}
       </Tabs>
       {error && (
@@ -347,8 +345,7 @@ export default function Integrations() {
         <Stack direction="row" spacing={1} alignItems="center" role="status">
           <CircularProgress size={18} />
           <Typography variant="body2">
-            Working... Please keep this page open.
-          </Typography>
+            {uiText("Working... Please keep this page open. ")}</Typography>
         </Stack>
       )}
       {tab === 0 && (
@@ -356,12 +353,9 @@ export default function Integrations() {
           <Stack spacing={3}>
             <Box>
               <Typography variant="h6" fontWeight={750}>
-                A careful start for your existing data
-              </Typography>
+                {uiText("A careful start for your existing data ")}</Typography>
               <Typography color="text.secondary">
-                Add customer and catalogue records without overwriting existing
-                records. Up to 500 rows per UTF-8 CSV, 500 KB maximum.
-              </Typography>
+                {uiText("Add customer and catalogue records without overwriting existing records. Up to 500 rows per UTF-8 CSV, 500 KB maximum. ")}</Typography>
             </Box>
             <Stepper
               activeStep={result ? 3 : preview ? 2 : input ? 1 : 0}
@@ -370,19 +364,17 @@ export default function Integrations() {
               {["Choose file", "Map columns", "Review & import"].map(
                 (label) => (
                   <Step key={label}>
-                    <StepLabel>{label}</StepLabel>
+                    <StepLabel>{uiText(label, 'forms')}</StepLabel>
                   </Step>
                 ),
               )}
             </Stepper>
             <Alert severity="info">
-              Imports add master records only. Opening stock, invoices, payments
-              and balances need separate reconciliation.
-            </Alert>
+              {uiText("Imports add master records only. Opening stock, invoices, payments and balances need separate reconciliation. ")}</Alert>
             <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
               <TextField
                 select
-                label="Import into"
+                label={uiText("Import into", 'forms')}
                 value={entity}
                 disabled={busy}
                 fullWidth
@@ -393,19 +385,18 @@ export default function Integrations() {
                   invalidate();
                 }}
               >
-                <MenuItem value="customers">Customers</MenuItem>
-                <MenuItem value="items">Catalogue items</MenuItem>
+                <MenuItem value="customers">{uiText("Customers", 'forms')}</MenuItem>
+                <MenuItem value="items">{uiText("Catalogue items", 'forms')}</MenuItem>
               </TextField>
               <Button
                 startIcon={<DownloadOutlined />}
                 onClick={template}
                 sx={{ flexShrink: 0 }}
               >
-                Download template
-              </Button>
+                {uiText("Download template ")}</Button>
             </Stack>
             <TextField
-              label="Source name"
+              label={uiText("Source name", 'forms')}
               value={source}
               disabled={busy}
               required
@@ -413,7 +404,7 @@ export default function Integrations() {
                 setSource(e.target.value);
                 invalidate();
               }}
-              helperText="A name you can recognize in history, such as October customer register."
+              helperText={uiText("A name you can recognize in history, such as October customer register.", 'forms')}
               slotProps={{ htmlInput: { maxLength: 200 } }}
             />
             <Box
@@ -432,9 +423,8 @@ export default function Integrations() {
                 startIcon={<CloudUploadOutlined />}
                 disabled={busy}
               >
-                Choose CSV file
-                <input
-                  aria-label="Choose CSV file"
+                {uiText("Choose CSV file ")}<input
+                  aria-label={uiText("Choose CSV file")}
                   type="file"
                   accept=".csv,text/csv"
                   hidden
@@ -451,8 +441,7 @@ export default function Integrations() {
             {input && (
               <>
                 <Typography fontWeight={700}>
-                  {input.rows.length} records - Match your columns
-                </Typography>
+                  {input.rows.length} {uiText(" records - Match your columns ")}</Typography>
                 <Box
                   sx={{
                     display: "grid",
@@ -476,7 +465,7 @@ export default function Integrations() {
                         invalidate();
                       }}
                     >
-                      <MenuItem value="">Do not import</MenuItem>
+                      <MenuItem value="">{uiText("Do not import", 'forms')}</MenuItem>
                       {input.headers.map((header, index) => (
                         <MenuItem
                           key={index}
@@ -499,18 +488,16 @@ export default function Integrations() {
                   }
                   onClick={check}
                 >
-                  Validate and preview
-                </Button>
+                  {uiText("Validate and preview ")}</Button>
               </>
             )}
             {preview && (
               <>
                 <Alert severity={preview.issues.length ? "warning" : "success"}>
-                  {preview.records.length} records checked -{" "}
-                  {preview.issues.length} issues to resolve
-                </Alert>
+                  {preview.records.length} {uiText(" records checked -")}{" "}
+                  {preview.issues.length} {uiText(" issues to resolve ")}</Alert>
                 <Typography variant="body2" color="text.secondary">
-                  Ignored columns: {preview.ignoredHeaders.join(", ") || "None"}
+                  {uiText("Ignored columns: ")}{preview.ignoredHeaders.join(", ") || "None"}
                 </Typography>
                 {preview.issues.length > 0 && (
                   <Box sx={{ maxHeight: 260, overflow: "auto" }}>
@@ -521,15 +508,14 @@ export default function Integrations() {
                         variant="body2"
                         sx={{ py: 0.5 }}
                       >
-                        Row {issue.row} - {labels[issue.field] || issue.field}:{" "}
+                        {uiText("Row ")}{issue.row} - {labels[issue.field] || issue.field}:{" "}
                         {issue.message}
                       </Typography>
                     ))}
                   </Box>
                 )}
                 <Typography variant="subtitle2">
-                  Normalized preview - first 5 records
-                </Typography>
+                  {uiText("Normalized preview - first 5 records ")}</Typography>
                 <TableContainer sx={{ maxHeight: 300 }}>
                   <Table size="small">
                     <TableHead>
@@ -565,7 +551,7 @@ export default function Integrations() {
                           onChange={(e) => setConfirmed(e.target.checked)}
                         />
                       }
-                      label="I reviewed the mapping and want to add these records to this company."
+                      label={uiText("I reviewed the mapping and want to add these records to this company.", 'forms')}
                     />
                     <Button
                       variant="contained"
@@ -578,8 +564,7 @@ export default function Integrations() {
                       onClick={commit}
                       endIcon={<ArrowForward />}
                     >
-                      Import {preview.records.length} records
-                    </Button>
+                      {uiText("Import ")}{preview.records.length} {uiText(" records ")}</Button>
                   </>
                 )}
               </>
@@ -596,8 +581,7 @@ export default function Integrations() {
                       invalidate();
                     }}
                   >
-                    Start another import
-                  </Button>
+                    {uiText("Start another import ")}</Button>
                 }
               >
                 {result}
@@ -611,17 +595,13 @@ export default function Integrations() {
           <Paper variant="outlined" sx={card}>
             <Stack spacing={2}>
               <Typography variant="h6" fontWeight={750}>
-                Export to TallyPrime
-              </Typography>
+                {uiText("Export to TallyPrime ")}</Typography>
               <Typography color="text.secondary">
-                Review the period, create the matching ledgers in Tally and
-                import the XML once. Re-importing the same file can create
-                duplicate vouchers.
-              </Typography>
+                {uiText("Review the period, create the matching ledgers in Tally and import the XML once. Re-importing the same file can create duplicate vouchers. ")}</Typography>
               <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
                 <TextField
                   type="date"
-                  label="From"
+                  label={uiText("From", 'forms')}
                   value={from}
                   disabled={busy}
                   onChange={(e) => {
@@ -632,7 +612,7 @@ export default function Integrations() {
                 />
                 <TextField
                   type="date"
-                  label="To (inclusive)"
+                  label={uiText("To (inclusive)", 'forms')}
                   value={to}
                   disabled={busy}
                   onChange={(e) => {
@@ -643,9 +623,7 @@ export default function Integrations() {
                 />
               </Stack>
               <Typography variant="caption" color="text.secondary">
-                Leave dates empty for all records. Dates follow the API server's
-                business clock.
-              </Typography>
+                {uiText("Leave dates empty for all records. Dates follow the API server's business clock. ")}</Typography>
               <Stack direction="row" flexWrap="wrap">
                 <FormControlLabel
                   control={
@@ -658,7 +636,7 @@ export default function Integrations() {
                       }}
                     />
                   }
-                  label="Sales invoices"
+                  label={uiText("Sales invoices", 'forms')}
                 />
                 <FormControlLabel
                   control={
@@ -671,13 +649,12 @@ export default function Integrations() {
                       }}
                     />
                   }
-                  label="Receipts & reversals"
+                  label={uiText("Receipts & reversals", 'forms')}
                 />
               </Stack>
               {exportInvalid && (
                 <Alert severity="warning">
-                  Choose at least one voucher type and a valid date range.
-                </Alert>
+                  {uiText("Choose at least one voucher type and a valid date range. ")}</Alert>
               )}
               <Button
                 variant="outlined"
@@ -691,16 +668,13 @@ export default function Integrations() {
                   )
                 }
               >
-                Preview voucher counts
-              </Button>
+                {uiText("Preview voucher counts ")}</Button>
               {summary && (
                 <Alert severity="info">
-                  {summary.stats.totalVouchers} vouchers -{" "}
-                  {summary.stats.salesCount} sales -{" "}
-                  {summary.stats.receiptCount} receipts/reversals -{" "}
-                  {summary.stats.skippedVoidInvoices || 0} void invoices
-                  excluded
-                </Alert>
+                  {summary.stats.totalVouchers} {uiText(" vouchers -")}{" "}
+                  {summary.stats.salesCount} {uiText(" sales -")}{" "}
+                  {summary.stats.receiptCount} {uiText(" receipts/reversals -")}{" "}
+                  {summary.stats.skippedVoidInvoices || 0} {uiText(" void invoices excluded ")}</Alert>
               )}
               <Button
                 startIcon={<DownloadOutlined />}
@@ -713,18 +687,14 @@ export default function Integrations() {
                 }
                 onClick={exportXml}
               >
-                Download Tally XML
-              </Button>
+                {uiText("Download Tally XML ")}</Button>
             </Stack>
           </Paper>
           <Paper variant="outlined" sx={card}>
             <Stack spacing={2}>
-              <Typography variant="h6">Local connection check</Typography>
+              <Typography variant="h6">{uiText("Local connection check")}</Typography>
               <Typography color="text.secondary">
-                Run TallyPrime on the API machine, load the company and enable
-                its HTTP server (port 9000 by default). This check reads company
-                availability; it does not sync or post vouchers.
-              </Typography>
+                {uiText("Run TallyPrime on the API machine, load the company and enable its HTTP server (port 9000 by default). This check reads company availability; it does not sync or post vouchers. ")}</Typography>
               <Button
                 startIcon={<Refresh />}
                 disabled={busy}
@@ -736,18 +706,14 @@ export default function Integrations() {
                   )
                 }
               >
-                Check Tally connection
-              </Button>
+                {uiText("Check Tally connection ")}</Button>
               {connection && (
                 <Alert severity={connection.connected ? "success" : "warning"}>
                   {connection.message}
                 </Alert>
               )}
               <Alert severity="info">
-                Automatic synchronization still needs a desktop bridge, ledger
-                mapping, durable delivery and Tally acknowledgements. CSV and
-                XML exports work without a live connection.
-              </Alert>
+                {uiText("Automatic synchronization still needs a desktop bridge, ledger mapping, durable delivery and Tally acknowledgements. CSV and XML exports work without a live connection. ")}</Alert>
             </Stack>
           </Paper>
         </Stack>
@@ -756,39 +722,30 @@ export default function Integrations() {
         <Paper variant="outlined" sx={card}>
           <Stack spacing={2}>
             <Typography variant="h6" fontWeight={750}>
-              Prepare for e-Way Bill registration
-            </Typography>
+              {uiText("Prepare for e-Way Bill registration ")}</Typography>
             <Alert severity="warning">
-              Provider setup required. This workspace does not issue e-Way Bill
-              numbers or submit transport documents.
-            </Alert>
+              {uiText("Provider setup required. This workspace does not issue e-Way Bill numbers or submit transport documents. ")}</Alert>
             <Typography color="text.secondary">
-              Start with an invoice checklist, then complete authorized GSP/NIC
-              sandbox onboarding. Confirm ship-to and dispatch addresses,
-              pincodes, HSN codes and transport-mode-specific details before
-              submission.
-            </Typography>
+              {uiText("Start with an invoice checklist, then complete authorized GSP/NIC sandbox onboarding. Confirm ship-to and dispatch addresses, pincodes, HSN codes and transport-mode-specific details before submission. ")}</Typography>
             {invoices.isLoading && (
-              <Typography role="status">Loading invoices...</Typography>
+              <Typography role="status">{uiText("Loading invoices...")}</Typography>
             )}
             {invoices.isError && (
               <Alert
                 severity="error"
                 action={
-                  <Button onClick={() => invoices.refetch()}>Retry</Button>
+                  <Button onClick={() => invoices.refetch()}>{uiText("Retry")}</Button>
                 }
               >
-                Invoices could not be loaded.
-              </Alert>
+                {uiText("Invoices could not be loaded. ")}</Alert>
             )}
             {invoices.data?.length === 0 && (
               <Alert severity="info">
-                Create an invoice in Business Desk to check its readiness.
-              </Alert>
+                {uiText("Create an invoice in Business Desk to check its readiness. ")}</Alert>
             )}
             <TextField
               select
-              label="Invoice"
+              label={uiText("Invoice", 'forms')}
               value={invoiceId}
               disabled={busy}
               onChange={(e) => {
@@ -796,7 +753,7 @@ export default function Integrations() {
                 setReadiness(null);
               }}
             >
-              <MenuItem value="">Choose an invoice</MenuItem>
+              <MenuItem value="">{uiText("Choose an invoice", 'forms')}</MenuItem>
               {invoices.data
                 ?.filter((row) => row.status !== "VOID")
                 .map((row) => (
@@ -820,8 +777,7 @@ export default function Integrations() {
                 )
               }
             >
-              Check invoice preparation
-            </Button>
+              {uiText("Check invoice preparation ")}</Button>
             {readiness && (
               <>
                 <Typography fontWeight={700}>{readiness.invoiceNo}</Typography>
@@ -838,7 +794,7 @@ export default function Integrations() {
                       size="small"
                       variant="outlined"
                       color={check.passed ? "success" : "warning"}
-                      label={check.passed ? "Present" : "Needs attention"}
+                      label={check.passed ? uiText("Present") : uiText("Needs attention")}
                     />
                   </Stack>
                 ))}
@@ -851,18 +807,14 @@ export default function Integrations() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              Official e-Way Bill onboarding & API documentation
-            </Button>
+              {uiText("Official e-Way Bill onboarding & API documentation ")}</Button>
           </Stack>
         </Paper>
       )}
       {tab === 3 && (
         <Stack spacing={2}>
           <Alert severity="info">
-            Regional integration research - these adapters are planned, not
-            connected. Local tax identity, currency, language and authorized
-            provider onboarding need validation for each market.
-          </Alert>
+            {uiText("Regional integration research - these adapters are planned, not connected. Local tax identity, currency, language and authorized provider onboarding need validation for each market. ")}</Alert>
           {[
             [
               "India",
@@ -909,8 +861,8 @@ export default function Integrations() {
                   size="small"
                   label={
                     country === "India"
-                      ? "Partially available"
-                      : "Research / planned"
+                      ? uiText("Partially available")
+                      : uiText("Research / planned")
                   }
                   variant="outlined"
                 />
@@ -925,18 +877,13 @@ export default function Integrations() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Official reference
-              </Button>
+                {uiText("Official reference ")}</Button>
             </Paper>
           ))}
           <Divider />
-          <Typography variant="h6">API & automation</Typography>
+          <Typography variant="h6">{uiText("API & automation")}</Typography>
           <Typography color="text.secondary">
-            Administrator endpoints support import preview, import commit,
-            history, Tally XML and invoice preparation. Scoped integration keys,
-            signed webhooks, delivery queues and automatic retries remain
-            planned. Keep staff credentials private.
-          </Typography>
+            {uiText("Administrator endpoints support import preview, import commit, history, Tally XML and invoice preparation. Scoped integration keys, signed webhooks, delivery queues and automatic retries remain planned. Keep staff credentials private. ")}</Typography>
         </Stack>
       )}
       {tab === 4 && (
@@ -946,37 +893,32 @@ export default function Integrations() {
             justifyContent="space-between"
             alignItems="center"
           >
-            <Typography variant="h6">Import history</Typography>
+            <Typography variant="h6">{uiText("Import history")}</Typography>
             <Button
               disabled={history.isFetching}
               startIcon={<Refresh />}
               onClick={() => history.refetch()}
             >
-              Refresh
-            </Button>
+              {uiText("Refresh ")}</Button>
           </Stack>
           <Typography color="text.secondary" sx={{ mb: 2 }}>
-            Latest 50 completed batches. A failed import creates no partial
-            batch.
-          </Typography>
+            {uiText("Latest 50 completed batches. A failed import creates no partial batch. ")}</Typography>
           {history.isLoading && (
-            <Typography role="status">Loading import history...</Typography>
+            <Typography role="status">{uiText("Loading import history...")}</Typography>
           )}
           {history.isError && (
             <Alert
               severity="error"
-              action={<Button onClick={() => history.refetch()}>Retry</Button>}
+              action={<Button onClick={() => history.refetch()}>{uiText("Retry")}</Button>}
             >
-              Import history could not be loaded.
-            </Alert>
+              {uiText("Import history could not be loaded. ")}</Alert>
           )}
           {history.data?.length === 0 && (
             <Box sx={{ textAlign: "center", py: 5 }}>
               <CheckCircleOutline color="disabled" sx={{ fontSize: 40 }} />
               <Typography sx={{ mt: 1 }}>
-                Your import history starts here.
-              </Typography>
-              <Button onClick={() => setTab(0)}>Import your first CSV</Button>
+                {uiText("Your import history starts here. ")}</Typography>
+              <Button onClick={() => setTab(0)}>{uiText("Import your first CSV")}</Button>
             </Box>
           )}
           {Boolean(history.data?.length) && (
@@ -986,7 +928,7 @@ export default function Integrations() {
                   <TableRow>
                     {["Batch", "Source", "Records", "Imported by", "Date"].map(
                       (label) => (
-                        <TableCell key={label}>{label}</TableCell>
+                        <TableCell key={label}>{uiText(label, 'tables')}</TableCell>
                       ),
                     )}
                   </TableRow>
@@ -1003,7 +945,7 @@ export default function Integrations() {
                       </TableCell>
                       <TableCell>{batch.createdBy}</TableCell>
                       <TableCell>
-                        {new Date(batch.createdAt).toLocaleString()}
+                        {new Date(batch.createdAt).toLocaleString(uiLocale())}
                       </TableCell>
                     </TableRow>
                   ))}

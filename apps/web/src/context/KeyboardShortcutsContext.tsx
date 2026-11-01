@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage } from "../i18n";
 import React, { createContext, useContext, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 
@@ -27,6 +28,7 @@ export const useKeyboardShortcuts = () => {
 };
 
 export const KeyboardShortcutsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  useUiLanguage();
   const shortcutsRef = React.useRef<Map<string, Shortcut>>(new Map());
 
   const registerShortcut = useCallback((shortcut: Shortcut) => {
@@ -46,7 +48,7 @@ export const KeyboardShortcutsProvider: React.FC<{ children: React.ReactNode }> 
     
     toast.info(
       <div>
-        <strong>Keyboard Shortcuts</strong>
+        <strong>{uiText("Keyboard Shortcuts", 'feedback')}</strong>
         <pre style={{ margin: '8px 0', fontSize: '12px' }}>{shortcutList}</pre>
       </div>,
       { duration: 5000 }

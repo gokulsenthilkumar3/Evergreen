@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage, uiLocale, uiTemplate, uiDateLocale } from "../i18n";
 import React, { useMemo, useState, useCallback } from 'react';
 import {
   Box, Typography, Chip, Paper, Tooltip, IconButton,
@@ -94,7 +95,7 @@ type ViewMode = 'campus' | 'floor' | 'warroom';
 export function formatQuantity(value: unknown): string {
   if (value === 0) return '0';
   return typeof value === 'number' && Number.isFinite(value)
-    ? value.toLocaleString('en-IN', { maximumFractionDigits: 1 }) : '—';
+    ? value.toLocaleString(uiLocale(), { maximumFractionDigits: 1 }) : '—';
 }
 
 function buildKpiCards(
@@ -252,6 +253,7 @@ const MachineDetailDialog: React.FC<{
   onClose: () => void;
   onNavigate?: (page: string) => void;
 }> = ({ machine, inspections, open, onClose, onNavigate }) => {
+  useUiLanguage();
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const mobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -280,9 +282,8 @@ const MachineDetailDialog: React.FC<{
       <DialogTitle sx={{ pb: 1.5, pt: 2.5 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
           <Typography variant="overline" sx={{ letterSpacing: '0.12em', color: isDark ? '#34d399' : '#059669', fontWeight: 800 }}>
-            Unit Inspector · Strategy View
-          </Typography>
-          <Button size="small" onClick={onClose} sx={{ minWidth: 0, px: 1 }}>Close</Button>
+            {uiText("Unit Inspector · Strategy View ")}</Typography>
+          <Button size="small" onClick={onClose} sx={{ minWidth: 0, px: 1 }}>{uiText("Close")}</Button>
         </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -301,11 +302,11 @@ const MachineDetailDialog: React.FC<{
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Typography variant="h6" fontWeight={800} noWrap>{machine.name}</Typography>
             <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
-              Type: {machine.type.replaceAll('_', ' ')}
+              {uiText("Type: ")}{machine.type.replaceAll('_', ' ')}
             </Typography>
           </Box>
           <Chip
-            label={machine.active ? 'Operational' : 'Idle / Offline'}
+            label={machine.active ? uiText("Operational") : uiText("Idle / Offline")}
             size="small"
             sx={{
               backgroundColor: machine.active ? 'rgba(52,211,153,0.15)' : 'rgba(100,116,139,0.15)',
@@ -328,15 +329,15 @@ const MachineDetailDialog: React.FC<{
           }}
         >
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-            <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>Telemetry Status</Typography>
+            <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>{uiText("Telemetry Status")}</Typography>
             <Typography variant="caption" sx={{ fontWeight: 800, color: machine.active ? '#10b981' : '#64748b' }}>
-              {machine.active ? 'Registered Operational' : 'Standby / Inactive'}
+              {machine.active ? uiText("Registered Operational") : uiText("Standby / Inactive")}
             </Typography>
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-            <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>Open Inspections</Typography>
+            <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>{uiText("Open Inspections")}</Typography>
             <Typography variant="caption" sx={{ fontWeight: 800, color: openCount > 0 ? '#ef4444' : '#10b981' }}>
-              {openCount} Alert{openCount === 1 ? '' : 's'}
+              {openCount} {uiText(" Alert")}{openCount === 1 ? '' : 's'}
             </Typography>
           </Box>
         </Box>
@@ -351,19 +352,16 @@ const MachineDetailDialog: React.FC<{
           >
             <Typography sx={{ fontSize: '1.25rem' }}>🔴</Typography>
             <Typography sx={{ color: '#ef4444', fontWeight: 700, fontSize: '0.85rem' }}>
-              {openCount} open inspection{openCount > 1 ? 's' : ''} require attention
-            </Typography>
+              {openCount} {uiText(" open inspection")}{openCount > 1 ? 's' : ''} {uiText(" require attention ")}</Typography>
           </Box>
         )}
 
         <Typography variant="overline" sx={{ color: 'text.secondary', fontSize: '0.68rem', letterSpacing: '0.1em', fontWeight: 800 }}>
-          Inspection History & Log
-        </Typography>
+          {uiText("Inspection History & Log ")}</Typography>
 
         {machineInspections.length === 0 ? (
           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            No inspections recorded for this asset yet.
-          </Typography>
+            {uiText("No inspections recorded for this asset yet. ")}</Typography>
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             {machineInspections.map((insp) => {
@@ -382,7 +380,7 @@ const MachineDetailDialog: React.FC<{
                   <Box sx={{ flex: 1, minWidth: 0 }}>
                     <Typography sx={{ fontSize: '0.8rem', fontWeight: 700 }}>{insp.type}</Typography>
                     <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                      {new Date(insp.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      {new Date(insp.date).toLocaleDateString(uiDateLocale(), { day: '2-digit', month: 'short', year: 'numeric' })}
                     </Typography>
                   </Box>
                   <Chip
@@ -411,8 +409,7 @@ const MachineDetailDialog: React.FC<{
             endIcon={<ArrowForwardOutlined fontSize="small" />}
             sx={{ fontWeight: 700, borderRadius: '10px', py: 1 }}
           >
-            Open Machine Register
-          </Button>
+            {uiText("Open Machine Register ")}</Button>
         </Box>
       </DialogContent>
     </Drawer>
@@ -426,6 +423,7 @@ interface CommandCenterProps {
 }
 
 const CommandCenter: React.FC<CommandCenterProps> = ({ onNavigate }) => {
+  useUiLanguage();
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const qc = useQueryClient();
@@ -576,11 +574,9 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onNavigate }) => {
             </Box>
             <Box>
               <Typography variant="h5" fontWeight={800} sx={{ lineHeight: 1.2, fontSize: { xs: '1.25rem', sm: '1.5rem' }, letterSpacing: '-0.02em' }}>
-                Operations Command
-              </Typography>
+                {uiText("Operations Command ")}</Typography>
               <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.72rem', fontWeight: 600 }}>
-                Recorded operations · Illustrative campus animation
-              </Typography>
+                {uiText("Recorded operations · Illustrative campus animation ")}</Typography>
             </Box>
           </Box>
 
@@ -609,8 +605,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onNavigate }) => {
                 }}
               />
               <Typography variant="caption" sx={{ fontWeight: 800, fontSize: '0.72rem', color: isDark ? '#34d399' : '#059669' }}>
-                OEE: telemetry not connected
-              </Typography>
+                {uiText("OEE: telemetry not connected ")}</Typography>
             </Box>
 
             {/* Shift Pill */}
@@ -628,8 +623,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onNavigate }) => {
             >
               <AccessTimeOutlined sx={{ fontSize: 13, color: '#38bdf8' }} />
               <Typography variant="caption" sx={{ fontWeight: 700, fontSize: '0.72rem', color: 'text.secondary' }}>
-                Shift telemetry unavailable
-              </Typography>
+                {uiText("Shift telemetry unavailable ")}</Typography>
             </Box>
 
             {/* Environmental Climate Widget */}
@@ -647,8 +641,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onNavigate }) => {
             >
               <WbSunnyOutlined sx={{ fontSize: 13, color: '#f59e0b' }} />
               <Typography variant="caption" sx={{ fontWeight: 700, fontSize: '0.72rem', color: 'text.secondary' }}>
-                Environment sensors not connected
-              </Typography>
+                {uiText("Environment sensors not connected ")}</Typography>
             </Box>
           </Box>
 
@@ -682,20 +675,17 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onNavigate }) => {
               }}
             >
               <ToggleButton value="campus">
-                <ViewInArOutlined sx={{ fontSize: 16, mr: 0.75 }} /> 3D Campus
-              </ToggleButton>
+                <ViewInArOutlined sx={{ fontSize: 16, mr: 0.75 }} /> {uiText(" 3D Campus ")}</ToggleButton>
               <ToggleButton value="floor">
-                <MapOutlined sx={{ fontSize: 16, mr: 0.75 }} /> 2D Tactical Floor
-              </ToggleButton>
+                <MapOutlined sx={{ fontSize: 16, mr: 0.75 }} /> {uiText(" 2D Tactical Floor ")}</ToggleButton>
               <ToggleButton value="warroom">
-                <SpeedOutlined sx={{ fontSize: 16, mr: 0.75 }} /> Operations Radar
-              </ToggleButton>
+                <SpeedOutlined sx={{ fontSize: 16, mr: 0.75 }} /> {uiText(" Operations Radar ")}</ToggleButton>
             </ToggleButtonGroup>
 
             {/* Audio SFX Toggle */}
-            <Tooltip title={soundEnabled ? 'Strategy Audio: ON (Click to mute)' : 'Strategy Audio: MUTED (Click to activate chimes)'}>
+            <Tooltip title={soundEnabled ? uiText("Strategy Audio: ON (Click to mute)") : uiText("Strategy Audio: MUTED (Click to activate chimes)")}>
               <IconButton
-                aria-label="Toggle Strategy Audio Effects"
+                aria-label={uiText("Toggle Strategy Audio Effects")}
                 onClick={handleSoundToggle}
                 sx={{
                   borderRadius: '10px',
@@ -712,7 +702,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onNavigate }) => {
 
             {/* Live Flow Toggle (for 2D floor) */}
             {viewMode === 'floor' && (
-              <Tooltip title={simulateFlow ? 'Pause Conveyor Particle Flows' : 'Simulate Conveyor Particle Flows'}>
+              <Tooltip title={simulateFlow ? uiText("Pause Conveyor Particle Flows") : uiText("Simulate Conveyor Particle Flows")}>
                 <Chip
                   clickable
                   onClick={() => {
@@ -720,7 +710,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onNavigate }) => {
                     setSimulateFlow((v) => !v);
                   }}
                   icon={simulateFlow ? <PlayArrowOutlined sx={{ fontSize: '14px !important' }} /> : <PauseOutlined sx={{ fontSize: '14px !important' }} />}
-                  label={simulateFlow ? 'Flow Active' : 'Flow Paused'}
+                  label={simulateFlow ? uiText("Flow Active") : uiText("Flow Paused")}
                   size="small"
                   sx={{
                     fontWeight: 700,
@@ -734,9 +724,9 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onNavigate }) => {
             )}
 
             {/* Refresh */}
-            <Tooltip title="Refresh all factory data">
+            <Tooltip title={uiText("Refresh all factory data")}>
               <IconButton
-                aria-label="Refresh all data"
+                aria-label={uiText("Refresh all data")}
                 onClick={handleRefresh}
                 sx={{
                   borderRadius: '10px',
@@ -750,9 +740,9 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onNavigate }) => {
             </Tooltip>
 
             {/* Fullscreen Expand */}
-            <Tooltip title={floorExpanded ? 'Standard Layout' : 'Full Width Command Mode'}>
+            <Tooltip title={floorExpanded ? uiText("Standard Layout") : uiText("Full Width Command Mode")}>
               <IconButton
-                aria-label={floorExpanded ? 'Collapse floor' : 'Expand floor'}
+                aria-label={floorExpanded ? uiText("Collapse floor") : uiText("Expand floor")}
                 onClick={() => {
                   sfx.playClick();
                   setFloorExpanded((v) => !v);
@@ -784,8 +774,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onNavigate }) => {
         }}
       >
         <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 800, textTransform: 'uppercase', fontSize: '0.65rem', mr: 0.5, flexShrink: 0 }}>
-          Area Focus:
-        </Typography>
+          {uiText("Area Focus: ")}</Typography>
         {[
           { id: 'all', label: 'All Operations', icon: '🌐' },
           { id: 'cotton', label: 'Cotton Inward', icon: '🌱' },
@@ -798,7 +787,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onNavigate }) => {
           return (
             <Chip
               key={filter.id}
-              label={`${filter.icon} ${filter.label}`}
+              label={uiTemplate`${filter.icon} ${filter.label}`}
               clickable
               onClick={() => {
                 sfx.playClick();
@@ -820,9 +809,8 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onNavigate }) => {
       </Box>
 
       {hasError && (
-        <Alert severity="warning" action={<Button onClick={handleRefresh}>Retry</Button>}>
-          Some operations data could not be loaded. Available records remain visible; unavailable domains may be incomplete.
-        </Alert>
+        <Alert severity="warning" action={<Button onClick={handleRefresh}>{uiText("Retry")}</Button>}>
+          {uiText("Some operations data could not be loaded. Available records remain visible; unavailable domains may be incomplete. ")}</Alert>
       )}
 
       {/* ── KPI Ribbon ────────────────────────────────────────────────────────── */}
@@ -895,20 +883,18 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onNavigate }) => {
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
                 <Box>
                   <Typography variant="subtitle2" fontWeight={800}>
-                    Tactical 2D Schematic Floor
-                  </Typography>
+                    {uiText("Tactical 2D Schematic Floor ")}</Typography>
                   <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                    Illustrative plant layout · Select a machine to inspect its records
-                  </Typography>
+                    {uiText("Illustrative plant layout · Select a machine to inspect its records ")}</Typography>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Chip
-                    label={`${floorMachines.filter((m) => m.active).length} Active assets`}
+                    label={uiTemplate`${floorMachines.filter((m) => m.active).length} Active assets`}
                     size="small"
                     sx={{ bgcolor: 'rgba(16,185,129,0.15)', color: '#10b981', fontWeight: 800, fontSize: '0.65rem' }}
                   />
                   <Chip
-                    label={`${floorMachines.filter((m) => (m.openInspections ?? 0) > 0).length} Maintenance`}
+                    label={uiTemplate`${floorMachines.filter((m) => (m.openInspections ?? 0) > 0).length} Maintenance`}
                     size="small"
                     sx={{ bgcolor: 'rgba(239,68,68,0.15)', color: '#ef4444', fontWeight: 800, fontSize: '0.65rem' }}
                   />
@@ -986,8 +972,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onNavigate }) => {
         transition={{ duration: 0.45, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
       >
         <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', textAlign: 'center', py: 0.5 }}>
-          Switch between 3D Campus, 2D Tactical Floor, and Operations Radar. Select any building or machine to inspect operations.
-        </Typography>
+          {uiText("Switch between 3D Campus, 2D Tactical Floor, and Operations Radar. Select any building or machine to inspect operations. ")}</Typography>
       </motion.div>
 
       {/* ── Machine Detail Dialog / Inspector ──────────────────────────────── */}

@@ -1,3 +1,5 @@
+import { dateKey } from '../utils/dateKey';
+import { uiText, useUiLanguage, uiLocale, formatUiDecimal } from "../i18n";
 import React, { useState, useEffect } from 'react';
 import {
     Box,
@@ -27,6 +29,7 @@ interface TabPanelProps {
 }
 
 function TabPanel(props: TabPanelProps) {
+  useUiLanguage();
     const { children, value, index, ...other } = props;
     return (
         <div role="tabpanel" hidden={value !== index} {...other}>
@@ -45,6 +48,7 @@ interface CostingEntryProps {
 }
 
 const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, initialTab = 0, initialDate }) => {
+  useUiLanguage();
     const [tabValue, setTabValue] = useState(initialTab || 0);
 
     // Sync tab with prop if it changes and matches context
@@ -58,7 +62,7 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
 
     // Fetch Production Data for Auto-Calculation
 
-    const [date, setDate] = useState(initialDate || new Date().toLocaleDateString('en-CA'));
+    const [date, setDate] = useState(initialDate || dateKey());
     const [packagingDate, setPackagingDate] = useState(date);
 
     // Sync date and packaging date when initialDate prop changes
@@ -67,7 +71,7 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
             setDate(initialDate);
         } else {
             // If initialDate is cleared, reset to current date
-            setDate(new Date().toLocaleDateString('en-CA'));
+            setDate(dateKey());
         }
     }, [initialDate]);
 
@@ -84,7 +88,7 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
                 // Filter client side OR use dedicated endpoint if available
                 const entry = res.data.find((p: any) => {
                     // Handle ISO date string comparison
-                    const pDate = new Date(p.date).toLocaleDateString('en-CA');
+                    const pDate = dateKey(p.date);
                     return pDate === packagingDate;
                 });
                 return entry || { totalProduced: 0 };
@@ -140,10 +144,10 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
         },
     });
 
-    const existingEB = entries?.find((e: any) => new Date(e.date).toLocaleDateString('en-CA') === date && e.category === 'EB (Electricity)');
-    const existingEmployee = entries?.find((e: any) => new Date(e.date).toLocaleDateString('en-CA') === date && e.category === 'Employee');
-    const existingPackaging = entries?.find((e: any) => new Date(e.date).toLocaleDateString('en-CA') === date && e.category === 'Packaging');
-    const existingMaintenance = entries?.find((e: any) => new Date(e.date).toLocaleDateString('en-CA') === date && e.category === 'Maintenance');
+    const existingEB = entries?.find((e: any) => dateKey(e.date) === date && e.category === 'EB (Electricity)');
+    const existingEmployee = entries?.find((e: any) => dateKey(e.date) === date && e.category === 'Employee');
+    const existingPackaging = entries?.find((e: any) => dateKey(e.date) === date && e.category === 'Packaging');
+    const existingMaintenance = entries?.find((e: any) => dateKey(e.date) === date && e.category === 'Maintenance');
 
     // Fetch System Settings for default rates
     const { data: settings } = useQuery({
@@ -305,7 +309,7 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
         const yarnKg = productionData?.totalProduced || 0;
         const rate = parseFloat(packagingData.rate);
         if (yarnKg <= 0) {
-            toast.warning('No production records found for the selected date. Packaging costs cannot be calculated without production data.');
+            toast.warning(uiText('No production records found for the selected date. Packaging costs cannot be calculated without production data.', 'feedback'));
             return;
         }
         if (isNaN(rate) || rate <= 0) {
@@ -326,7 +330,7 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
 
     const handleMaintenanceSubmit = once(async () => {
         if (yarnProduction <= 0) {
-            toast.warning('No production records found for the selected date. Maintenance costs cannot be calculated without production data.');
+            toast.warning(uiText('No production records found for the selected date. Maintenance costs cannot be calculated without production data.', 'feedback'));
             return;
         }
 
@@ -389,40 +393,40 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
 
             <Paper sx={{ mb: 3 }}>
                 <Tabs value={tabValue} onChange={(_, newValue) => setTabValue(newValue)} variant="scrollable" scrollButtons="auto">
-                    <Tab label="EB (Electricity)" />
-                    <Tab label="Employee Costs" />
-                    <Tab label="Packaging" />
-                    <Tab label="Maintenance" />
-                    <Tab label="Expenses" />
+                    <Tab label={uiText("EB (Electricity)", 'tabs')} />
+                    <Tab label={uiText("Employee Costs", 'tabs')} />
+                    <Tab label={uiText("Packaging", 'tabs')} />
+                    <Tab label={uiText("Maintenance", 'tabs')} />
+                    <Tab label={uiText("Expenses", 'tabs')} />
                 </Tabs>
 
                 {/* EB Tab */}
                 <TabPanel value={tabValue} index={0}>
                     <Box sx={{ maxWidth: 600, mx: 'auto', display: 'flex', flexDirection: 'column', gap: 2 }}>
-                        {existingEB && <Alert severity="info">{existingEB.posted ? POSTED_NOTE : 'Entry exists. You can edit.'}</Alert>}
+                        {existingEB && <Alert severity="info">{existingEB.posted ? POSTED_NOTE : uiText("Entry exists. You can edit.")}</Alert>}
                         <TextField
-                            label="Units Consumed (kWh)"
+                            label={uiText("Units Consumed (kWh)", 'forms')}
                             type="number"
                             value={ebData.unitsConsumed}
                             onChange={(e) => setEbData({ ...ebData, unitsConsumed: e.target.value })}
                         />
                         <TextField
-                            label="Rate per Unit (₹)"
+                            label={uiText("Rate per Unit (₹)", 'forms')}
                             type="number"
                             value={ebData.ratePerUnit}
                             onChange={(e) => setEbData({ ...ebData, ratePerUnit: e.target.value })}
                         />
                         <TextField
-                            label="No of Shifts"
+                            label={uiText("No of Shifts", 'forms')}
                             type="number"
                             value={ebData.noOfShifts}
                             onChange={(e) => setEbData({ ...ebData, noOfShifts: e.target.value })}
                         />
                         <Paper sx={{ p: 2, bgcolor: 'background.default' }}>
-                            <Typography variant="h6" align="center">Total: ₹{ebTotal.toFixed(2)}</Typography>
+                            <Typography variant="h6" align="center">{uiText("Total: ₹")}{formatUiDecimal(ebTotal, 2)}</Typography>
                         </Paper>
                         <Box sx={{ display: 'flex', gap: 2 }}>
-                            <Button variant="contained" fullWidth startIcon={<SaveIcon />} onClick={handleEBSubmit} disabled={saving || Boolean(existingEB?.posted)}>{existingEB ? (existingEB.posted ? 'Posted' : 'Update') : 'Save'}</Button>
+                            <Button variant="contained" fullWidth startIcon={<SaveIcon />} onClick={handleEBSubmit} disabled={saving || Boolean(existingEB?.posted)}>{existingEB ? uiText(existingEB.posted ? 'Posted' : 'Update', 'forms') : uiText("Save")}</Button>
                         </Box>
                     </Box>
                 </TabPanel>
@@ -430,10 +434,10 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
                 {/* Employee Tab */}
                 <TabPanel value={tabValue} index={1}>
                     <Box sx={{ maxWidth: 600, mx: 'auto', display: 'flex', flexDirection: 'column', gap: 2 }}>
-                        {existingEmployee && <Alert severity="info">{existingEmployee.posted ? POSTED_NOTE : 'Entry exists.'}</Alert>}
+                        {existingEmployee && <Alert severity="info">{existingEmployee.posted ? POSTED_NOTE : uiText("Entry exists.")}</Alert>}
                         <TextField
                             select
-                            label="No of Shifts"
+                            label={uiText("No of Shifts", 'forms')}
                             value={employeeData.noOfShifts}
                             onChange={(e) => setEmployeeData({ ...employeeData, noOfShifts: e.target.value })}
                         >
@@ -441,15 +445,15 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
                             <MenuItem value="2">2</MenuItem>
                         </TextField>
                         <Box sx={{ display: 'flex', gap: 2 }}>
-                            <TextField label="Workers" type="number" fullWidth value={employeeData.workers} onChange={(e) => setEmployeeData({ ...employeeData, workers: e.target.value })} />
-                            <TextField label="Rate (₹/day)" type="number" fullWidth value={employeeData.workerRate} onChange={(e) => setEmployeeData({ ...employeeData, workerRate: e.target.value })} />
+                            <TextField label={uiText("Workers", 'forms')} type="number" fullWidth value={employeeData.workers} onChange={(e) => setEmployeeData({ ...employeeData, workers: e.target.value })} />
+                            <TextField label={uiText("Rate (₹/day)", 'forms')} type="number" fullWidth value={employeeData.workerRate} onChange={(e) => setEmployeeData({ ...employeeData, workerRate: e.target.value })} />
                         </Box>
-                        <TextField label="Overtime Cost (₹)" type="number" value={employeeData.overtime} onChange={(e) => setEmployeeData({ ...employeeData, overtime: e.target.value })} />
+                        <TextField label={uiText("Overtime Cost (₹)", 'forms')} type="number" value={employeeData.overtime} onChange={(e) => setEmployeeData({ ...employeeData, overtime: e.target.value })} />
                         <Paper sx={{ p: 2, bgcolor: 'background.default' }}>
-                            <Typography variant="h6" align="center">Total: ₹{employeeTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Typography>
+                            <Typography variant="h6" align="center">{uiText("Total: ₹")}{employeeTotal.toLocaleString(uiLocale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Typography>
                         </Paper>
                         <Box sx={{ display: 'flex', gap: 2 }}>
-                            <Button variant="contained" fullWidth startIcon={<SaveIcon />} onClick={handleEmployeeSubmit} disabled={saving || Boolean(existingEmployee?.posted)}>{existingEmployee ? (existingEmployee.posted ? 'Posted' : 'Update') : 'Save'}</Button>
+                            <Button variant="contained" fullWidth startIcon={<SaveIcon />} onClick={handleEmployeeSubmit} disabled={saving || Boolean(existingEmployee?.posted)}>{existingEmployee ? uiText(existingEmployee.posted ? 'Posted' : 'Update', 'forms') : uiText("Save")}</Button>
                         </Box>
                     </Box>
                 </TabPanel>
@@ -457,16 +461,15 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
                 {/* Packaging Tab */}
                 <TabPanel value={tabValue} index={2}>
                     <Box sx={{ maxWidth: 600, mx: 'auto', textAlign: 'center' }}>
-                        {existingPackaging && <Alert severity="info" sx={{ mb: 2 }}>{existingPackaging.posted ? POSTED_NOTE : 'This entry already exists and can be updated.'}</Alert>}
+                        {existingPackaging && <Alert severity="info" sx={{ mb: 2 }}>{existingPackaging.posted ? POSTED_NOTE : uiText("This entry already exists and can be updated.")}</Alert>}
                         {yarnProduction <= 0 && (
                             <Alert severity="warning" sx={{ mb: 2, textAlign: 'left' }}>
-                                No production data found for this date. Please ensure production entries are recorded before calculating packaging costs.
-                            </Alert>
+                                {uiText("No production data found for this date. Please ensure production entries are recorded before calculating packaging costs. ")}</Alert>
                         )}
                         <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 3 }}>
                             <Paper sx={{ p: 2 }}>
                                 <GlassDatePicker
-                                    label="Production Date"
+                                    label={uiText("Production Date", 'forms')}
                                     
                                     size="small"
                                     value={packagingDate}
@@ -475,12 +478,12 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
                                     fullWidth
                                     sx={{ mb: 2 }}
                                 />
-                                <Typography color="text.secondary" variant="caption">Total Yarn Produced</Typography>
-                                <Typography variant="h6" fontWeight="bold">{yarnProduction} kg</Typography>
+                                <Typography color="text.secondary" variant="caption">{uiText("Total Yarn Produced")}</Typography>
+                                <Typography variant="h6" fontWeight="bold">{yarnProduction} {uiText(" kg")}</Typography>
                             </Paper>
                             <Paper sx={{ p: 2 }}>
                                 <TextField
-                                    label="Package Rate (₹/kg)"
+                                    label={uiText("Package Rate (₹/kg)", 'forms')}
                                     type="number"
                                     value={packagingData.rate}
                                     onChange={(e) => setPackagingData({ ...packagingData, rate: e.target.value })}
@@ -490,9 +493,9 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
                                 />
                             </Paper>
                         </Box>
-                        <Typography variant="h4" color="primary" sx={{ mb: 3 }}>₹{packageCost.toFixed(2)}</Typography>
+                        <Typography variant="h4" color="primary" sx={{ mb: 3 }}>{uiText("₹")}{formatUiDecimal(packageCost, 2)}</Typography>
                         <Box sx={{ display: 'flex', gap: 2 }}>
-                            <Button variant="contained" fullWidth startIcon={<SaveIcon />} onClick={handlePackagingSubmit} disabled={saving || Boolean(existingPackaging?.posted)}>{existingPackaging ? (existingPackaging.posted ? 'Posted' : 'Update') : 'Confirm'}</Button>
+                            <Button variant="contained" fullWidth startIcon={<SaveIcon />} onClick={handlePackagingSubmit} disabled={saving || Boolean(existingPackaging?.posted)}>{existingPackaging ? uiText(existingPackaging.posted ? 'Posted' : 'Update', 'forms') : uiText("Confirm")}</Button>
                         </Box>
                     </Box>
                 </TabPanel>
@@ -500,17 +503,16 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
                 {/* Maintenance Tab */}
                 <TabPanel value={tabValue} index={3}>
                     <Box sx={{ maxWidth: 600, mx: 'auto', display: 'flex', flexDirection: 'column', gap: 2 }}>
-                        {existingMaintenance && <Alert severity="info" sx={{ mb: 2 }}>{existingMaintenance.posted ? POSTED_NOTE : 'This entry already exists and can be updated.'}</Alert>}
+                        {existingMaintenance && <Alert severity="info" sx={{ mb: 2 }}>{existingMaintenance.posted ? POSTED_NOTE : uiText("This entry already exists and can be updated.")}</Alert>}
                         {yarnProduction <= 0 && (
                             <Alert severity="warning" sx={{ mb: 2 }}>
-                                No production data found for this date. formula-based maintenance costs cannot be auto-calculated.
-                            </Alert>
+                                {uiText("No production data found for this date. formula-based maintenance costs cannot be auto-calculated. ")}</Alert>
                         )}
 
                         <Paper sx={{ p: 2, bgcolor: 'background.default' }}>
                             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 2 }}>
                                 <GlassDatePicker
-                                    label="Production Date"
+                                    label={uiText("Production Date", 'forms')}
                                     
                                     size="small"
                                     value={packagingDate}
@@ -520,22 +522,22 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
                                 />
                             </Box>
                             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                                <Typography fontWeight="bold">{yarnProduction} kg</Typography>
+                                <Typography fontWeight="bold">{yarnProduction} {uiText(" kg")}</Typography>
                                 <Typography variant="body2" color="text.secondary">×</Typography>
-                                <Typography fontWeight="bold">₹{maintenanceData.ratePerKg}</Typography>
+                                <Typography fontWeight="bold">{uiText("₹")}{maintenanceData.ratePerKg}</Typography>
                                 <Typography variant="body2" color="text.secondary">=</Typography>
-                                <Typography fontWeight="bold" color="primary">₹{maintenanceFormulaCost.toFixed(2)}</Typography>
+                                <Typography fontWeight="bold" color="primary">{uiText("₹")}{formatUiDecimal(maintenanceFormulaCost, 2)}</Typography>
                             </Box>
                         </Paper>
 
-                        <TextField label="Rate (₹/kg)" type="number" value={maintenanceData.ratePerKg} onChange={(e) => setMaintenanceData({ ...maintenanceData, ratePerKg: e.target.value })} />
-                        <TextField label="Description" value={maintenanceData.description} onChange={(e) => setMaintenanceData({ ...maintenanceData, description: e.target.value })} />
+                        <TextField label={uiText("Rate (₹/kg)", 'forms')} type="number" value={maintenanceData.ratePerKg} onChange={(e) => setMaintenanceData({ ...maintenanceData, ratePerKg: e.target.value })} />
+                        <TextField label={uiText("Description", 'forms')} value={maintenanceData.description} onChange={(e) => setMaintenanceData({ ...maintenanceData, description: e.target.value })} />
                         <Box sx={{ display: 'flex', gap: 1 }}>
-                            <TextField label="Total Cost" type="number" fullWidth value={maintenanceData.totalCost} onChange={(e) => setMaintenanceData({ ...maintenanceData, totalCost: e.target.value })} />
-                            <Button variant="outlined" onClick={() => setMaintenanceData({ ...maintenanceData, totalCost: maintenanceFormulaCost.toFixed(2) })}>Apply Formula</Button>
+                            <TextField label={uiText("Total Cost", 'forms')} type="number" fullWidth value={maintenanceData.totalCost} onChange={(e) => setMaintenanceData({ ...maintenanceData, totalCost: e.target.value })} />
+                            <Button variant="outlined" onClick={() => setMaintenanceData({ ...maintenanceData, totalCost: maintenanceFormulaCost.toFixed(2) })}>{uiText("Apply Formula")}</Button>
                         </Box>
                         <Box sx={{ display: 'flex', gap: 2 }}>
-                            <Button variant="contained" fullWidth startIcon={<SaveIcon />} onClick={handleMaintenanceSubmit} disabled={saving || Boolean(existingMaintenance?.posted)}>{existingMaintenance ? (existingMaintenance.posted ? 'Posted' : 'Update') : 'Save'}</Button>
+                            <Button variant="contained" fullWidth startIcon={<SaveIcon />} onClick={handleMaintenanceSubmit} disabled={saving || Boolean(existingMaintenance?.posted)}>{existingMaintenance ? uiText(existingMaintenance.posted ? 'Posted' : 'Update', 'forms') : uiText("Save")}</Button>
                         </Box>
                     </Box>
                 </TabPanel>
@@ -543,14 +545,14 @@ const CostingEntry: React.FC<CostingEntryProps> = ({ onSuccess, onItemSaved, ini
                 {/* Expense Tab */}
                 <TabPanel value={tabValue} index={4}>
                     <Box sx={{ maxWidth: 600, mx: 'auto', display: 'flex', flexDirection: 'column', gap: 2 }}>
-                        <TextField label="Title" value={expenseData.title} onChange={(e) => setExpenseData({ ...expenseData, title: e.target.value })} />
-                        <TextField select label="Type" value={expenseData.type} onChange={(e) => setExpenseData({ ...expenseData, type: e.target.value })}>
-                            <MenuItem value="Asset">Asset</MenuItem>
-                            <MenuItem value="Others">Others</MenuItem>
+                        <TextField label={uiText("Title", 'forms')} value={expenseData.title} onChange={(e) => setExpenseData({ ...expenseData, title: e.target.value })} />
+                        <TextField select label={uiText("Type", 'forms')} value={expenseData.type} onChange={(e) => setExpenseData({ ...expenseData, type: e.target.value })}>
+                            <MenuItem value="Asset">{uiText("Asset", 'forms')}</MenuItem>
+                            <MenuItem value="Others">{uiText("Others", 'forms')}</MenuItem>
                         </TextField>
-                        <TextField label="Amount" type="number" value={expenseData.amount} onChange={(e) => setExpenseData({ ...expenseData, amount: e.target.value })} />
-                        <TextField label="Description" multiline rows={3} value={expenseData.description} onChange={(e) => setExpenseData({ ...expenseData, description: e.target.value })} />
-                        <Button variant="contained" color="success" startIcon={<SaveIcon />} onClick={handleExpenseSubmit} disabled={saving}>Save Expense</Button>
+                        <TextField label={uiText("Amount", 'forms')} type="number" value={expenseData.amount} onChange={(e) => setExpenseData({ ...expenseData, amount: e.target.value })} />
+                        <TextField label={uiText("Description", 'forms')} multiline rows={3} value={expenseData.description} onChange={(e) => setExpenseData({ ...expenseData, description: e.target.value })} />
+                        <Button variant="contained" color="success" startIcon={<SaveIcon />} onClick={handleExpenseSubmit} disabled={saving}>{uiText("Save Expense")}</Button>
                     </Box>
                 </TabPanel>
             </Paper>

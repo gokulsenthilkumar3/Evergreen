@@ -7,11 +7,15 @@ const read = (name: string, fallback: string) => {
   }
 };
 export default function WorkspacePreferences() {
+  const [theme, setTheme] = useState(() => read("theme", "dark"));
   const [accent, setAccent] = useState(() => read("accent", "emerald"));
   const [density, setDensity] = useState(() => read("density", "comfortable"));
   const [motion, setMotion] = useState(() => read("motion", "system"));
   useEffect(() => {
     const root = document.documentElement;
+    root.dataset.studioTheme = ["dark", "light", "cinematic"].includes(theme)
+      ? theme
+      : "dark";
     root.dataset.ownerAccent = ["emerald", "sky", "violet"].includes(accent)
       ? accent
       : "emerald";
@@ -19,7 +23,12 @@ export default function WorkspacePreferences() {
       density === "compact" ? "compact" : "comfortable";
     root.dataset.ownerMotion = motion === "reduced" ? "reduced" : "system";
     try {
-      for (const [name, value] of Object.entries({ accent, density, motion }))
+      for (const [name, value] of Object.entries({
+        accent,
+        density,
+        motion,
+        theme,
+      }))
         localStorage.setItem(`evergreen-owner-${name}`, value);
     } catch {
       /* Preferences remain available for this visit. */
@@ -28,12 +37,24 @@ export default function WorkspacePreferences() {
       delete root.dataset.ownerAccent;
       delete root.dataset.ownerDensity;
       delete root.dataset.ownerMotion;
+      delete root.dataset.studioTheme;
     };
-  }, [accent, density, motion]);
+  }, [accent, density, motion, theme]);
   return (
     <details className="owner-preferences">
-      <summary>Workspace appearance</summary>
+      <summary>Appearance</summary>
       <div>
+        <label>
+          Theme
+          <select
+            value={theme}
+            onChange={(event) => setTheme(event.target.value)}
+          >
+            <option value="dark">Dark studio</option>
+            <option value="light">Light workspace</option>
+            <option value="cinematic">Cinematic</option>
+          </select>
+        </label>
         <label>
           Accent
           <select

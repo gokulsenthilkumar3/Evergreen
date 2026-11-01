@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage, uiLocale, uiDateLocale } from "../../i18n";
 import React, { useState } from 'react';
 import {
     Box, Typography, Paper, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
@@ -8,6 +9,7 @@ import { usePersist, fmtDate } from '../../hooks/usePersist';
 import { toast } from 'sonner';
 
 const TallySync: React.FC = () => {
+  useUiLanguage();
     const [isSyncing, setIsSyncing] = useState(false);
     const [lastSync, setLastSync] = useState(new Date().toISOString());
     const { items: syncLogs } = usePersist<any>('tally_sync_logs', []);
@@ -17,30 +19,30 @@ const TallySync: React.FC = () => {
         setTimeout(() => {
             setIsSyncing(false);
             setLastSync(new Date().toISOString());
-            toast.success('Successfully synced 42 vouchers to Tally ERP');
+            toast.success(uiText('Successfully synced 42 vouchers to Tally ERP', 'feedback'));
         }, 2500);
     };
 
     return (
         <Box>
             <Box sx={{ mb: 3 }}>
-                <Typography variant="h6" fontWeight={700}>Tally ERP Integration</Typography>
-                <Typography variant="body2" color="text.secondary">Seamlessly synchronize your ledgers, vouchers, and inventory with Tally</Typography>
+                <Typography variant="h6" fontWeight={700}>{uiText("Tally ERP Integration")}</Typography>
+                <Typography variant="body2" color="text.secondary">{uiText("Seamlessly synchronize your ledgers, vouchers, and inventory with Tally")}</Typography>
             </Box>
 
             <Grid container spacing={3}>
                 <Grid size={{ xs: 12, md: 6 }}>
                     <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid', borderColor: 'divider', height: '100%' }}>
-                        <Typography variant="subtitle2" fontWeight={700} gutterBottom>Connection Status</Typography>
+                        <Typography variant="subtitle2" fontWeight={700} gutterBottom>{uiText("Connection Status")}</Typography>
                         
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3, mt: 2 }}>
                             <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: 'success.main', boxShadow: '0 0 10px rgba(76,175,80,0.5)' }} />
-                            <Typography fontWeight={600} color="success.main">Connected to Tally Prime</Typography>
+                            <Typography fontWeight={600} color="success.main">{uiText("Connected to Tally Prime")}</Typography>
                         </Box>
                         
-                        <Typography variant="body2" color="text.secondary" gutterBottom>Last Synced:</Typography>
+                        <Typography variant="body2" color="text.secondary" gutterBottom>{uiText("Last Synced:")}</Typography>
                         <Typography variant="body1" fontWeight={600} sx={{ mb: 3 }}>
-                            {new Date(lastSync).toLocaleString()}
+                            {new Date(lastSync).toLocaleString(uiLocale())}
                         </Typography>
 
                         <Button 
@@ -50,7 +52,7 @@ const TallySync: React.FC = () => {
                             onClick={handleSync}
                             disabled={isSyncing}
                         >
-                            {isSyncing ? 'Syncing...' : 'Sync Now'}
+                            {isSyncing ? uiText("Syncing...") : uiText("Sync Now")}
                         </Button>
                         {isSyncing && <LinearProgress sx={{ mt: 2, borderRadius: 2 }} />}
                     </Paper>
@@ -59,29 +61,28 @@ const TallySync: React.FC = () => {
                 <Grid size={{ xs: 12, md: 6 }}>
                     <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', height: '100%', overflow: 'hidden' }}>
                         <Box sx={{ px: 2, py: 1.5, borderBottom: '1px solid', borderColor: 'divider', bgcolor: 'action.hover' }}>
-                            <Typography variant="subtitle2" fontWeight={700}>Recent Sync Activity</Typography>
+                            <Typography variant="subtitle2" fontWeight={700}>{uiText("Recent Sync Activity")}</Typography>
                         </Box>
                         <TableContainer sx={{ maxHeight: 300 }}>
                             <Table size="small" stickyHeader>
                                 <TableHead>
                                     <TableRow>
-                                        <TableCell>Time</TableCell>
-                                        <TableCell>Entity</TableCell>
-                                        <TableCell>Records</TableCell>
-                                        <TableCell>Status</TableCell>
+                                        <TableCell>{uiText("Time", 'tables')}</TableCell>
+                                        <TableCell>{uiText("Entity", 'tables')}</TableCell>
+                                        <TableCell>{uiText("Records", 'tables')}</TableCell>
+                                        <TableCell>{uiText("Status", 'tables')}</TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
                                     {syncLogs.length === 0 && (
                                         <TableRow>
                                             <TableCell colSpan={4} align="center" sx={{ py: 4, color: 'text.disabled' }}>
-                                                No recent sync activity.
-                                            </TableCell>
+                                                {uiText("No recent sync activity. ", 'tables')}</TableCell>
                                         </TableRow>
                                     )}
                                     {syncLogs.map((log: any) => (
                                         <TableRow hover key={log.id}>
-                                            <TableCell>{new Date(log.time).toLocaleTimeString()}</TableCell>
+                                            <TableCell>{new Date(log.time).toLocaleTimeString(uiDateLocale())}</TableCell>
                                             <TableCell>{log.entity}</TableCell>
                                             <TableCell>{log.records}</TableCell>
                                             <TableCell>

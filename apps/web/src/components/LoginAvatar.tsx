@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage } from "../i18n";
 import React, { useRef, useMemo, Suspense } from 'react';
 import { Box, useMediaQuery, useTheme } from '@mui/material';
 import { Canvas, useFrame } from '@react-three/fiber';
@@ -22,6 +23,7 @@ interface LoginAvatarProps {
 
 // --- CUSTOM IRIDESCENT SHADER ---
 const IridescentMaterial = () => {
+  useUiLanguage();
     const materialRef = useRef<THREE.ShaderMaterial>(null);
 
     useFrame((state: RootState) => {
@@ -65,6 +67,7 @@ const IridescentMaterial = () => {
 
 // --- CHARACTER COMPONENT ---
 const Character = ({ isPasswordFocused, isLoading, hasError }: Partial<LoginAvatarProps>) => {
+  useUiLanguage();
     const group = useRef<THREE.Group>(null);
     const eyesRef = useRef<THREE.Group>(null);
     const theme = useTheme();
@@ -173,6 +176,7 @@ const Character = ({ isPasswordFocused, isLoading, hasError }: Partial<LoginAvat
 };
 
 const LoginAvatar: React.FC<LoginAvatarProps> = (props: LoginAvatarProps) => {
+  useUiLanguage();
     const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
     const theme = useTheme();
     const compact = props.compact ?? false;

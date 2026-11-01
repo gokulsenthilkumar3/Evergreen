@@ -1,20 +1,39 @@
 import AiAssistant from '../../../packages/portal-ui/AiAssistant';
 import MarketingSettings from './MarketingSettings';
 import DatabaseWorkspace from './DatabaseWorkspace';
+import CustomerApiConsole from './CustomerApiConsole';
+import OperationsOverview from './OperationsOverview';
+import RecordedServices from './RecordedServices';
+import './overview.css';
 import WorkspacePreferences from './WorkspacePreferences';
 import ProviderAccessGate from './ProviderAccessGate';
 import InstallationGate from './InstallationGate';
 import { useEffect, useState, useMemo, useRef } from 'react';
 import './App.css';
 import './layout.css';
+import './motion.css';
+import './redesign/redesign.css';
+import './studio.css';
+import './comment-motion.css';
+import SceneGallery from './redesign/SceneGallery';
+import EnvPill from './redesign/EnvPill';
+import OperationTools from './redesign/OperationTools';
+import ProofBadge from './redesign/ProofBadge';
+import ProofLedger from './redesign/ProofLedger';
+import DataExplorer from './redesign/DataExplorer';
+import Inspector from './redesign/Inspector';
+import type { Inspection } from './redesign/Inspector';
+import CommandPalette from './redesign/CommandPalette';
+import Topology from './redesign/Topology';
+import CapabilityView from './redesign/CapabilityView';
 import { WorkspaceIcon } from './WorkspaceIcon';
 import { AdminModal } from './AdminModal';
 import {
-  CONNECTORS,
   money,
+  STATES,
   uid
 } from './control-data';
-import type { RecordItem, Connector } from './control-data';
+import type { RecordItem, Kind } from './control-data';
 
 /* ─────────────────────────────────────────────────────────────────────────── */
 /*  TYPE DEFINITIONS                                                           */
@@ -112,7 +131,7 @@ export type TabId =
   | 'AI_AGENT'
   | 'CHAT'
   | 'SCRIPTS'
-  | 'LOGS';
+  | 'LOGS' | 'PROOF' | 'TOPOLOGY' | 'PROVISIONING' | 'ACCESS' | 'KEYS' | 'BACKUPS' | 'SLOS' | 'EXPLORER' | 'JOBS';
 
 type NavCategory = 'ALL' | 'CORE' | 'CLOUD' | 'CONNECTIVITY' | 'FINANCE' | 'INTELLIGENCE';
 
@@ -150,12 +169,19 @@ function planColor(plan: string): string {
 /* ─────────────────────────────────────────────────────────────────────────── */
 /*  SAMPLE RECENT ACTIVITY LOGS                                                */
 /* ─────────────────────────────────────────────────────────────────────────── */
-const SAMPLE_ACTIVITY: Array<{ dot: string; msg: string; time: string }> = [];
 
 /* ─────────────────────────────────────────────────────────────────────────── */
 /*  MAIN APP COMPONENT                                                          */
 /* ─────────────────────────────────────────────────────────────────────────── */
 function App() {
+  const [inspection, setInspection] = useState<Inspection | null>(null);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [rollbackTarget,setRollbackTarget]=useState<string|null>(null);
+  const closeInspection = useMemo(() => () => setInspection(null), []);
+  useEffect(() => {
+    const listener = (event: KeyboardEvent) => { if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); setPaletteOpen(open => !open); } };
+    window.addEventListener('keydown', listener); return () => window.removeEventListener('keydown', listener);
+  }, []);
   const [activeCategory, setActiveCategory] = useState<NavCategory>('ALL');
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const mainRef = useRef<HTMLElement>(null);
@@ -163,6 +189,7 @@ function App() {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [records, setRecords] = useState<RecordItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lastDataResponse, setLastDataResponse] = useState('');
   const [actionMessage, setActionMessage] = useState<string | null>(null);
 
   // CI/CD states
@@ -176,16 +203,6 @@ function App() {
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
-  // Customizable Dashboard Widget Toggles
-  const [widgets, setWidgets] = useState({
-    kpis: true,
-    alerts: true,
-    charts: true,
-    clusters: true,
-    activity: true,
-    fraudMonitor: true,
-    aiHealth: true,
-  });
 
   // Modals
   const [activeModalCompany, setActiveModalCompany] = useState<Company | null>(null);
@@ -223,17 +240,6 @@ function App() {
   const [pricingModel, setPricingModel] = useState('TIERED');
 
   // Integrations state
-  const [connectorCategory, setConnectorCategory] = useState<string>('ALL');
-  const [connectorSearch, setConnectorSearch] = useState<string>('');
-  const [selectedConnector, setSelectedConnector] = useState<Connector | null>(null);
-  const [pingStatus, setPingStatus] = useState<Record<string, { status: string; pingMs: number }>>({
-    github: { status: 'CONNECTED', pingMs: 18 },
-    gcp: { status: 'CONNECTED', pingMs: 24 },
-    razorpay: { status: 'CONNECTED', pingMs: 31 },
-    whatsapp: { status: 'CONNECTED', pingMs: 42 },
-    openai: { status: 'CONNECTED', pingMs: 65 },
-    tally: { status: 'CONNECTED', pingMs: 8 },
-  });
 
   // Terminal & Bash Executor state
   const [terminalHistory, setTerminalHistory] = useState<string[]>([
@@ -245,20 +251,17 @@ function App() {
   // ChatOps state
   const [chatChannel, setChatChannel] = useState<string>('operations');
   const [chatInput, setChatInput] = useState<string>('');
-  const [chatMessages, setChatMessages] = useState<Array<{ id: string; channel: string; user: string; role: string; text: string; time: string }>>([
-    { id: '1', channel: 'operations', user: 'Priya N.', role: 'Success Lead', text: 'Kavitha Cotton Mills accountant accepted the tare-deduction reconciliation matrix.', time: '10:42 AM' },
-    { id: '2', channel: 'operations', user: 'Arun K.', role: 'Infra Lead', text: 'v1.2.4-lts canary rollout in progress for Selvam Spinning on GCP Cloud Run.', time: '11:15 AM' },
-    { id: '3', channel: 'weighbridge-triage', user: 'Field Desk', role: 'Hardware Ops', text: 'Weighbridge RS-232 indicator at Sri Murugan Handlooms calibrated to 10kg TareZero threshold.', time: '11:30 AM' },
-    { id: '4', channel: 'renewals-desk', user: 'Meera S.', role: 'Finance', text: 'Waiting for NEFT UTR proof from Sri Lakshmi Cottons (₹89,990 upfront annual).', time: '12:05 PM' },
-  ]);
+  const chatMessages = useMemo(() => records.filter(r => r.kind === 'CHAT').map(r => ({ id: r.id, channel: String(r.payload.channel || 'operations'), user: r.owner, role: 'Provider operator', text: String(r.payload.message || r.title), time: new Date(r.createdAt).toLocaleString() })), [records]);
 
   // Modals for Record details
-  const [activeRecordModal, setActiveRecordModal] = useState<RecordItem | null>(null);
+  const setActiveRecordModal = (record:RecordItem) => setInspection({id:record.id,title:record.title,type:record.kind,proof:record.proof,data:record,at:record.updatedAt});
   const [showNewRecordModal, setShowNewRecordModal] = useState<boolean>(false);
   const [newRecordKind, setNewRecordKind] = useState<string>('TASK');
   const [newRecordTitle, setNewRecordTitle] = useState<string>('');
   const [newRecordOwner, setNewRecordOwner] = useState<string>('Evergreen Ops');
   const [newRecordPriority, setNewRecordPriority] = useState<string>('NORMAL');
+  const [newRecordPayload, setNewRecordPayload] = useState('{}');
+  const [savingRecord, setSavingRecord] = useState(false);
 
   const adminApiBase = (import.meta as any).env?.VITE_ADMIN_API_URL || '/admin-api';
   const authFetch = (input: RequestInfo | URL, init?: RequestInit) => {
@@ -279,6 +282,7 @@ function App() {
       const res = await authFetch(`${adminApiBase}/companies`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setCompanies(await res.json());
+      setLastDataResponse(new Date().toISOString());
       reportDataError('Mills');
     } catch {
       reportDataError('Mills', 'Mill data is unavailable. Previously loaded data may be stale.');
@@ -320,9 +324,11 @@ function App() {
     fetchRecords();
     fetchCicdData();
     const interval = setInterval(() => {
+      if (document.hidden) return;
+      fetchCompanies();
       fetchCicdData();
       fetchRecords();
-    }, 5000);
+    }, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -512,14 +518,6 @@ function App() {
     }
   };
 
-  const handleTestPing = (connId: string) => {
-    const lat = Math.floor(Math.random() * 35) + 12;
-    setPingStatus(prev => ({
-      ...prev,
-      [connId]: { status: 'CONNECTED', pingMs: lat },
-    }));
-    showMsg(`⚡ Ping to ${connId.toUpperCase()}: 200 OK (${lat}ms latency)`);
-  };
 
   // Every line printed here must come from a provider API response or say plainly
   // that nothing ran. Never report an operation that was not performed (UI-003).
@@ -592,19 +590,16 @@ function App() {
     setTerminalHistory(prev => [...prev, `$ ${cmd}`, ...output]);
   };
 
-  const handleSendChat = (e: React.FormEvent) => {
+  const handleSendChat = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!chatInput.trim()) return;
-    const newMsg = {
-      id: uid(),
-      channel: chatChannel,
-      user: 'You (Mission Control)',
-      role: 'Provider Admin',
-      text: chatInput.trim(),
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    };
-    setChatMessages(prev => [...prev, newMsg]);
-    setChatInput('');
+    if (!chatInput.trim() || savingRecord) return;
+    setSavingRecord(true);
+    try {
+      const response = await authFetch(adminApiBase + '/control/records', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ kind: 'CHAT', title: chatInput.trim().slice(0,200), payload: { channel: chatChannel, message: chatInput.trim() }, status: 'POSTED', requestKey: uid() }) });
+      if (!response.ok) throw new Error('Chat message could not be saved');
+      const saved = await response.json(); setRecords(prev => [saved,...prev]); setChatInput('');
+    } catch(e) { showMsg(e instanceof Error ? e.message : 'Chat save failed'); }
+    finally { setSavingRecord(false); }
   };
 
   /* ──── COMPUTED METRICS ──── */
@@ -625,19 +620,12 @@ function App() {
     const totalDocsPosted = companies.reduce((acc, c) => acc + (c.docsPosted || 0), 0);
     const totalMaxDocs = companies.reduce((acc, c) => acc + (c.maxDocsPerMonth || 0), 0);
 
-    const estimatedArr = companies.reduce((acc, c) => {
-      if (c.plan === 'ENTERPRISE') return acc + 289990;
-      if (c.plan === 'SCALE') return acc + 169990;
-      if (c.plan === 'GROWTH') return acc + 89990;
-      if (c.plan === 'GATEKEEPER') return acc + 39990;
-      return acc + 49990;
-    }, 0);
 
     return {
       totalMills, activeMills, graceMills, suspendedMills,
       gcpCount, awsCount, azureCount, vmCount,
       totalStaff, totalMaxUsers, totalMachines,
-      totalDocsPosted, totalMaxDocs, estimatedArr,
+      totalDocsPosted, totalMaxDocs,
     };
   }, [companies]);
 
@@ -653,47 +641,35 @@ function App() {
     [companies, cloudFilter, statusFilter, searchQuery]
   );
 
-  /* ──── DONUT CHART HELPERS ──── */
-  function buildDonutSegments(data: { value: number; color: string }[]) {
-    const total = data.reduce((s, d) => s + d.value, 0) || 1;
-    const circumference = 2 * Math.PI * 38;
-    let offset = 0;
-    return data.map(d => {
-      const pct = d.value / total;
-      const dash = pct * circumference;
-      const seg = { ...d, dash, gap: circumference - dash, offset };
-      offset += dash;
-      return seg;
-    });
-  }
-
-  const cloudDistData = [
-    { value: metrics.gcpCount, color: '#EF4444', label: 'Google Cloud (GCP)' },
-    { value: metrics.awsCount, color: '#F97316', label: 'Amazon Web Services' },
-    { value: metrics.azureCount, color: '#38BDF8', label: 'Microsoft Azure' },
-    { value: metrics.vmCount, color: '#94A3B8', label: 'On-Premise Linux VM' },
-  ];
-  const cloudSegments = buildDonutSegments(cloudDistData);
 
   /* ──── MODULE TABS CONFIG ──── */
   const MODULE_TABS: { id: TabId; label: string; cat: NavCategory; badge?: string; badgeColor?: string }[] = [
-    { id: 'DASHBOARD', label: 'Overview', cat: 'CORE', badge: 'LIVE', badgeColor: 'cyan' },
-    { id: 'TENANTS', label: 'Spinning mills', cat: 'CORE', badge: String(companies.length), badgeColor: '' },
-    { id: 'TASKS', label: 'Tasks', cat: 'CORE', badge: String(records.filter(r => r.kind === 'TASK').length), badgeColor: '' },
-    { id: 'DEPLOYMENTS', label: 'Deployments', cat: 'CLOUD', badge: String(deployments.length), badgeColor: '' },
+    { id: 'DASHBOARD', label: 'Command deck', cat: 'CORE', badge: '', badgeColor: 'cyan' },
+    { id: 'TENANTS', label: 'Companies', cat: 'CORE', badge: String(companies.length), badgeColor: '' },
+    { id: 'TASKS', label: 'Workboard', cat: 'CORE', badge: String(records.filter(r => r.kind === 'TASK').length), badgeColor: '' },
+    { id: 'DEPLOYMENTS', label: 'Rollouts', cat: 'CLOUD', badge: String(deployments.length), badgeColor: '' },
     { id: 'PACKAGES', label: 'Release registry', cat: 'CLOUD', badge: String(packages.length), badgeColor: '' },
-    { id: 'DATABASES', label: 'Database studio', cat: 'CLOUD', badge: 'SQLITE', badgeColor: 'emerald' },
-    { id: 'MARKETING_SETTINGS', label: 'Marketing settings', cat: 'CORE' },
+    { id: 'DATABASES', label: 'Storage', cat: 'CLOUD', badge: '', badgeColor: 'emerald' },
+    { id: 'MARKETING_SETTINGS', label: 'Public site', cat: 'CORE' },
     { id: 'MAINTENANCE', label: 'Maintenance', cat: 'CLOUD', badge: String(records.filter(r => r.kind === 'MAINTENANCE').length), badgeColor: '' },
-    { id: 'INTEGRATIONS', label: 'Integrations', cat: 'CONNECTIVITY', badge: `${CONNECTORS.length} EXT`, badgeColor: 'cyan' },
-    { id: 'APIS', label: 'API management', cat: 'CONNECTIVITY', badge: '7 EP', badgeColor: '' },
-    { id: 'WEBHOOKS', label: 'Webhooks', cat: 'CONNECTIVITY', badge: 'LIVE', badgeColor: 'emerald' },
-    { id: 'PAYMENTS', label: 'Payments', cat: 'FINANCE', badge: String(records.filter(r => r.kind === 'PAYMENT').length), badgeColor: '' },
-    { id: 'AGREEMENTS', label: 'Agreements', cat: 'FINANCE', badge: String(records.filter(r => r.kind === 'AGREEMENT').length), badgeColor: '' },
-    { id: 'AI_AGENT', label: 'AI studio', cat: 'INTELLIGENCE', badge: 'COPILOT', badgeColor: 'purple' },
-    { id: 'CHAT', label: 'ChatOps', cat: 'INTELLIGENCE', badge: String(chatMessages.length), badgeColor: '' },
-    { id: 'SCRIPTS', label: 'Ops terminal', cat: 'INTELLIGENCE', badge: 'CLI', badgeColor: 'cyan' },
-    { id: 'LOGS', label: 'Console logs', cat: 'INTELLIGENCE', badge: String(logs.length), badgeColor: '' },
+    { id: 'INTEGRATIONS', label: 'Connectors', cat: 'CONNECTIVITY', badge: String(records.filter(r => r.kind === 'INTEGRATION').length), badgeColor: 'cyan' },
+    { id: 'APIS', label: 'Telemetry', cat: 'CONNECTIVITY', badge: '', badgeColor: '' },
+    { id: 'WEBHOOKS', label: 'Event delivery', cat: 'CONNECTIVITY', badge: String(records.filter(r => r.kind === 'WEBHOOK').length), badgeColor: '' },
+    { id: 'PAYMENTS', label: 'Billing ledger', cat: 'FINANCE', badge: String(records.filter(r => r.kind === 'PAYMENT').length), badgeColor: '' },
+    { id: 'AGREEMENTS', label: 'Contracts', cat: 'FINANCE', badge: String(records.filter(r => r.kind === 'AGREEMENT').length), badgeColor: '' },
+    { id: 'AI_AGENT', label: 'Copilot', cat: 'INTELLIGENCE', badge: 'COPILOT', badgeColor: 'purple' },
+    { id: 'CHAT', label: 'Channels', cat: 'INTELLIGENCE', badge: String(chatMessages.length), badgeColor: '' },
+    { id: 'SCRIPTS', label: 'Diagnostics', cat: 'INTELLIGENCE', badge: 'CLI', badgeColor: 'cyan' },
+    { id: 'PROOF', label: 'Proof & audit', cat: 'CORE' },
+    { id: 'TOPOLOGY', label: 'Topology', cat: 'CLOUD' },
+    { id: 'PROVISIONING', label: 'Provisioning', cat: 'CLOUD' },
+    { id: 'ACCESS', label: 'Access & roles', cat: 'INTELLIGENCE' },
+    { id: 'KEYS', label: 'Keys & secrets', cat: 'INTELLIGENCE' },
+    { id: 'BACKUPS', label: 'Backups & recovery', cat: 'CLOUD' },
+    { id: 'SLOS', label: 'Monitoring & SLOs', cat: 'CONNECTIVITY' },
+    { id: 'EXPLORER', label: 'Data explorer', cat: 'CLOUD' },
+    { id: 'JOBS', label: 'Job queue', cat: 'CLOUD' },
+    { id: 'LOGS', label: 'Log stream', cat: 'INTELLIGENCE', badge: String(logs.length), badgeColor: '' },
   ];
 
   const visibleTabs = useMemo(() => {
@@ -714,10 +690,10 @@ function App() {
           <BrandLogo />
           <div className="brand-copy">
             <div className="brand-h1">
-              EverGreen Mission Control
+              EverGreen
               <span className="control-plane-badge">PROVIDER PLANE</span>
             </div>
-            <span className="brand-tag">Provider operations · v1.2.4-lts</span>
+            <span className="brand-tag">PROVIDER / EVIDENCE WORKSPACE</span>
           </div>
         </div>
 
@@ -726,22 +702,24 @@ function App() {
           {mobileNavOpen ? 'Close' : 'Modules'}
         </button>
 
+        <button className="command-trigger" onClick={() => setPaletteOpen(true)}><span>Search the workspace…</span><kbd>Ctrl K</kbd></button>
+        <EnvPill apiBase={adminApiBase} />
         <div className="top-bar-stats">
           <div className="top-stat-item">
             <span className="top-stat-label">Active Mills</span>
             <span className="top-stat-value text-emerald">{metrics.activeMills}/{metrics.totalMills}</span>
           </div>
           <div className="top-stat-item">
-            <span className="top-stat-label">Multi-Cloud ARR</span>
-            <span className="top-stat-value">₹{(metrics.estimatedArr / 100000).toFixed(1)}L</span>
+            <span className="top-stat-label">Reported staff</span>
+            <span className="top-stat-value">{metrics.totalStaff}</span>
           </div>
           <div className="top-stat-item">
-            <span className="top-stat-label">TareZero Edge</span>
-            <span className="top-stat-value text-cyan">ONLINE</span>
+            <span className="top-stat-label">Customer sync</span>
+            <span className="top-stat-value text-cyan">{companies.filter(c => c.lastSyncAt).length}/{companies.length} received</span>
           </div>
           <div className="top-stat-item">
             <span className="top-stat-label">Cluster Release</span>
-            <span className="top-stat-value font-mono">v1.2.4-lts</span>
+            <span className="top-stat-value font-mono">{packages[0]?.version || 'Not reported'}</span>
           </div>
         </div>
 
@@ -771,9 +749,9 @@ function App() {
         </div>
       )}
 
-      <div className="admin-workspace">
+      <div className="admin-workspace" data-inspector-open={!!inspection}>
       <aside id="workspace-navigation" className={`admin-sidebar ${mobileNavOpen ? 'is-open' : ''}`}>
-        <div className="sidebar-heading"><strong>Workspace</strong><span>16 modules</span></div>
+        <div className="sidebar-heading"><strong>Workspace</strong><span>{MODULE_TABS.length} modules</span></div>
         <label className="sidebar-category">
           Module group
           <select value={activeCategory} onChange={event => setActiveCategory(event.target.value as NavCategory)}>
@@ -786,9 +764,12 @@ function App() {
           </select>
         </label>
         <nav className="admin-nav-bar" aria-label="Provider modules">
-          {visibleTabs.map(tab => (
+          {([['CORE','OPERATE'],['CLOUD','INFRASTRUCTURE'],['CONNECTIVITY','CONNECTIVITY'],['FINANCE','FINANCE & LEGAL'],['INTELLIGENCE','TOOLS & GOVERNANCE']] as const).filter(([category]) => visibleTabs.some(tab => tab.cat === category)).map(([category,label]) => (
+            <div className="studio-nav-group" key={category}><div className="studio-nav-group-label">{label}</div>
+            {visibleTabs.filter(tab => tab.cat === category).map(tab => (
             <button
               key={tab.id}
+              title={tab.label}
               className={`nav-tab-btn ${activeTab === tab.id ? 'active' : ''}`}
               aria-current={activeTab === tab.id ? 'page' : undefined}
               onClick={() => {
@@ -801,14 +782,14 @@ function App() {
               <span className="nav-label">{tab.label}</span>
               {tab.badge && <span className={`tab-badge ${tab.badgeColor || ''}`}>{tab.badge}</span>}
             </button>
-          ))}
+          ))}</div>))}
         </nav>
         <div className="sidebar-footer">EverGreen · Provider workspace</div>
       </aside>
 
       {/* ── MAIN VIEWPORT ── */}
-      <WorkspacePreferences />
       <main id="workspace-main" ref={mainRef} tabIndex={-1} className="admin-main-viewport">
+        <WorkspacePreferences />
         {Object.entries(dataErrors).filter(([, message]) => message).map(([section, message]) => (
           <p key={section} role="alert">{message}</p>
         ))}
@@ -817,7 +798,7 @@ function App() {
           <div className="loading-state">
             <div className="loading-spinner" />
             <p style={{ color: 'var(--adm-muted)', fontSize: '0.9rem' }}>
-              Loading multi-cloud tenant telemetry...
+              Reading provider records…
             </p>
           </div>
         ) : (
@@ -825,314 +806,20 @@ function App() {
             {/* ═══════════════════════════════════════════════════════════════
                 TAB 1: EXECUTIVE DASHBOARD (CUSTOMIZABLE)
                 ═══════════════════════════════════════════════════════════════ */}
-            {activeTab === 'DASHBOARD' && (
-              <div className="dashboard-grid">
-                <div className="page-toolbar"><div><h1 className="page-title">Operations overview</h1><p className="page-description">Your mills, cloud infrastructure, and operational activity in one place.</p></div></div>
-
-                {/* DASHBOARD CUSTOMIZATION TOOLBAR */}
-                <details className="dash-customize-bar">
-                  <summary>Customize overview · choose visible widgets</summary>
-                  <div className="dash-widget-toggles">
-                    {Object.entries({
-                      kpis: 'Topline KPIs',
-                      alerts: 'Grace Watch',
-                      charts: 'Multi-Cloud Donut',
-                      clusters: 'Regional Clusters',
-                      activity: 'Activity Stream',
-                      fraudMonitor: 'TareZero Weighbridge',
-                      aiHealth: 'AI Copilot Ops',
-                    }).map(([key, title]) => (
-                      <button
-                        key={key}
-                        className={`dash-widget-toggle-btn ${widgets[key as keyof typeof widgets] ? 'active' : ''}`}
-                        aria-pressed={widgets[key as keyof typeof widgets]}
-                        onClick={() => setWidgets(prev => ({ ...prev, [key]: !prev[key as keyof typeof widgets] }))}
-                      >
-                        {widgets[key as keyof typeof widgets] ? '✓ ' : '+ '} {title}
-                      </button>
-                    ))}
-                  </div>
-                </details>
-
-                {/* KPI CARDS */}
-                {widgets.kpis && (
-                  <div className="topline-kpi-deck">
-                    <div className="glass-panel kpi-card emerald">
-                      <div className="kpi-header">
-                        <span className="kpi-title">Managed Spinning Mills</span>
-                        <span className="kpi-icon">🏢</span>
-                      </div>
-                      <div className="kpi-value">{metrics.totalMills}</div>
-                      <div className="kpi-subtext">
-                        <strong className="text-emerald">{metrics.activeMills} Active</strong>
-                        &nbsp;·&nbsp;{metrics.graceMills > 0 ? `${metrics.graceMills} Grace` : 'All Compliant'}
-                        &nbsp;·&nbsp;~140K Spindles
-                      </div>
-                    </div>
-
-                    <div className="glass-panel kpi-card">
-                      <div className="kpi-header">
-                        <span className="kpi-title">Annual Run Rate (ARR)</span>
-                        <span className="kpi-icon">💰</span>
-                      </div>
-                      <div className="kpi-value">₹{(metrics.estimatedArr / 100000).toFixed(1)}L</div>
-                      <div className="kpi-subtext">
-                        <strong>Upfront Collection</strong>
-                        &nbsp;·&nbsp;₹{metrics.totalMills > 0 ? (metrics.estimatedArr / metrics.totalMills / 100000).toFixed(1) : '0'}L Avg ACV
-                      </div>
-                    </div>
-
-                    <div className="glass-panel kpi-card amber">
-                      <div className="kpi-header">
-                        <span className="kpi-title">Cotton Inward Weighed</span>
-                        <span className="kpi-icon">⚖️</span>
-                      </div>
-                      <div className="kpi-value">14,820 T</div>
-                      <div className="kpi-subtext">
-                        <strong className="text-amber">TareZero Protected</strong>
-                        &nbsp;·&nbsp;₹18.4L Fraud Caught
-                      </div>
-                    </div>
-
-                    <div className="glass-panel kpi-card purple">
-                      <div className="kpi-header">
-                        <span className="kpi-title">Multi-Cloud Uptime SLA</span>
-                        <span className="kpi-icon">☁️</span>
-                      </div>
-                      <div className="kpi-value">99.98%</div>
-                      <div className="kpi-subtext">
-                        GCP · AWS · Azure · Local VM
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* GRACE WATCH ALERT */}
-                {widgets.alerts && metrics.graceMills > 0 && (
-                  <div className="grace-watch-card">
-                    <div className="grace-watch-left">
-                      <div className="grace-watch-icon">⚠️</div>
-                      <div className="grace-watch-text">
-                        <h4>7-Day Grace Quota Watch — {metrics.graceMills} Tenant(s) Pending Renewal</h4>
-                        <p>
-                          Factory operations remain 100% active during grace. Unblock instantly upon UTR verification
-                          by reviewing and saving their license settings.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="grace-watch-actions">
-                      <button
-                        className="btn-reactivate-lightning"
-                        onClick={() => {
-                          const graceComp = companies.find(c => c.status === 'GRACE_PERIOD');
-                          if (graceComp) setReactivateTargetCompany(graceComp);
-                        }}
-                      >
-                        Review license renewal
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {/* CHARTS ROW */}
-                {widgets.charts && (
-                  <div className="charts-dual-row">
-                    {/* Multi-Cloud Donut Chart */}
-                    <div className="glass-panel chart-card">
-                      <div className="chart-card-header">
-                        <h3>☁️ Multi-Cloud Deployment Distribution</h3>
-                        <span className="chart-card-tag">HYBRID ISOLATION</span>
-                      </div>
-                      <div className="donut-chart-container">
-                        <div className="donut-svg-wrapper">
-                          <svg viewBox="0 0 100 100" style={{ transform: 'rotate(-90deg)', width: '100%', height: '100%' }}>
-                            {cloudSegments.map((seg, i) => (
-                              <circle
-                                key={i}
-                                cx="50" cy="50" r="38"
-                                fill="transparent"
-                                stroke={seg.color}
-                                strokeWidth="11"
-                                strokeDasharray={`${seg.dash} ${seg.gap}`}
-                                strokeDashoffset={-seg.offset}
-                                strokeLinecap="round"
-                              />
-                            ))}
-                            <circle cx="50" cy="50" r="28" fill="#080e1c" />
-                          </svg>
-                          <div className="donut-center-label">
-                            <div className="donut-center-number">{metrics.totalMills}</div>
-                            <div className="donut-center-sub">Nodes</div>
-                          </div>
-                        </div>
-                        <div className="chart-legend-vertical">
-                          {cloudDistData.map((d, i) => (
-                            <div className="legend-item" key={i}>
-                              <div className="legend-left">
-                                <span className="legend-color-dot" style={{ background: d.color }} />
-                                <span style={{ color: 'var(--adm-text)', fontSize: '0.78rem' }}>{d.label}</span>
-                              </div>
-                              <span className="legend-right">
-                                {d.value} ({metrics.totalMills ? Math.round((d.value / metrics.totalMills) * 100) : 0}%)
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Quota Capacity Monitors */}
-                    <div className="glass-panel chart-card">
-                      <div className="chart-card-header">
-                        <h3>⚡ Global Quota Capacity Utilization</h3>
-                        <span className="chart-card-tag">NETWORK USAGE</span>
-                      </div>
-                      <div className="quota-meters-list">
-                        {[
-                          { icon: '👥', label: 'Licensed User Seats', used: metrics.totalStaff, max: metrics.totalMaxUsers || 100, color: 'emerald' },
-                          { icon: '⚙️', label: 'Connected Machines & Spindles', used: 180, max: metrics.totalMachines || 200, color: 'cyan' },
-                          { icon: '📜', label: 'Monthly Document Volume', used: metrics.totalDocsPosted, max: metrics.totalMaxDocs || 20000, color: 'amber' },
-                          { icon: '📑', label: 'Tally Prime XML Bridge Sync', used: 100, max: 100, color: 'purple' },
-                        ].map((m, i) => {
-                          const pct = m.max ? Math.min(100, Math.round((m.used / m.max) * 100)) : 0;
-                          return (
-                            <div className="quota-meter-item" key={i}>
-                              <div className="quota-meter-labels">
-                                <span className="quota-meter-title">
-                                  <span>{m.icon}</span> {m.label}
-                                </span>
-                                <span className="quota-meter-numbers">
-                                  <strong>{m.used.toLocaleString()}</strong>
-                                  {' / '}{m.max.toLocaleString()}
-                                  {' '}({pct}%)
-                                </span>
-                              </div>
-                              <div className="meter-track">
-                                <div className={`meter-fill ${m.color}`} style={{ width: `${pct}%` }} />
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* WEIGHBRIDGE FRAUD & ARR DECK (CUSTOM WIDGETS) */}
-                <div className="charts-dual-row">
-                  {widgets.fraudMonitor && (
-                    <div className="glass-panel chart-card">
-                      <div className="chart-card-header">
-                        <h3>⚖️ TareZero Weighbridge Anti-Fraud Engine</h3>
-                        <span className="chart-card-tag" style={{ color: 'var(--adm-amber)', borderColor: 'rgba(245, 158, 11, 0.3)' }}>ACTIVE SURVEILLANCE</span>
-                      </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: '0.5rem 0' }}>
-                        <div className="metric-grid">
-                          <div style={{ background: 'rgba(255,255,255,0.02)', padding: '0.75rem', borderRadius: 8, border: '1px solid var(--adm-border)' }}>
-                            <div style={{ fontSize: '0.7rem', color: 'var(--adm-muted)' }}>CONNECTED INDICATORS</div>
-                            <div style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--adm-cyan)' }}>6 RS-232 Bridges</div>
-                            <div style={{ fontSize: '0.68rem', color: 'var(--adm-dim)' }}>Avery, Essae, Mettler</div>
-                          </div>
-                          <div style={{ background: 'rgba(255,255,255,0.02)', padding: '0.75rem', borderRadius: 8, border: '1px solid var(--adm-border)' }}>
-                            <div style={{ fontSize: '0.7rem', color: 'var(--adm-muted)' }}>MOISTURE FRAUD BLOCKED</div>
-                            <div style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--adm-amber)' }}>₹18,42,000</div>
-                            <div style={{ fontSize: '0.68rem', color: 'var(--adm-dim)' }}>Excess water weight eliminated</div>
-                          </div>
-                          <div style={{ background: 'rgba(255,255,255,0.02)', padding: '0.75rem', borderRadius: 8, border: '1px solid var(--adm-border)' }}>
-                            <div style={{ fontSize: '0.7rem', color: 'var(--adm-muted)' }}>ZERO-INTERNET BUFFER</div>
-                            <div style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--adm-emerald)' }}>100% Offline</div>
-                            <div style={{ fontSize: '0.68rem', color: 'var(--adm-dim)' }}>Syncs on network resume</div>
-                          </div>
-                        </div>
-                        <p style={{ fontSize: '0.78rem', color: 'var(--adm-muted)', lineHeight: '1.5' }}>
-                          Edge weighbridge daemons communicate directly with local RS-232 serial ports at 9600 baud.
-                          Tare deductions are enforced mathematically at the weigh-in gate before Tally Prime voucher generation.
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  {widgets.aiHealth && (
-                    <div className="glass-panel chart-card">
-                      <div className="chart-card-header">
-                        <h3>🤖 AI Operations Copilot Telemetry</h3>
-                        <span className="chart-card-tag" style={{ color: '#a855f7', borderColor: 'rgba(168, 85, 247, 0.3)' }}>MULTI-PROVIDER</span>
-                      </div>
-                      <div className="metric-grid-two">
-                        {[
-                          { name: 'Anthropic Claude 3.5 Sonnet', status: 'ONLINE', latency: '42ms', cost: '₹0.12/k tok' },
-                          { name: 'OpenAI GPT-4o', status: 'ONLINE', latency: '65ms', cost: '₹0.20/k tok' },
-                          { name: 'xAI Grok-2', status: 'STANDBY', latency: '85ms', cost: 'Configurable' },
-                          { name: 'Local Ollama / vLLM', status: 'READY (EDGE)', latency: '12ms', cost: '₹0 Self-hosted' },
-                        ].map((p, i) => (
-                          <div key={i} style={{ background: 'rgba(255,255,255,0.025)', padding: '0.75rem', borderRadius: 8, border: '1px solid var(--adm-border)' }}>
-                            <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#ffffff' }}>{p.name}</div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.3rem', fontSize: '0.7rem' }}>
-                              <span style={{ color: p.status.includes('ONLINE') ? 'var(--adm-emerald)' : 'var(--adm-cyan)' }}>{p.status}</span>
-                              <span style={{ color: 'var(--adm-muted)' }}>{p.latency}</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* REGIONAL CLUSTER MAP + ACTIVITY FEED */}
-                <div className="charts-dual-row">
-                  {widgets.clusters && (
-                    <div className="glass-panel chart-card">
-                      <div className="chart-card-header">
-                        <h3>📍 Tamil Nadu Textile Cluster Network</h3>
-                        <span className="chart-card-tag">GEOGRAPHIC COVERAGE</span>
-                      </div>
-                      <div className="cluster-cards-row">
-                        {[
-                          { city: 'Tirupur Cluster', count: metrics.vmCount || 1, desc: 'Weighbridge · Knitwear Mills' },
-                          { city: 'Coimbatore Hub', count: metrics.gcpCount || 1, desc: '40s–60s Combed Spindles' },
-                          { city: 'Erode / Palladam', count: metrics.awsCount || 1, desc: 'Sizing · Warp Auto-Weft' },
-                          { city: 'Karur / Dindigul', count: metrics.azureCount || 1, desc: 'Export Made-Ups · OE Yarn' },
-                        ].map((c, i) => (
-                          <div className="cluster-node-badge" key={i}>
-                            <span className="cluster-node-city">{c.city}</span>
-                            <span className="cluster-node-count">{c.count} Mill{c.count !== 1 ? 's' : ''}</span>
-                            <span className="cluster-node-spindles">{c.desc}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {widgets.activity && (
-                    <div className="glass-panel chart-card">
-                      <div className="chart-card-header">
-                        <h3>🔔 Recent Platform Activity</h3>
-                        <span className="chart-card-tag">LIVE FEED</span>
-                      </div>
-                      <div className="activity-feed">
-                        {SAMPLE_ACTIVITY.map((a, i) => (
-                          <div className="activity-item" key={i}>
-                            <span className={`activity-dot ${a.dot}`} />
-                            <div className="activity-content">
-                              <div className="activity-msg">{a.msg}</div>
-                              <div className="activity-time">{a.time}</div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-              </div>
-            )}
+{activeTab === 'PROOF' && <ProofLedger apiBase={adminApiBase} onInspect={event => setInspection({id:event.entityId,title:event.title,type:event.entityType,proof:event.proof,data:event,at:event.at})} />}
+            {activeTab === 'EXPLORER' && <DataExplorer apiBase={adminApiBase} />}
+            {activeTab === 'TOPOLOGY' && <Topology companies={companies} apiBase={adminApiBase} onInspect={setInspection} />}
+            {activeTab === 'DEPLOYMENTS' && rollbackTarget && <OperationTools apiBase={adminApiBase} kind="rollback" entityId={rollbackTarget} />}
+            {activeTab === 'JOBS' && <ProofLedger apiBase={adminApiBase} jobsOnly onInspect={event => setInspection({id:event.entityId,title:event.title,type:'JOB',proof:event.proof,data:event,at:event.at})} />}
+            {['PROVISIONING','ACCESS','KEYS','BACKUPS','SLOS'].includes(activeTab) && <CapabilityView id={activeTab} apiBase={adminApiBase} />}
+            {activeTab === 'DASHBOARD' && <OperationsOverview companies={companies} records={records} updatedAt={lastDataResponse} onRefresh={() => { void fetchCompanies(); void fetchRecords(); }} onNavigate={setActiveTab} onInspect={company => setInspection({id:company.id,title:company.name,type:'COMPANY',data:company})} />}
 
             {/* ═══════════════════════════════════════════════════════════════
                 TAB 2: SPINNING MILL TENANTS & LICENSES
                 ═══════════════════════════════════════════════════════════════ */}
             {activeTab === 'TENANTS' && (
               <div className="tenants-tab-view">
-                <div className="page-toolbar"><div><h1 className="page-title">Spinning mills</h1><p className="page-description">Manage tenant licenses, capacity, and cloud deployments.</p></div><span className="plan-badge-tag">{filteredCompanies.length} of {companies.length} mills</span></div>
+                <div className="page-toolbar"><div><h1 className="page-title">Companies</h1><p className="page-description">Manage tenant licenses, capacity, and cloud deployments.</p></div><span className="plan-badge-tag">{filteredCompanies.length} of {companies.length} mills</span></div>
                 {/* TOOLBAR */}
                 <div className="tenants-toolbar-card">
                   <div className="toolbar-search-box">
@@ -1172,7 +859,7 @@ function App() {
                     >
                       <option value="ALL">All License Statuses</option>
                       <option value="ACTIVE">ACTIVE (Fully Licensed)</option>
-                      <option value="GRACE_PERIOD">GRACE_PERIOD (7-Day Watch)</option>
+                      <option value="GRACE_PERIOD">GRACE_PERIOD</option>
                       <option value="SUSPENDED">SUSPENDED</option>
                     </select>
                   </div>
@@ -1188,7 +875,7 @@ function App() {
                         <th>License Plan</th>
                         <th>Status</th>
                         <th>Version</th>
-                        <th>Seats & Spindles</th>
+                        <th>Staff & machine quota</th>
                         <th>Monthly Docs</th>
                         <th>Remote Ops</th>
                         <th>Actions</th>
@@ -1204,7 +891,7 @@ function App() {
                           <tr key={c.id} className={isGrace ? 'row-grace-warning' : ''}>
                             <td>
                               <div className="tenant-cell-name">
-                                <strong>{c.name}</strong>
+                                <button className="row-inspect" onClick={() => setInspection({id:c.id,title:c.name,type:'COMPANY',data:{id:c.id,name:c.name,cloudProvider:c.cloudProvider,status:c.status,plan:c.plan,lastSyncAt:c.lastSyncAt}})}><strong>{c.name}</strong></button><ProofBadge />
                                 <span className="tenant-cell-id">{c.id} · {c.tier}</span>
                               </div>
                             </td>
@@ -1227,7 +914,7 @@ function App() {
                             <td>
                               <div style={{ fontSize: '0.78rem' }}>
                                 <span>{c.activeStaff} / {c.maxUsers} Users</span>
-                                <div style={{ color: 'var(--adm-dim)', fontSize: '0.7rem' }}>{c.maxMachines} Spindles</div>
+                                <div style={{ color: 'var(--adm-dim)', fontSize: '0.7rem' }}>{c.maxMachines} machines allowed</div>
                               </div>
                             </td>
                             <td>
@@ -1332,7 +1019,7 @@ function App() {
                             <button type="button" className="task-card"
                               key={t.id}
                               style={{ background: 'var(--adm-card)', border: '1px solid var(--adm-border)', borderRadius: 8, padding: '0.85rem', cursor: 'pointer', transition: 'all 0.15s' }}
-                              onClick={() => setActiveRecordModal(t)}
+                              onClick={() => setInspection({id:t.id,title:t.title,type:t.kind,proof:t.proof,data:t,at:t.updatedAt})}
                             >
                               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
                                 <span style={{ fontSize: '0.68rem', fontFamily: 'var(--font-mono)', color: 'var(--adm-dim)' }}>{t.id}</span>
@@ -1372,7 +1059,7 @@ function App() {
               <div className="cicd-tab-view">
                 <div className="page-toolbar">
                   <div>
-                    <h1 className="page-title">Deployments</h1>
+                    <h1 className="page-title">Rollouts</h1>
                     <p style={{ fontSize: '0.82rem', color: 'var(--adm-muted)' }}>Rolling, Blue-Green, and Canary rollout executions across GCP, AWS, Azure, and Factory Linux VMs</p>
                   </div>
                   <button
@@ -1402,7 +1089,7 @@ function App() {
                     <tbody>
                       {deployments.map(d => (
                         <tr key={d.id}>
-                          <td><span className="font-mono text-cyan" style={{ fontSize: '0.76rem' }}>{d.id}</span>{d.runUrl && <div><a href={d.runUrl} target="_blank" rel="noreferrer">View workflow</a></div>}</td>
+                          <td><span className="font-mono text-cyan" style={{ fontSize: '0.76rem' }}>{d.id}</span><button className="btn-table-action" onClick={()=>setRollbackTarget(d.id)}>Request rollback</button>{d.runUrl && <div><a href={d.runUrl} target="_blank" rel="noreferrer">View workflow</a></div>}</td>
                           <td><strong>{d.companyName}</strong></td>
                           <td><span className={`cloud-pill-tag ${d.cloudProvider.toLowerCase()}`}>{d.cloudProvider}</span></td>
                           <td><span className="font-mono">{d.packageVersion}</span></td>
@@ -1445,7 +1132,7 @@ function App() {
                         <div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                             <span style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--adm-cyan)' }}>{p.version}</span>
-                            <span className="status-pill active" style={{ fontSize: '0.65rem' }}>{p.status}</span>
+                            <span style={{fontSize:'0.65rem'}}>{p.status}</span><ProofBadge/>
                           </div>
                           <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#ffffff', marginTop: '0.2rem' }}>{p.name}</div>
                         </div>
@@ -1504,7 +1191,7 @@ function App() {
                     <div key={m.id} className="glass-panel" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <span className="font-mono text-cyan" style={{ fontSize: '0.74rem' }}>{m.id}</span>
-                        <span className={`status-pill ${m.status.toLowerCase()}`}>{m.status}</span>
+                        <span>{m.status}</span><ProofBadge proof={m.proof}/>
                       </div>
                       <h4 style={{ fontSize: '0.95rem', color: '#ffffff', margin: 0 }}>{m.title}</h4>
                       <p style={{ fontSize: '0.78rem', color: 'var(--adm-muted)', lineHeight: '1.5', margin: 0 }}>
@@ -1523,217 +1210,18 @@ function App() {
             {/* ═══════════════════════════════════════════════════════════════
                 TAB 8: INTEGRATIONS MATRIX (22+ CONNECTORS)
                 ═══════════════════════════════════════════════════════════════ */}
-            {activeTab === 'INTEGRATIONS' && (
-              <div className="integrations-tab-view">
-                <div className="page-toolbar">
-                  <div>
-                    <h1 className="page-title">Integrations</h1>
-                    <p style={{ fontSize: '0.82rem', color: 'var(--adm-muted)' }}>
-                      Configured & standby services: GitHub, Azure DevOps, GCP, AWS, Azure, Razorpay, PhonePe, Paytm, Stripe, WhatsApp, Slack, Teams, Zoho One, Claude, GPT-4o, Grok, Ollama, TallyPrime
-                    </p>
-                  </div>
-                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                    <input
-                      type="text"
-                      className="form-input-text"
-                      style={{ width: 220, padding: '0.45rem 0.75rem' }}
-                      placeholder="Search connectors…"
-                      aria-label="Search connectors"
-                      value={connectorSearch}
-                      onChange={e => setConnectorSearch(e.target.value)}
-                    />
-                  </div>
-                </div>
-
-                {/* CATEGORY FILTER PILLS */}
-                <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
-                  {['ALL', 'Developer', 'Cloud', 'Payments', 'Communication', 'Business suite', 'AI', 'Accounting'].map(cat => (
-                    <button
-                      key={cat}
-                      className={`dash-widget-toggle-btn ${connectorCategory === cat ? 'active' : ''}`}
-                      onClick={() => setConnectorCategory(cat)}
-                    >
-                      {cat}
-                    </button>
-                  ))}
-                </div>
-
-                {/* CONNECTORS MATRIX GRID */}
-                <div className="integrations-matrix-grid">
-                  {CONNECTORS.filter(c => {
-                    const matchCat = connectorCategory === 'ALL' || c.category === connectorCategory;
-                    const matchSearch = !connectorSearch || c.name.toLowerCase().includes(connectorSearch.toLowerCase()) || c.description.toLowerCase().includes(connectorSearch.toLowerCase());
-                    return matchCat && matchSearch;
-                  }).map(conn => {
-                    const isConfigured = ['github', 'gcp', 'razorpay', 'whatsapp', 'openai', 'tally'].includes(conn.id);
-                    const isStandby = ['azure-devops', 'azure', 'aws', 'phonepe', 'paytm', 'slack', 'teams', 'zoho', 'anthropic', 'xai', 'ollama'].includes(conn.id);
-                    const pingInfo = pingStatus[conn.id];
-
-                    return (
-                      <div key={conn.id} className="connector-card-admin">
-                        <div className="connector-card-header">
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                            <div className="connector-logo-mark" style={{ background: `${conn.color}22`, color: conn.color, border: `1px solid ${conn.color}44` }}>
-                              {conn.mark}
-                            </div>
-                            <div>
-                              <div style={{ fontSize: '0.92rem', fontWeight: 700, color: '#ffffff' }}>{conn.name}</div>
-                              <span style={{ fontSize: '0.68rem', color: 'var(--adm-dim)' }}>{conn.category}</span>
-                            </div>
-                          </div>
-                          <span className={`connector-status-pill ${isConfigured ? 'configured' : isStandby ? 'standby' : 'not_configured'}`}>
-                            {isConfigured ? 'CONNECTED' : isStandby ? 'STANDBY' : 'UNCONFIGURED'}
-                          </span>
-                        </div>
-
-                        <p className="connector-desc">{conn.description}</p>
-
-                        <div style={{ fontSize: '0.72rem', background: 'rgba(0,0,0,0.25)', padding: '0.5rem 0.7rem', borderRadius: 6, display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                          <div><span style={{ color: 'var(--adm-dim)' }}>Auth:</span> <span style={{ color: 'var(--adm-cyan)' }}>{conn.auth}</span></div>
-                          <div><span style={{ color: 'var(--adm-dim)' }}>Events:</span> <span style={{ color: 'var(--adm-muted)' }}>{conn.events}</span></div>
-                          {pingInfo && (
-                            <div style={{ color: 'var(--adm-emerald)', fontWeight: 600 }}>
-                              ⚡ Latency: {pingInfo.pingMs}ms ({pingInfo.status})
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="connector-footer">
-                          <button
-                            className="btn-table-action"
-                            onClick={() => handleTestPing(conn.id)}
-                          >
-                            ⚡ Test Ping
-                          </button>
-                          <button
-                            className="btn-table-action primary"
-                            onClick={() => setSelectedConnector(conn)}
-                          >
-                            ⚙️ Configure
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+{activeTab === 'INTEGRATIONS' && <RecordedServices apiBase={adminApiBase} title="Integrations" kind="INTEGRATION" records={records} onInspect={setActiveRecordModal} onCreate={() => { setNewRecordKind('INTEGRATION'); setShowNewRecordModal(true); }} />}
 
             {/* ═══════════════════════════════════════════════════════════════
                 TAB 9: API GATEWAY MANAGEMENT
                 ═══════════════════════════════════════════════════════════════ */}
-            {activeTab === 'APIS' && (
-              <div className="apis-tab-view">
-                <div className="page-toolbar">
-                  <div>
-                    <h1 className="page-title">API management</h1>
-                    <p style={{ fontSize: '0.82rem', color: 'var(--adm-muted)' }}>Provider control plane routes, rate limits, bearer token validation, and weighbridge telemetry</p>
-                  </div>
-                  <button
-                    className="btn-table-action primary"
-                    onClick={() => showMsg('⚡ Bearer tokens verified. Gateway latency: 14ms.')}
-                  >
-                    🔑 Generate Service Token
-                  </button>
-                </div>
+            {activeTab === 'APIS' && <CustomerApiConsole apiBase={adminApiBase} />}
 
-                <div className="glass-panel tenants-table-container" role="region" aria-label="Scrollable records" tabIndex={0}>
-                  <table className="tenants-data-table">
-                    <thead>
-                      <tr>
-                        <th>HTTP Method</th>
-                        <th>Endpoint URI</th>
-                        <th>Authentication</th>
-                        <th>Scope</th>
-                        <th>Rate Limit</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {[
-                        { method: 'GET', uri: '/companies', auth: 'Bearer / Dev Origin', scope: 'Provider multi-tenant read', limit: '1000 req/min' },
-                        { method: 'POST', uri: '/companies', auth: 'Bearer (Admin)', scope: 'Tenant provisioning', limit: '100 req/min' },
-                        { method: 'POST', uri: '/companies/:id/license', auth: 'Provider API key', scope: 'Save provider license settings', limit: 'Deployment configured' },
-                        { method: 'POST', uri: '/cicd/deploy', auth: 'Bearer (Admin)', scope: 'Multi-cloud orchestration', limit: '50 req/min' },
-                        { method: 'GET', uri: '/control/records', auth: 'Public / Dev fallback', scope: 'Mission control ledger', limit: '2000 req/min' },
-                        { method: 'POST', uri: '/control/database/backup', auth: 'Bearer (Admin)', scope: 'SQLite backup trigger', limit: '20 req/min' },
-                        { method: 'POST', uri: '/edge/weighbridge/ping', auth: 'API Key (Edge)', scope: 'RS-232 live telemetry', limit: '500 req/min' },
-                      ].map((ep, i) => (
-                        <tr key={i}>
-                          <td>
-                            <span className="font-mono" style={{ fontWeight: 800, color: ep.method === 'GET' ? 'var(--adm-emerald)' : 'var(--adm-cyan)' }}>
-                              {ep.method}
-                            </span>
-                          </td>
-                          <td><span className="font-mono text-cyan" style={{ fontSize: '0.82rem' }}>{ep.uri}</span></td>
-                          <td><span style={{ fontSize: '0.78rem' }}>{ep.auth}</span></td>
-                          <td><span style={{ fontSize: '0.78rem', color: 'var(--adm-muted)' }}>{ep.scope}</span></td>
-                          <td><span className="font-mono text-dim" style={{ fontSize: '0.74rem' }}>{ep.limit}</span></td>
-                          <td>
-                            <button
-                              className="btn-table-action"
-                              onClick={() => showMsg(`⚡ Probing ${ep.method} ${ep.uri} -> 200 OK (16ms)`)}
-                            >
-                              Probe
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
 
             {/* ═══════════════════════════════════════════════════════════════
                 TAB 10: WEBHOOKS DISPATCHER & ENGINE
                 ═══════════════════════════════════════════════════════════════ */}
-            {activeTab === 'WEBHOOKS' && (
-              <div className="webhooks-tab-view">
-                <div className="page-toolbar">
-                  <div>
-                    <h1 className="page-title">Webhooks</h1>
-                    <p style={{ fontSize: '0.82rem', color: 'var(--adm-muted)' }}>Razorpay payments, PhonePe callbacks, GitHub CI hooks, and WhatsApp delivery updates</p>
-                  </div>
-                  <button
-                    className="btn-provision-trigger"
-                    onClick={() => showMsg('⚡ Dispatched test webhook to configured endpoints: HTTP 200 OK.')}
-                  >
-                    ⚡ Dispatch Test Payload
-                  </button>
-                </div>
-
-                <div className="record-card-grid">
-                  {[
-                    { name: 'Razorpay Payment Capture', url: 'https://evergreenos.in/api/webhooks/razorpay', events: 'payment.captured, payment.failed', status: 'ACTIVE' },
-                    { name: 'PhonePe Callback Engine', url: 'https://evergreenos.in/api/webhooks/phonepe', events: 'PAYMENT_SUCCESS, ORDER_FAILED', status: 'STANDBY' },
-                    { name: 'GitHub Actions Release Hook', url: 'https://evergreenos.in/api/webhooks/github', events: 'workflow_run, release', status: 'ACTIVE' },
-                    { name: 'WhatsApp Business Status Hook', url: 'https://evergreenos.in/api/webhooks/whatsapp', events: 'messages, message_deliveries', status: 'ACTIVE' },
-                  ].map((hook, i) => (
-                    <div key={i} className="glass-panel" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <span style={{ fontSize: '0.92rem', fontWeight: 700, color: '#ffffff' }}>{hook.name}</span>
-                        <span className="status-pill active">{hook.status}</span>
-                      </div>
-                      <div style={{ fontSize: '0.74rem', fontFamily: 'var(--font-mono)', color: 'var(--adm-cyan)', background: 'rgba(0,0,0,0.3)', padding: '0.5rem', borderRadius: 6 }}>
-                        {hook.url}
-                      </div>
-                      <div style={{ fontSize: '0.76rem', color: 'var(--adm-muted)' }}>
-                        <strong>Subscribed Events:</strong> {hook.events}
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '0.6rem' }}>
-                        <button className="btn-table-action" onClick={() => showMsg(`⚡ Simulated signature verification: SHA256 valid.`)}>
-                          Verify Secret
-                        </button>
-                        <button className="btn-table-action primary" onClick={() => showMsg(`⚡ Test event sent to ${hook.name}: 200 OK`)}>
-                          Test Trigger
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+{activeTab === 'WEBHOOKS' && <RecordedServices apiBase={adminApiBase} title="Webhooks" kind="WEBHOOK" records={records} onInspect={setActiveRecordModal} onCreate={() => { setNewRecordKind('WEBHOOK'); setShowNewRecordModal(true); }} />}
 
             {/* ═══════════════════════════════════════════════════════════════
                 TAB 11: PAYMENTS & UTR RECONCILIATION
@@ -1742,8 +1230,8 @@ function App() {
               <div className="payments-tab-view">
                 <div className="page-toolbar">
                   <div>
-                    <h1 className="page-title">Payments & reconciliation</h1>
-                    <p style={{ fontSize: '0.82rem', color: 'var(--adm-muted)' }}>Razorpay, PhonePe, Paytm, and NEFT/RTGS bank transfers with instant quota unblock</p>
+                    <h1 className="page-title">Billing ledger</h1>
+                    <p style={{ fontSize: '0.82rem', color: 'var(--adm-muted)' }}>Recorded payments and evidence for operator review</p>
                   </div>
                   <button
                     className="btn-provision-trigger"
@@ -1779,29 +1267,24 @@ function App() {
                             <td><strong>{p.companyId || 'Direct Invoice'}</strong></td>
                             <td>
                               <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#ffffff' }}>
-                                {money(amt || 8999000)}
+                                {money(amt)}
                               </span>
                             </td>
-                            <td><span className="cloud-pill-tag gcp">{String(p.payload?.provider || 'Razorpay')}</span></td>
-                            <td><span className="font-mono text-dim">{String(p.payload?.reference || 'NEFT-PENDING')}</span></td>
-                            <td><span className={`status-pill ${p.status.toLowerCase()}`}>{p.status}</span></td>
+                            <td><span className="cloud-pill-tag">{String(p.payload?.provider || 'Not recorded')}</span></td>
+                            <td><span className="font-mono text-dim">{String(p.payload?.reference || 'Not recorded')}</span></td>
+                            <td><span>{p.status}</span><ProofBadge proof={p.proof}/></td>
                             <td>
                               {isPending ? (
                                 <button
                                   className="btn-table-action amber"
                                   onClick={() => {
-                                    showMsg(`⚡ Verifying payment ${p.id} and unblocking tenant quota...`);
-                                    setTimeout(() => {
-                                      p.status = 'VERIFIED';
-                                      showMsg(`✅ Payment ${p.id} verified. Mill quota unlocked!`);
-                                      setRecords([...records]);
-                                    }, 800);
+                                    setActiveRecordModal(p);
                                   }}
                                 >
-                                  ⚡ Verify UTR
+                                  Review evidence
                                 </button>
                               ) : (
-                                <span className="text-emerald" style={{ fontSize: '0.75rem' }}>✓ Settled</span>
+                                <span style={{ fontSize: '0.75rem' }}>Recorded: {p.status}</span>
                               )}
                             </td>
                           </tr>
@@ -1820,7 +1303,7 @@ function App() {
               <div className="agreements-tab-view">
                 <div className="page-toolbar">
                   <div>
-                    <h1 className="page-title">Agreements</h1>
+                    <h1 className="page-title">Contracts</h1>
                     <p style={{ fontSize: '0.82rem', color: 'var(--adm-muted)' }}>Signed mill license terms, Tally integration NDAs, TareZero weighbridge SLAs</p>
                   </div>
                   <button
@@ -1842,17 +1325,17 @@ function App() {
                           <div style={{ fontSize: '0.96rem', fontWeight: 700, color: '#ffffff' }}>{a.title}</div>
                           <span className="font-mono text-cyan" style={{ fontSize: '0.72rem' }}>{a.id}</span>
                         </div>
-                        <span className={`status-pill ${a.status.toLowerCase()}`}>{a.status}</span>
+                        <span>{a.status}</span><ProofBadge proof={a.proof}/>
                       </div>
 
                       <div style={{ fontSize: '0.78rem', color: 'var(--adm-muted)', lineHeight: '1.5' }}>
-                        {String(a.payload?.description || 'Evergreen Textile Technologies Private Limited Master Service Agreement.')}
+                        {String(a.payload?.description || 'Description not recorded')}
                       </div>
 
                       <div style={{ background: 'rgba(0,0,0,0.25)', padding: '0.6rem 0.8rem', borderRadius: 6, fontSize: '0.74rem', color: 'var(--adm-dim)' }}>
-                        <div>Legal Entity: <span style={{ color: '#ffffff' }}>Evergreen Textile Technologies Private Limited</span></div>
-                        <div>Reference: <span className="font-mono text-cyan">{String(a.payload?.reference || 'MSA-2026-TN')}</span></div>
-                        <div>Due / Expiry: {a.dueAt ? new Date(a.dueAt).toLocaleDateString() : 'Active Term'}</div>
+                        <div>Legal Entity: <span style={{ color: '#ffffff' }}>{String(a.payload?.legalEntity || 'Not recorded')}</span></div>
+                        <div>Reference: <span className="font-mono text-cyan">{String(a.payload?.reference || 'Not recorded')}</span></div>
+                        <div>Due / Expiry: {a.dueAt ? new Date(a.dueAt).toLocaleDateString() : 'Not recorded'}</div>
                       </div>
 
                       <div style={{ display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '0.6rem' }}>
@@ -1869,7 +1352,7 @@ function App() {
             {/* ═══════════════════════════════════════════════════════════════
                 TAB 13: AI AGENT STUDIO (COPILOT)
                 ═══════════════════════════════════════════════════════════════ */}
-            {activeTab === 'AI_AGENT' && <section><div className="page-toolbar"><div><p className="workspace-eyebrow">OWNER / INTELLIGENCE</p><h1 className="page-title">AI studio</h1><p className="workspace-subtitle">Atlas uses Groq for guidance and drafting. It cannot run commands, inspect tenant data or change records.</p></div></div><AiAssistant endpoint={adminApiBase + '/ai/owner'} title="Atlas" purpose="Owner operations, deployment planning and licence guidance" prompts={['How do I issue a licence with an offline period?', 'Prepare a deployment and recovery checklist.', 'Explain provider roles and secure owner access.']} /></section>}
+            {activeTab === 'AI_AGENT' && <section><div className="page-toolbar"><div><p className="workspace-eyebrow">OWNER / INTELLIGENCE</p><h1 className="page-title">Copilot</h1><p className="workspace-subtitle">Atlas uses Groq for guidance and drafting. It cannot run commands, inspect tenant data or change records.</p></div></div><AiAssistant endpoint={adminApiBase + '/ai/owner'} title="Atlas" purpose="Owner operations, deployment planning and licence guidance" prompts={['How do I issue a licence with an offline period?', 'Prepare a deployment and recovery checklist.', 'Explain provider roles and secure owner access.']} /></section>}
 
             {/* ═══════════════════════════════════════════════════════════════
                 TAB 14: CHATOPS LIVE FEED
@@ -1878,7 +1361,7 @@ function App() {
               <div className="chat-tab-view">
                 <div className="page-toolbar">
                   <div>
-                    <h1 className="page-title">ChatOps</h1>
+                    <h1 className="page-title">Channels</h1>
                     <p style={{ fontSize: '0.82rem', color: 'var(--adm-muted)' }}>Operational communications, weighbridge hardware triage, and renewal coordination</p>
                   </div>
                 </div>
@@ -1890,12 +1373,8 @@ function App() {
                       Channels
                     </div>
                     <div className="chat-channel-list">
-                      {[
-                        { id: 'operations', name: '#operations', count: 2 },
-                        { id: 'weighbridge-triage', name: '#weighbridge-triage', count: 1 },
-                        { id: 'renewals-desk', name: '#renewals-desk', count: 1 },
-                        { id: 'tamil-nadu-field-ops', name: '#tamil-field-ops', count: 0 },
-                      ].map(ch => (
+                      <label>Channel<input className="form-input-text" value={chatChannel} onChange={e => setChatChannel(e.target.value.replace(/[^a-z0-9-]/gi,'').slice(0,80))} /></label>
+{[...new Set(['operations', chatChannel, ...chatMessages.map(message => message.channel)])].map(id => ({ id, name: `#${id}` })).map(ch => (
                         <button type="button" aria-pressed={chatChannel === ch.id}
                           key={ch.id}
                           className={`chat-channel-item ${chatChannel === ch.id ? 'active' : ''}`}
@@ -1940,7 +1419,7 @@ function App() {
                         value={chatInput}
                         onChange={e => setChatInput(e.target.value)}
                       />
-                      <button type="submit" className="btn-provision-trigger">Send</button>
+                      <button type="submit" className="btn-provision-trigger" disabled={savingRecord}>{savingRecord ? 'Saving…' : 'Send'}</button>
                     </form>
                   </div>
                 </div>
@@ -1954,7 +1433,7 @@ function App() {
               <div className="scripts-tab-view">
                 <div className="page-toolbar">
                   <div>
-                    <h1 className="page-title">Ops terminal</h1>
+                    <h1 className="page-title">Diagnostics</h1>
                     <p style={{ fontSize: '0.82rem', color: 'var(--adm-muted)' }}>Read-only provider API checks. Backups, devices and deployments are not run from here.</p>
                   </div>
                   <div style={{ display: 'flex', gap: '0.4rem' }}>
@@ -2070,7 +1549,13 @@ function App() {
           </>
         )}
       </main>
+      {inspection && <Inspector item={inspection} apiBase={adminApiBase} onClose={closeInspection} />}
       </div>
+      {paletteOpen && <CommandPalette apiBase={adminApiBase} onRemote={async result=>{try{if(result.type==='RELEASE_JOB'){setInspection({id:result.id,title:result.label,type:result.type,data:result});return}const response=await authFetch(adminApiBase+(result.type==='COMPANY'?'/companies/':'/control/records/')+encodeURIComponent(result.id));if(!response.ok)throw Error('Search record is unavailable');const row=await response.json();setInspection({id:row.id,title:row.name||row.title,type:result.type,proof:row.proof,data:row,at:row.updatedAt})}catch(e){showMsg(e instanceof Error?e.message:'Search failed')}}} onClose={() => setPaletteOpen(false)} items={[
+        ...MODULE_TABS.map(tab => ({id:tab.id,label:tab.label,group:'Module',run:()=>{setActiveTab(tab.id);setMobileNavOpen(false)}})),
+        ...companies.map(c => ({id:c.id,label:c.name,group:'Company',run:()=>{setActiveTab('TENANTS');setInspection({id:c.id,title:c.name,type:'COMPANY',data:{id:c.id,name:c.name,status:c.status,cloudProvider:c.cloudProvider}})}})),
+        ...records.map(r => ({id:r.id,label:r.title,group:r.kind,run:()=>setInspection({id:r.id,title:r.title,type:r.kind,proof:r.proof,data:r,at:r.updatedAt})})),
+      ]} />}
 
       {/* ═══════════════════════════════════════════════════════════════════
           MODAL 1: PROVISION NEW MILL TENANT
@@ -2463,92 +1948,10 @@ function App() {
       {/* ═══════════════════════════════════════════════════════════════════
           MODAL 6: CONNECTOR CREDENTIALS & CONFIG
           ═══════════════════════════════════════════════════════════════════ */}
-      {selectedConnector && (
-        <AdminModal onClose={() => setSelectedConnector(null)}>
-          <div className="modal-dialog-box" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3 id="admin-modal-title">⚙️ Configure Integration: {selectedConnector.name}</h3>
-              <button className="btn-modal-close" aria-label="Close" onClick={() => setSelectedConnector(null)}>×</button>
-            </div>
-            <div className="modal-body">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem', background: 'rgba(255,255,255,0.02)', borderRadius: 8 }}>
-                <div className="connector-logo-mark" style={{ background: `${selectedConnector.color}22`, color: selectedConnector.color }}>
-                  {selectedConnector.mark}
-                </div>
-                <div>
-                  <div style={{ fontSize: '1rem', fontWeight: 700, color: '#ffffff' }}>{selectedConnector.name}</div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--adm-muted)' }}>{selectedConnector.description}</div>
-                </div>
-              </div>
-
-              <div className="form-field-row">
-                <label>Authentication Requirement</label>
-                <input type="text" disabled className="form-input-text" value={selectedConnector.auth} />
-              </div>
-
-              <div className="form-field-row">
-                <label>API Key / Client Secret (Stored Securely in Vault)</label>
-                <input type="password" className="form-input-text" defaultValue="••••••••••••••••••••••••••••••••" />
-              </div>
-
-              <div className="form-field-row">
-                <label>Webhook / Callback Endpoint</label>
-                <input type="text" className="form-input-text" defaultValue={`https://evergreenos.in/api/webhooks/${selectedConnector.id}`} />
-              </div>
-
-              <div className="form-field-row">
-                <label>Supported Event Hooks</label>
-                <input type="text" disabled className="form-input-text" value={selectedConnector.events} />
-              </div>
-            </div>
-            <div className="modal-footer">
-              <button className="btn-ghost" onClick={() => setSelectedConnector(null)}>Cancel</button>
-              <button
-                className="btn-provision-trigger"
-                onClick={() => {
-                  showMsg(`✅ Configuration saved for ${selectedConnector.name}. Credentials encrypted.`);
-                  setSelectedConnector(null);
-                }}
-              >
-                Save & Verify Connection
-              </button>
-            </div>
-          </div>
-        </AdminModal>
-      )}
 
       {/* ═══════════════════════════════════════════════════════════════════
           MODAL 7: RECORD DETAILS INSPECTOR
           ═══════════════════════════════════════════════════════════════════ */}
-      {activeRecordModal && (
-        <AdminModal onClose={() => setActiveRecordModal(null)}>
-          <div className="modal-dialog-box" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3 id="admin-modal-title">📄 Control Record: {activeRecordModal.title}</h3>
-              <button className="btn-modal-close" aria-label="Close" onClick={() => setActiveRecordModal(null)}>×</button>
-            </div>
-            <div className="modal-body">
-              <div className="metric-grid-two">
-                <div><strong className="text-dim">Record ID:</strong> <span className="font-mono text-cyan">{activeRecordModal.id}</span></div>
-                <div><strong className="text-dim">Kind:</strong> <span className="plan-badge-tag">{activeRecordModal.kind}</span></div>
-                <div><strong className="text-dim">Status:</strong> <span className={`status-pill ${activeRecordModal.status.toLowerCase()}`}>{activeRecordModal.status}</span></div>
-                <div><strong className="text-dim">Owner:</strong> <span>{activeRecordModal.owner}</span></div>
-              </div>
-
-              <div style={{ background: '#020610', padding: '1rem', borderRadius: 8, border: '1px solid var(--adm-border)', marginTop: '0.5rem' }}>
-                <div style={{ fontSize: '0.72rem', color: 'var(--adm-dim)', marginBottom: '0.4rem', textTransform: 'uppercase' }}>Payload Metadata</div>
-                <pre style={{ margin: 0, fontSize: '0.78rem', color: '#e2e8f0', whiteSpace: 'pre-wrap', fontFamily: 'var(--font-mono)' }}>
-                  {JSON.stringify(activeRecordModal.payload, null, 2)}
-                </pre>
-              </div>
-            </div>
-            <div className="modal-footer">
-              <button className="btn-provision-trigger" onClick={() => setActiveRecordModal(null)}>Close</button>
-            </div>
-          </div>
-        </AdminModal>
-      )}
-
       {/* ═══════════════════════════════════════════════════════════════════
           MODAL 8: CREATE RECORD
           ═══════════════════════════════════════════════════════════════════ */}
@@ -2589,7 +1992,7 @@ function App() {
                     value={newRecordPriority}
                     onChange={e => setNewRecordPriority(e.target.value)}
                   >
-                    <option value="CRITICAL">Critical</option>
+                    <option value="URGENT">Urgent</option>
                     <option value="HIGH">High</option>
                     <option value="NORMAL">Normal</option>
                     <option value="LOW">Low</option>
@@ -2598,30 +2001,25 @@ function App() {
               </div>
             </div>
             <div className="modal-footer">
-              <button className="btn-ghost" onClick={() => setShowNewRecordModal(false)}>Cancel</button>
+              <label htmlFor="record-payload">Details (JSON; use secret references, never credentials)<textarea id="record-payload" className="form-input-text" rows={5} value={newRecordPayload} onChange={e => setNewRecordPayload(e.target.value)} /></label>
+              <button className="btn-ghost" disabled={savingRecord} onClick={() => setShowNewRecordModal(false)}>Cancel</button>
               <button
                 className="btn-provision-trigger"
-                onClick={() => {
-                  if (!newRecordTitle.trim()) return;
-                  const newRec: RecordItem = {
-                    id: `${newRecordKind.toLowerCase().slice(0, 4)}-${uid().slice(0, 6)}`,
-                    kind: newRecordKind as any,
-                    title: newRecordTitle,
-                    status: newRecordKind === 'TASK' ? 'OPEN' : 'SCHEDULED',
-                    priority: newRecordPriority,
-                    owner: newRecordOwner,
-                    version: 1,
-                    payload: { description: 'Created via Mission Control Web UI' },
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString(),
-                  };
-                  setRecords([newRec, ...records]);
-                  showMsg(`✅ ${newRecordKind} record created: ${newRecordTitle}`);
-                  setShowNewRecordModal(false);
-                  setNewRecordTitle('');
+                disabled={savingRecord}
+                onClick={async () => {
+                  if (!newRecordTitle.trim() || savingRecord) return;
+                  setSavingRecord(true);
+                  try {
+                    const payload = JSON.parse(newRecordPayload);
+                    const response = await authFetch(adminApiBase + '/control/records', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ kind: newRecordKind, title: newRecordTitle, status: STATES[newRecordKind as Kind]?.[0], priority: newRecordPriority, owner: newRecordOwner, payload, requestKey: uid() }) });
+                    if (!response.ok) { const result = await response.json(); throw new Error(Array.isArray(result.message) ? result.message.join(', ') : result.message || 'Record save failed'); }
+                    const saved = await response.json(); setRecords(prev => [saved,...prev]);
+                    showMsg('Record saved to provider database'); setShowNewRecordModal(false); setNewRecordTitle(''); setNewRecordPayload('{}');
+                  } catch(e) { showMsg(e instanceof Error ? e.message : 'Record save failed'); }
+                  finally { setSavingRecord(false); }
                 }}
               >
-                Create Record
+                {savingRecord ? 'Saving…' : 'Save to database'}
               </button>
             </div>
           </div>
@@ -2632,4 +2030,4 @@ function App() {
   );
 }
 
-export default function LicensedProviderApp() { return <InstallationGate url={((import.meta as { env?: { VITE_ADMIN_API_URL?: string } }).env?.VITE_ADMIN_API_URL || '/admin-api').replace(/\/+$/, '') + '/license/status'}><ProviderAccessGate><App /></ProviderAccessGate></InstallationGate>; }
+export default function LicensedProviderApp() { if(import.meta.env.DEV&&location.pathname.startsWith('/__scenes/'))return <SceneGallery/>; return <InstallationGate url={((import.meta as { env?: { VITE_ADMIN_API_URL?: string } }).env?.VITE_ADMIN_API_URL || '/admin-api').replace(/\/+$/, '') + '/license/status'}><ProviderAccessGate><App /></ProviderAccessGate></InstallationGate>; }

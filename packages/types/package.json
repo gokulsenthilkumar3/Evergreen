@@ -4,6 +4,7 @@
   "main": "./dist/index.js",
   "types": "./index.ts",
   "exports": {
+    "./owner-public-key": {"types":"./owner-public-key.ts","require":"./dist/owner-public-key.js","default":"./dist/owner-public-key.js"},
     "./ai-server": {
       "types": "./ai-server.ts",
       "require": "./dist/ai-server.js",

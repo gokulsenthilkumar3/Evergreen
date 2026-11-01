@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage, uiLocale, uiTemplate, uiScopedTemplate, uiDateLocale } from "../../i18n";
 import React, { useState } from 'react';
 import {
   Add as AddIcon,
@@ -73,6 +74,7 @@ const initialMovementForm = {
 };
 
 const WarehouseManagement: React.FC = () => {
+  useUiLanguage();
   const [openLocationDialog, setOpenLocationDialog] = useState(false);
   const [openMovementDialog, setOpenMovementDialog] = useState(false);
   const [locationForm, setLocationForm] = useState(initialLocationForm);
@@ -110,12 +112,12 @@ const WarehouseManagement: React.FC = () => {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['warehouse-locations'] });
-      toast.success('Warehouse location added successfully');
+      toast.success(uiText('Warehouse location added successfully', 'feedback'));
       setOpenLocationDialog(false);
       setLocationForm(initialLocationForm);
     },
     onError: (err: any) => {
-      toast.error(err?.response?.data?.message || 'Failed to add location');
+      toast.error(uiText(err?.response?.data?.message || 'Failed to add location', 'feedback'));
     },
   });
 
@@ -132,12 +134,12 @@ const WarehouseManagement: React.FC = () => {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['warehouse-movements'] });
-      toast.success('Stock movement logged successfully');
+      toast.success(uiText('Stock movement logged successfully', 'feedback'));
       setOpenMovementDialog(false);
       setMovementForm(initialMovementForm);
     },
     onError: (err: any) => {
-      toast.error(err?.response?.data?.message || 'Failed to log stock movement');
+      toast.error(uiText(err?.response?.data?.message || 'Failed to log stock movement', 'feedback'));
     },
   });
 
@@ -165,11 +167,9 @@ const WarehouseManagement: React.FC = () => {
           <WarehouseIcon color="primary" sx={{ fontSize: 36 }} />
           <Box>
             <Typography variant="h4" fontWeight={800}>
-              Warehouse Management
-            </Typography>
+              {uiText("Warehouse Management ")}</Typography>
             <Typography color="text.secondary">
-              Multi-godown stock, bin tracking, internal transfers & dispatch logs
-            </Typography>
+              {uiText("Multi-godown stock, bin tracking, internal transfers & dispatch logs ")}</Typography>
           </Box>
         </Box>
 
@@ -183,16 +183,14 @@ const WarehouseManagement: React.FC = () => {
               queryClient.invalidateQueries({ queryKey: ['warehouse-movements'] });
             }}
           >
-            Refresh
-          </Button>
+            {uiText("Refresh ")}</Button>
 
           <Button
             variant="outlined"
             startIcon={<AddIcon />}
             onClick={() => setOpenLocationDialog(true)}
           >
-            Add Location
-          </Button>
+            {uiText("Add Location ")}</Button>
 
           <Button
             variant="contained"
@@ -200,15 +198,13 @@ const WarehouseManagement: React.FC = () => {
             onClick={() => setOpenMovementDialog(true)}
             disabled={locations.length === 0}
           >
-            Log Movement
-          </Button>
+            {uiText("Log Movement ")}</Button>
         </Box>
       </Box>
 
       {(errorLoc || errorMov) && (
         <Alert severity="error" sx={{ mb: 2 }}>
-          Failed to load warehouse records from server.
-        </Alert>
+          {uiText("Failed to load warehouse records from server. ")}</Alert>
       )}
 
       {/* Summary KPI Cards */}
@@ -217,11 +213,9 @@ const WarehouseManagement: React.FC = () => {
           <Card variant="outlined" sx={{ borderRadius: 3 }}>
             <CardContent sx={{ py: 2 }}>
               <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                ACTIVE GODOWNS & BINS
-              </Typography>
+                {uiText("ACTIVE GODOWNS & BINS ")}</Typography>
               <Typography variant="h5" fontWeight={800} color="#3b82f6">
-                {locations.length} Locations
-              </Typography>
+                {locations.length} {uiText(" Locations ")}</Typography>
             </CardContent>
           </Card>
         </Grid>
@@ -230,11 +224,9 @@ const WarehouseManagement: React.FC = () => {
           <Card variant="outlined" sx={{ borderRadius: 3 }}>
             <CardContent sx={{ py: 2 }}>
               <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                TOTAL INWARD FLOW
-              </Typography>
+                {uiText("TOTAL INWARD FLOW ")}</Typography>
               <Typography variant="h5" fontWeight={800} color="#059669">
-                {totalIn.toLocaleString('en-IN')} units
-              </Typography>
+                {totalIn.toLocaleString(uiLocale())} {uiText(" units ")}</Typography>
             </CardContent>
           </Card>
         </Grid>
@@ -243,11 +235,9 @@ const WarehouseManagement: React.FC = () => {
           <Card variant="outlined" sx={{ borderRadius: 3 }}>
             <CardContent sx={{ py: 2 }}>
               <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                TOTAL DISPATCH / OUTWARD
-              </Typography>
+                {uiText("TOTAL DISPATCH / OUTWARD ")}</Typography>
               <Typography variant="h5" fontWeight={800} color="#f59e0b">
-                {totalOut.toLocaleString('en-IN')} units
-              </Typography>
+                {totalOut.toLocaleString(uiLocale())} {uiText(" units ")}</Typography>
             </CardContent>
           </Card>
         </Grid>
@@ -256,11 +246,9 @@ const WarehouseManagement: React.FC = () => {
           <Card variant="outlined" sx={{ borderRadius: 3 }}>
             <CardContent sx={{ py: 2 }}>
               <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                LOGGED TRANSACTIONS
-              </Typography>
+                {uiText("LOGGED TRANSACTIONS ")}</Typography>
               <Typography variant="h5" fontWeight={800} color="#8b5cf6">
-                {movements.length} Movements
-              </Typography>
+                {movements.length} {uiText(" Movements ")}</Typography>
             </CardContent>
           </Card>
         </Grid>
@@ -269,8 +257,7 @@ const WarehouseManagement: React.FC = () => {
       {/* Warehouse Locations Grid */}
       <Box sx={{ mb: 4 }}>
         <Typography variant="h6" fontWeight={700} sx={{ mb: 1.5 }}>
-          Storage Locations & Godowns
-        </Typography>
+          {uiText("Storage Locations & Godowns ")}</Typography>
 
         {loadingLoc ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
@@ -278,9 +265,7 @@ const WarehouseManagement: React.FC = () => {
           </Box>
         ) : locations.length === 0 ? (
           <Alert severity="info">
-            No storage locations configured yet. Click &quot;Add Location&quot; to set up your godowns
-            and bays.
-          </Alert>
+            {uiText("No storage locations configured yet. Click \"Add Location\" to set up your godowns and bays. ")}</Alert>
         ) : (
           <Grid container spacing={2.5}>
             {locations.map((w) => (
@@ -323,7 +308,7 @@ const WarehouseManagement: React.FC = () => {
                     {w.description || 'No description provided'}
                   </Typography>
                   <Chip
-                    label={w.active ? 'Active Godown' : 'Inactive'}
+                    label={w.active ? uiText("Active Godown") : uiText("Inactive")}
                     size="small"
                     color={w.active ? 'success' : 'default'}
                     variant="outlined"
@@ -349,7 +334,7 @@ const WarehouseManagement: React.FC = () => {
           }}
         >
           <Typography variant="subtitle2" fontWeight={700}>
-            Recent Stock Movement & Dispatch Register ({movements.length})
+            {uiText("Recent Stock Movement & Dispatch Register (")}{movements.length})
           </Typography>
           {loadingMov && <CircularProgress size={16} />}
         </Box>
@@ -358,15 +343,14 @@ const WarehouseManagement: React.FC = () => {
           <Table size="small">
             <TableHead>
               <TableRow>
-                <TableCell sx={{ fontWeight: 700 }}>Item / Batch ID</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Godown / Location</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Movement Type</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>{uiText("Item / Batch ID", 'tables')}</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>{uiText("Godown / Location", 'tables')}</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>{uiText("Movement Type", 'tables')}</TableCell>
                 <TableCell align="right" sx={{ fontWeight: 700 }}>
-                  Quantity
-                </TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Reference Doc</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Notes</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Timestamp</TableCell>
+                  {uiText("Quantity ", 'tables')}</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>{uiText("Reference Doc", 'tables')}</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>{uiText("Notes", 'tables')}</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>{uiText("Timestamp", 'tables')}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -379,17 +363,15 @@ const WarehouseManagement: React.FC = () => {
               ) : movements.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} align="center" sx={{ color: 'text.secondary', py: 4 }}>
-                    No stock movements recorded yet. Click &quot;Log Movement&quot; to create a
-                    record.
-                  </TableCell>
+                    {uiText("No stock movements recorded yet. Click \"Log Movement\" to create a record. ", 'tables')}</TableCell>
                 </TableRow>
               ) : (
                 movements.map((m) => (
                   <TableRow key={m.id} hover>
-                    <TableCell sx={{ fontWeight: 600 }}>{catalogue.find(item => item.id === m.itemId)?.name || `Item #${m.itemId}`}</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>{catalogue.find(item => item.id === m.itemId)?.name || uiScopedTemplate('tables')`Item #${m.itemId}`}</TableCell>
                     <TableCell>
                       <Typography variant="body2">
-                        {m.location?.name || `Location #${m.locationId}`}
+                        {m.location?.name || uiScopedTemplate('tables')`Location #${m.locationId}`}
                       </Typography>
                     </TableCell>
                     <TableCell>
@@ -408,7 +390,7 @@ const WarehouseManagement: React.FC = () => {
                     </TableCell>
                     <TableCell align="right">
                       <Typography variant="body2" fontWeight={700}>
-                        {m.quantity.toLocaleString('en-IN')}
+                        {m.quantity.toLocaleString(uiLocale())}
                       </Typography>
                     </TableCell>
                     <TableCell>{m.referenceId || '—'}</TableCell>
@@ -419,7 +401,7 @@ const WarehouseManagement: React.FC = () => {
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2" color="text.secondary">
-                        {new Date(m.createdAt).toLocaleDateString('en-IN', {
+                        {new Date(m.createdAt).toLocaleDateString(uiDateLocale(), {
                           day: '2-digit',
                           month: 'short',
                           year: 'numeric',
@@ -443,14 +425,13 @@ const WarehouseManagement: React.FC = () => {
         PaperProps={{ sx: { borderRadius: 3 } }}
       >
         <DialogTitle sx={{ fontWeight: 700, borderBottom: 1, borderColor: 'divider' }}>
-          Add Warehouse Location
-        </DialogTitle>
+          {uiText("Add Warehouse Location ")}</DialogTitle>
         <DialogContent sx={{ pt: 3 }}>
           <Grid container spacing={2}>
             <Grid size={{ xs: 12 }}>
               <TextField
-                label="Location / Godown Name"
-                placeholder="e.g. Raw Cotton Godown #1"
+                label={uiText("Location / Godown Name", 'forms')}
+                placeholder={uiText("e.g. Raw Cotton Godown #1", 'forms')}
                 fullWidth
                 size="small"
                 required
@@ -460,8 +441,8 @@ const WarehouseManagement: React.FC = () => {
             </Grid>
             <Grid size={{ xs: 12 }}>
               <TextField
-                label="Zone / Bay"
-                placeholder="Zone A - North Wing"
+                label={uiText("Zone / Bay", 'forms')}
+                placeholder={uiText("Zone A - North Wing", 'forms')}
                 fullWidth
                 size="small"
                 value={locationForm.zone}
@@ -470,8 +451,8 @@ const WarehouseManagement: React.FC = () => {
             </Grid>
             <Grid size={{ xs: 12 }}>
               <TextField
-                label="Description"
-                placeholder="Capacity: 500 bales, fire-suppression equipped"
+                label={uiText("Description", 'forms')}
+                placeholder={uiText("Capacity: 500 bales, fire-suppression equipped", 'forms')}
                 fullWidth
                 multiline
                 rows={2}
@@ -486,14 +467,13 @@ const WarehouseManagement: React.FC = () => {
         </DialogContent>
         <DialogActions sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
           <Button onClick={() => setOpenLocationDialog(false)} color="inherit">
-            Cancel
-          </Button>
+            {uiText("Cancel ")}</Button>
           <Button
             variant="contained"
             disabled={!locationForm.name.trim() || createLocationMutation.isPending}
             onClick={() => createLocationMutation.mutate(locationForm)}
           >
-            {createLocationMutation.isPending ? 'Saving...' : 'Save Location'}
+            {createLocationMutation.isPending ? uiText("Saving...") : uiText("Save Location")}
           </Button>
         </DialogActions>
       </Dialog>
@@ -507,16 +487,15 @@ const WarehouseManagement: React.FC = () => {
         PaperProps={{ sx: { borderRadius: 3 } }}
       >
         <DialogTitle sx={{ fontWeight: 700, borderBottom: 1, borderColor: 'divider' }}>
-          Log Stock Movement
-        </DialogTitle>
+          {uiText("Log Stock Movement ")}</DialogTitle>
         <DialogContent sx={{ pt: 3 }}>
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, sm: 6 }}>
               <FormControl fullWidth size="small" required>
-                <InputLabel>Storage Location</InputLabel>
+                <InputLabel>{uiText("Storage Location", 'forms')}</InputLabel>
                 <Select
                   value={movementForm.locationId}
-                  label="Storage Location"
+                  label={uiText("Storage Location", 'forms')}
                   onChange={(e) =>
                     setMovementForm({ ...movementForm, locationId: Number(e.target.value) })
                   }
@@ -531,29 +510,29 @@ const WarehouseManagement: React.FC = () => {
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
               <FormControl fullWidth size="small">
-                <InputLabel>Movement Type</InputLabel>
+                <InputLabel>{uiText("Movement Type", 'forms')}</InputLabel>
                 <Select
                   value={movementForm.movementType}
-                  label="Movement Type"
+                  label={uiText("Movement Type", 'forms')}
                   onChange={(e) =>
                     setMovementForm({ ...movementForm, movementType: e.target.value })
                   }
                 >
-                  <MenuItem value="IN">IN (Place received stock here)</MenuItem>
-                  <MenuItem value="OUT">OUT (Release stock for use)</MenuItem>
-                  <MenuItem value="TRANSFER">TRANSFER (Internal Relocation)</MenuItem>
+                  <MenuItem value="IN">{uiText("IN (Place received stock here)", 'forms')}</MenuItem>
+                  <MenuItem value="OUT">{uiText("OUT (Release stock for use)", 'forms')}</MenuItem>
+                  <MenuItem value="TRANSFER">{uiText("TRANSFER (Internal Relocation)", 'forms')}</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
             {movementForm.movementType === 'TRANSFER' && <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField select label="Destination location" fullWidth size="small" value={movementForm.toLocationId} onChange={e => setMovementForm({ ...movementForm, toLocationId: Number(e.target.value) })}>
+              <TextField select label={uiText("Destination location", 'forms')} fullWidth size="small" value={movementForm.toLocationId} onChange={e => setMovementForm({ ...movementForm, toLocationId: Number(e.target.value) })}>
                 {locations.filter(loc => loc.active && loc.id !== movementForm.locationId).map(loc => <MenuItem key={loc.id} value={loc.id}>{loc.name}</MenuItem>)}
               </TextField>
             </Grid>}
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 select
-                label="Stock item"
+                label={uiText("Stock item", 'forms')}
                 fullWidth
                 size="small"
                 required
@@ -561,13 +540,13 @@ const WarehouseManagement: React.FC = () => {
                 onChange={(e) =>
                   setMovementForm({ ...movementForm, itemId: Number(e.target.value) || '' })
                 }
-                helperText="Locations track existing company stock; they do not create new stock."
+                helperText={uiText("Locations track existing company stock; they do not create new stock.", 'forms')}
               >{catalogue.filter(item => item.active && item.type !== 'SERVICE').map(item => <MenuItem key={item.id} value={item.id}>{item.name} · {item.uom}</MenuItem>)}</TextField>
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 type="number"
-                label="Quantity (kg / bags / units)"
+                label={uiText("Quantity (kg / bags / units)", 'forms')}
                 fullWidth
                 size="small"
                 required
@@ -579,8 +558,8 @@ const WarehouseManagement: React.FC = () => {
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
-                label="Reference Doc / Delivery Challan"
-                placeholder="DC-2026-092"
+                label={uiText("Reference Doc / Delivery Challan", 'forms')}
+                placeholder={uiText("DC-2026-092", 'forms')}
                 fullWidth
                 size="small"
                 value={movementForm.referenceId}
@@ -591,8 +570,8 @@ const WarehouseManagement: React.FC = () => {
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
-                label="Notes"
-                placeholder="Pallet #4, verified by supervisor"
+                label={uiText("Notes", 'forms')}
+                placeholder={uiText("Pallet #4, verified by supervisor", 'forms')}
                 fullWidth
                 size="small"
                 value={movementForm.notes}
@@ -603,8 +582,7 @@ const WarehouseManagement: React.FC = () => {
         </DialogContent>
         <DialogActions sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
           <Button onClick={() => setOpenMovementDialog(false)} color="inherit">
-            Cancel
-          </Button>
+            {uiText("Cancel ")}</Button>
           <Button
             variant="contained"
             disabled={
@@ -614,7 +592,7 @@ const WarehouseManagement: React.FC = () => {
             }
             onClick={() => createMovementMutation.mutate(movementForm)}
           >
-            {createMovementMutation.isPending ? 'Logging...' : 'Save Movement'}
+            {createMovementMutation.isPending ? uiText("Logging...") : uiText("Save Movement")}
           </Button>
         </DialogActions>
       </Dialog>

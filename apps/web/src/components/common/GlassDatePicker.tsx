@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage, uiDateLocale } from "../../i18n";
 import React, { useState, useRef, useEffect } from 'react';
 import { Box, Typography, IconButton, useTheme } from '@mui/material';
 import {
@@ -18,7 +19,6 @@ export type GlassDatePickerProps = {
   [key: string]: any;
 };
 
-const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const DAYS   = ['Su','Mo','Tu','We','Th','Fr','Sa'];
 
 function parseDate(val: string): Date | null {
@@ -33,12 +33,13 @@ function formatDisplay(val: string): string {
   if (!val) return '';
   const d = parseDate(val);
   if (!d) return val;
-  return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+  return d.toLocaleDateString(uiDateLocale(), { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
 export const GlassDatePicker: React.FC<GlassDatePickerProps> = ({
   value, onChange, label, size = 'small', fullWidth, sx,
 }) => {
+  useUiLanguage();
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
 
@@ -130,6 +131,15 @@ export const GlassDatePicker: React.FC<GlassDatePickerProps> = ({
     <Box ref={wrapRef} sx={{ position: 'relative', display: 'inline-flex', width: fullWidth ? '100%' : undefined, ...sx }}>
       {/* Trigger input */}
       <Box
+        role="button"
+        tabIndex={0}
+        aria-label={typeof label === 'string' ? uiText(label, 'forms') : uiText('Pick a date', 'forms')}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        onKeyDown={event => {
+          if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setOpen(p => !p); }
+          if (event.key === 'Escape') setOpen(false);
+        }}
         onClick={() => setOpen(p => !p)}
         sx={{
           display: 'flex',
@@ -154,11 +164,11 @@ export const GlassDatePicker: React.FC<GlassDatePickerProps> = ({
         <Box sx={{ flex: 1 }}>
           {label && (
             <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary', fontSize: '0.68rem', lineHeight: 1, mb: 0.3 }}>
-              {label}
+              {typeof label === 'string' ? uiText(label, 'forms') : label}
             </Typography>
           )}
           <Typography variant="body2" sx={{ color: value ? 'text.primary' : 'text.secondary', fontWeight: value ? 500 : 400, fontSize: size === 'small' ? '0.82rem' : '0.875rem' }}>
-            {value ? formatDisplay(value) : 'Pick a date'}
+            {value ? formatDisplay(value) : uiText("Pick a date")}
           </Typography>
         </Box>
         <DropIcon sx={{ color: 'text.secondary', fontSize: 18, transition: 'transform 0.2s', transform: open ? 'rotate(180deg)' : 'none' }} />
@@ -167,6 +177,9 @@ export const GlassDatePicker: React.FC<GlassDatePickerProps> = ({
       {/* Calendar Popup */}
       {open && (
         <Box
+          role="dialog"
+          aria-label={uiText('Pick a date', 'forms')}
+          onKeyDown={event => { if (event.key === 'Escape') { event.stopPropagation(); setOpen(false); } }}
           className="anim-pop-in"
           sx={{
             position: 'absolute',
@@ -191,7 +204,7 @@ export const GlassDatePicker: React.FC<GlassDatePickerProps> = ({
               }}
             >
               <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: isDark ? '#e2e8f0' : '#1e293b' }}>
-                {MONTHS[month]}, {year}
+                {view.toLocaleDateString(uiDateLocale(), { month: 'long', year: 'numeric' })}
               </Typography>
               <DropIcon sx={{ fontSize: 16, color: isDark ? '#64748b' : '#94a3b8' }} />
             </Box>
@@ -204,6 +217,7 @@ export const GlassDatePicker: React.FC<GlassDatePickerProps> = ({
                   key={i}
                   size="small"
                   onClick={fn}
+                  aria-label={uiText(i === 0 ? 'Previous month' : 'Next month', 'forms')}
                   sx={{
                     ...neu.btn,
                     width: 36, height: 36,
@@ -221,7 +235,7 @@ export const GlassDatePicker: React.FC<GlassDatePickerProps> = ({
 
           {/* Day-of-week labels */}
           <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', mb: 1 }}>
-            {DAYS.map(d => (
+            {(uiDateLocale().startsWith('ta') ? ['ஞா','தி','செ','பு','வி','வெ','ச'] : DAYS).map(d => (
               <Typography key={d} align="center" sx={{ fontSize: '0.72rem', fontWeight: 700, color: isDark ? '#475569' : '#94a3b8', py: 0.5 }}>
                 {d}
               </Typography>
@@ -235,7 +249,11 @@ export const GlassDatePicker: React.FC<GlassDatePickerProps> = ({
               const today = isToday(cell.date);
               return (
                 <Box
+                  component="button"
+                  type="button"
                   key={idx}
+                  aria-label={cell.date.toLocaleDateString(uiDateLocale(), { day: 'numeric', month: 'long', year: 'numeric' })}
+                  aria-pressed={isSelected}
                   onClick={() => {
                     onChange({ target: { value: toISO(cell.date) } });
                     setOpen(false);
@@ -274,7 +292,7 @@ export const GlassDatePicker: React.FC<GlassDatePickerProps> = ({
                     '&:active': { transform: 'scale(0.93)' },
                   }}
                 >
-                  {cell.day}
+                  {cell.day.toLocaleString(uiDateLocale(), { useGrouping: false })}
                 </Box>
               );
             })}
@@ -294,7 +312,7 @@ export const GlassDatePicker: React.FC<GlassDatePickerProps> = ({
               }}
             >
               <ClearIcon sx={{ fontSize: 16, color: selectedColor }} />
-              <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: selectedColor }}>Clear</Typography>
+              <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: selectedColor }}>{uiText("Clear")}</Typography>
             </Box>
             <Box
               onClick={() => { onChange({ target: { value: toISO(new Date()) } }); setOpen(false); }}
@@ -308,7 +326,7 @@ export const GlassDatePicker: React.FC<GlassDatePickerProps> = ({
               }}
             >
               <TodayIcon sx={{ fontSize: 16, color: selectedColor }} />
-              <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: selectedColor }}>Today</Typography>
+              <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: selectedColor }}>{uiText("Today")}</Typography>
             </Box>
           </Box>
         </Box>

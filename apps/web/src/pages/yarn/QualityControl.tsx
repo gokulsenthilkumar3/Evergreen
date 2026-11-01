@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage, uiLocale, uiTemplate, uiScopedTemplate, uiDateLocale } from "../../i18n";
 import React, { useState } from 'react';
 import {
   Add as AddIcon,
@@ -70,6 +71,7 @@ const initialInspectionForm = {
 };
 
 const QualityControl: React.FC = () => {
+  useUiLanguage();
   const [filterStatus, setFilterStatus] = useState<string>('ALL');
   const [openDialog, setOpenDialog] = useState(false);
   const [form, setForm] = useState(initialInspectionForm);
@@ -113,12 +115,12 @@ const QualityControl: React.FC = () => {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quality-inspections'] });
-      toast.success('Quality inspection recorded successfully');
+      toast.success(uiText('Quality inspection recorded successfully', 'feedback'));
       setOpenDialog(false);
       setForm(initialInspectionForm);
     },
     onError: (err: any) => {
-      toast.error(err?.response?.data?.message || 'Failed to record inspection');
+      toast.error(uiText(err?.response?.data?.message || 'Failed to record inspection', 'feedback'));
     },
   });
 
@@ -151,11 +153,9 @@ const QualityControl: React.FC = () => {
           <QualityIcon color="primary" sx={{ fontSize: 36 }} />
           <Box>
             <Typography variant="h4" fontWeight={800}>
-              Quality Control & Testing
-            </Typography>
+              {uiText("Quality Control & Testing ")}</Typography>
             <Typography color="text.secondary">
-              Yarn count verification, RKM tenacity, elongation & imperfection audits
-            </Typography>
+              {uiText("Yarn count verification, RKM tenacity, elongation & imperfection audits ")}</Typography>
           </Box>
         </Box>
 
@@ -166,23 +166,20 @@ const QualityControl: React.FC = () => {
             disabled={isLoading || isRefetching}
             onClick={() => queryClient.invalidateQueries({ queryKey: ['quality-inspections'] })}
           >
-            Refresh
-          </Button>
+            {uiText("Refresh ")}</Button>
 
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => setOpenDialog(true)}
           >
-            Record Inspection
-          </Button>
+            {uiText("Record Inspection ")}</Button>
         </Box>
       </Box>
 
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
-          Failed to load quality inspection logs from server.
-        </Alert>
+          {uiText("Failed to load quality inspection logs from server. ")}</Alert>
       )}
 
       {/* KPI Cards */}
@@ -191,8 +188,7 @@ const QualityControl: React.FC = () => {
           <Card variant="outlined" sx={{ borderRadius: 3 }}>
             <CardContent sx={{ py: 2 }}>
               <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                TOTAL TESTED BATCHES
-              </Typography>
+                {uiText("TOTAL TESTED BATCHES ")}</Typography>
               <Typography variant="h5" fontWeight={800} color="#3b82f6">
                 {totalCount}
               </Typography>
@@ -204,8 +200,7 @@ const QualityControl: React.FC = () => {
           <Card variant="outlined" sx={{ borderRadius: 3 }}>
             <CardContent sx={{ py: 2 }}>
               <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                OVERALL PASS RATE
-              </Typography>
+                {uiText("OVERALL PASS RATE ")}</Typography>
               <Typography variant="h5" fontWeight={800} color="#059669">
                 {passRate}%
               </Typography>
@@ -217,11 +212,9 @@ const QualityControl: React.FC = () => {
           <Card variant="outlined" sx={{ borderRadius: 3 }}>
             <CardContent sx={{ py: 2 }}>
               <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                REJECTIONS / HOLD
-              </Typography>
+                {uiText("REJECTIONS / HOLD ")}</Typography>
               <Typography variant="h5" fontWeight={800} color="#ef4444">
-                {failCount} Fail / {holdCount} Hold
-              </Typography>
+                {failCount} {uiText(" Fail / ")}{holdCount} {uiText(" Hold ")}</Typography>
             </CardContent>
           </Card>
         </Grid>
@@ -230,8 +223,7 @@ const QualityControl: React.FC = () => {
           <Card variant="outlined" sx={{ borderRadius: 3 }}>
             <CardContent sx={{ py: 2 }}>
               <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                AVG TENACITY (RKM)
-              </Typography>
+                {uiText("AVG TENACITY (RKM) ")}</Typography>
               <Typography variant="h5" fontWeight={800} color="#8b5cf6">
                 {avgTenacity} {avgTenacity !== '—' && 'cN/tex'}
               </Typography>
@@ -256,8 +248,7 @@ const QualityControl: React.FC = () => {
           }}
         >
           <Typography variant="subtitle2" fontWeight={700}>
-            Inspection Register ({inspections.length} records)
-          </Typography>
+            {uiText("Inspection Register (")}{inspections.length} {uiText(" records) ")}</Typography>
 
           <Box sx={{ display: 'flex', gap: 1 }}>
             {['ALL', 'PASS', 'FAIL', 'HOLD'].map((st) => (
@@ -278,21 +269,18 @@ const QualityControl: React.FC = () => {
           <Table size="small">
             <TableHead>
               <TableRow>
-                <TableCell sx={{ fontWeight: 700 }}>Batch ID</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Yarn Count</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Inspection Date</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>{uiText("Batch ID", 'tables')}</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>{uiText("Yarn Count", 'tables')}</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>{uiText("Inspection Date", 'tables')}</TableCell>
                 <TableCell align="right" sx={{ fontWeight: 700 }}>
-                  Tenacity (cN/tex)
-                </TableCell>
+                  {uiText("Tenacity (cN/tex) ", 'tables')}</TableCell>
                 <TableCell align="right" sx={{ fontWeight: 700 }}>
-                  Elongation (%)
-                </TableCell>
+                  {uiText("Elongation (%) ", 'tables')}</TableCell>
                 <TableCell align="right" sx={{ fontWeight: 700 }}>
-                  Unevenness (U%)
-                </TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Disposition</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Remarks</TableCell>
+                  {uiText("Unevenness (U%) ", 'tables')}</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>{uiText("Status", 'tables')}</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>{uiText("Disposition", 'tables')}</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>{uiText("Remarks", 'tables')}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -305,27 +293,26 @@ const QualityControl: React.FC = () => {
               ) : inspections.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={9} align="center" sx={{ color: 'text.secondary', py: 4 }}>
-                    No quality inspections recorded yet.
-                  </TableCell>
+                    {uiText("No quality inspections recorded yet. ", 'tables')}</TableCell>
                 </TableRow>
               ) : (
                 inspections.map((row) => (
                   <TableRow key={row.id} hover>
-                    <TableCell sx={{ fontWeight: 600 }}>{row.batchId || `Batch #${row.id}`}</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>{row.batchId || uiScopedTemplate('tables')`Batch #${row.id}`}</TableCell>
                     <TableCell>{row.yarnCount || '—'}</TableCell>
                     <TableCell>
                       <Typography variant="body2" color="text.secondary">
-                        {new Date(row.date).toLocaleDateString('en-IN')}
+                        {new Date(row.date).toLocaleDateString(uiDateLocale())}
                       </Typography>
                     </TableCell>
                     <TableCell align="right">
-                      {row.tenacity !== undefined ? `${row.tenacity} g/tex` : '—'}
+                      {row.tenacity !== undefined ? uiScopedTemplate('tables')`${row.tenacity} g/tex` : '—'}
                     </TableCell>
                     <TableCell align="right">
-                      {row.elongation !== undefined ? `${row.elongation}%` : '—'}
+                      {row.elongation !== undefined ? uiScopedTemplate('tables')`${row.elongation}%` : '—'}
                     </TableCell>
                     <TableCell align="right">
-                      {row.unevenness !== undefined ? `${row.unevenness}%` : '—'}
+                      {row.unevenness !== undefined ? uiScopedTemplate('tables')`${row.unevenness}%` : '—'}
                     </TableCell>
                     <TableCell>
                       <Chip
@@ -370,16 +357,15 @@ const QualityControl: React.FC = () => {
         PaperProps={{ sx: { borderRadius: 3 } }}
       >
         <DialogTitle sx={{ fontWeight: 700, borderBottom: 1, borderColor: 'divider' }}>
-          Record Lab Quality Inspection
-        </DialogTitle>
+          {uiText("Record Lab Quality Inspection ")}</DialogTitle>
         <DialogContent sx={{ pt: 3 }}>
           <Grid container spacing={2}>
-            <Grid size={{ xs: 12, sm: 8 }}><TextField select fullWidth label="Stock lot to inspect" value={form.lotId} onChange={e => setForm({ ...form, lotId: e.target.value })}><MenuItem value="">Measurement record only</MenuItem>{(business?.lots || []).filter((l: any) => l.quantity > 0).map((l: any) => <MenuItem key={l.id} value={String(l.id)}>{l.code} · {l.item.name} · {l.quantity} {l.item.uom}</MenuItem>)}</TextField></Grid>
-            <Grid size={{ xs: 12, sm: 4 }}><TextField fullWidth type="number" label="Quantity to quarantine" value={form.holdQuantity} onChange={e => setForm({ ...form, holdQuantity: e.target.value })} helperText="Required for HOLD or FAIL. Release in Business flows after inspection." /></Grid>
+            <Grid size={{ xs: 12, sm: 8 }}><TextField select fullWidth label={uiText("Stock lot to inspect", 'forms')} value={form.lotId} onChange={e => setForm({ ...form, lotId: e.target.value })}><MenuItem value="">{uiText("Measurement record only", 'forms')}</MenuItem>{(business?.lots || []).filter((l: any) => l.quantity > 0).map((l: any) => <MenuItem key={l.id} value={String(l.id)}>{l.code} · {l.item.name} · {l.quantity} {l.item.uom}</MenuItem>)}</TextField></Grid>
+            <Grid size={{ xs: 12, sm: 4 }}><TextField fullWidth type="number" label={uiText("Quantity to quarantine", 'forms')} value={form.holdQuantity} onChange={e => setForm({ ...form, holdQuantity: e.target.value })} helperText={uiText("Required for HOLD or FAIL. Release in Business flows after inspection.", 'forms')} /></Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
-                label="Batch / Lot Number"
-                placeholder="LOT-2026-09"
+                label={uiText("Batch / Lot Number", 'forms')}
+                placeholder={uiText("LOT-2026-09", 'forms')}
                 fullWidth
                 size="small"
                 value={form.batchId}
@@ -388,8 +374,8 @@ const QualityControl: React.FC = () => {
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
-                label="Yarn Count & Specification"
-                placeholder="e.g. 40s Combed Cotton"
+                label={uiText("Yarn Count & Specification", 'forms')}
+                placeholder={uiText("e.g. 40s Combed Cotton", 'forms')}
                 fullWidth
                 size="small"
                 value={form.yarnCount}
@@ -399,7 +385,7 @@ const QualityControl: React.FC = () => {
             <Grid size={{ xs: 12, sm: 4 }}>
               <TextField
                 type="number"
-                label="Tenacity (cN/tex)"
+                label={uiText("Tenacity (cN/tex)", 'forms')}
                 fullWidth
                 size="small"
                 value={form.tenacity}
@@ -409,7 +395,7 @@ const QualityControl: React.FC = () => {
             <Grid size={{ xs: 12, sm: 4 }}>
               <TextField
                 type="number"
-                label="Elongation (%)"
+                label={uiText("Elongation (%)", 'forms')}
                 fullWidth
                 size="small"
                 value={form.elongation}
@@ -419,7 +405,7 @@ const QualityControl: React.FC = () => {
             <Grid size={{ xs: 12, sm: 4 }}>
               <TextField
                 type="number"
-                label="Unevenness (U%)"
+                label={uiText("Unevenness (U%)", 'forms')}
                 fullWidth
                 size="small"
                 value={form.unevenness}
@@ -428,36 +414,36 @@ const QualityControl: React.FC = () => {
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
               <FormControl fullWidth size="small">
-                <InputLabel>QC Test Status</InputLabel>
+                <InputLabel>{uiText("QC Test Status", 'forms')}</InputLabel>
                 <Select
                   value={form.status}
-                  label="QC Test Status"
+                  label={uiText("QC Test Status", 'forms')}
                   onChange={(e) => setForm({ ...form, status: e.target.value })}
                 >
-                  <MenuItem value="PASS">PASS (Acceptable)</MenuItem>
-                  <MenuItem value="FAIL">FAIL (Out of tolerance)</MenuItem>
-                  <MenuItem value="HOLD">HOLD (Requires retest)</MenuItem>
+                  <MenuItem value="PASS">{uiText("PASS (Acceptable)", 'forms')}</MenuItem>
+                  <MenuItem value="FAIL">{uiText("FAIL (Out of tolerance)", 'forms')}</MenuItem>
+                  <MenuItem value="HOLD">{uiText("HOLD (Requires retest)", 'forms')}</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
               <FormControl fullWidth size="small">
-                <InputLabel>Batch Disposition</InputLabel>
+                <InputLabel>{uiText("Batch Disposition", 'forms')}</InputLabel>
                 <Select
                   value={form.disposition}
-                  label="Batch Disposition"
+                  label={uiText("Batch Disposition", 'forms')}
                   onChange={(e) => setForm({ ...form, disposition: e.target.value })}
                 >
-                  <MenuItem value="RELEASE">RELEASE to Warehouse</MenuItem>
-                  <MenuItem value="REPROCESS">REPROCESS</MenuItem>
-                  <MenuItem value="SCRAP">SCRAP / Waste</MenuItem>
+                  <MenuItem value="RELEASE">{uiText("RELEASE to Warehouse", 'forms')}</MenuItem>
+                  <MenuItem value="REPROCESS">{uiText("REPROCESS", 'forms')}</MenuItem>
+                  <MenuItem value="SCRAP">{uiText("SCRAP / Waste", 'forms')}</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
             <Grid size={{ xs: 12 }}>
               <TextField
-                label="Remarks / Test Notes"
-                placeholder="Moisture content 7.8%, CSP 2850, hairiness index normal"
+                label={uiText("Remarks / Test Notes", 'forms')}
+                placeholder={uiText("Moisture content 7.8%, CSP 2850, hairiness index normal", 'forms')}
                 fullWidth
                 size="small"
                 value={form.remarks}
@@ -466,8 +452,8 @@ const QualityControl: React.FC = () => {
             </Grid>
             <Grid size={{ xs: 12 }}>
               <TextField
-                label="QC Inspector Name"
-                placeholder="Lab Incharge"
+                label={uiText("QC Inspector Name", 'forms')}
+                placeholder={uiText("Lab Incharge", 'forms')}
                 fullWidth
                 size="small"
                 value={form.inspectedBy}
@@ -478,14 +464,13 @@ const QualityControl: React.FC = () => {
         </DialogContent>
         <DialogActions sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
           <Button onClick={() => setOpenDialog(false)} color="inherit">
-            Cancel
-          </Button>
+            {uiText("Cancel ")}</Button>
           <Button
             variant="contained"
             disabled={createInspectionMutation.isPending}
             onClick={() => createInspectionMutation.mutate(form)}
           >
-            {createInspectionMutation.isPending ? 'Recording...' : 'Save Inspection'}
+            {createInspectionMutation.isPending ? uiText("Recording...") : uiText("Save Inspection")}
           </Button>
         </DialogActions>
       </Dialog>

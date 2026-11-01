@@ -107,7 +107,7 @@ describe("Installation helpdesk", () => {
     fireEvent.click(
       await screen.findByRole("button", { name: "Update status" }),
     );
-    fireEvent.change(screen.getByLabelText("Resolution or progress note"), {
+    fireEvent.change(screen.getByRole('textbox', { name: /Resolution or progress note/ }), {
       target: { value: "Investigating the issue" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Save update" }));

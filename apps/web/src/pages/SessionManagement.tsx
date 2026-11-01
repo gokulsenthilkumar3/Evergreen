@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage, uiDateLocale, uiMetric } from "../i18n";
 import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -14,18 +15,22 @@ import {
     Button,
     Chip,
     TextField,
+    Alert,
 } from '@mui/material';
 import { Security as SecurityIcon } from '@mui/icons-material';
 import api from '../utils/api';
 import { toast } from 'sonner';
 import EmptyState from '../components/common/EmptyState';
+import { useConfirm } from '../context/ConfirmContext';
 
 export default function SessionManagement() {
+  useUiLanguage();
     const queryClient = useQueryClient();
+    const { confirm } = useConfirm();
     const [searchTerm, setSearchTerm] = React.useState('');
 
     // Fetch Sessions
-    const { data: sessions = [], isLoading } = useQuery({
+    const { data: sessions = [], isLoading, isError, isFetching, refetch } = useQuery({
         queryKey: ['sessions'],
         queryFn: async () => {
             const res = await api.get('/sessions');
@@ -47,10 +52,10 @@ export default function SessionManagement() {
         mutationFn: (id: string) => api.delete(`/sessions/${id}/revoke`),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['sessions'] });
-            toast.success('Session revoked successfully');
+            toast.success(uiText('Session revoked successfully', 'feedback'));
         },
         onError: (error: any) => {
-            toast.error(error?.response?.data?.message || 'Failed to revoke session');
+            toast.error(uiText(error?.response?.data?.message || 'Failed to revoke session', 'feedback'));
         }
     });
 
@@ -62,28 +67,28 @@ export default function SessionManagement() {
         );
     }
 
-    const activeCount = sessions.filter((session: any) => session.isValid).length;
-    const revokedCount = sessions.length - activeCount;
+    const activeCount = sessions.filter((session: any) => session.isValid && !session.expired).length;
+    const revokedCount = sessions.filter((session: any) => !session.isValid).length;
+    const expiredCount = sessions.filter((session: any) => session.isValid && session.expired).length;
 
     return (
         <Box sx={{ maxWidth: '100%', width: '100%' }}>
+            {isError && <Alert severity="error" action={<Button disabled={isFetching} onClick={()=>void refetch()}>{uiText('Retry')}</Button>}>{uiText('Could not load sessions. Previously loaded data may be out of date.')}</Alert>}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 4, flexWrap: 'wrap' }}>
                 <SecurityIcon sx={{ fontSize: 32, color: 'primary.main' }} />
                 <Box>
                     <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-                        Session Management
-                    </Typography>
+                        {uiText("Session Management ")}</Typography>
                     <Typography color="text.secondary">
-                        Review live sessions, devices, and revoke risky logins.
-                    </Typography>
+                        {uiText("Review live sessions, devices, and revoke risky logins. ")}</Typography>
                 </Box>
             </Box>
 
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2, mb: 3 }}>
-                {[{ label: 'All Sessions', value: sessions.length }, { label: 'Active', value: activeCount }, { label: 'Revoked', value: revokedCount }].map((card) => (
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 2, mb: 3 }}>
+                {[{ label: 'All Sessions', value: sessions.length }, { label: 'Active', value: activeCount }, { label: 'Revoked', value: revokedCount }, {label:'Expired',value:expiredCount}].map((card) => (
                     <Paper key={card.label} sx={{ p: 2.5 }}>
-                        <Typography variant="caption" color="text.secondary">{card.label}</Typography>
-                        <Typography variant="h4" fontWeight={800}>{card.value}</Typography>
+                        <Typography variant="caption" color="text.secondary">{uiText(card.label, 'metrics')}</Typography>
+                        <Typography variant="h4" fontWeight={800}>{uiMetric(card.value)}</Typography>
                     </Paper>
                 ))}
             </Box>
@@ -92,7 +97,7 @@ export default function SessionManagement() {
                 <TextField
                     fullWidth
                     size="small"
-                    placeholder="Search by user, IP, location, or device..."
+                    placeholder={uiText("Search by user, IP, location, or device...", 'forms')}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -103,13 +108,13 @@ export default function SessionManagement() {
                     <Table>
                         <TableHead>
                             <TableRow sx={{ bgcolor: 'action.hover' }}>
-                                <TableCell sx={{ fontWeight: 'bold' }}>User</TableCell>
-                                <TableCell sx={{ fontWeight: 'bold' }}>IP Address</TableCell>
-                                <TableCell sx={{ fontWeight: 'bold' }}>Location</TableCell>
-                                <TableCell sx={{ fontWeight: 'bold' }}>User Agent</TableCell>
-                                <TableCell sx={{ fontWeight: 'bold' }}>Status</TableCell>
-                                <TableCell sx={{ fontWeight: 'bold' }}>Last Active</TableCell>
-                                <TableCell align="right" sx={{ fontWeight: 'bold' }}>Actions</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold' }}>{uiText("User", 'tables')}</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold' }}>{uiText("IP Address", 'tables')}</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold' }}>{uiText("Location", 'tables')}</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold' }}>{uiText("User Agent", 'tables')}</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold' }}>{uiText("Status", 'tables')}</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold' }}>{uiText("Last Active", 'tables')}</TableCell>
+                                <TableCell align="right" sx={{ fontWeight: 'bold' }}>{uiText("Actions", 'tables')}</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -118,7 +123,7 @@ export default function SessionManagement() {
                                     <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
                                         <EmptyState
                                             type="search"
-                                            title="No sessions found"
+                                            title={uiText("No sessions found", 'tables')}
                                             message="Try a different search term or check back after more users sign in."
                                         />
                                     </TableCell>
@@ -129,6 +134,7 @@ export default function SessionManagement() {
                                         <TableCell>
                                             <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
                                                 {session.user?.username || 'Unknown'}
+                                                {session.isCurrent ? uiText(' (current session)', 'tables') : ''}
                                             </Typography>
                                             <Typography variant="caption" color="text.secondary">
                                                 {session.user?.role}
@@ -141,13 +147,14 @@ export default function SessionManagement() {
                                         </TableCell>
                                         <TableCell>
                                             <Chip
-                                                label={session.isValid ? 'Active' : 'Revoked'}
-                                                color={session.isValid ? 'success' : 'error'}
+                                                label={!session.isValid ? uiText("Revoked", 'tables') : session.expired ? uiText('Expired', 'tables') : uiText("Active", 'tables')}
+                                                color={session.isValid && !session.expired ? 'success' : 'error'}
                                                 size="small"
                                             />
                                         </TableCell>
                                         <TableCell>
-                                            {new Date(session.lastActive).toLocaleString()}
+                                            {new Date(session.lastActive).toLocaleString(uiDateLocale())}
+                                            {session.expiresAt && <Typography variant="caption" display="block">{uiText('Expires')}: {new Date(session.expiresAt).toLocaleString(uiDateLocale())}</Typography>}
                                         </TableCell>
                                         <TableCell align="right">
                                             {session.isValid && (
@@ -155,14 +162,13 @@ export default function SessionManagement() {
                                                     color="error"
                                                     size="small"
                                                     disabled={revokeSessionMutation.isPending}
-                                                    onClick={() => {
-                                                        if (window.confirm('Are you sure you want to revoke this session?')) {
+                                                    onClick={async () => {
+                                                        if (await confirm({title:uiText('Revoke sessions'),message:uiText('Revoke this session? If it is your current session, you will be signed out.'),severity:'warning'})) {
                                                             revokeSessionMutation.mutate(session.id);
                                                         }
                                                     }}
                                                 >
-                                                    Revoke
-                                                </Button>
+                                                    {uiText("Revoke ", 'tables')}</Button>
                                             )}
                                         </TableCell>
                                     </TableRow>

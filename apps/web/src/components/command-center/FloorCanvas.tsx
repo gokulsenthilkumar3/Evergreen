@@ -1,3 +1,4 @@
+import { uiLocale, uiText } from "../../i18n";
 import React, { useMemo } from 'react';
 import { useTheme } from '@mui/material';
 import { sfx } from '../../utils/sfx';
@@ -87,7 +88,7 @@ const ZoneRect: React.FC<{
       <text x={x + w / 2} y={y + 17} textAnchor="middle"
         fontSize={9} fontWeight={700} letterSpacing={1}
         fill={color} style={{ textTransform: 'uppercase' }}>
-        {label}
+        {uiText(label, 'forms')}
       </text>
     </g>
   );
@@ -195,7 +196,7 @@ const BaleStack: React.FC<{ count: number; kg: number }> = ({ count, kg }) => {
       )}
       <text x={85} y={430} textAnchor="middle" fontSize={10}
         fill="#0ea5e9" fontWeight={700}>
-        {count} bales · {kg.toLocaleString()} kg
+        {count} bales · {kg.toLocaleString(uiLocale())} kg
       </text>
     </g>
   );
@@ -230,7 +231,7 @@ const BagGrid: React.FC<{ bags: number; kg: number }> = ({ bags, kg }) => {
       )}
       <text x={620} y={310} textAnchor="middle" fontSize={10}
         fill="#059669" fontWeight={700}>
-        {bags} bags · {kg.toLocaleString()} kg
+        {bags} bags · {kg.toLocaleString(uiLocale())} kg
       </text>
     </g>
   );
