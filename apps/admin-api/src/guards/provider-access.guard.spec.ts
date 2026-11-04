@@ -32,6 +32,18 @@ describe('ProviderAccessGuard', () => {
     } as unknown as ExecutionContext;
   }
 
+  it('binds a company credential to its own POST sync routes', async () => {
+    const apiKey = 'company-only-fixture-credential-32-characters';
+    const company = { findUnique: jest.fn(async ({ where }) => where.id === 'company-1' ? { apiKey } : null) };
+    const scoped = new ProviderAccessGuard({ company } as never);
+    const req = { method: 'POST', path: '/companies/company-1/sync', headers: { 'x-company-key': apiKey } };
+    await expect(scoped.canActivate(createMockContext(req))).resolves.toBe(true);
+    await expect(scoped.canActivate(createMockContext({ ...req, path: '/companies/company-2/sync' }))).rejects.toThrow('Invalid company');
+    expect(() => scoped.canActivate(createMockContext({ ...req, path: '/companies/company-1/license' }))).toThrow('not valid');
+    expect(() => scoped.canActivate(createMockContext({ ...req, method: 'GET' }))).toThrow('not valid');
+    await expect(scoped.canActivate(createMockContext({ ...req, headers: { 'x-company-key': 'wrong' } }))).rejects.toThrow('Invalid company');
+  });
+
   it('allows public GET / and GET /health without auth', () => {
     const rootCtx = createMockContext({ method: 'GET', path: '/', headers: {} });
     const healthCtx = createMockContext({ method: 'GET', path: '/health', headers: {} });

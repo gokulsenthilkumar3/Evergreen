@@ -18,12 +18,12 @@ No literal Tab controls in this file. Check composed components and dynamic navi
 
 | Control / label | Handler | Source |
 | --- | --- | --- |
-| Open related workspace | `{() => onNavigate(({ activation: 'settings', integrations: 'integrations', support: 'helpdesk', inventory: 'inventory', billing: 'business', costing: 'costing', admin: 'users' } as Record<string, string>)[selectedChapter] \|\| 'dashboard')}` | [apps/web/src/pages/Tutorial.tsx:278](../../../apps/web/src/pages/Tutorial.tsx) |
-| {step.label} | `{() => setActiveStep(i)}` | [apps/web/src/pages/Tutorial.tsx:283](../../../apps/web/src/pages/Tutorial.tsx) |
-| {i === chapter.steps.length - 1 ? 'Finish chapter' : 'Got it →'} | `{handleStepComplete}` | [apps/web/src/pages/Tutorial.tsx:288](../../../apps/web/src/pages/Tutorial.tsx) |
-| Back | `{() => setActiveStep(i - 1)}` | [apps/web/src/pages/Tutorial.tsx:289](../../../apps/web/src/pages/Tutorial.tsx) |
-| Next chapter → | `{() => { const nextIndex = TUTORIAL_CHAPTERS.findIndex((c) => c.id === selectedChapter) + 1; if (nextIndex < TUTORIAL_CHAPTERS.length) { handleChapterChange(TUTORIAL_CHAPTERS[nextIndex].id); } }}` | [apps/web/src/pages/Tutorial.tsx:302](../../../apps/web/src/pages/Tutorial.tsx) |
-| Restart tour | `{() => { setCompletedSteps({}); setSelectedChapter('getting-started'); setActiveStep(0); }}` | [apps/web/src/pages/Tutorial.tsx:303](../../../apps/web/src/pages/Tutorial.tsx) |
+| {uiText("Open related workspace", 'help')} | `{() => onNavigate(({ activation: 'settings', integrations: 'integrations', support: 'helpdesk', inventory: 'inventory', billing: 'business', costing: 'costing', admin: 'users' } as Record<string, string>)[selectedChapter] \|\| 'dashboard')}` | [apps/web/src/pages/Tutorial.tsx:280](../../../apps/web/src/pages/Tutorial.tsx) |
+| {step.label} | `{() => setActiveStep(i)}` | [apps/web/src/pages/Tutorial.tsx:285](../../../apps/web/src/pages/Tutorial.tsx) |
+| {i === chapter.steps.length - 1 ? uiText("Finish chapter", 'help') : uiText("Got it →", 'help')} | `{handleStepComplete}` | [apps/web/src/pages/Tutorial.tsx:290](../../../apps/web/src/pages/Tutorial.tsx) |
+| {uiText("Back", 'help')} | `{() => setActiveStep(i - 1)}` | [apps/web/src/pages/Tutorial.tsx:291](../../../apps/web/src/pages/Tutorial.tsx) |
+| {uiText("Next chapter →", 'help')} | `{() => { const nextIndex = TUTORIAL_CHAPTERS.findIndex((c) => c.id === selectedChapter) + 1; if (nextIndex < TUTORIAL_CHAPTERS.length) { handleChapterChange(TUTORIAL_CHAPTERS[nextIndex].id); } }}` | [apps/web/src/pages/Tutorial.tsx:304](../../../apps/web/src/pages/Tutorial.tsx) |
+| {uiText("Restart tour", 'help')} | `{() => { setCompletedSteps({}); setSelectedChapter('getting-started'); setActiveStep(0); }}` | [apps/web/src/pages/Tutorial.tsx:305](../../../apps/web/src/pages/Tutorial.tsx) |
 
 ## API calls
 
@@ -34,6 +34,7 @@ Paths are relative to the client API base (`/api/backend` by default in the brow
 
 ## Composed behavior
 
+- [i18n.ts](../../../apps/web/src/i18n.ts)
 - [authStorage.ts](../../../apps/web/src/utils/authStorage.ts)
 - [BusinessFlowGuide.tsx](../../../apps/web/src/components/BusinessFlowGuide.tsx)
 

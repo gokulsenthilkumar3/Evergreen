@@ -18,13 +18,10 @@ No literal Tab controls in this file. Check composed components and dynamic navi
 
 | Control / label | Handler | Source |
 | --- | --- | --- |
-| {showCurrentPass ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />} | `{() => setShowCurrentPass(!showCurrentPass)}` | [apps/web/src/pages/SecuritySettings.tsx:279](../../../apps/web/src/pages/SecuritySettings.tsx) |
-| {showNewPass ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />} | `{() => setShowNewPass(!showNewPass)}` | [apps/web/src/pages/SecuritySettings.tsx:303](../../../apps/web/src/pages/SecuritySettings.tsx) |
-| {passwordBusy ? 'Updating Password...' : 'Update Password'} | `delegated / form submit` | [apps/web/src/pages/SecuritySettings.tsx:333](../../../apps/web/src/pages/SecuritySettings.tsx) |
-| Disable 2FA | `{handleDisableTotp}` | [apps/web/src/pages/SecuritySettings.tsx:379](../../../apps/web/src/pages/SecuritySettings.tsx) |
-| Set Up Authenticator App | `{handleGenerateTotp}` | [apps/web/src/pages/SecuritySettings.tsx:390](../../../apps/web/src/pages/SecuritySettings.tsx) |
-| Verify & Enable | `{handleVerifyTotp}` | [apps/web/src/pages/SecuritySettings.tsx:420](../../../apps/web/src/pages/SecuritySettings.tsx) |
-| Register New Passkey on this Device | `{handleRegisterPasskey}` | [apps/web/src/pages/SecuritySettings.tsx:450](../../../apps/web/src/pages/SecuritySettings.tsx) |
+| {showCurrentPass ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />} | `{() => setShowCurrentPass(!showCurrentPass)}` | [apps/web/src/pages/SecuritySettings.tsx:231](../../../apps/web/src/pages/SecuritySettings.tsx) |
+| {showNewPass ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />} | `{() => setShowNewPass(!showNewPass)}` | [apps/web/src/pages/SecuritySettings.tsx:255](../../../apps/web/src/pages/SecuritySettings.tsx) |
+| {passwordBusy ? uiText("Updating Password...") : uiText("Update Password")} | `delegated / form submit` | [apps/web/src/pages/SecuritySettings.tsx:285](../../../apps/web/src/pages/SecuritySettings.tsx) |
+| {uiText("Verify & Enable ")} | `{handleVerifyTotp}` | [apps/web/src/pages/SecuritySettings.tsx:343](../../../apps/web/src/pages/SecuritySettings.tsx) |
 
 ## API calls
 
@@ -32,17 +29,19 @@ Paths are relative to the client API base (`/api/backend` by default in the brow
 
 | Method | Path expression | Source |
 | --- | --- | --- |
-| GET | `/auth/me` | [apps/web/src/pages/SecuritySettings.tsx:57](../../../apps/web/src/pages/SecuritySettings.tsx) |
-| GET | `/auth/totp/generate` | [apps/web/src/pages/SecuritySettings.tsx:65](../../../apps/web/src/pages/SecuritySettings.tsx) |
-| POST | `/auth/totp/verify` | [apps/web/src/pages/SecuritySettings.tsx:78](../../../apps/web/src/pages/SecuritySettings.tsx) |
-| POST | `/auth/totp/disable` | [apps/web/src/pages/SecuritySettings.tsx:96](../../../apps/web/src/pages/SecuritySettings.tsx) |
-| GET | `/auth/passkey/register-options` | [apps/web/src/pages/SecuritySettings.tsx:112](../../../apps/web/src/pages/SecuritySettings.tsx) |
-| POST | `/auth/passkey/register-verify` | [apps/web/src/pages/SecuritySettings.tsx:115](../../../apps/web/src/pages/SecuritySettings.tsx) |
-| PUT | `/auth/change-password` | [apps/web/src/pages/SecuritySettings.tsx:139](../../../apps/web/src/pages/SecuritySettings.tsx) |
+| GET | `/auth/me` | [apps/web/src/pages/SecuritySettings.tsx:63](../../../apps/web/src/pages/SecuritySettings.tsx) |
+| POST | `/auth/totp/verify` | [apps/web/src/pages/SecuritySettings.tsx:70](../../../apps/web/src/pages/SecuritySettings.tsx) |
+| PUT | `/auth/change-password` | [apps/web/src/pages/SecuritySettings.tsx:99](../../../apps/web/src/pages/SecuritySettings.tsx) |
+| POST | `/auth/passkey/register-verify` | [apps/web/src/pages/SecuritySettings.tsx:370](../../../apps/web/src/pages/SecuritySettings.tsx) |
 
 ## Composed behavior
 
+- [CredentialActionButton.tsx](../../../apps/web/src/components/CredentialActionButton.tsx)
+- [i18n.ts](../../../apps/web/src/i18n.ts)
 - [api.ts](../../../apps/web/src/utils/api.ts)
+- [PasskeyManager.tsx](../../../apps/web/src/components/PasskeyManager.tsx)
+- [AccountSecurityActions.tsx](../../../apps/web/src/components/AccountSecurityActions.tsx)
+- [OidcAccess.tsx](../../../apps/web/src/components/OidcAccess.tsx)
 
 ## Verify the workflow
 

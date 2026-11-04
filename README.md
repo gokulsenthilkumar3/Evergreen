@@ -51,6 +51,8 @@ Before opening a pull request, run:
 npm run verify
 ```
 
+Architecture work and every commit also use [Graphify](docs/GRAPHIFY.md). Install the pinned tool and run `npm run graph:hooks` once per checkout. The pre-commit gate checks the staged snapshot; `npm run graph:check` runs it manually, and `npm run graph:build` refreshes the working-tree architecture report.
+
 It checks migrations against both schemas, type-checks, runs every test suite, checks that generated docs are current, and builds all workspaces. The [maintenance runbook](docs/MAINTENANCE_RUNBOOK.md) lists the separate lint and dependency checks.
 
 ## Repository layout

@@ -64,6 +64,7 @@ describe('AdminSyncService licensing', () => {
       ...process.env,
       ADMIN_API_URL: 'https://provider.example.test',
       COMPANY_ID: 'test-company',
+      ADMIN_SYNC_KEY: 'company-scoped-fixture-key-at-least-32-characters',
     });
     jest.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined);
     jest.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);

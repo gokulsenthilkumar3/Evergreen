@@ -42,13 +42,26 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const policy = await this.prisma.userSessionPolicy.findUnique({ where: { role: user.role } }) || DEFAULT_SESSION_POLICY;
     if (sessionExpired(session,policy)) throw new UnauthorizedException('Session expired under the account policy');
 
-    // Also update lastActive
-    await this.prisma.session
-      .update({
-        where: { id: session.id },
-        data: { lastActive: new Date(), lastSeenAt: new Date() },
-      })
-      .catch(() => {}); // fire and forget
+    // Keep revocation/policy reads on every request, but coalesce activity writes.
+    // A conditional update also coalesces concurrent requests across API instances.
+    const now = Date.now();
+    const interval = policy.idleMinutes > 0
+      ? Math.min(60_000, policy.idleMinutes * 60_000 / 4)
+      : 60_000;
+    const cutoff = new Date(now - interval);
+    if ((session.lastSeenAt || session.lastActive).getTime() <= cutoff.getTime()) {
+      await this.prisma.session.updateMany({
+        where: {
+          id: session.id,
+          isValid: true,
+          OR: [
+            { lastSeenAt: { lte: cutoff } },
+            { lastSeenAt: null, lastActive: { lte: cutoff } },
+          ],
+        },
+        data: { lastActive: new Date(now), lastSeenAt: new Date(now) },
+      }).catch(() => {});
+    }
 
     return {
       userId: user.id,

@@ -97,6 +97,7 @@
         "ts-jest",
         {
           "tsconfig": {
+            "allowJs": true,
             "module": "CommonJS",
             "moduleResolution": "Node",
             "resolvePackageJsonExports": false
@@ -108,6 +109,9 @@
       "^@evergreen/pdf$": "<rootDir>/../../../packages/pdf/src/index.ts",
       "^@evergreen/types$": "<rootDir>/../../../packages/types/index.ts"
     },
+    "transformIgnorePatterns": [
+      "node_modules/(?!(@scure|@noble|@otplib)/)"
+    ],
     "collectCoverageFrom": [
       "**/*.(t|j)s"
     ],

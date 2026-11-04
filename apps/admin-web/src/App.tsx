@@ -15,6 +15,7 @@ import './motion.css';
 import './redesign/redesign.css';
 import './studio.css';
 import './comment-motion.css';
+import './polish.css';
 import SceneGallery from './redesign/SceneGallery';
 import EnvPill from './redesign/EnvPill';
 import OperationTools from './redesign/OperationTools';

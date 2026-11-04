@@ -16,6 +16,7 @@ import type { NextFunction, Request, Response } from 'express';
 import { NotFoundExceptionFilter } from './filters/not-found-exception.filter';
 import { BusinessActionFilter } from './filters/business-action.filter';
 import { PrismaService } from './services/prisma.service';
+import { trustedProxies } from './utils/trusted-proxies';
 
 async function bootstrap() {
   Object.assign(process.env, ownerHostEnvironment('tenant'));
@@ -37,8 +38,7 @@ async function bootstrap() {
   app.use(observeApi);
   // Company logo uploads are limited to 500 KB before base64 encoding.
   app.useBodyParser('json', { limit: '1mb' });
-  // Only the loopback web proxy may supply the original client address.
-  app.set('trust proxy', 'loopback');
+  app.set('trust proxy', trustedProxies());
 
   // Enable CORS with specific configuration
   app.enableCors({

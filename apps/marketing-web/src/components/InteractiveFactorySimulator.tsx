@@ -68,10 +68,10 @@ export function InteractiveFactorySimulator({ onStartPoc, lang = 'en' }: Props) 
         <div className="sim-title-group">
           <div className="sim-badge">
             <span className="sim-pulse-dot" />
-            {lang === 'ta' ? 'நேரடி ஆலை கட்டுப்பாட்டு மையம்' : 'LIVE OPERATIONAL DIGITAL TWIN'}
+            {lang === 'ta' ? 'விளக்க ஆலை மாதிரி' : 'ILLUSTRATIVE FACTORY SIMULATOR'}
           </div>
           <h3>{lang === 'ta' ? 'EverGreen OS நேரடி செயல்பாட்டு மாதிரி' : 'Interactive Factory Floor Simulator'}</h3>
-          <p>{lang === 'ta' ? 'கீழே உள்ள தாவல்களை கிளிக் செய்து ஒவ்வொரு மாட்யூலையும் நேரடியாக இயக்கிப் பாருங்கள்.' : 'Switch between modules below to experience live weighbridge telemetry, cross-ledger audit search, spindle speed monitoring, and instant grace reactivation.'}</p>
+          <p>{lang === 'ta' ? 'இவை விளக்க மாதிரிகள். உண்மையான கருவி இணைப்பு, பணப்பதிவு அல்லது உரிமப் புதுப்பிப்பு நடைபெறாது.' : 'Explore illustrative module scenarios. No device is connected, receipt is posted, message is sent or licence is renewed by this simulator.'}</p>
         </div>
 
         <div className="sim-tabs">
@@ -112,7 +112,7 @@ export function InteractiveFactorySimulator({ onStartPoc, lang = 'en' }: Props) 
           <div className="sim-content-grid">
             <div className="sim-controls-panel">
               <div className="sim-panel-title">
-                <span>🎛️ Live Scale Controls</span>
+                <span>🎛️ Sample Scale Inputs</span>
                 <span className="sim-chip">RS-232 9600-8-N-1</span>
               </div>
 
@@ -180,7 +180,7 @@ export function InteractiveFactorySimulator({ onStartPoc, lang = 'en' }: Props) 
                   className="sim-range"
                 />
                 <div className="sim-slider-hint">
-                  <span>SIMA / CCI Standard: 8.5% moisture allowance</span>
+                  <span>Illustrative allowance: 8.5%. Confirm your purchase contract.</span>
                 </div>
               </div>
 
@@ -227,7 +227,7 @@ export function InteractiveFactorySimulator({ onStartPoc, lang = 'en' }: Props) 
 
               <div className="sim-audit-card">
                 <div className="sim-audit-header">
-                  <span>⚖️ SIMA / CCI Moisture Deduction Audit</span>
+                  <span>⚖️ Illustrative Moisture Calculation</span>
                   <span className="sim-cryptoseal">🔒 {sampleHash.slice(0, 20)}</span>
                 </div>
                 <div className="sim-audit-metrics">
@@ -250,7 +250,7 @@ export function InteractiveFactorySimulator({ onStartPoc, lang = 'en' }: Props) 
                 </div>
                 <div className="sim-audit-note">
                   {moistureDeductionKg > 0 ? (
-                    <span>🚨 <strong>Fraud Intercepted:</strong> The broker billed for water weight. EverGreen automatically deducted {moistureDeductionKg} kg from the purchase voucher before Tally export.</span>
+                    <span><strong>Illustrative deduction:</strong> These sample inputs produce a {moistureDeductionKg} kg adjustment. No receipt was posted; moisture alone does not establish fraud.</span>
                   ) : (
                     <span>✅ <strong>Lot Passed:</strong> Moisture is within standard {simaStandard}% limit. Full weight credited.</span>
                   )}

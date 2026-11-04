@@ -2,7 +2,7 @@ jest.mock('../../utils/user-audit',()=>({appendUserAudit:(tx:any,args:any)=>tx.a
 import { BadRequestException } from '@nestjs/common';
 import { createHash } from 'node:crypto';
 const verify = jest.fn();
-jest.mock('otplib', () => ({ TOTP: jest.fn().mockImplementation(() => ({ verify: (...args: unknown[]) => verify(...args), generateSecret: () => 'secret' })), generateURI: () => 'otpauth://test' }));
+jest.mock('otplib', () => ({ ...jest.requireActual('otplib'), TOTP: jest.fn().mockImplementation(() => ({ verify: (...args: unknown[]) => verify(...args), generateSecret: () => 'secret' })), generateURI: () => 'otpauth://test' }));
 jest.mock('./passwords', () => ({ hashPassword: async () => 'argon-hash', verifyPassword: async () => true }));
 import { AccountFlowsService } from './account-flows.service';
 

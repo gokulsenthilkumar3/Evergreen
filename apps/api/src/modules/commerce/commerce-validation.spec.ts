@@ -219,6 +219,10 @@ describe('CommerceService input validation', () => {
     };
     const tx = {
       ...prisma,
+      documentSequence: {
+        findUnique: jest.fn(async () => ({ key: 'INVOICE:2026', value: 0 })),
+        upsert: jest.fn(async () => ({ key: 'INVOICE:2026', value: 1 })),
+      },
       accountingPeriod: { findFirst: jest.fn(async () => null) },
       catalogueItem: {
         findMany: jest.fn(async () => [{ ...item, gstRate: 18 }]),

@@ -12,7 +12,13 @@ if [ "$#" -eq 2 ] && [ "$1" = node ] && { [ "$2" = apps/api/dist/main.js ] || [ 
   if [ "$EVERGREEN_PLANE" = tenant ]; then
     : "${JWT_SECRET:?JWT_SECRET is required}"
     : "${ENCRYPTION_SECRET:?ENCRYPTION_SECRET is required}"
-    database="${DATABASE_URL#file:}"
+    case "$DATABASE_URL" in
+      postgresql://*|postgres://*)
+        node packages/database/check-postgres.js
+        exec "$@"
+        ;;
+      *) database="${DATABASE_URL#file:}" ;;
+    esac
   else
     : "${ADMIN_API_KEY:?ADMIN_API_KEY is required}"
     database="${ADMIN_DATABASE_URL#file:}"

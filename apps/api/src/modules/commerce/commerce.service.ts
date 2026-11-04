@@ -3,6 +3,7 @@ import type { Prisma } from '@prisma/client';
 import { createHash, randomUUID } from 'crypto';
 import { PrismaService } from '../../services/prisma.service';
 import { calculateInvoiceTotals } from './invoice-totals';
+import { nextInvoiceNumber } from './document-number';
 import { stockEventDate } from '../../utils/stock-event-date';
 import { assertOpenPeriod, money } from '../../services/business-ledger';
 import {
@@ -713,6 +714,7 @@ export class CommerceService {
   }
 
   async createInvoice(body: any) {
+    if (body.invoiceNo) throw new BadRequestException('Invoice numbers are assigned by the server when posting');
     if (body.currency && body.currency !== 'INR')
       throw new BadRequestException(
         'The shared receivables ledger uses INR. Foreign-currency billing requires exchange-rate accounting.',
@@ -1047,7 +1049,7 @@ export class CommerceService {
           sellerState,
           buyerState,
         );
-      const invoiceNo = body.invoiceNo || `INV-${Date.now()}`;
+      const invoiceNo = await nextInvoiceNumber(tx, invoiceDate);
       const documentHash = createHash('sha256')
         .update(
           JSON.stringify({

@@ -12,12 +12,12 @@ import { PrismaService } from '../../services/prisma.service';
 import { EmailService } from './email.service';
 import { ConfigService } from '@nestjs/config';
 import type { User } from '@prisma/client';
-import { TOTP, generateURI } from 'otplib';
+import { generateURI } from 'otplib';
+import { authenticator } from './totp';
 import { omit } from '../../utils/omit';
 import { hashPassword, verifyPassword } from './passwords';
 import { createHash } from 'node:crypto';
 import { DEFAULT_SESSION_POLICY } from '../../utils/session-policy';
-const authenticator = new TOTP();
 
 
 @Injectable()

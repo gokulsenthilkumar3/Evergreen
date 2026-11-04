@@ -2,14 +2,14 @@ import { appendUserAudit } from '../../utils/user-audit';
 import { BadRequestException, Injectable, NotFoundException, ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createHash, randomBytes } from 'node:crypto';
-import { TOTP, generateURI } from 'otplib';
+import { generateURI } from 'otplib';
+import { authenticator } from './totp';
 import { PrismaService } from '../../services/prisma.service';
 import { EmailService } from './email.service';
 import { hashPassword, verifyPassword } from './passwords';
 import { InviteAccountDto, RedeemAccountDto } from './account-flows.dto';
 
 const digest = (value: string) => createHash('sha256').update(value).digest('hex');
-const authenticator = new TOTP();
 @Injectable()
 export class AccountFlowsService {
   constructor(private readonly prisma: PrismaService, private readonly mail: EmailService, private readonly config: ConfigService) {}

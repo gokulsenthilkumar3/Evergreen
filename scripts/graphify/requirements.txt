@@ -1,0 +1,2 @@
+# Keep the CLI, local commit gate and CI on the same graph schema.
+graphifyy[sql]==0.9.102

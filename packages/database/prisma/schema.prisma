@@ -488,6 +488,12 @@ model CostingEntry {
   updatedBy       String?
 }
 
+// Allocated in the same transaction as the posted document; rolled back on failure.
+model DocumentSequence {
+  key   String @id
+  value Int
+}
+
 model Invoice {
   id              Int           @id @default(autoincrement())
   invoiceNo       String        @unique

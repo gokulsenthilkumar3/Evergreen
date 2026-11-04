@@ -40,6 +40,7 @@ describe('AdminSyncService transport', () => {
       NODE_ENV: 'test',
       ADMIN_API_URL: 'https://provider.example.test',
       COMPANY_ID: 'company-123',
+      ADMIN_SYNC_KEY: 'company-scoped-fixture-key-at-least-32-characters',
       ADMIN_API_KEY: 'provider-operator-secret-must-never-be-sent',
     });
     jest.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined);
@@ -135,18 +136,21 @@ describe('AdminSyncService transport', () => {
       'https://provider.example.test/admin/v1/companies/company-123/sync',
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-Company-Key': 'company-scoped-fixture-key-at-least-32-characters' },
         body: JSON.stringify({
           totalInwards: 10,
           totalOutwards: 4,
           totalInvoices: 7,
           activeUsers: 2,
+          billingPeriod: new Date().toISOString().slice(0, 7),
+          periodDocsPosted: 21,
         }),
         redirect: 'error',
         signal: expect.any(AbortSignal) as unknown,
       },
     );
-    expect(prisma.invoice.count).toHaveBeenCalledTimes(1);
+    expect(prisma.invoice.count).toHaveBeenCalledTimes(2);
+    expect(prisma.invoice.count).toHaveBeenLastCalledWith({ where: { date: { gte: expect.any(Date), lt: expect.any(Date) } } });
     expect(prisma.systemSettings.update).toHaveBeenCalledTimes(1);
     expect(jest.getTimerCount()).toBe(0);
   });
@@ -185,7 +189,7 @@ describe('AdminSyncService transport', () => {
     await service.syncMetrics();
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(prisma.invoice.count).toHaveBeenCalledTimes(1);
+    expect(prisma.invoice.count).toHaveBeenCalledTimes(2);
     complete(Response.json(license));
     await pending;
     await service.syncMetrics();

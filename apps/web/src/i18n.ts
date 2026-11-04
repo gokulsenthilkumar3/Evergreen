@@ -1,5 +1,18 @@
 import { useSyncExternalStore } from 'react';
-import { tamil } from './locales/ta';
+let tamil: Record<string, string> = {};
+let tamilLoaded = false;
+let tamilLoading: Promise<void> | undefined;
+/** Keep the large dictionary out of the English entry bundle. Failed loads can be retried. */
+export function loadUiLanguage(next: 'en' | 'ta'): Promise<void> {
+  if (next === 'en' || tamilLoaded) return Promise.resolve();
+  if (!tamilLoading) tamilLoading = import('./locales/ta').then(module => {
+    tamil = module.tamil;
+    tamilLoaded = true;
+    revision++;
+    listeners.forEach(listener => listener());
+  }).finally(() => { tamilLoading = undefined; });
+  return tamilLoading;
+}
 
 export type UiLanguage = 'en' | 'ta';
 const readSavedLanguage = (): UiLanguage => {
@@ -60,12 +73,15 @@ export function setUiLanguage(next: UiLanguage) {
   if (typeof document !== 'undefined') document.documentElement.lang = next;
   revision++;
   listeners.forEach(listener => listener());
+  if (next === 'ta') void loadUiLanguage(next).catch(() => { /* English remains available; the next switch retries. */ });
 }
+if (language === 'ta') void loadUiLanguage(language).catch(() => {});
 if (typeof document !== 'undefined') document.documentElement.lang = language;
 if (typeof window !== 'undefined') window.addEventListener('storage', event => {
   // Storage events already persisted the change. Do not write it back to other tabs.
   if (event.key === 'language' || event.key === null) {
     language = readSavedLanguage();
+    if (language === 'ta') void loadUiLanguage(language).catch(() => {});
     if (typeof document !== 'undefined') document.documentElement.lang = language;
   }
   if (event.key === 'tamilPreferences' || event.key === null) preferences = readPreferences();

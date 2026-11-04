@@ -140,6 +140,17 @@ export class UpdateLicenseDto extends LicenseFieldsDto {
 }
 
 class CompanyMetricsDto {
+  @Optional()
+  @IsString()
+  @Matches(/^\d{4}-(0[1-9]|1[0-2])$/)
+  billingPeriod?: string;
+
+  @Optional()
+  @IsInt()
+  @Min(0)
+  @Max(MAX_COUNTER)
+  periodDocsPosted?: number;
+
   @IsInt()
   @Min(0)
   @Max(MAX_COUNTER)
