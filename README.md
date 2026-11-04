@@ -1,5 +1,7 @@
 # EverGreen
 
+Portal upgrades: [AI assistants and secure Groq setup](docs/AI_AGENTS.md) · [Marketing design guide](docs/MARKETING_DESIGN_BRIEF.md)
+
 EverGreen is an ERP for textile businesses: mills, traders, warehouses and job-work units. It covers material receipts, production, stock and lots, job work, sales orders, invoices and customer payments, with a separate provider workspace for managing customer companies and licenses.
 
 Built with React, NestJS and Prisma. Both databases use SQLite today; one PostgreSQL database per customer is the planned target.
@@ -9,6 +11,7 @@ Built with React, NestJS and Prisma. Both databases use SQLite today; one Postgr
 - **What's done and what's open:** [Project status](docs/PROJECT_AUDIT.md) and [backlog](docs/IMPLEMENTATION_BACKLOG.md).
 - **All documentation:** [docs/README.md](docs/README.md).
 - **Install or update:** [Windows installer and hosted deployment](docs/ONE_CLICK_DELIVERY.md).
+- **Owner activation, keys and private hosting:** [Owner licensing guide](docs/OWNER_LICENSING.md). An owner-signed activation is required; private signing keys and databases stay outside the source checkout.
 
 ## Applications
 
@@ -47,6 +50,8 @@ Before opening a pull request, run:
 ```sh
 npm run verify
 ```
+
+Architecture work and every commit also use [Graphify](docs/GRAPHIFY.md). Install the pinned tool and run `npm run graph:hooks` once per checkout. The pre-commit gate checks the staged snapshot; `npm run graph:check` runs it manually, and `npm run graph:build` refreshes the working-tree architecture report.
 
 It checks migrations against both schemas, type-checks, runs every test suite, checks that generated docs are current, and builds all workspaces. The [maintenance runbook](docs/MAINTENANCE_RUNBOOK.md) lists the separate lint and dependency checks.
 

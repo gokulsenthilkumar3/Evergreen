@@ -1,3 +1,10 @@
+import { AssistantsController } from './modules/assistants/assistants.controller';
+import { HelpdeskController, HelpdeskService } from './modules/helpdesk/helpdesk.controller';
+import { HelpdeskOperationsController } from './modules/helpdesk/helpdesk-operations.controller';
+import { HelpdeskOperationsService } from './modules/helpdesk/helpdesk-operations.service';
+import { HelpdeskIngressController } from './modules/helpdesk/helpdesk-ingress';
+import { InstallationLeaseService } from './services/installation-lease.service';
+import { InstallationLicenseGuard } from './guards/installation-license.guard';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -33,6 +40,7 @@ import { IntegrationsModule } from './modules/integrations/integrations.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      ignoreEnvFile: process.env.NODE_ENV === 'test',
     }),
     ScheduleModule.forRoot(),
     DatabaseModule,
@@ -58,8 +66,13 @@ import { IntegrationsModule } from './modules/integrations/integrations.module';
     WorkflowsModule,
     AdminOpsModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, AssistantsController, HelpdeskIngressController, HelpdeskOperationsController, HelpdeskController],
   providers: [
+    InstallationLeaseService,
+    HelpdeskService,
+    HelpdeskOperationsService,
+    InstallationLicenseGuard,
+    { provide: APP_GUARD, useExisting: InstallationLicenseGuard },
     AppService,
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },

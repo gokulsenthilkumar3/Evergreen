@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage } from "../i18n";
 import React, { useState, useEffect } from 'react';
 import {
     Box,
@@ -39,6 +40,7 @@ interface TabPanelProps {
 }
 
 function TabPanel(props: TabPanelProps) {
+  useUiLanguage();
     const { children, value, index, ...other } = props;
     return (
         <div role="tabpanel" hidden={value !== index} {...other}>
@@ -51,28 +53,25 @@ interface SettingsProps {
     username?: string;
     themeName?: ThemeName;
     onThemeChange?: (name: ThemeName) => void;
-    floatingNav?: boolean;
-    onFloatingNavChange?: (val: boolean) => void;
     /** Tab to open on; the audit-log link uses this. */
     initialTab?: number;
 }
 
 const THEME_OPTIONS: { name: ThemeName; label: string; color: string; dark?: string }[] = [
-    { name: 'emerald', label: 'Emerald',  color: '#059669', dark: '#34d399' },
-    { name: 'forest',  label: 'Forest',   color: '#2d6a4f', dark: '#52b788' },
-    { name: 'mint',    label: 'Mint',     color: '#00897b', dark: '#4db6ac' },
-    { name: 'sage',    label: 'Sage',     color: '#558b6e', dark: '#87bba2' },
-    { name: 'olive',   label: 'Olive',    color: '#6a7c59', dark: '#9aad84' },
+    { name: 'emerald', get label() { return uiText("Emerald"); },  color: '#059669', dark: '#34d399' },
+    { name: 'forest',  get label() { return uiText("Forest"); },   color: '#2d6a4f', dark: '#52b788' },
+    { name: 'mint',    get label() { return uiText("Mint"); },     color: '#00897b', dark: '#4db6ac' },
+    { name: 'sage',    get label() { return uiText("Sage"); },     color: '#558b6e', dark: '#87bba2' },
+    { name: 'olive',   get label() { return uiText("Olive"); },    color: '#6a7c59', dark: '#9aad84' },
 ];
 
 const Settings: React.FC<SettingsProps> = ({
     username,
     themeName = 'emerald',
     onThemeChange,
-    floatingNav = false,
-    onFloatingNavChange,
     initialTab = 0,
 }) => {
+  useUiLanguage();
     const [tabValue, setTabValue] = useState(initialTab);
 
 
@@ -156,29 +155,29 @@ const Settings: React.FC<SettingsProps> = ({
         mutationFn: (data: any) => api.put('/settings', data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['settings'] });
-            toast.success('Settings saved successfully!');
+            toast.success(uiText('Settings saved successfully!', 'feedback'));
         },
         onError: () => {
-            toast.error('Failed to save settings');
+            toast.error(uiText('Failed to save settings', 'feedback'));
         }
     });
 
     const handleSaveCompanySettings = () => {
         // Validation
         if (!companySettings.companyName.trim()) {
-            toast.error('Company name is required');
+            toast.error(uiText('Company name is required', 'feedback'));
             return;
         }
         if (companySettings.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(companySettings.email)) {
-            toast.error('Invalid email format');
+            toast.error(uiText('Invalid email format', 'feedback'));
             return;
         }
         if (companySettings.phone && !/^[0-9+\-\s()]{6,15}$/.test(companySettings.phone)) {
-            toast.error('Invalid phone number format');
+            toast.error(uiText('Invalid phone number format', 'feedback'));
             return;
         }
         if (companySettings.gstin && !/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/i.test(companySettings.gstin)) {
-            toast.warning('GSTIN format may be incorrect. Saving anyway.');
+            toast.warning(uiText('GSTIN format may be incorrect. Saving anyway.', 'feedback'));
         }
 
         updateSettingsMutation.mutate({
@@ -234,10 +233,9 @@ const Settings: React.FC<SettingsProps> = ({
         <Box sx={{ maxWidth: '100%', width: '100%' }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 2, mb: 3 }}>
                 <Box>
-                    <Typography variant="h4" fontWeight="bold">Settings</Typography>
+                    <Typography variant="h4" fontWeight="bold">{uiText("Settings")}</Typography>
                     <Typography color="text.secondary">
-                        Manage profile, security, appearance, and operational defaults.
-                    </Typography>
+                        {uiText("Manage profile, security, appearance, and operational defaults. ")}</Typography>
                 </Box>
                 {currentUser && (
                     <Paper sx={{ px: 2, py: 1.5, display: 'flex', gap: 1.5, alignItems: 'center' }}>
@@ -246,7 +244,7 @@ const Settings: React.FC<SettingsProps> = ({
                             <Typography variant="subtitle2" fontWeight={700}>{currentUser.name || currentUser.username}</Typography>
                             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                                 <Chip label={currentUser.role} size="small" />
-                                <Chip label={currentUser.isTotpEnabled ? '2FA on' : '2FA off'} size="small" color={currentUser.isTotpEnabled ? 'success' : 'default'} />
+                                <Chip label={currentUser.isTotpEnabled ? uiText("2FA on") : uiText("2FA off")} size="small" color={currentUser.isTotpEnabled ? 'success' : 'default'} />
                             </Box>
                         </Box>
                     </Paper>
@@ -255,19 +253,18 @@ const Settings: React.FC<SettingsProps> = ({
 
             <Paper>
                 <Tabs value={tabValue} onChange={(_, newValue) => setTabValue(newValue)} sx={{ px: 2, pt: 1 }}>
-                    <Tab label="Company Info" />
-                    <Tab label="System Settings" />
-                    <Tab label="Rates & Defaults" />
-                    <Tab label="Appearance" />
-                    <Tab label="Audit Logs" />
+                    <Tab label={uiText("Company Info", 'tabs')} />
+                    <Tab label={uiText("System Settings", 'tabs')} />
+                    <Tab label={uiText("Rates & Defaults", 'tabs')} />
+                    <Tab label={uiText("Appearance", 'tabs')} />
+                    <Tab label={uiText("Audit Logs", 'tabs')} />
                 </Tabs>
 
                 {/* Company Info Tab */}
                 <TabPanel value={tabValue} index={0}>
                     <Box sx={{ maxWidth: 760, mx: 'auto' }}>
                         <Typography variant="h6" sx={{ mb: 3 }}>
-                            Company Information
-                        </Typography>
+                            {uiText("Company Information ")}</Typography>
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                             {/* Logo Upload Section */}
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
@@ -285,9 +282,9 @@ const Settings: React.FC<SettingsProps> = ({
                                     }}
                                 >
                                     {companySettings.logo ? (
-                                        <img src={companySettings.logo} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                        <img src={companySettings.logo} alt={uiText("Logo")} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                                     ) : (
-                                        <Typography variant="caption" color="text.secondary">No Logo</Typography>
+                                        <Typography variant="caption" color="text.secondary">{uiText("No Logo")}</Typography>
                                     )}
                                 </Box>
                                 <Box>
@@ -298,8 +295,7 @@ const Settings: React.FC<SettingsProps> = ({
                                         size="small"
                                         sx={{ mb: 1 }}
                                     >
-                                        Upload Logo
-                                        <input
+                                        {uiText("Upload Logo ")}<input
                                             type="file"
                                             hidden
                                             accept="image/*"
@@ -328,34 +324,32 @@ const Settings: React.FC<SettingsProps> = ({
                                             onClick={() => setCompanySettings({ ...companySettings, logo: '' })}
                                             sx={{ display: 'block' }}
                                         >
-                                            Remove
-                                        </Button>
+                                            {uiText("Remove ")}</Button>
                                     )}
                                     <Typography variant="caption" display="block" color="text.secondary">
-                                        Max 500KB.
-                                    </Typography>
+                                        {uiText("Max 500KB. ")}</Typography>
                                 </Box>
                             </Box>
 
                             <TextField
-                                label="Company Name"
+                                label={uiText("Company Name", 'forms')}
                                 value={companySettings.companyName}
                                 onChange={(e) => setCompanySettings({ ...companySettings, companyName: e.target.value })}
                                 fullWidth
                             />
-                            <TextField select label="Business activities" value={companySettings.businessMode}
+                            <TextField select label={uiText("Business activities", 'forms')} value={companySettings.businessMode}
                                 onChange={event => setCompanySettings({ ...companySettings, businessMode: event.target.value as BusinessMode })}
-                                helperText="Choose the work your company does. You can change this as you grow." fullWidth>
+                                helperText={uiText("Choose the work your company does. You can change this as you grow.", 'forms')} fullWidth>
                                 {BUSINESS_MODES.map(mode => <MenuItem key={mode} value={mode}>{BUSINESS_MODE_LABELS[mode]}</MenuItem>)}
                             </TextField>
-                            <TextField select label="Workspace complexity" value={companySettings.workspaceMode}
+                            <TextField select label={uiText("Workspace complexity", 'forms')} value={companySettings.workspaceMode}
                                 onChange={event => setCompanySettings({ ...companySettings, workspaceMode: event.target.value as WorkspaceMode })}
-                                helperText="Guided shows essential navigation. Full exposes all modules. Existing records remain accessible." fullWidth>
-                                <MenuItem value="GUIDED">Guided — essential daily work</MenuItem>
-                                <MenuItem value="FULL">Full — all operations</MenuItem>
+                                helperText={uiText("Guided shows essential navigation. Full exposes all modules. Existing records remain accessible.", 'forms')} fullWidth>
+                                <MenuItem value="GUIDED">{uiText("Guided — essential daily work", 'forms')}</MenuItem>
+                                <MenuItem value="FULL">{uiText("Full — all operations", 'forms')}</MenuItem>
                             </TextField>
                             <TextField
-                                label="Address"
+                                label={uiText("Address", 'forms')}
                                 value={companySettings.address}
                                 onChange={(e) => setCompanySettings({ ...companySettings, address: e.target.value })}
                                 multiline
@@ -363,27 +357,26 @@ const Settings: React.FC<SettingsProps> = ({
                                 fullWidth
                             />
                             <TextField
-                                label="GSTIN"
+                                label={uiText("GSTIN", 'forms')}
                                 value={companySettings.gstin}
                                 onChange={(e) => setCompanySettings({ ...companySettings, gstin: e.target.value })}
                                 fullWidth
                             />
                             <TextField
-                                label="Phone"
+                                label={uiText("Phone", 'forms')}
                                 value={companySettings.phone}
                                 onChange={(e) => setCompanySettings({ ...companySettings, phone: e.target.value })}
                                 fullWidth
                             />
                             <TextField
-                                label="Email"
+                                label={uiText("Email", 'forms')}
                                 type="email"
                                 value={companySettings.email}
                                 onChange={(e) => setCompanySettings({ ...companySettings, email: e.target.value })}
                                 fullWidth
                             />
                             <Button variant="contained" startIcon={<SaveIcon />} onClick={handleSaveCompanySettings} sx={{ mt: 2 }}>
-                                Save Company Info
-                            </Button>
+                                {uiText("Save Company Info ")}</Button>
                         </Box>
                     </Box>
                 </TabPanel>
@@ -392,8 +385,7 @@ const Settings: React.FC<SettingsProps> = ({
                 <TabPanel value={tabValue} index={1}>
                     <Box sx={{ maxWidth: 600, mx: 'auto' }}>
                         <Typography variant="h6" sx={{ mb: 3 }}>
-                            System Configuration
-                        </Typography>
+                            {uiText("System Configuration ")}</Typography>
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                             <Paper variant="outlined" sx={{ p: 2 }}>
                                 <FormControlLabel
@@ -403,11 +395,10 @@ const Settings: React.FC<SettingsProps> = ({
                                             onChange={(e) => setSystemSettings({ ...systemSettings, autoBackup: e.target.checked })}
                                         />
                                     }
-                                    label="Enable Auto Backup"
+                                    label={uiText("Enable Auto Backup", 'forms')}
                                 />
                                 <Typography variant="caption" color="text.secondary" display="block" sx={{ ml: 6 }}>
-                                    Automatically backs up the database at regular intervals. Ensures data safety in case of system failure.
-                                </Typography>
+                                    {uiText("Automatically backs up the database at regular intervals. Ensures data safety in case of system failure. ")}</Typography>
                             </Paper>
 
                             <Paper variant="outlined" sx={{ p: 2 }}>
@@ -418,11 +409,10 @@ const Settings: React.FC<SettingsProps> = ({
                                             onChange={(e) => setSystemSettings({ ...systemSettings, emailNotifications: e.target.checked })}
                                         />
                                     }
-                                    label="Email Notifications"
+                                    label={uiText("Email Notifications", 'forms')}
                                 />
                                 <Typography variant="caption" color="text.secondary" display="block" sx={{ ml: 6 }}>
-                                    Sends email alerts for important events such as low stock warnings, new orders, and system errors.
-                                </Typography>
+                                    {uiText("Sends email alerts for important events such as low stock warnings, new orders, and system errors. ")}</Typography>
                             </Paper>
 
                             <Paper variant="outlined" sx={{ p: 2 }}>
@@ -433,59 +423,56 @@ const Settings: React.FC<SettingsProps> = ({
                                             onChange={(e) => setSystemSettings({ ...systemSettings, lowStockAlert: e.target.checked })}
                                         />
                                     }
-                                    label="Low Stock Alerts"
+                                    label={uiText("Low Stock Alerts", 'forms')}
                                 />
                                 <Typography variant="caption" color="text.secondary" display="block" sx={{ ml: 6 }}>
-                                    Triggers alerts when cotton or yarn inventory falls below the configured threshold.
-                                </Typography>
+                                    {uiText("Triggers alerts when cotton or yarn inventory falls below the configured threshold. ")}</Typography>
                                 {systemSettings.lowStockAlert && (
                                     <TextField
-                                        label="Low Stock Threshold (kg)"
+                                        label={uiText("Low Stock Threshold (kg)", 'forms')}
                                         type="number"
                                         value={systemSettings.lowStockThreshold}
                                         onChange={(e) => setSystemSettings({ ...systemSettings, lowStockThreshold: e.target.value })}
                                         fullWidth
                                         size="small"
                                         sx={{ mt: 2, ml: 6, maxWidth: 300 }}
-                                        helperText="Alert when stock falls below this value"
+                                        helperText={uiText("Alert when stock falls below this value", 'forms')}
                                         error={systemSettings.lowStockThreshold === '' || isNaN(parseFloat(systemSettings.lowStockThreshold)) || parseFloat(systemSettings.lowStockThreshold) <= 0}
                                     />
                                 )}
                             </Paper>
 
                             <Paper sx={{ p: 2, bgcolor: 'background.default', border: '1px dashed grey' }}>
-                                <Typography variant="subtitle1" fontWeight="bold">Default Currency: INR (₹)</Typography>
+                                <Typography variant="subtitle1" fontWeight="bold">{uiText("Default Currency: INR (₹)")}</Typography>
                                 <Typography variant="caption" color="text.secondary">
-                                    Base currency is fixed to Indian Rupee.
-                                </Typography>
+                                    {uiText("Base currency is fixed to Indian Rupee. ")}</Typography>
                             </Paper>
 
                             <Paper sx={{ p: 2, bgcolor: 'rgba(14, 165, 233, 0.08)', border: '1px solid', borderColor: 'info.main', borderRadius: 1 }}>
                                 <Typography variant="body2" color="info.main">
-                                    💡 EB Rate, Packaging Rate, and Maintenance Rate are now managed in the <strong>Costing module</strong>.
+                                    {uiText("💡 EB Rate, Packaging Rate, and Maintenance Rate are now managed in the ")}<strong>{uiText("Costing module")}</strong>.
                                 </Typography>
                             </Paper>
 
                             <Paper variant="outlined" sx={{ p: 2 }}>
-                                <Typography variant="subtitle2" fontWeight={600} mb={2}>Invoice Appearance</Typography>
+                                <Typography variant="subtitle2" fontWeight={600} mb={2}>{uiText("Invoice Appearance")}</Typography>
                                 <TextField
                                     select
-                                    label="Default Invoice Theme"
+                                    label={uiText("Default Invoice Theme", 'forms')}
                                     value={systemSettings.defaultInvoiceTheme}
                                     onChange={(e) => setSystemSettings({ ...systemSettings, defaultInvoiceTheme: e.target.value })}
                                     fullWidth
                                     size="small"
-                                    helperText="Select the default visual theme for newly created invoices."
+                                    helperText={uiText("Select the default visual theme for newly created invoices.", 'forms')}
                                 >
-                                    <MenuItem value="CLASSIC">Classic (A4 Format)</MenuItem>
-                                    <MenuItem value="MODERN">Modern (Color Header)</MenuItem>
-                                    <MenuItem value="MINIMAL">Minimal (Clean Layout)</MenuItem>
+                                    <MenuItem value="CLASSIC">{uiText("Classic (A4 Format)", 'forms')}</MenuItem>
+                                    <MenuItem value="MODERN">{uiText("Modern (Color Header)", 'forms')}</MenuItem>
+                                    <MenuItem value="MINIMAL">{uiText("Minimal (Clean Layout)", 'forms')}</MenuItem>
                                 </TextField>
                             </Paper>
 
                             <Button variant="contained" startIcon={<SaveIcon />} onClick={handleSaveSystemSettings} sx={{ mt: 1 }}>
-                                Save System Settings
-                            </Button>
+                                {uiText("Save System Settings ")}</Button>
                         </Box>
                     </Box>
                 </TabPanel>
@@ -495,62 +482,60 @@ const Settings: React.FC<SettingsProps> = ({
                 {/* Rates Tab */}
                 <TabPanel value={tabValue} index={2}>
                     <Box sx={{ maxWidth: 560, mx: 'auto' }}>
-                        <Typography variant="h6" sx={{ mb: 1 }}>Operational Rates</Typography>
+                        <Typography variant="h6" sx={{ mb: 1 }}>{uiText("Operational Rates")}</Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                            These rates are used for auto-calculation of packaging and maintenance costs in the Costing module.
-                        </Typography>
+                            {uiText("These rates are used for auto-calculation of packaging and maintenance costs in the Costing module. ")}</Typography>
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                             <Paper variant="outlined" sx={{ p: 3 }}>
-                                <Typography variant="subtitle2" fontWeight={700} mb={2} color="primary.main">⚡ Electricity</Typography>
+                                <Typography variant="subtitle2" fontWeight={700} mb={2} color="primary.main">{uiText("⚡ Electricity")}</Typography>
                                 <TextField
-                                    label="EB Rate per Unit (₹ / kWh)"
+                                    label={uiText("EB Rate per Unit (₹ / kWh)", 'forms')}
                                     type="number"
                                     fullWidth
                                     value={rateSettings.ebRate}
                                     onChange={(e) => setRateSettings({ ...rateSettings, ebRate: e.target.value })}
-                                    helperText="Cost per kilowatt-hour of electricity consumed"
+                                    helperText={uiText("Cost per kilowatt-hour of electricity consumed", 'forms')}
                                     inputProps={{ step: 0.01, min: 0 }}
                                 />
                             </Paper>
                             <Paper variant="outlined" sx={{ p: 3 }}>
-                                <Typography variant="subtitle2" fontWeight={700} mb={2} color="info.main">📦 Packaging</Typography>
+                                <Typography variant="subtitle2" fontWeight={700} mb={2} color="info.main">{uiText("📦 Packaging")}</Typography>
                                 <TextField
-                                    label="Packaging Rate (₹ / kg yarn)"
+                                    label={uiText("Packaging Rate (₹ / kg yarn)", 'forms')}
                                     type="number"
                                     fullWidth
                                     value={rateSettings.packageRate}
                                     onChange={(e) => setRateSettings({ ...rateSettings, packageRate: e.target.value })}
-                                    helperText="Auto-calculated: yarn produced (kg) × this rate"
+                                    helperText={uiText("Auto-calculated: yarn produced (kg) × this rate", 'forms')}
                                     inputProps={{ step: 0.01, min: 0 }}
                                 />
                             </Paper>
                             <Paper variant="outlined" sx={{ p: 3 }}>
-                                <Typography variant="subtitle2" fontWeight={700} mb={2} color="warning.main">🔧 Maintenance</Typography>
+                                <Typography variant="subtitle2" fontWeight={700} mb={2} color="warning.main">{uiText("🔧 Maintenance")}</Typography>
                                 <TextField
-                                    label="Maintenance Rate (₹ / kg yarn)"
+                                    label={uiText("Maintenance Rate (₹ / kg yarn)", 'forms')}
                                     type="number"
                                     fullWidth
                                     value={rateSettings.maintenanceRate}
                                     onChange={(e) => setRateSettings({ ...rateSettings, maintenanceRate: e.target.value })}
-                                    helperText="Auto-calculated: yarn produced (kg) × this rate"
+                                    helperText={uiText("Auto-calculated: yarn produced (kg) × this rate", 'forms')}
                                     inputProps={{ step: 0.01, min: 0 }}
                                 />
                             </Paper>
                             <Paper variant="outlined" sx={{ p: 3 }}>
-                                <Typography variant="subtitle2" fontWeight={700} mb={2} color="secondary.main">🧶 Production Setup</Typography>
+                                <Typography variant="subtitle2" fontWeight={700} mb={2} color="secondary.main">{uiText("🧶 Production Setup")}</Typography>
                                 <TextField
-                                    label="Supported Yarn Counts"
+                                    label={uiText("Supported Yarn Counts", 'forms')}
                                     fullWidth
                                     value={rateSettings.supportedCounts}
                                     onChange={(e) => setRateSettings({ ...rateSettings, supportedCounts: e.target.value })}
-                                    helperText="Enter comma-separated yarn counts (e.g., 2,4,6,10,20). These will appear in production and sales dropdowns."
+                                    helperText={uiText("Enter comma-separated yarn counts (e.g., 2,4,6,10,20). These will appear in production and sales dropdowns.", 'forms')}
                                     placeholder="2,4,6,8,10"
                                 />
                             </Paper>
                             <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-start' }}>
                                 <Button variant="contained" startIcon={<SaveIcon />} onClick={handleSaveRates}>
-                                    Save Operational Rates
-                                </Button>
+                                    {uiText("Save Operational Rates ")}</Button>
                             </Box>
                         </Box>
                     </Box>
@@ -559,19 +544,16 @@ const Settings: React.FC<SettingsProps> = ({
                 {/* Appearance Tab */}
                 <TabPanel value={tabValue} index={3}>
                     <Box sx={{ maxWidth: 620 }}>
-                        <Typography variant="h6" fontWeight={800} sx={{ mb: 0.5 }}>Appearance</Typography>
+                        <Typography variant="h6" fontWeight={800} sx={{ mb: 0.5 }}>{uiText("Appearance")}</Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
-                            Customize the look and feel of your EverGreen workspace. Changes apply instantly.
-                        </Typography>
+                            {uiText("Customize the look and feel of your EverGreen workspace. Changes apply instantly. ")}</Typography>
 
                         {/* Theme Section */}
                         <Box sx={{ mb: 4 }}>
                             <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 0.5, display: 'flex', alignItems: 'center', gap: 1 }}>
-                                🎨 Green Theme
-                            </Typography>
+                                {uiText("🎨 Green Theme ")}</Typography>
                             <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2.5 }}>
-                                5 handcrafted green palettes — pick your vibe
-                            </Typography>
+                                {uiText("5 handcrafted green palettes — pick your vibe ")}</Typography>
                             <Box sx={{ display: 'flex', gap: 2.5, flexWrap: 'wrap' }}>
                                 {THEME_OPTIONS.map((opt, idx) => {
                                     const active = themeName === opt.name;
@@ -623,7 +605,7 @@ const Settings: React.FC<SettingsProps> = ({
                                                     letterSpacing: active ? '0.05em' : 0,
                                                 }}
                                             >
-                                                {opt.label}
+                                                {uiText(opt.label, 'forms')}
                                             </Typography>
                                         </Box>
                                     );
@@ -631,54 +613,6 @@ const Settings: React.FC<SettingsProps> = ({
                             </Box>
                         </Box>
 
-                        {/* Divider */}
-                        <Box sx={{ borderTop: 1, borderColor: 'divider', my: 3 }} />
-
-                        {/* Floating Nav Toggle */}
-                        <Box sx={{ mb: 3 }}>
-                            <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 0.5, display: 'flex', alignItems: 'center', gap: 1 }}>
-                                📱 Navigation Style
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
-                                Choose between sidebar navigation or a floating pill at the bottom
-                            </Typography>
-                            <Box
-                                className="clay-card"
-                                sx={{
-                                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                    p: 2.5,
-                                    transition: 'box-shadow 0.2s',
-                                    '&:hover': { boxShadow: '10px 10px 24px rgba(0,0,0,0.11), -5px -5px 14px rgba(255,255,255,0.97)' },
-                                }}
-                            >
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                    <Box sx={{
-                                        width: 48, height: 48, borderRadius: '14px',
-                                        background: floatingNav
-                                            ? 'linear-gradient(135deg, #059669, #34d399)'
-                                            : 'linear-gradient(135deg, #94a3b8, #cbd5e1)',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        fontSize: '1.4rem',
-                                        transition: 'all 0.3s ease',
-                                        boxShadow: floatingNav ? '0 4px 16px rgba(5,150,105,0.4)' : '0 2px 8px rgba(0,0,0,0.1)',
-                                    }}>
-                                        📱
-                                    </Box>
-                                    <Box>
-                                        <Typography variant="body2" fontWeight={700}>Floating Bottom Navigation</Typography>
-                                        <Typography variant="caption" color="text.secondary">
-                                            {floatingNav ? '✅ Enabled — glassmorphic pill visible at bottom' : 'Show a glassmorphic floating pill at the bottom of the screen'}
-                                        </Typography>
-                                    </Box>
-                                </Box>
-                                <Switch
-                                    checked={floatingNav}
-                                    onChange={(e) => onFloatingNavChange?.(e.target.checked)}
-                                    color="primary"
-                                    sx={{ '& .MuiSwitch-thumb': { boxShadow: '0 2px 6px rgba(0,0,0,0.2)' } }}
-                                />
-                            </Box>
-                        </Box>
                     </Box>
                 </TabPanel>
 

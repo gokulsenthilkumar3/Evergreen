@@ -23,6 +23,10 @@ export class LoginDto {
   @IsString()
   @Matches(/^\d{6}$/)
   totpCode?: string;
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  recoveryCode?: string;
 }
 
 export class TotpCodeDto {

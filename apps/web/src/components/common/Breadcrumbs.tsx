@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage } from "../../i18n";
 import React from 'react';
 import {
   Breadcrumbs as MuiBreadcrumbs,
@@ -22,6 +23,7 @@ interface BreadcrumbsProps {
 }
 
 const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ items, onNavigate }) => {
+  useUiLanguage();
   const handleClick = (path: string | undefined) => (e: React.MouseEvent) => {
     e.preventDefault();
     if (path && onNavigate) {
@@ -33,7 +35,7 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ items, onNavigate }) => {
     <Box sx={{ mb: 2, mt: 1 }}>
       <MuiBreadcrumbs
         separator={<NavigateNextIcon fontSize="small" sx={{ color: 'text.disabled' }} />}
-        aria-label="breadcrumb"
+        aria-label={uiText("breadcrumb", 'navigation')}
         sx={{
           '& .MuiBreadcrumbs-ol': {
             alignItems: 'center',

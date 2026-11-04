@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage, uiTemplate, uiScopedTemplate } from "../i18n";
 import { useState } from 'react';
 import { Box, Button, Chip, Paper, Stack, TextField, Typography } from '@mui/material';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -7,6 +8,7 @@ import api from '../utils/api';
 type Taxonomy = { id: number; name: string; active: boolean };
 
 function TaxonomyEditor({ label, resource }: { label: string; resource: 'brands' | 'categories' }) {
+  useUiLanguage();
   const queryClient = useQueryClient();
   const [name, setName] = useState('');
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -19,7 +21,7 @@ function TaxonomyEditor({ label, resource }: { label: string; resource: 'brands'
       setName(''); setEditingId(null);
       await queryClient.invalidateQueries({ queryKey: ['commerce', resource] });
       toast.success(`${label} saved`);
-    } catch (error: any) { toast.error(error.response?.data?.message || `Could not save ${label.toLowerCase()}`); }
+    } catch (error: any) { toast.error(uiText(error.response?.data?.message || `Could not save ${label.toLowerCase()}`, 'feedback')); }
   };
   const archive = async (row: Taxonomy) => {
     if (!window.confirm(`Archive ${row.name}? Existing catalogue items keep this label.`)) return;
@@ -27,29 +29,30 @@ function TaxonomyEditor({ label, resource }: { label: string; resource: 'brands'
       await api.delete(`/commerce/${resource}/${row.id}`);
       await queryClient.invalidateQueries({ queryKey: ['commerce', resource] });
       toast.success(`${label} archived`);
-    } catch (error: any) { toast.error(error.response?.data?.message || `Could not archive ${label.toLowerCase()}`); }
+    } catch (error: any) { toast.error(uiText(error.response?.data?.message || `Could not archive ${label.toLowerCase()}`, 'feedback')); }
   };
   return <Box sx={{ flex: 1, minWidth: 260 }}>
-    <Typography fontWeight={700} sx={{ mb: 1 }}>{label === 'Category' ? 'Categories' : 'Brands'}</Typography>
+    <Typography fontWeight={700} sx={{ mb: 1 }}>{label === 'Category' ? uiText("Categories") : uiText("Brands")}</Typography>
     <Stack direction="row" spacing={1} sx={{ mb: 1 }}>
-      <TextField label={`${label} name`} size="small" value={name} onChange={event => setName(event.target.value)} onKeyDown={event => { if (event.key === 'Enter') void save(); }} fullWidth />
-      <Button variant="contained" onClick={save}>{editingId ? 'Update' : 'Add'}</Button>
-      {editingId && <Button onClick={() => { setEditingId(null); setName(''); }}>Cancel</Button>}
+      <TextField label={uiScopedTemplate('forms')`${label} name`} size="small" value={name} onChange={event => setName(event.target.value)} onKeyDown={event => { if (event.key === 'Enter') void save(); }} fullWidth />
+      <Button variant="contained" onClick={save}>{editingId ? uiText("Update") : uiText("Add")}</Button>
+      {editingId && <Button onClick={() => { setEditingId(null); setName(''); }}>{uiText("Cancel")}</Button>}
     </Stack>
     {data.map(row => <Stack key={row.id} direction="row" alignItems="center" spacing={1} sx={{ py: 0.5, opacity: row.active ? 1 : 0.55 }}>
       <Typography sx={{ flex: 1 }}>{row.name}</Typography>
-      {!row.active && <Chip label="Archived" size="small" />}
-      {row.active && <><Button size="small" onClick={() => { setEditingId(row.id); setName(row.name); }}>Edit</Button><Button size="small" color="error" onClick={() => void archive(row)}>Archive</Button></>}
+      {!row.active && <Chip label={uiText("Archived")} size="small" />}
+      {row.active && <><Button size="small" onClick={() => { setEditingId(row.id); setName(row.name); }}>{uiText("Edit")}</Button><Button size="small" color="error" onClick={() => void archive(row)}>{uiText("Archive")}</Button></>}
     </Stack>)}
   </Box>;
 }
 
 export default function CatalogueTaxonomy() {
+  useUiLanguage();
   return <Paper variant="outlined" sx={{ p: 2, mt: 2, borderRadius: 2 }}>
-    <Typography variant="h6" sx={{ mb: 2 }}>Brands & categories</Typography>
+    <Typography variant="h6" sx={{ mb: 2 }}>{uiText("Brands & categories")}</Typography>
     <Stack direction={{ xs: 'column', md: 'row' }} spacing={3}>
-      <TaxonomyEditor label="Brand" resource="brands" />
-      <TaxonomyEditor label="Category" resource="categories" />
+      <TaxonomyEditor label={uiText("Brand")} resource="brands" />
+      <TaxonomyEditor label={uiText("Category")} resource="categories" />
     </Stack>
   </Paper>;
 }

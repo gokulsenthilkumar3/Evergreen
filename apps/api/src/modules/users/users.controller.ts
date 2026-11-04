@@ -14,7 +14,7 @@ import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../../guards/jwt-auth.guard';
 import { RolesGuard } from '../../guards/roles.guard';
 import { Roles } from '../../decorators/roles.decorator';
-import { CreateUserDto, UpdateUserDto } from './users.dto';
+import { CreateUserDto, UpdateUserDto, RevokeUserSessionsDto, UserStatusDto } from './users.dto';
 import type { AuthenticatedRequest } from '../../types/authenticated-request';
 
 @Controller('users')
@@ -45,6 +45,21 @@ export class UsersController {
     @Req() req: AuthenticatedRequest,
   ) {
     return this.usersService.updateUser(id, updateDto, req.user.username);
+  }
+
+  @Get(':id/security')
+  async security(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.securityDetails(id);
+  }
+
+  @Post(':id/status')
+  async status(@Param('id', ParseIntPipe) id: number, @Body() body: UserStatusDto, @Req() req: AuthenticatedRequest) {
+    return this.usersService.changeStatus(id, body.status, body.reason, req.user.userId, req.user.username);
+  }
+
+  @Post(':id/revoke-sessions')
+  async revokeSessions(@Param('id', ParseIntPipe) id: number, @Body() body: RevokeUserSessionsDto, @Req() req: AuthenticatedRequest) {
+    return this.usersService.revokeAllSessions(id, req.user.username, body.reason);
   }
 
   @Delete(':id')

@@ -3,6 +3,7 @@ import { defineConfig } from 'vite'
 
 // https://vite.dev/config/
 export default defineConfig({
+  envPrefix: ['VITE_ADMIN_API_URL'],
   plugins: [react()],
   server: {
     port: 5174,

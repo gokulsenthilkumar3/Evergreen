@@ -14,11 +14,12 @@ export class AdminSyncService {
   private getSyncUrl(): string | undefined {
     const baseUrl = process.env.ADMIN_API_URL?.trim();
     const companyId = process.env.COMPANY_ID?.trim();
+    const syncKey = process.env.ADMIN_SYNC_KEY?.trim();
     // Local installations must not collect or send metrics until configured.
     if (!baseUrl && !companyId) return undefined;
-    if (!baseUrl || !companyId) {
+    if (!baseUrl || !companyId || !syncKey || syncKey.length < 32) {
       this.logger.warn(
-        'Provider sync disabled: configure both ADMIN_API_URL and COMPANY_ID.',
+        'Provider sync disabled: configure ADMIN_API_URL, COMPANY_ID and a company-scoped ADMIN_SYNC_KEY.',
       );
       return undefined;
     }
@@ -70,11 +71,20 @@ export class AdminSyncService {
       const totalOutwards = await this.prisma.outward.count();
       const totalInvoices = await this.prisma.invoice.count();
 
+      const now = new Date();
+      const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+      const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
+      const where = { date: { gte: start, lt: end } };
+      const periodDocsPosted = (await this.prisma.inwardBatch.count({ where })) +
+        (await this.prisma.outward.count({ where })) + (await this.prisma.invoice.count({ where }));
+
       const metrics = {
         totalInwards,
         totalOutwards,
         totalInvoices,
         activeUsers,
+        billingPeriod: start.toISOString().slice(0, 7),
+        periodDocsPosted,
       };
 
       const controller = new AbortController();
@@ -86,7 +96,7 @@ export class AdminSyncService {
       failureContext = 'contacting the provider';
       const response = await fetch(syncUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-Company-Key': process.env.ADMIN_SYNC_KEY!.trim() },
         body: JSON.stringify(metrics),
         signal: controller.signal,
         redirect: 'error',

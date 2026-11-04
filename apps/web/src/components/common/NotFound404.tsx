@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage, uiTemplate } from "../../i18n";
 import React from 'react';
 import { Box, Typography, Button, Paper, Chip } from '@mui/material';
 import { Home as HomeIcon } from '@mui/icons-material';
@@ -8,6 +9,7 @@ interface NotFoundProps {
 }
 
 export const NotFound404: React.FC<NotFoundProps> = ({ pageName, onNavigate }) => {
+  useUiLanguage();
   // Security: strip query strings and sanitize display string to avoid leaking sensitive query tokens
   const cleanPage = String(pageName || '')
     .split('?')[0]
@@ -44,7 +46,7 @@ export const NotFound404: React.FC<NotFoundProps> = ({ pageName, onNavigate }) =
         }}
       >
         <Chip
-          label="HTTP 404 NOT FOUND"
+          label={uiText("HTTP 404 NOT FOUND")}
           color="error"
           size="small"
           sx={{
@@ -73,12 +75,11 @@ export const NotFound404: React.FC<NotFoundProps> = ({ pageName, onNavigate }) =
         </Typography>
 
         <Typography variant="h5" sx={{ fontWeight: 800, mb: 1.5, color: 'text.primary' }}>
-          Page Not Found
-        </Typography>
+          {uiText("Page Not Found ")}</Typography>
 
         <Box sx={{ mb: 3 }}>
           <Chip
-            label={`/${cleanPage || 'unknown'}`}
+            label={uiTemplate`/${cleanPage || 'unknown'}`}
             variant="outlined"
             sx={{
               fontFamily: 'monospace',
@@ -100,8 +101,7 @@ export const NotFound404: React.FC<NotFoundProps> = ({ pageName, onNavigate }) =
             lineHeight: 1.6,
           }}
         >
-          The requested page does not exist. No confidential information or internal system structures are exposed.
-        </Typography>
+          {uiText("The requested page does not exist. No confidential information or internal system structures are exposed. ")}</Typography>
 
         <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'center', flexWrap: 'wrap' }}>
           <Button
@@ -117,8 +117,7 @@ export const NotFound404: React.FC<NotFoundProps> = ({ pageName, onNavigate }) =
               boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)',
             }}
           >
-            Back to Dashboard
-          </Button>
+            {uiText("Back to Dashboard ")}</Button>
         </Box>
       </Paper>
     </Box>

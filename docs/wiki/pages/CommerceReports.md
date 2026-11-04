@@ -12,17 +12,17 @@ Sign in to the company installation. VIEWER reads records, MODIFIER performs ord
 
 ## Tabs
 
-- {`Outstanding Receivables (${debtorCustomers.length})`} ([apps/web/src/pages/CommerceReports.tsx:295](../../../apps/web/src/pages/CommerceReports.tsx))
-- {`Low Stock Watchlist (${reportData?.lowStock?.length || 0})`} ([apps/web/src/pages/CommerceReports.tsx:300](../../../apps/web/src/pages/CommerceReports.tsx))
-- {`Recent Invoices (${invoices.length})`} ([apps/web/src/pages/CommerceReports.tsx:305](../../../apps/web/src/pages/CommerceReports.tsx))
-- {`Sales Orders (${orders.length})`} ([apps/web/src/pages/CommerceReports.tsx:310](../../../apps/web/src/pages/CommerceReports.tsx))
+- {uiScopedTemplate('tabs')`Outstanding Receivables (${debtorCustomers.length})`} ([apps/web/src/pages/CommerceReports.tsx:293](../../../apps/web/src/pages/CommerceReports.tsx))
+- {uiScopedTemplate('tabs')`Low Stock Watchlist (${reportData?.lowStock?.length || 0})`} ([apps/web/src/pages/CommerceReports.tsx:298](../../../apps/web/src/pages/CommerceReports.tsx))
+- {uiScopedTemplate('tabs')`Recent Invoices (${invoices.length})`} ([apps/web/src/pages/CommerceReports.tsx:303](../../../apps/web/src/pages/CommerceReports.tsx))
+- {uiScopedTemplate('tabs')`Sales Orders (${orders.length})`} ([apps/web/src/pages/CommerceReports.tsx:308](../../../apps/web/src/pages/CommerceReports.tsx))
 
 ## Actions
 
 | Control / label | Handler | Source |
 | --- | --- | --- |
-| Refresh | `{handleRefresh}` | [apps/web/src/pages/CommerceReports.tsx:203](../../../apps/web/src/pages/CommerceReports.tsx) |
-| Print Report | `{handlePrint}` | [apps/web/src/pages/CommerceReports.tsx:211](../../../apps/web/src/pages/CommerceReports.tsx) |
+| {uiText("Refresh ")} | `{handleRefresh}` | [apps/web/src/pages/CommerceReports.tsx:203](../../../apps/web/src/pages/CommerceReports.tsx) |
+| {uiText("Print Report ")} | `{handlePrint}` | [apps/web/src/pages/CommerceReports.tsx:210](../../../apps/web/src/pages/CommerceReports.tsx) |
 
 ## API calls
 
@@ -30,13 +30,14 @@ Paths are relative to the client API base (`/api/backend` by default in the brow
 
 | Method | Path expression | Source |
 | --- | --- | --- |
-| GET | `/commerce/report` | [apps/web/src/pages/CommerceReports.tsx:61](../../../apps/web/src/pages/CommerceReports.tsx) |
-| GET | `/commerce/invoices` | [apps/web/src/pages/CommerceReports.tsx:66](../../../apps/web/src/pages/CommerceReports.tsx) |
-| GET | `/commerce/customers` | [apps/web/src/pages/CommerceReports.tsx:71](../../../apps/web/src/pages/CommerceReports.tsx) |
-| GET | `/commerce/orders` | [apps/web/src/pages/CommerceReports.tsx:76](../../../apps/web/src/pages/CommerceReports.tsx) |
+| GET | `/commerce/report` | [apps/web/src/pages/CommerceReports.tsx:63](../../../apps/web/src/pages/CommerceReports.tsx) |
+| GET | `/commerce/invoices` | [apps/web/src/pages/CommerceReports.tsx:68](../../../apps/web/src/pages/CommerceReports.tsx) |
+| GET | `/commerce/customers` | [apps/web/src/pages/CommerceReports.tsx:73](../../../apps/web/src/pages/CommerceReports.tsx) |
+| GET | `/commerce/orders` | [apps/web/src/pages/CommerceReports.tsx:78](../../../apps/web/src/pages/CommerceReports.tsx) |
 
 ## Composed behavior
 
+- [i18n.ts](../../../apps/web/src/i18n.ts)
 - [api.ts](../../../apps/web/src/utils/api.ts)
 
 ## Verify the workflow

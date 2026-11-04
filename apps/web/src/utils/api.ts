@@ -1,16 +1,18 @@
+import { getToken, clearAuth } from './authStorage';
 import axios from 'axios';
 
 let onMutation: (() => void) | undefined;
 export const setMutationListener = (listener: () => void) => { onMutation = listener; };
 
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || (window.location.protocol === 'file:' ? 'http://localhost:3001' : '/api/backend'),
+    // The web server and the desktop launcher both serve the app over HTTP with the API behind /api/backend.
+    baseURL: import.meta.env.VITE_API_URL || '/api/backend',
 });
 
 // ─── Request Interceptor ──────────────────────────────────────────────────────
 // Attach the JWT token to every outgoing request.
 api.interceptors.request.use((config) => {
-    const token = localStorage.getItem('token');
+    const token = getToken();
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
@@ -27,11 +29,10 @@ api.interceptors.response.use(
         return response;
     },
     (error) => {
-        const isSignInAttempt = /\/auth\/(login|passkey\/auth-options|passkey\/auth-verify)$/.test(String(error.config?.url || ''));
+        const isSignInAttempt = /\/auth\/(login|passkey\/auth-options|passkey\/auth-verify|oidc\/complete|account\/redeem|account\/onboarding|account\/request-reset)$/.test(String(error.config?.url || ''));
         if (error.response?.status === 401 && !isSignInAttempt) {
             // Clear stale credentials
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
+            clearAuth();
             // Reload to the login screen (App.tsx renders Login when user === null)
             window.location.reload();
         }

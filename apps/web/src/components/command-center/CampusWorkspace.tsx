@@ -1,3 +1,4 @@
+import { uiText, uiTemplate } from "../../i18n";
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Box, Button, Chip, IconButton, MenuItem, Select, Stack, Typography, useTheme } from '@mui/material';
 import { AddRounded, ArrowForwardRounded, CloseFullscreenRounded, CropFreeRounded, ExploreOutlined, PauseRounded, PlayArrowRounded, RemoveRounded, RestartAltRounded, VideocamOutlined } from '@mui/icons-material';
@@ -28,7 +29,7 @@ export default function CampusWorkspace(props: Props) {
 
   useEffect(() => {
     if (!root.current || typeof ResizeObserver === 'undefined') return;
-    const observer = new ResizeObserver(([entry]) => setWide(entry.contentRect.width >= 1040));
+    const observer = new ResizeObserver(([entry]) => setWide(entry.contentRect.width >= 820));
     observer.observe(root.current);
     return () => observer.disconnect();
   }, []);
@@ -79,11 +80,11 @@ export default function CampusWorkspace(props: Props) {
           <Typography fontWeight={750} fontSize={15}>
             EverGreen <Box component="span" sx={{ color: isDark ? '#64748b' : '#7c9085', fontWeight: 400 }}> / Operations</Box>
           </Typography>
-          <Typography fontSize={11} sx={{ color: textMuted }}>Factory campus · 3D interactive simulator</Typography>
+          <Typography fontSize={11} sx={{ color: textMuted }}>Factory workspace · select a zone or machine</Typography>
         </Box>
         <Chip
           size="small"
-          label={props.reduced ? 'Reduced motion' : props.playing ? 'Illustrative traffic' : 'Animation paused'}
+          label={props.reduced ? 'Reduced motion' : props.playing ? 'Illustrative traffic' : 'Recorded operations'}
           sx={{
             bgcolor: isDark ? 'rgba(16,185,129,0.15)' : '#edf5ed',
             color: isDark ? '#34d399' : '#477153',
@@ -97,7 +98,7 @@ export default function CampusWorkspace(props: Props) {
           onClick={props.toggleCinema}
           sx={{ color: isDark ? '#38bdf8' : undefined }}
         >
-          {props.cinema ? 'Exit cinema' : 'Cinema view'}
+          {props.cinema ? 'Show inspector' : 'Expand scene'}
         </Button>
       </Stack>
 
@@ -105,14 +106,14 @@ export default function CampusWorkspace(props: Props) {
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))', sm: 'repeat(4, minmax(0, 1fr))' }, borderBottom: `1px solid ${borderMain}`, bgcolor: isDark ? 'rgba(15,23,42,0.6)' : '#fff' }}>
         {props.resources.map(([label, value], i) => (
           <Box key={label} sx={{ px: { xs: 1.5, sm: 2.5 }, py: 1.5, borderRight: i < 3 ? `1px solid ${resourceBorder}` : 0 }}>
-            <Typography fontSize={10} sx={{ color: textMuted, letterSpacing: '0.06em', textTransform: 'uppercase', mb: 0.5, fontWeight: 700 }}>{label}</Typography>
+            <Typography fontSize={10} sx={{ color: textMuted, letterSpacing: '0.06em', textTransform: 'uppercase', mb: 0.5, fontWeight: 700 }}>{uiText(label, 'forms')}</Typography>
             <Typography sx={{ fontWeight: 650, fontSize: { xs: 17, sm: 22 }, lineHeight: 1.2, letterSpacing: '-0.045em', fontVariantNumeric: 'tabular-nums', overflowWrap: 'anywhere', color: textPrimary }}>{value}</Typography>
           </Box>
         ))}
       </Box>
 
       {/* Main Scene & Workspace Panel */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: wide && !props.cinema ? 'minmax(0, 1fr) 280px' : 'minmax(0, 1fr)' }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: wide && !props.cinema ? 'minmax(0, 1fr) 300px' : 'minmax(0, 1fr)' }}>
         <Box sx={{ minWidth: 0 }}>
           {/* Navigation Tabs */}
           <Stack direction="row" sx={{ px: 1.25, gap: 0.5, bgcolor: tabBg, borderBottom: `1px solid ${borderMain}`, overflowX: 'auto' }}>
@@ -138,14 +139,14 @@ export default function CampusWorkspace(props: Props) {
           </Stack>
 
           {/* Canvas Box */}
-          <Box sx={{ height: props.cinema ? 'max(560px, calc(100dvh - 230px))' : { xs: 370, sm: 560, lg: 620 }, position: 'relative', bgcolor: isDark ? '#080e1c' : '#e8efec', minWidth: 0 }}>
+          <Box sx={{ height: props.cinema ? 'max(560px, calc(100dvh - 230px))' : { xs: 340, sm: 'clamp(360px, calc(100dvh - 330px), 620px)' }, position: 'relative', bgcolor: isDark ? '#080e1c' : '#e8efec', minWidth: 0 }}>
             {props.children}
             <Box sx={{ position: 'absolute', left: 20, top: 18, pointerEvents: 'none' }}>
               <Typography sx={{ fontSize: 10, color: isDark ? '#38bdf8' : '#6d8779', letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 700 }}>
                 {props.tour ? 'Guided camera tour' : 'Explore the campus'}
               </Typography>
               <Typography sx={{ fontSize: { xs: 22, sm: 30 }, fontWeight: 700, letterSpacing: '-0.055em', color: isDark ? '#f8fafc' : '#234a39' }}>
-                {props.view === 'Campus' ? 'The bigger picture.' : props.view}
+                {props.view === 'Campus' ? 'Select a zone to inspect' : props.view}
               </Typography>
             </Box>
 
@@ -160,7 +161,7 @@ export default function CampusWorkspace(props: Props) {
                 {locations.map(location => (
                   <Button
                     key={location.name}
-                    aria-label={`Focus ${location.name}`}
+                    aria-label={uiTemplate`Focus ${location.name}`}
                     onClick={() => focus(location.name)}
                     sx={{
                       position: 'absolute',
@@ -191,16 +192,18 @@ export default function CampusWorkspace(props: Props) {
             </Stack>
           </Box>
 
+          <Box component="details" sx={{ bgcolor: headerBg }}><Box component="summary" sx={{ cursor: 'pointer', p: 1.5, fontSize: 12 }}>Presentation controls · illustrative motion</Box>
           {/* Bottom Toolbar */}
           <Stack direction="row" sx={{ gap: 0.5, flexWrap: 'wrap', alignItems: 'center', bgcolor: headerBg, borderTop: `1px solid ${borderMain}`, p: 1 }}>
             <Button variant="contained" disableElevation size="small" startIcon={props.motion && !props.reduced ? <PauseRounded /> : <PlayArrowRounded />} disabled={props.reduced} aria-pressed={props.motion && !props.reduced} onClick={props.toggleMotion} sx={{ bgcolor: isDark ? '#10b981' : undefined }}>{props.motion && !props.reduced ? 'Pause' : 'Play'}</Button>
             <Button size="small" startIcon={<VideocamOutlined />} disabled={props.reduced} aria-pressed={props.tour} onClick={props.toggleTour}>{props.tour ? 'Stop tour' : 'Camera tour'}</Button>
-            <Select size="small" value={props.speed} inputProps={{ 'aria-label': 'Animation speed' }} onChange={event => props.setSpeed(Number(event.target.value))} sx={{ height: 36, minWidth: 68, fontSize: 12 }}>
+            <Select size="small" value={props.speed} inputProps={{ 'aria-label': uiText("Animation speed", 'forms') }} onChange={event => props.setSpeed(Number(event.target.value))} sx={{ height: 36, minWidth: 68, fontSize: 12 }}>
               {[0.5, 1, 2].map(speed => <MenuItem key={speed} value={speed}>{speed}×</MenuItem>)}
             </Select>
             <IconButton aria-label="Reset camera" onClick={props.reset} sx={{ color: textPrimary }}><RestartAltRounded fontSize="small" /></IconButton>
             <Typography sx={{ fontSize: 10, color: textMuted, ml: 'auto', px: 1, display: { xs: 'none', sm: 'block' } }}>Drag to orbit · scroll to zoom</Typography>
           </Stack>
+          </Box>
         </Box>
 
         {/* Right Info Drawer */}
@@ -232,7 +235,7 @@ export default function CampusWorkspace(props: Props) {
                 <Box component="dl" sx={{ m: 0 }}>
                   {props.zone.facts.map(([label, value]) => (
                     <Box key={label} sx={{ py: 1.2, display: 'flex', gap: 1, justifyContent: 'space-between', borderTop: `1px solid ${resourceBorder}` }}>
-                      <Typography component="dt" fontSize={11} sx={{ color: textMuted }}>{label}</Typography>
+                      <Typography component="dt" fontSize={11} sx={{ color: textMuted }}>{uiText(label, 'forms')}</Typography>
                       <Typography component="dd" sx={{ m: 0, fontSize: 12, fontWeight: 700, textAlign: 'right', color: textPrimary }}>{value}</Typography>
                     </Box>
                   ))}

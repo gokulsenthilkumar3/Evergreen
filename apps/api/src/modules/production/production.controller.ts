@@ -5,6 +5,7 @@ import {
   Body,
   Delete,
   Param,
+  Query,
   Req,
 } from '@nestjs/common';
 import { ProductionService } from './production.service';
@@ -20,8 +21,8 @@ export class ProductionController {
   }
 
   @Get()
-  getProductionHistory() {
-    return this.productionService.findAll();
+  getProductionHistory(@Query('from') from?: string, @Query('to') to?: string) {
+    return this.productionService.findAll(from, to);
   }
 
   @Delete(':id')

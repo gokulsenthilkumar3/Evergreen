@@ -1,3 +1,5 @@
+import { dateKey } from '../utils/dateKey';
+import { uiText, useUiLanguage, uiLocale, uiTemplate, uiMetric, uiDateLocale } from "../i18n";
 import React, { useMemo, useState } from 'react';
 import {
   Add as AddIcon,
@@ -87,6 +89,7 @@ const PROCESS_OPTIONS = [
 ];
 
 const JobWork: React.FC = () => {
+  useUiLanguage();
   const client = useQueryClient();
   const [open, setOpen] = useState(false);
   const [workerOpen, setWorkerOpen] = useState(false);
@@ -98,7 +101,7 @@ const JobWork: React.FC = () => {
   const [form, setForm] = useState({
     jobWorkerId: '' as number | '',
     processType: 'DYEING',
-    date: new Date().toLocaleDateString('en-CA'),
+    date: dateKey(),
     notes: '',
     lines: [{ itemId: '' as number | '', quantity: '' }] as Line[],
   });
@@ -135,30 +138,42 @@ const JobWork: React.FC = () => {
 
   const materials = items.filter((item) => item.type !== 'SERVICE');
 
-  const createWorker = async () => {
+  // One write at a time: a double click must not dispatch or receive the same material twice.
+  const [busy, setBusy] = useState(false);
+  const once = (work: () => Promise<unknown>) => async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      await work();
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const createWorker = once(async () => {
     try {
       if (!workerName.trim()) {
-        return toast.error('Worker name is required');
+        return toast.error(uiText('Worker name is required', 'feedback'));
       }
       const { data } = await api.post('/job-work/workers', { name: workerName.trim() });
       setForm((prev) => ({ ...prev, jobWorkerId: data.id }));
       setWorkerName('');
       setWorkerOpen(false);
       await client.invalidateQueries({ queryKey: ['job-workers'] });
-      toast.success('Job worker added successfully');
+      toast.success(uiText('Job worker added successfully', 'feedback'));
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Could not add worker');
+      toast.error(uiText(error.response?.data?.message || 'Could not add worker', 'feedback'));
     }
-  };
+  });
 
-  const dispatch = async () => {
+  const dispatch = once(async () => {
     try {
       if (!form.jobWorkerId) {
-        return toast.error('Please select a job worker');
+        return toast.error(uiText('Please select a job worker', 'feedback'));
       }
       const validLines = form.lines.filter((l) => l.itemId !== '' && Number(l.quantity) > 0);
       if (validLines.length === 0) {
-        return toast.error('Please add at least one material with positive quantity');
+        return toast.error(uiText('Please add at least one material with positive quantity', 'feedback'));
       }
 
       await api.post('/job-work/dispatch', {
@@ -173,16 +188,16 @@ const JobWork: React.FC = () => {
       setForm({
         jobWorkerId: '',
         processType: 'DYEING',
-        date: new Date().toLocaleDateString('en-CA'),
+        date: dateKey(),
         notes: '',
         lines: [{ itemId: '', quantity: '' }],
       });
       await refresh();
-      toast.success('Job-work challan dispatched successfully');
+      toast.success(uiText('Job-work challan dispatched successfully', 'feedback'));
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Could not dispatch material');
+      toast.error(uiText(error.response?.data?.message || 'Could not dispatch material', 'feedback'));
     }
-  };
+  });
 
   const openReceipt = (job: Job) => {
     setReceipt(job);
@@ -195,7 +210,7 @@ const JobWork: React.FC = () => {
     );
   };
 
-  const saveReceipt = async () => {
+  const saveReceipt = once(async () => {
     try {
       if (!receipt) return;
       const lines = receiptLines
@@ -207,17 +222,17 @@ const JobWork: React.FC = () => {
         }));
 
       if (lines.length === 0) {
-        return toast.error('Please enter received quantity or scrap for at least one item');
+        return toast.error(uiText('Please enter received quantity or scrap for at least one item', 'feedback'));
       }
 
       await api.post(`/job-work/${receipt.id}/receive`, { lines });
       setReceipt(null);
       await refresh();
-      toast.success('Job-work receipt and scrap recorded');
+      toast.success(uiText('Job-work receipt and scrap recorded', 'feedback'));
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Could not record receipt');
+      toast.error(uiText(error.response?.data?.message || 'Could not record receipt', 'feedback'));
     }
-  };
+  });
 
   // Filtered jobs list
   const filteredJobs = useMemo(() => {
@@ -245,7 +260,7 @@ const JobWork: React.FC = () => {
     },
     {
       label: 'With Processors',
-      value: `${Number(summary.outstandingQty || 0).toLocaleString('en-IN')} kg`,
+      value: `${Number(summary.outstandingQty || 0).toLocaleString(uiLocale())} kg`,
       subtitle: 'Material awaiting receipt',
       icon: <DispatchIcon />,
       color: '#2563eb',
@@ -276,11 +291,9 @@ const JobWork: React.FC = () => {
       >
         <Box>
           <Typography variant="h4" fontWeight={800}>
-            Job Work Management
-          </Typography>
+            {uiText("Job Work Management ")}</Typography>
           <Typography color="text.secondary">
-            Issue material for external processing, monitor worker challans, and track receipts & scrap.
-          </Typography>
+            {uiText("Issue material for external processing, monitor worker challans, and track receipts & scrap. ")}</Typography>
         </Box>
         <Stack direction="row" spacing={1.5}>
           <Button
@@ -288,15 +301,13 @@ const JobWork: React.FC = () => {
             startIcon={<WorkerIcon />}
             onClick={() => setWorkerOpen(true)}
           >
-            Add Worker
-          </Button>
+            {uiText("Add Worker ")}</Button>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => setOpen(true)}
           >
-            New Dispatch
-          </Button>
+            {uiText("New Dispatch ")}</Button>
         </Stack>
       </Box>
 
@@ -326,7 +337,7 @@ const JobWork: React.FC = () => {
                   }}
                 >
                   <Typography variant="body2" color="text.secondary" fontWeight={600}>
-                    {stat.label}
+                    {uiText(stat.label, 'metrics')}
                   </Typography>
                   <Box
                     sx={{
@@ -342,10 +353,10 @@ const JobWork: React.FC = () => {
                   </Box>
                 </Box>
                 <Typography variant="h5" fontWeight={800} sx={{ mb: 0.5 }}>
-                  {stat.value}
+                  {uiMetric(stat.value)}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  {stat.subtitle}
+                  {uiText(stat.subtitle, 'metrics')}
                 </Typography>
               </CardContent>
             </Card>
@@ -372,7 +383,7 @@ const JobWork: React.FC = () => {
             {['ALL', 'DISPATCHED', 'PART_RECEIVED', 'COMPLETED', 'CANCELLED'].map((status) => (
               <Chip
                 key={status}
-                label={status === 'ALL' ? 'All Challans' : status.replace('_', ' ')}
+                label={status === 'ALL' ? uiText("All Challans") : status.replaceAll('_', ' ')}
                 clickable
                 color={statusFilter === status ? 'primary' : 'default'}
                 variant={statusFilter === status ? 'filled' : 'outlined'}
@@ -385,7 +396,7 @@ const JobWork: React.FC = () => {
           <Stack direction="row" spacing={1.5} alignItems="center">
             <TextField
               size="small"
-              placeholder="Search challan, worker, material..."
+              placeholder={uiText("Search challan, worker, material...", 'forms')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               InputProps={{
@@ -397,7 +408,7 @@ const JobWork: React.FC = () => {
               }}
               sx={{ width: { xs: '100%', sm: 260 } }}
             />
-            <IconButton onClick={refresh} title="Refresh challans">
+            <IconButton onClick={refresh} title={uiText("Refresh challans")}>
               <RefreshIcon fontSize="small" />
             </IconButton>
           </Stack>
@@ -408,14 +419,13 @@ const JobWork: React.FC = () => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell sx={{ fontWeight: 'bold' }}>Challan #</TableCell>
-                <TableCell sx={{ fontWeight: 'bold' }}>Job Worker</TableCell>
-                <TableCell sx={{ fontWeight: 'bold' }}>Process</TableCell>
-                <TableCell sx={{ fontWeight: 'bold' }}>Materials Dispatched</TableCell>
-                <TableCell sx={{ fontWeight: 'bold' }}>Status</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>{uiText("Challan #", 'tables')}</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>{uiText("Job Worker", 'tables')}</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>{uiText("Process", 'tables')}</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>{uiText("Materials Dispatched", 'tables')}</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>{uiText("Status", 'tables')}</TableCell>
                 <TableCell align="right" sx={{ fontWeight: 'bold' }}>
-                  Actions
-                </TableCell>
+                  {uiText("Actions ", 'tables')}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -429,11 +439,9 @@ const JobWork: React.FC = () => {
                 <TableRow>
                   <TableCell colSpan={6} align="center" sx={{ py: 7 }}>
                     <Typography fontWeight={700} color="text.secondary">
-                      No job-work challans found.
-                    </Typography>
+                      {uiText("No job-work challans found. ", 'tables')}</Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                      Click "New Dispatch" to send materials to a dyer, knitter, or finisher.
-                    </Typography>
+                      {uiText("Click \"New Dispatch\" to send materials to a dyer, knitter, or finisher. ", 'tables')}</Typography>
                   </TableCell>
                 </TableRow>
               ) : (
@@ -442,7 +450,7 @@ const JobWork: React.FC = () => {
                     <TableCell>
                       <Typography fontWeight={700}>{job.challanNo}</Typography>
                       <Typography variant="caption" color="text.secondary">
-                        {new Date(job.date).toLocaleDateString('en-IN', {
+                        {new Date(job.date).toLocaleDateString(uiDateLocale(), {
                           year: 'numeric',
                           month: 'short',
                           day: 'numeric',
@@ -488,7 +496,7 @@ const JobWork: React.FC = () => {
                       <Chip
                         size="small"
                         color={statusColorMap[job.status] || 'default'}
-                        label={job.status.replace('_', ' ')}
+                        label={job.status.replaceAll('_', ' ')}
                       />
                     </TableCell>
                     <TableCell align="right">
@@ -499,14 +507,13 @@ const JobWork: React.FC = () => {
                           startIcon={<ReceiptIcon />}
                           onClick={() => openReceipt(job)}
                         >
-                          Receive
-                        </Button>
+                          {uiText("Receive ", 'tables')}</Button>
                       )}
                       {!['COMPLETED', 'CANCELLED'].includes(job.status) && <Button size="small" color="error" onClick={async () => {
                         if (!window.confirm('Confirm the outstanding material has physically returned. Received material and recorded scrap will be retained.')) return;
-                        try { await api.post(`/job-work/${job.id}/cancel`, { notes: 'Outstanding material returned; job cancelled', returnConfirmed: true }); await refresh(); toast.success('Job cancelled; outstanding material returned once'); }
-                        catch (error: any) { toast.error(error.response?.data?.message || 'Could not cancel job'); }
-                      }}>Cancel & return</Button>}
+                        try { await api.post(`/job-work/${job.id}/cancel`, { notes: 'Outstanding material returned; job cancelled', returnConfirmed: true }); await refresh(); toast.success(uiText('Job cancelled; outstanding material returned once', 'feedback')); }
+                        catch (error: any) { toast.error(uiText(error.response?.data?.message || 'Could not cancel job', 'feedback')); }
+                      }}>{uiText("Cancel & return", 'tables')}</Button>}
                     </TableCell>
                   </TableRow>
                 ))
@@ -524,14 +531,13 @@ const JobWork: React.FC = () => {
         maxWidth="md"
       >
         <DialogTitle sx={{ fontWeight: 800 }}>
-          Dispatch Material for Job Work
-        </DialogTitle>
+          {uiText("Dispatch Material for Job Work ")}</DialogTitle>
         <DialogContent>
           <Stack spacing={2.5} sx={{ pt: 1 }}>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
               <TextField
                 select
-                label="Job Worker"
+                label={uiText("Job Worker", 'forms')}
                 value={form.jobWorkerId}
                 onChange={(e) =>
                   setForm({ ...form, jobWorkerId: Number(e.target.value) })
@@ -547,7 +553,7 @@ const JobWork: React.FC = () => {
 
               <TextField
                 select
-                label="Process Type"
+                label={uiText("Process Type", 'forms')}
                 value={form.processType}
                 onChange={(e) =>
                   setForm({ ...form, processType: e.target.value })
@@ -563,7 +569,7 @@ const JobWork: React.FC = () => {
 
               <TextField
                 type="date"
-                label="Dispatch Date"
+                label={uiText("Dispatch Date", 'forms')}
                 InputLabelProps={{ shrink: true }}
                 value={form.date}
                 onChange={(e) =>
@@ -574,14 +580,13 @@ const JobWork: React.FC = () => {
             </Stack>
 
             <Typography variant="subtitle2" fontWeight={700}>
-              Materials to Dispatch:
-            </Typography>
+              {uiText("Materials to Dispatch: ")}</Typography>
 
             {form.lines.map((line, index) => (
               <Stack key={index} direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
                 <TextField
                   select
-                  label="Material Item"
+                  label={uiText("Material Item", 'forms')}
                   value={line.itemId}
                   onChange={(e) =>
                     setForm({
@@ -597,13 +602,13 @@ const JobWork: React.FC = () => {
                 >
                   {materials.map((item) => (
                     <MenuItem key={item.id} value={item.id}>
-                      {item.name} — Available: {item.stock?.available ?? 0} {item.uom}
+                      {item.name} {uiText(" — Available: ", 'forms')}{item.stock?.available ?? 0} {item.uom}
                     </MenuItem>
                   ))}
                 </TextField>
 
                 <TextField
-                  label="Quantity"
+                  label={uiText("Quantity", 'forms')}
                   type="number"
                   value={line.quantity}
                   onChange={(e) =>
@@ -630,8 +635,7 @@ const JobWork: React.FC = () => {
                       })
                     }
                   >
-                    Remove
-                  </Button>
+                    {uiText("Remove ")}</Button>
                 )}
               </Stack>
             ))}
@@ -645,11 +649,10 @@ const JobWork: React.FC = () => {
               }
               sx={{ alignSelf: 'start' }}
             >
-              + Add Another Material
-            </Button>
+              {uiText("+ Add Another Material ")}</Button>
 
             <TextField
-              label="Notes / Instructions"
+              label={uiText("Notes / Instructions", 'forms')}
               value={form.notes}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
               multiline
@@ -659,10 +662,9 @@ const JobWork: React.FC = () => {
           </Stack>
         </DialogContent>
         <DialogActions sx={{ p: 2.5 }}>
-          <Button onClick={() => setOpen(false)}>Cancel</Button>
-          <Button variant="contained" onClick={dispatch}>
-            Confirm Dispatch
-          </Button>
+          <Button onClick={() => setOpen(false)}>{uiText("Cancel")}</Button>
+          <Button variant="contained" disabled={busy} onClick={dispatch}>
+            {uiText("Confirm Dispatch ")}</Button>
         </DialogActions>
       </Dialog>
 
@@ -674,11 +676,11 @@ const JobWork: React.FC = () => {
         maxWidth="sm"
       >
         <DialogTitle sx={{ fontWeight: 800 }}>
-          Receive Material: Challan #{receipt?.challanNo}
+          {uiText("Receive Material: Challan #")}{receipt?.challanNo}
         </DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Processor: <strong>{receipt?.jobWorker?.name}</strong> | Process: <strong>{receipt?.processType}</strong>
+            {uiText("Processor: ")}<strong>{receipt?.jobWorker?.name}</strong> {uiText(" | Process: ")}<strong>{receipt?.processType}</strong>
           </Typography>
           <Stack spacing={2}>
             {receiptLines.map((line, index) => {
@@ -686,11 +688,11 @@ const JobWork: React.FC = () => {
               return (
                 <Paper key={String(line.itemId)} variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
                   <Typography fontWeight={700} sx={{ mb: 1 }}>
-                    {matchedItem?.name || `Item #${line.itemId}`} ({matchedItem?.uom || 'KG'})
+                    {matchedItem?.name || uiTemplate`Item #${line.itemId}`} ({matchedItem?.uom || 'KG'})
                   </Typography>
                   <Stack direction="row" spacing={1.5}>
                     <TextField
-                      label="Finished / Received Qty"
+                      label={uiText("Finished / Received Qty", 'forms')}
                       type="number"
                       value={line.quantity}
                       onChange={(e) =>
@@ -703,7 +705,7 @@ const JobWork: React.FC = () => {
                       fullWidth
                     />
                     <TextField
-                      label="Scrap / Waste Qty"
+                      label={uiText("Scrap / Waste Qty", 'forms')}
                       type="number"
                       value={line.scrapQty}
                       onChange={(e) =>
@@ -722,32 +724,30 @@ const JobWork: React.FC = () => {
           </Stack>
         </DialogContent>
         <DialogActions sx={{ p: 2.5 }}>
-          <Button onClick={() => setReceipt(null)}>Cancel</Button>
-          <Button variant="contained" onClick={saveReceipt}>
-            Record Receipt & Close
-          </Button>
+          <Button onClick={() => setReceipt(null)}>{uiText("Cancel")}</Button>
+          <Button variant="contained" disabled={busy} onClick={saveReceipt}>
+            {uiText("Record Receipt & Close ")}</Button>
         </DialogActions>
       </Dialog>
 
       {/* Add Worker Dialog */}
       <Dialog open={workerOpen} onClose={() => setWorkerOpen(false)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 800 }}>Add Job Worker</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 800 }}>{uiText("Add Job Worker")}</DialogTitle>
         <DialogContent>
           <TextField
             autoFocus
             fullWidth
             sx={{ mt: 1 }}
-            label="Worker / Vendor Name"
-            placeholder="e.g. Sri Lakshmi Dyeing Works"
+            label={uiText("Worker / Vendor Name", 'forms')}
+            placeholder={uiText("e.g. Sri Lakshmi Dyeing Works", 'forms')}
             value={workerName}
             onChange={(e) => setWorkerName(e.target.value)}
           />
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setWorkerOpen(false)}>Cancel</Button>
-          <Button variant="contained" onClick={createWorker}>
-            Save Worker
-          </Button>
+          <Button onClick={() => setWorkerOpen(false)}>{uiText("Cancel")}</Button>
+          <Button variant="contained" disabled={busy} onClick={createWorker}>
+            {uiText("Save Worker ")}</Button>
         </DialogActions>
       </Dialog>
     </Box>

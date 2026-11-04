@@ -12,20 +12,20 @@ Sign in to the company installation. VIEWER reads records, MODIFIER performs ord
 
 ## Tabs
 
-- {`Machine Registry (${machines.length})`} ([apps/web/src/pages/yarn/MachineManagement.tsx:293](../../../apps/web/src/pages/yarn/MachineManagement.tsx))
-- {`Maintenance & Inspections (${inspections.length})`} ([apps/web/src/pages/yarn/MachineManagement.tsx:294](../../../apps/web/src/pages/yarn/MachineManagement.tsx))
+- {uiScopedTemplate('tabs')`Machine Registry (${machines.length})`} ([apps/web/src/pages/yarn/MachineManagement.tsx:285](../../../apps/web/src/pages/yarn/MachineManagement.tsx))
+- {uiScopedTemplate('tabs')`Maintenance & Inspections (${inspections.length})`} ([apps/web/src/pages/yarn/MachineManagement.tsx:286](../../../apps/web/src/pages/yarn/MachineManagement.tsx))
 
 ## Actions
 
 | Control / label | Handler | Source |
 | --- | --- | --- |
-| Refresh | `{() => { queryClient.invalidateQueries({ queryKey: ['machines'] }); queryClient.invalidateQueries({ queryKey: ['machine-inspections'] }); }}` | [apps/web/src/pages/yarn/MachineManagement.tsx:186](../../../apps/web/src/pages/yarn/MachineManagement.tsx) |
-| Register Machine | `{() => setOpenMachineDialog(true)}` | [apps/web/src/pages/yarn/MachineManagement.tsx:199](../../../apps/web/src/pages/yarn/MachineManagement.tsx) |
-| Log Maintenance | `{() => setOpenInspectionDialog(true)}` | [apps/web/src/pages/yarn/MachineManagement.tsx:207](../../../apps/web/src/pages/yarn/MachineManagement.tsx) |
-| Cancel | `{() => setOpenMachineDialog(false)}` | [apps/web/src/pages/yarn/MachineManagement.tsx:540](../../../apps/web/src/pages/yarn/MachineManagement.tsx) |
-| {createMachineMutation.isPending ? 'Registering...' : 'Register Machine'} | `{() => createMachineMutation.mutate(machineForm)}` | [apps/web/src/pages/yarn/MachineManagement.tsx:543](../../../apps/web/src/pages/yarn/MachineManagement.tsx) |
-| Cancel | `{() => setOpenInspectionDialog(false)}` | [apps/web/src/pages/yarn/MachineManagement.tsx:657](../../../apps/web/src/pages/yarn/MachineManagement.tsx) |
-| {createInspectionMutation.isPending ? 'Logging...' : 'Save Inspection'} | `{() => createInspectionMutation.mutate(inspectionForm)}` | [apps/web/src/pages/yarn/MachineManagement.tsx:660](../../../apps/web/src/pages/yarn/MachineManagement.tsx) |
+| {uiText("Refresh ")} | `{() => { queryClient.invalidateQueries({ queryKey: ['machines'] }); queryClient.invalidateQueries({ queryKey: ['machine-inspections'] }); }}` | [apps/web/src/pages/yarn/MachineManagement.tsx:186](../../../apps/web/src/pages/yarn/MachineManagement.tsx) |
+| {uiText("Register Machine ")} | `{() => setOpenMachineDialog(true)}` | [apps/web/src/pages/yarn/MachineManagement.tsx:198](../../../apps/web/src/pages/yarn/MachineManagement.tsx) |
+| {uiText("Log Maintenance ")} | `{() => setOpenInspectionDialog(true)}` | [apps/web/src/pages/yarn/MachineManagement.tsx:205](../../../apps/web/src/pages/yarn/MachineManagement.tsx) |
+| {uiText("Cancel ")} | `{() => setOpenMachineDialog(false)}` | [apps/web/src/pages/yarn/MachineManagement.tsx:527](../../../apps/web/src/pages/yarn/MachineManagement.tsx) |
+| {createMachineMutation.isPending ? uiText("Registering...") : uiText("Register Machine")} | `{() => createMachineMutation.mutate(machineForm)}` | [apps/web/src/pages/yarn/MachineManagement.tsx:529](../../../apps/web/src/pages/yarn/MachineManagement.tsx) |
+| {uiText("Cancel ")} | `{() => setOpenInspectionDialog(false)}` | [apps/web/src/pages/yarn/MachineManagement.tsx:642](../../../apps/web/src/pages/yarn/MachineManagement.tsx) |
+| {createInspectionMutation.isPending ? uiText("Logging...") : uiText("Save Inspection")} | `{() => createInspectionMutation.mutate(inspectionForm)}` | [apps/web/src/pages/yarn/MachineManagement.tsx:644](../../../apps/web/src/pages/yarn/MachineManagement.tsx) |
 
 ## API calls
 
@@ -33,13 +33,14 @@ Paths are relative to the client API base (`/api/backend` by default in the brow
 
 | Method | Path expression | Source |
 | --- | --- | --- |
-| GET | `/machines` | [apps/web/src/pages/yarn/MachineManagement.tsx:100](../../../apps/web/src/pages/yarn/MachineManagement.tsx) |
-| GET | `/machines/inspections` | [apps/web/src/pages/yarn/MachineManagement.tsx:110](../../../apps/web/src/pages/yarn/MachineManagement.tsx) |
-| POST | `/machines` | [apps/web/src/pages/yarn/MachineManagement.tsx:115](../../../apps/web/src/pages/yarn/MachineManagement.tsx) |
-| POST | `/machines/inspections` | [apps/web/src/pages/yarn/MachineManagement.tsx:136](../../../apps/web/src/pages/yarn/MachineManagement.tsx) |
+| GET | `/machines` | [apps/web/src/pages/yarn/MachineManagement.tsx:102](../../../apps/web/src/pages/yarn/MachineManagement.tsx) |
+| GET | `/machines/inspections` | [apps/web/src/pages/yarn/MachineManagement.tsx:112](../../../apps/web/src/pages/yarn/MachineManagement.tsx) |
+| POST | `/machines` | [apps/web/src/pages/yarn/MachineManagement.tsx:117](../../../apps/web/src/pages/yarn/MachineManagement.tsx) |
+| POST | `/machines/inspections` | [apps/web/src/pages/yarn/MachineManagement.tsx:138](../../../apps/web/src/pages/yarn/MachineManagement.tsx) |
 
 ## Composed behavior
 
+- [i18n.ts](../../../apps/web/src/i18n.ts)
 - [api.ts](../../../apps/web/src/utils/api.ts)
 
 ## Verify the workflow

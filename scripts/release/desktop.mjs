@@ -51,7 +51,8 @@ export function copyDependencies(dependencies, from, output) {
     fs.cpSync(realSource, target, { recursive: true, dereference: true, filter: sourceFile => {
       if (sourceFile === realSource) return true;
       const name = path.basename(sourceFile);
-      if (workspace && !['package.json', 'dist'].includes(path.relative(realSource, sourceFile).split(path.sep)[0])) return false;
+      const runtimeFiles = manifest.name === '@evergreen/database' ? ['runtime-client.js'] : [];
+      if (workspace && !['package.json', 'dist', ...runtimeFiles].includes(path.relative(realSource, sourceFile).split(path.sep)[0])) return false;
       return !['node_modules', '.git', 'backups'].includes(name) && !name.startsWith('.env') && !/\.(db(?:-.*)?|sqlite.*|log|pfx|pem|key)$/.test(name);
     } });
     for (const child of Object.keys(manifest.dependencies || {})) copy(child, realSource, target, child in (manifest.optionalDependencies || {}));

@@ -1,3 +1,4 @@
+import { InstallationLicenseGuard } from '../src/guards/installation-license.guard';
 import { Test } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
@@ -9,6 +10,7 @@ import { execFileSync } from 'child_process';
 import { AppModule } from '../src/app.module';
 import { EmailService } from '../src/modules/auth/email.service';
 import { PrismaService } from '../src/services/prisma.service';
+import { provisionOnboardedStaff, staffCode } from './staff-fixture';
 
 // Real HTTP, guards, Prisma and migrations against a throwaway database.
 describe('P0 safety: public surfaces and the costing kill-switch', () => {
@@ -22,7 +24,7 @@ describe('P0 safety: public surfaces and the costing kill-switch', () => {
   const signIn = async (username: string) => {
     const login = await http()
       .post('/auth/login')
-      .send({ username, password })
+      .send({ username, password, totpCode: await staffCode() })
       .expect(201);
     return { Authorization: `Bearer ${login.body.access_token}` };
   };
@@ -49,6 +51,9 @@ describe('P0 safety: public surfaces and the costing kill-switch', () => {
       { env: process.env, stdio: 'pipe' },
     );
     const module = await Test.createTestingModule({ imports: [AppModule] })
+      // The business fixture represents an activated deployment. Licence enforcement has separate cryptographic and guard tests.
+      .overrideProvider(InstallationLicenseGuard)
+      .useValue({ canActivate: () => true })
       .overrideProvider(EmailService)
       .useValue({ sendLoginNotification: () => Promise.resolve() })
       .compile();
@@ -61,8 +66,9 @@ describe('P0 safety: public surfaces and the costing kill-switch', () => {
       }),
     );
     await app.init();
+    await app.get(PrismaService).systemSettings.create({ data: { maxUsers: 20 } });
     admin = await signIn('p0-admin');
-    await http()
+    const modifierAccount = await http()
       .post('/users')
       .set(admin)
       .send({
@@ -72,7 +78,7 @@ describe('P0 safety: public surfaces and the costing kill-switch', () => {
         role: 'MODIFIER',
       })
       .expect(201);
-    await http()
+    const viewerAccount = await http()
       .post('/users')
       .set(admin)
       .send({
@@ -82,6 +88,12 @@ describe('P0 safety: public surfaces and the costing kill-switch', () => {
         role: 'VIEWER',
       })
       .expect(201);
+    for (const account of [modifierAccount, viewerAccount]) {
+      expect(account.body.status).toBe('PENDING');
+      await provisionOnboardedStaff(app.get(PrismaService), account.body.id);
+      await http().post(`/users/${account.body.id}/status`).set(admin)
+        .send({ status: 'ACTIVE', reason: 'Activate disposable HTTP test staff' }).expect(201);
+    }
     modifier = await signIn('p0-modifier');
     viewer = await signIn('p0-viewer');
   }, 90000);

@@ -1,4 +1,5 @@
-import { useState, useMemo, useEffect, lazy, Suspense } from 'react';
+import { uiText, useUiLanguage, setUiLanguage, loadUiLanguage, uiLocale, uiTemplate, uiDateLocale, useTamilPreferences } from "./i18n";
+import { useState, useMemo, useEffect, useRef, lazy, Suspense } from 'react';
 import { Toaster, toast } from 'sonner';
 import { SUCCESS_MESSAGES } from './utils/messages';
 import { ConfirmProvider } from './context/ConfirmContext';
@@ -8,14 +9,10 @@ import {
   Drawer,
   AppBar,
   Toolbar,
-  List,
   Typography,
   Divider,
   IconButton,
-  ListItem,
-  ListItemButton,
   ListItemIcon,
-  ListItemText,
   Container,
   Avatar,
   Tooltip,
@@ -23,15 +20,16 @@ import {
   MenuItem,
   ThemeProvider,
   CssBaseline,
-  Badge,
   TextField,
   InputAdornment,
   Paper,
   Chip,
+  useMediaQuery,
   type PaletteMode,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
+  KeyboardArrowDownRounded,
   Search as SearchIcon,
   Dashboard as DashboardIcon,
   Inventory as InventoryIcon,
@@ -53,7 +51,6 @@ import {
   Insights as InsightsIcon,
   SupportAgent as HelpdeskIcon,
   School as TutorialIcon,
-  Translate as TranslateIcon,
   Factory as FactoryIcon,
   Speed as SpeedIcon,
   PrecisionManufacturing as MachineIcon,
@@ -72,19 +69,25 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from './utils/api';
 import { isCompanyPageVisible } from '@evergreen/types';
 import { canonicalPage, settingsTabFor } from './utils/navigation';
+import { lowStockThreshold } from './utils/alerts';
 import getTheme from './theme';
 import type { ThemeName } from './theme';
 import Login from './components/Login';
+import InstallationGate from './components/InstallationGate';
 import ProfileModal from './components/ProfileModal';
+import LanguageSelector from './components/LanguageSelector';
+import WorkspaceNavigation, { type NavGroup } from './components/WorkspaceNavigation';
 import { KeyboardShortcutsProvider } from './context/KeyboardShortcutsContext';
 import { ScreenReaderAnnouncer } from './components/common/ScreenReaderAnnouncer';
 import Breadcrumbs from './components/common/Breadcrumbs';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import { NotificationsProvider, NotificationsBell } from './context/NotificationsContext';
+import HelpdeskQuickReport from './components/HelpdeskQuickReport';
 import { useNotificationSync } from './hooks/useNotificationSync';
 import { useDebounce } from './hooks/useDebounce';
 import { LinearProgress } from '@mui/material';
 import NotFound404 from './components/common/NotFound404';
+import { clearAuth, getStoredUser, saveUser } from './utils/authStorage';
 
 const NotificationSyncRunner = ({ settings }: { settings: any }) => {
   useNotificationSync(settings);
@@ -125,24 +128,14 @@ const YarnSupplierPortal = lazy(() => import('./pages/yarn/SupplierPortal'));
 const YarnComplianceReports = lazy(() => import('./pages/yarn/ComplianceReports'));
 const CommandCenter = lazy(() => import('./pages/CommandCenter'));
 const Integrations = lazy(() => import('./pages/Integrations'));
+const FloatingAgent = lazy(() => import('./components/FloatingAgent'));
 const BookEllam = lazy(() => import('./pages/BookEllam'));
 
-const drawerWidth = 260;
-const drawerCollapsedWidth = 72;
+/** Provider support number in international digits, e.g. 919800000000. Set VITE_SUPPORT_PHONE when packaging. */
+const SUPPORT_PHONE = /^\d{8,15}$/.test(String(import.meta.env.VITE_SUPPORT_PHONE ?? '')) ? String(import.meta.env.VITE_SUPPORT_PHONE) : '';
 
-interface NavItem {
-  text: string;
-  icon: React.ReactNode;
-  page: string;
-  requiredRole?: string;
-  badge?: number;
-  description?: string;
-}
-
-interface NavGroup {
-  label?: string;
-  items: NavItem[];
-}
+const drawerWidth = 280;
+const drawerCollapsedWidth = 76;
 
 interface SearchResultItem {
   type: string;
@@ -161,13 +154,21 @@ const PrintStyles = () => (
 
 // --- Search Component ---
 const GlobalSearch = ({ onNavigate }: { onNavigate: (page: string) => void }) => {
+  useUiLanguage();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  // The query the current results (or failure) belong to; drives the "no matches" and error states.
+  const [searchedQuery, setSearchedQuery] = useState('');
+  const [searchFailed, setSearchFailed] = useState(false);
   const [searchHistory, setSearchHistory] = useState<string[]>(() => {
-    const saved = localStorage.getItem('searchHistory');
-    return saved ? JSON.parse(saved) : [];
+    try {
+      const saved = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+      return Array.isArray(saved) ? saved.filter((term): term is string => typeof term === 'string') : [];
+    } catch {
+      return [];
+    }
   });
 
   useEffect(() => {
@@ -184,25 +185,37 @@ const GlobalSearch = ({ onNavigate }: { onNavigate: (page: string) => void }) =>
   const debouncedQuery = useDebounce(query, 300);
 
   useEffect(() => {
+    // A slower earlier request must not replace the results of a newer query.
+    let current = true;
     const fetchResults = async () => {
       setSelectedIndex(-1);
       if (debouncedQuery.length < 2) {
         setResults([]);
+        setSearchedQuery('');
+        setSearchFailed(false);
         return;
       }
 
       setLoading(true);
       try {
-        const res = await api.get(`/search?q=${debouncedQuery}`);
-        setResults(res.data);
-      } catch (err) {
-        console.error(err);
+        const res = await api.get('/search', { params: { q: debouncedQuery } });
+        if (!current) return;
+        setResults(Array.isArray(res.data) ? res.data : []);
+        setSearchFailed(false);
+      } catch {
+        if (!current) return;
+        setResults([]);
+        setSearchFailed(true);
       } finally {
-        setLoading(false);
+        if (current) {
+          setSearchedQuery(debouncedQuery);
+          setLoading(false);
+        }
       }
     };
 
     fetchResults();
+    return () => { current = false; };
   }, [debouncedQuery]);
 
   const handleSearch = (val: string) => {
@@ -210,6 +223,10 @@ const GlobalSearch = ({ onNavigate }: { onNavigate: (page: string) => void }) =>
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      closeResults();
+      return;
+    }
     if (results.length === 0) return;
 
     switch (e.key) {
@@ -231,11 +248,9 @@ const GlobalSearch = ({ onNavigate }: { onNavigate: (page: string) => void }) =>
           setQuery('');
         }
         break;
-      case 'Escape':
-        setResults([]);
-        break;
     }
   };
+  const closeResults = () => { setResults([]); setSearchedQuery(''); setSearchFailed(false); };
 
   const addToHistory = (term: string) => {
     if (!term.trim()) return;
@@ -250,16 +265,18 @@ const GlobalSearch = ({ onNavigate }: { onNavigate: (page: string) => void }) =>
     const escapedQuery = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const regex = new RegExp(`(${escapedQuery})`, 'gi');
     const parts = text.split(regex);
+    // Compare text rather than calling regex.test: a global regex keeps lastIndex and skips every other match.
     return parts.map((part, i) =>
-      regex.test(part) ? <mark key={i} style={{ background: '#ffd700', fontWeight: 700 }}>{part}</mark> : part
+      part.toLowerCase() === q.toLowerCase() ? <mark key={i} style={{ background: '#ffd700', fontWeight: 700 }}>{part}</mark> : part
     );
   };
 
   return (
-    <Box sx={{ position: 'relative', mx: 2, flex: 1, maxWidth: 400 }}>
+    <Box sx={{ position: 'relative', width: '100%', minWidth: 0 }}>
       <TextField
         id="global-search-input"
-        placeholder="Search invoices, stock, customers (Ctrl+K)..."
+        placeholder={uiText("Search invoices, stock, customers…", 'forms')}
+        inputProps={{ 'aria-label': uiText("Search business records", 'forms') }}
         fullWidth
         size="small"
         autoComplete="off"
@@ -272,26 +289,40 @@ const GlobalSearch = ({ onNavigate }: { onNavigate: (page: string) => void }) =>
               {loading ? <SyncIcon fontSize="small" className="spin-icon" /> : <SearchIcon sx={{ color: 'text.secondary' }} />}
             </InputAdornment>
           ),
-          endAdornment: query && (
+          endAdornment: query ? (
             <InputAdornment position="end">
               {/* B-08: Use CloseIcon (not CollapseIcon/chevron) for semantic correctness */}
-              <IconButton size="small" aria-label="Clear search" onClick={() => { setQuery(''); setResults([]); }}>
+              <IconButton size="small" aria-label={uiText("Clear search", 'forms')} onClick={() => { setQuery(''); setResults([]); }}>
                 <CloseIcon fontSize="small" />
               </IconButton>
             </InputAdornment>
-          ),
+          ) : <InputAdornment position="end"><Box component="kbd" sx={{ fontFamily: 'inherit', fontSize: 11, whiteSpace: 'nowrap', color: 'text.secondary', border: '1px solid', borderColor: 'divider', borderRadius: .75, px: .75, display: { xs: 'none', md: 'block' } }}>{uiText("Ctrl K", 'forms')}</Box></InputAdornment>,
           sx: {
-            bgcolor: 'background.paper',
-            borderRadius: '12px',
+            bgcolor: 'action.hover',
+            borderRadius: '8px',
             '& .MuiOutlinedInput-notchedOutline': { borderColor: 'transparent' },
             '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'primary.light' },
             transition: 'all 0.2s',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+            boxShadow: 'none'
           }
         }}
       />
+      {results.length === 0 && !loading && query.length >= 2 && searchedQuery === query && (
+        <Paper
+          role="status"
+          className="anim-fade-scale"
+          sx={{ position: 'absolute', top: '120%', left: 0, right: 0, zIndex: 1500, borderRadius: '12px', p: 2, boxShadow: (theme: any) => theme.shadows[10] }}
+        >
+          <Typography variant="body2" color={searchFailed ? 'error' : 'text.secondary'}>
+            {searchFailed
+              ? uiText("Search is unavailable right now. Check the connection and try again.")
+              : uiTemplate`No invoices, stock or customers match “${query}”.`}
+          </Typography>
+        </Paper>
+      )}
       {results.length > 0 && query.length >= 2 && (
         <Paper
+          className="anim-fade-scale"
           sx={{
             position: 'absolute',
             top: '120%',
@@ -355,7 +386,7 @@ const GlobalSearch = ({ onNavigate }: { onNavigate: (page: string) => void }) =>
 const App: React.FC = () => {
   const [user, setUser] = useState<any>(() => {
     try {
-      const savedUser = localStorage.getItem('user');
+      const savedUser = getStoredUser();
       return savedUser && savedUser !== 'undefined' ? JSON.parse(savedUser) : null;
     } catch (e) {
       console.error('Failed to parse user from localStorage:', e);
@@ -364,8 +395,8 @@ const App: React.FC = () => {
   });
   const [mode, setMode] = useState<PaletteMode>((localStorage.getItem('themeMode') as PaletteMode) || 'light');
   const [themeName, setThemeName] = useState<ThemeName>((localStorage.getItem('themeName') as ThemeName) || 'emerald');
-  const [floatingNav, setFloatingNav] = useState<boolean>(() => localStorage.getItem('floatingNav') === 'true');
-  const [language, setLanguage] = useState<'en' | 'ta'>((localStorage.getItem('language') as 'en' | 'ta') || 'en');
+  const language = useUiLanguage();
+  const tamilPreferences = useTamilPreferences();
   const getInitialPage = () => {
     const path = window.location.pathname.replace(/^\//, '').trim();
     if (!path || path === 'index.html') return 'dashboard';
@@ -378,6 +409,7 @@ const App: React.FC = () => {
     setSettingsTab(settingsTabFor(page));
     page = canonicalPage(page);
     setPageState(page);
+    setMobileNavOpen(false);
     const targetPath = page === 'dashboard' ? '/' : `/${page}`;
     if (window.location.pathname !== targetPath) {
       window.history.pushState(null, '', targetPath);
@@ -394,7 +426,15 @@ const App: React.FC = () => {
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
-  const [drawerOpen, setDrawerOpen] = useState(true);
+  const [drawerOpen, setDrawerOpen] = useState(() => localStorage.getItem('sidebarCollapsed') !== 'true');
+  useEffect(() => { localStorage.setItem('sidebarCollapsed', String(!drawerOpen)); }, [drawerOpen]);
+  // Below 900px the navigation is an overlay that starts closed; a permanent 260px rail left phones about 130px of content.
+  const isCompact = useMediaQuery('(max-width:899.95px)');
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const navExpanded = isCompact || drawerOpen;
+  // Each screen opens at its top instead of the previous screen's scroll position.
+  const mainRef = useRef<HTMLElement | null>(null);
+  useEffect(() => { mainRef.current?.scrollTo?.({ top: 0 }); }, [currentPage]);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -415,11 +455,14 @@ const App: React.FC = () => {
 
   const profileMenuOpen = Boolean(anchorEl);
 
-  const theme = useMemo(() => getTheme(mode, themeName), [mode, themeName]);
+  const theme = useMemo(() => getTheme(mode, themeName, language, tamilPreferences), [mode, themeName, language, tamilPreferences]);
 
-  useEffect(() => { localStorage.setItem('themeMode', mode); }, [mode]);
+  useEffect(() => {
+    localStorage.setItem('themeMode', mode);
+    // Global CSS (glass cards, floating nav, native controls) follows the app theme rather than the OS.
+    document.documentElement.dataset.themeMode = mode;
+  }, [mode]);
   useEffect(() => { localStorage.setItem('themeName', themeName); }, [themeName]);
-  useEffect(() => { localStorage.setItem('floatingNav', String(floatingNav)); }, [floatingNav]);
   useEffect(() => { localStorage.setItem('language', language); }, [language]);
 
   // Update document title
@@ -445,10 +488,18 @@ const App: React.FC = () => {
     setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
   };
 
+  const [languageSaving,setLanguageSaving]=useState(false);
+  const languagePending=useRef(false);
   const toggleLanguage = async () => {
+    if(languagePending.current)return;
+    languagePending.current=true;setLanguageSaving(true);
     const next = language === 'en' ? 'ta' : 'en';
-    setLanguage(next);
-    try { await api.put('/settings', { language: next }); } catch { toast.error('Language preference will be saved when the connection is restored.'); }
+    try {
+      await loadUiLanguage(next);
+      setUiLanguage(next);
+      try { await api.put('/settings', { language: next }); } catch { toast.error(uiText('Language changed on this device only; it could not be saved to your account.', 'feedback')); }
+    } catch { toast.error('Could not load the selected language. Please retry.'); }
+    finally { languagePending.current=false;setLanguageSaving(false); }
   };
 
 
@@ -467,8 +518,7 @@ const App: React.FC = () => {
     } catch {
       // Best-effort: even if the server call fails, we clear local credentials
     } finally {
-      localStorage.removeItem('user');
-      localStorage.removeItem('token');
+      clearAuth();
       await queryClient.cancelQueries();
       queryClient.clear();
       setUser(null);
@@ -478,12 +528,13 @@ const App: React.FC = () => {
 
   const handleLogin = (userData: any) => {
     queryClient.clear();
-    localStorage.setItem('user', JSON.stringify(userData));
+    saveUser(userData);
     setUser(userData);
   };
 
   const handleDrawerToggle = () => {
-    setDrawerOpen(!drawerOpen);
+    if (isCompact) setMobileNavOpen(open => !open);
+    else setDrawerOpen(!drawerOpen);
   };
 
   // Get breadcrumb items based on current page
@@ -541,7 +592,7 @@ const App: React.FC = () => {
       await queryClient.refetchQueries({ type: 'active' });
       toast.success(SUCCESS_MESSAGES.SYNC);
     } catch {
-      toast.error('Sync failed. Please try again.');
+      toast.error(uiText('Sync failed. Please try again.', 'feedback'));
     } finally {
       setIsSyncing(false);
     }
@@ -556,7 +607,7 @@ const App: React.FC = () => {
       try {
         const response = await api.get('/inventory/yarn-stock');
         const stock = response.data;
-        const threshold = settings?.lowStockThreshold || 10;
+        const threshold = lowStockThreshold(settings);
         // Count how many count-types are below the threshold (the badge shows
         // the number of distinct yarn counts that need restocking)
         return Object.values(stock).filter((qty: any) => typeof qty === 'number' && qty < threshold).length;
@@ -569,27 +620,27 @@ const App: React.FC = () => {
 
   const navGroups: NavGroup[] = [
     {
-      label: 'EverGreen One',
+      label: 'Overview',
       items: [
         { text: 'Business Workspace', icon: <StoreIcon />, page: 'workspace' },
         { text: 'Dashboard', icon: <DashboardIcon />, page: 'dashboard' },
         { text: "Today's Summary", icon: <SummaryIcon />, page: 'today' },
-        { text: 'Operations Command', icon: <SpeedIcon />, page: 'command-center', description: 'Live factory floor — strategy game view' },
+        { text: 'Operations Command', icon: <SpeedIcon />, page: 'command-center', description: 'Interactive factory campus, recorded operations and machine inspections' },
       ]
     },
     {
       label: 'Operations & Job Work',
       items: [
-        { text: 'Store', icon: <StoreIcon />, page: 'store', description: 'Spares inventory, machine components, consumables, and store item tracking' },
+        { text: 'Store', icon: <StoreIcon />, page: 'store', description: 'Sell from the shared catalogue and reserve stock in a sales order' },
         { text: 'Inventory', icon: <InventoryIcon />, page: 'inventory', badge: lowStockCount > 0 ? lowStockCount : undefined, description: 'Stock ledger for cotton bales, yarn bags by count, and waste inventory' },
         { text: 'Inward / Batch', icon: <InwardIcon />, page: 'inward', description: 'Cotton gate receipts, batch lot creation, bale weights, and QR sticker generation' },
         { text: 'Production & Job Work', icon: <WasteIcon />, page: 'production', description: 'Bale consumption mixing, yarn count production, waste tracking, and material balance' },
         { text: 'Job Work Register', icon: <SyncIcon />, page: 'jobwork', description: 'External job work contracts, sent material, inward yarn returns, and reconciliation' },
-        { text: 'Operations Desk', icon: <InventoryIcon />, page: 'operations', description: 'Daily floor checklists, machine operational status, and shift supervisor notes' },
+        { text: 'Operations Desk', icon: <InventoryIcon />, page: 'operations', description: 'Catalogue inward receipts, stock by item and garment costing sheets' },
         { text: 'Business flows', icon: <SyncIcon />, page: 'workflows', description: 'Returns, procurement, conversion, quality holds and accounting' },
         { text: 'Outwards', icon: <OutwardIcon fontSize="small" />, page: 'outward', description: 'Customer yarn dispatch gate pass, vehicle/driver logging, and barcode tags' },
         { text: 'Costing', icon: <CostIcon />, page: 'costing', description: 'Per-kg spinning cost analysis: electricity, labor, packaging, and maintenance' },
-        { text: 'Business Desk', icon: <StoreIcon />, page: 'business', description: 'Customer sales orders, proforma generation, delivery tracking, and commercial orders' },
+        { text: 'Business Desk', icon: <StoreIcon />, page: 'business', description: 'Catalogue, customers, sales orders, GST invoices and invoice payments' },
       ]
     },
     {
@@ -603,22 +654,22 @@ const App: React.FC = () => {
     {
       label: 'Yarn ERP',
       items: [
-        { text: 'Yarn ERP Hub', icon: <FactoryIcon />, page: 'yarnerp', description: 'Complete spinning mill ERP overview linking machinery, quality, and logistics' },
-        { text: 'Machine Status Overview', icon: <SpeedIcon />, page: 'yarnlive', description: 'Live spindle speed, RPM, pneumatic pressure, running status, and power draw' },
+        { text: 'Yarn ERP Hub', icon: <FactoryIcon />, page: 'yarnerp', description: 'Opens Business Workspace, which links every mill module' },
+        { text: 'Machine Status Overview', icon: <SpeedIcon />, page: 'yarnlive', description: 'Registered machines and their saved status. Live sensor telemetry is not connected' },
         { text: 'Machine Management', icon: <MachineIcon />, page: 'yarnmachine', description: 'Machine registry, scheduled preventive maintenance, breakdown logs, and spares' },
         { text: 'Quality Control', icon: <QualityIcon />, page: 'yarnquality', description: 'Lab testing: CSP, count lea strength, evenness (U%), imperfections, and hairiness' },
-        { text: 'Shift Management', icon: <ShiftIcon />, page: 'yarnshift', description: 'Operator shift rostering, attendance records, machine allocations, and handovers' },
+        { text: 'Shift Management', icon: <ShiftIcon />, page: 'yarnshift', description: 'Saved shift schedules. Attendance and machine allocation are not recorded here' },
         { text: 'Warehouse', icon: <WarehouseIcon />, page: 'yarnwarehouse', description: 'Storage bay and bin rack locations for finished yarn bags and raw cotton' },
         { text: 'HR & Payroll', icon: <StaffIcon />, page: 'yarnhr', description: 'Staff directory, overtime calculations, piece-rate wages, and salary processing' },
-        { text: 'Demand Forecasting', icon: <ForecastIcon />, page: 'yarnforecast', description: 'Predictive yarn demand modeling, seasonality trends, and cotton purchase orders' },
-        { text: 'Supplier Activity', icon: <SupplierIcon />, page: 'yarnsupplier', description: 'Vendor performance ratings, cotton moisture test history, and lead-time tracking' },
-        { text: 'Compliance Readiness', icon: <ComplianceIcon />, page: 'yarncompliance', description: 'Industrial safety certificates, pollution control board audits, and legal compliance' },
+        { text: 'Demand Forecasting', icon: <ForecastIcon />, page: 'yarnforecast', description: 'Three-month moving average of sales orders, as a planning baseline' },
+        { text: 'Supplier Activity', icon: <SupplierIcon />, page: 'yarnsupplier', description: 'Supplier receipts and moisture readings from saved inward records' },
+        { text: 'Compliance Readiness', icon: <ComplianceIcon />, page: 'yarncompliance', description: 'Internal record counts for compliance review. No statutory filing is connected' },
       ]
     },
     {
       label: 'Support',
       items: [
-        { text: 'Helpdesk', icon: <HelpdeskIcon />, page: 'helpdesk', description: 'Internal support tickets, technical queries, and operational issue logs' },
+        { text: 'Helpdesk', icon: <HelpdeskIcon />, page: 'helpdesk', description: 'Installation support tickets, conversations and resolution evidence' },
         { text: 'Tutorial', icon: <TutorialIcon />, page: 'tutorial', description: 'Step-by-step spinning mill workflows, standard operating procedures, and guides' },
       ]
     },
@@ -626,49 +677,16 @@ const App: React.FC = () => {
       label: 'Admin',
       items: [
         { text: 'Migration & integrations', icon: <SyncIcon />, page: 'integrations', requiredRole: 'ADMIN', description: 'Import customer and catalogue data with explicit column mapping and audit history' },
-        { text: 'User Management', icon: <UsersIcon />, page: 'users', requiredRole: 'ADMIN', description: 'Role-based access permissions for admin, manager, operator, and viewer roles' },
+        { text: 'User Management', icon: <UsersIcon />, page: 'users', requiredRole: 'ADMIN', description: 'Staff accounts and the VIEWER, MODIFIER and ADMIN roles' },
         // B-18: Sessions and Security had the same icon; Sessions now uses VpnKey
         { text: 'Sessions', icon: <SessionsIcon />, page: 'sessions', description: 'Active user login sessions, IP addresses, device types, and remote logout' },
-        { text: 'Security Settings', icon: <SecurityIcon />, page: 'security', description: 'Two-factor authentication, audit trails, and system access control policies' },
+        { text: 'Security Settings', icon: <SecurityIcon />, page: 'security', description: 'Password, two-factor sign-in and passkeys' },
         { text: 'Settings', icon: <SettingsIcon />, page: 'settings', description: 'Company details, count specifications, tare weights, and theme preferences' },
       ]
     },
   ];
 
-  const tamilLabels: Record<string, string> = {
-    'Business Workspace': 'வணிக மையம்',
-    'Business Desk': 'வணிக மேசை',
-    Dashboard: 'முகப்பு',
-    "Today's Summary": 'இன்றைய சுருக்கம்',
-    Store: 'கடை',
-    Inventory: 'சரக்கு',
-    'Inward / Batch': 'உள்வரவு / தொகுதி',
-    'Production & Job Work': 'உற்பத்தி மற்றும் வேலை ஒப்பந்தம்',
-    'Job Work Register': 'வேலை ஒப்பந்தப் பதிவு',
-    'Operations Desk': 'செயல்பாடுகள் மேசை',
-    Outwards: 'வெளியீடு',
-    Costing: 'செலவீனம்',
-    Insights: 'அறிக்கைகள்',
-    Settings: 'அமைப்புகள்',
-    Helpdesk: 'உதவி',
-    Tutorial: 'பயிற்சி',
-    'Payment Operations': 'பணப்பரிவர்த்தனை மேலாண்மை',
-    'Business Reports': 'வணிக அறிக்கைகள்',
-    'Yarn ERP Hub': 'நூல் ஆலை முதன்மை மையம்',
-    'Machine Status Overview': 'இயந்திர நிலை மேலோட்டம்',
-    'Machine Management': 'இயந்திர மேலாண்மை',
-    'Quality Control': 'தரக் கட்டுப்பாடு',
-    'Shift Management': 'பணி முறை மேலாண்மை',
-    Warehouse: 'கிடங்கு மேலாண்மை',
-    'HR & Payroll': 'பணியாளர் & ஊதிய மேலாண்மை',
-    'Demand Forecasting': 'தேவை முன்கணிப்பு',
-    'Supplier Activity': 'வழங்குநர் தளம்',
-    'Compliance Readiness': 'இணக்க அறிக்கைகள்',
-    'User Management': 'பயனர் மேலாண்மை',
-    Sessions: 'அமர்வுகள்',
-    'Security Settings': 'பாதுகாப்பு அமைப்புகள்',
-  };
-  const labelFor = (label: string) => language === 'ta' ? (tamilLabels[label] || label) : label;
+  const labelFor = (label: string) => uiText(label, 'navigation');
 
   if (!user) {
     return (
@@ -679,6 +697,18 @@ const App: React.FC = () => {
     );
   }
 
+  const seenPages = new Set<string>();
+  const visibleNavGroups = navGroups.map(group => ({
+    ...group,
+    items: group.items.filter(item => {
+      const page = canonicalPage(item.page);
+      if (seenPages.has(page) || !isCompanyPageVisible(item.page, settings) || (item.requiredRole && item.requiredRole !== user.role)) return false;
+      seenPages.add(page);
+      return true;
+    }),
+  })).filter(group => group.items.length);
+  const currentNavGroup = visibleNavGroups.find(group => group.items.some(item => item.page === currentPage));
+  const currentNavItem = currentNavGroup?.items.find(item => item.page === currentPage);
   const allPages = navGroups.flatMap(g => g.items).map(i => i.page);
 
   // Security: If route is invalid, render standalone isolated 404 view
@@ -727,11 +757,9 @@ const App: React.FC = () => {
                   flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#fff'
                 }}>
                   <SecurityIcon sx={{ fontSize: 80, color: 'error.main', mb: 2 }} />
-                  <Typography variant="h3" gutterBottom>Service Suspended</Typography>
+                  <Typography variant="h3" gutterBottom>{uiText("Service Suspended")}</Typography>
                   <Typography variant="h6" color="text.secondary" sx={{ maxWidth: 600, textAlign: 'center' }}>
-                    Your account has been temporarily suspended due to billing or licensing issues. 
-                    Please contact the Provider Administrator to restore service.
-                  </Typography>
+                    {uiText("Your account has been temporarily suspended due to billing or licensing issues. Please contact the Provider Administrator to restore service. ")}</Typography>
                 </Box>
               )}
 
@@ -742,11 +770,9 @@ const App: React.FC = () => {
                   flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#fff'
                 }}>
                   <SyncIcon sx={{ fontSize: 80, color: 'warning.main', mb: 2 }} />
-                  <Typography variant="h3" gutterBottom>System Under Maintenance</Typography>
+                  <Typography variant="h3" gutterBottom>{uiText("System Under Maintenance")}</Typography>
                   <Typography variant="h6" sx={{ maxWidth: 600, textAlign: 'center', color: '#94a3b8' }}>
-                    Scheduled upgrades and database maintenance are currently in progress. 
-                    Normal operations will resume shortly.
-                  </Typography>
+                    {uiText("Scheduled upgrades and database maintenance are currently in progress. Normal operations will resume shortly. ")}</Typography>
                 </Box>
               )}
 
@@ -770,126 +796,87 @@ const App: React.FC = () => {
                 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                      ⏳ 30-Day Active Grace Quota:
-                    </Typography>
+                      {uiText("⏳ 30-Day Active Grace Quota: ")}</Typography>
                     <Typography variant="body2">
-                      Your license is pending renewal, but your mill operations are completely uninterrupted.
-                      {settings.graceExpiresAt && ` Grace protection active until ${new Date(settings.graceExpiresAt).toLocaleDateString()}.`}
+                      {uiText("Your license is pending renewal, but your mill operations are completely uninterrupted. ")}{settings.graceExpiresAt && uiTemplate` Grace protection active until ${new Date(settings.graceExpiresAt).toLocaleDateString(uiDateLocale())}.`}
                     </Typography>
                   </Box>
-                  <Box sx={{ display: 'flex', gap: 1 }}>
-                    <Button 
-                      size="small" 
-                      variant="contained" 
-                      color="warning" 
-                      component="a" 
-                      href="https://wa.me/919876543210?text=Hello%20EverGreen%20Licensing%20Desk,%20I%20would%20like%20to%20renew%20our%20subscription." 
-                      target="_blank"
-                      sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.75rem', borderRadius: 1.5 }}
-                    >
-                      Connect with Licensing Desk (WhatsApp)
-                    </Button>
-                    <Button 
-                      size="small" 
-                      variant="outlined" 
-                      color="inherit" 
-                      component="a" 
-                      href="tel:+919876543210"
-                      sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.75rem', borderRadius: 1.5 }}
-                    >
-                      Call Support
-                    </Button>
-                  </Box>
-                </Box>
-              )}
-              {/* Floating bottom nav pill */}
-              {floatingNav && (
-                <Box className="floating-bottom-nav" component="nav" aria-label="Bottom navigation">
-                  {[
-                    { text: 'Workspace', icon: <StoreIcon />, page: 'workspace' },
-                    { text: 'Dashboard', icon: <DashboardIcon />, page: 'dashboard' },
-                    { text: 'Inventory', icon: <InventoryIcon />, page: 'inventory' },
-                    { text: 'Production',icon: <WasteIcon />,     page: 'production' },
-                    { text: 'Business Desk', icon: <StoreIcon />, page: 'business' },
-                  ].map(item => {
-                    const active = currentPage === item.page;
-                    return (
-                      <Tooltip key={item.page} title={item.text} arrow placement="top">
-                        <IconButton
-                          onClick={() => setCurrentPage(item.page)}
-                          size="small"
-                          sx={{
-                            width: 44,
-                            height: 44,
-                            borderRadius: '14px',
-                            color: active ? 'primary.main' : 'text.secondary',
-                            bgcolor: active ? (mode === 'dark' ? 'rgba(16,185,129,0.15)' : 'rgba(5,150,105,0.1)') : 'transparent',
-                            transform: active ? 'scale(1.12)' : 'scale(1)',
-                            transition: 'all 0.22s cubic-bezier(0.16,1,0.3,1)',
-                            boxShadow: active ? `0 0 0 3px ${theme.palette.primary.main}33` : 'none',
-                            '&:hover': { bgcolor: mode === 'dark' ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.05)', transform: 'scale(1.08)' },
-                          }}
-                        >
-                          {item.icon}
-                        </IconButton>
-                      </Tooltip>
-                    );
-                  })}
+                  {/* The provider's real number is set at build time; without it, never offer a made-up contact. */}
+                  {SUPPORT_PHONE ? (
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                      <Button
+                        size="small"
+                        variant="contained"
+                        color="warning"
+                        component="a"
+                        href={`https://wa.me/${SUPPORT_PHONE}?text=${encodeURIComponent('Hello EverGreen licensing desk, I would like to renew our subscription.')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.75rem', borderRadius: 1.5 }}
+                      >
+                        {uiText("Connect with Licensing Desk (WhatsApp) ")}</Button>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="inherit"
+                        component="a"
+                        href={`tel:+${SUPPORT_PHONE}`}
+                        sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.75rem', borderRadius: 1.5 }}
+                      >
+                        {uiText("Call Support ")}</Button>
+                    </Box>
+                  ) : (
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>{uiText("Contact your EverGreen provider to renew.")}</Typography>
+                  )}
                 </Box>
               )}
               <Box sx={{
                 display: 'flex',
                 minHeight: '100vh',
-                width: '100vw',
+                width: '100%',
                 bgcolor: 'background.default',
                 color: 'text.primary',
                 overflow: 'hidden'
               }}>
+                <Box component="a" href="#workspace-main" onClick={event => { event.preventDefault(); mainRef.current?.focus(); }}
+                  sx={{ position: 'fixed', top: 8, left: 16, zIndex: 1500, p: 1.5, bgcolor: 'background.paper', color: 'text.primary', border: '2px solid', borderColor: 'primary.main', borderRadius: 1, transform: 'translateY(-150%)', '&:focus': { transform: 'translateY(0)' } }}>{uiText("Skip to content")}</Box>
                 <AppBar
                   position="fixed"
                   sx={{
-                    zIndex: (theme) => theme.zIndex.drawer + 1,
+                    zIndex: (theme) => theme.zIndex.drawer - 1,
+                    left: isCompact ? 0 : drawerOpen ? drawerWidth : drawerCollapsedWidth,
+                    width: isCompact ? '100%' : `calc(100% - ${drawerOpen ? drawerWidth : drawerCollapsedWidth}px)`,
+                    bgcolor: 'background.paper',
+                    borderRadius: 0,
+                    backdropFilter: 'none',
+                    transition: theme => theme.transitions.create(['left', 'width']),
                   }}
                 >
-                  <Toolbar sx={{ gap: 2 }}>
-                    <IconButton
-                      color="inherit"
-                      aria-label="open drawer"
-                      edge="start"
-                      onClick={handleDrawerToggle}
-                      sx={{ mr: 2 }}
-                    >
-                      <MenuIcon />
-                    </IconButton>
-
-                    <Typography
-                      variant="h6"
-                      noWrap
-                      component="div"
-                      sx={{
-                        fontWeight: 800,
-                        letterSpacing: '-0.5px',
-                        display: { xs: 'none', sm: 'block' }
-                      }}
-                    >
-                      {settings?.companyName || 'EverGreen'}
-                    </Typography>
-
-                    <GlobalSearch onNavigate={setCurrentPage} />
-
-                    <Box sx={{ flexGrow: 1 }} />
-
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Toolbar sx={{ gap: { xs: 1, md: 2 }, px: { xs: '16px !important', md: '24px !important' }, py: { xs: 1, sm: 0 }, minHeight: { xs: 112, sm: 72 }, flexWrap: { xs: 'wrap', sm: 'nowrap' } }}>
+                    {isCompact && <Tooltip title={uiText("Open navigation")}>
+                      <IconButton color="inherit"
+                        aria-label={isCompact ? uiText("Open navigation") : drawerOpen ? uiText("Collapse navigation") : uiText("Expand navigation")}
+                        aria-expanded={isCompact ? mobileNavOpen : drawerOpen} aria-controls="workspace-navigation"
+                        onClick={handleDrawerToggle} sx={{ width: 40, height: 40, border: '1px solid', borderColor: 'divider', borderRadius: 1.5 }}>
+                        <MenuIcon />
+                      </IconButton>
+                    </Tooltip>}
+                    <Box sx={{ flex: { xs: 1, sm: '0 1 230px' }, minWidth: 0 }}>
+                      <Typography noWrap sx={{ fontSize: 10, color: 'text.secondary', letterSpacing: '.07em', textTransform: 'uppercase', display: { xs: 'none', md: 'block' } }}>{labelFor(currentNavGroup?.label || 'Workspace')}</Typography>
+                      <Typography noWrap title={currentNavItem ? labelFor(currentNavItem.text) : currentPage} sx={{ fontSize: { xs: 15, md: 17 }, fontWeight: 700, lineHeight: 1.4 }}>{currentNavItem ? labelFor(currentNavItem.text) : currentPage}</Typography>
+                    </Box>
+                    <Box sx={{ order: { xs: 3, sm: 0 }, flex: { xs: '1 0 100%', sm: '1 1 220px' }, minWidth: 0, maxWidth: { sm: 440 }, ml: { sm: 'auto' } }}>
+                      <GlobalSearch onNavigate={setCurrentPage} />
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: .5, ml: { sm: 'auto' }, '& > .MuiIconButton-root': { width: 40, height: 40 } }}>
                       <NotificationsBell onNavigate={setCurrentPage} />
+                      <HelpdeskQuickReport page={currentPage}/>
 
-                      <Tooltip title={language === 'en' ? 'தமிழில் காண்க' : 'View in English'} arrow>
-                        <IconButton onClick={toggleLanguage} color="inherit" aria-label="Toggle language">
-                          <TranslateIcon />
-                        </IconButton>
-                      </Tooltip>
+                      <LanguageSelector language={language} disabled={languageSaving} onChange={selected=>{if(selected!==language)void toggleLanguage()}} />
 
-                      <Tooltip title="Sync All Data" arrow>
-                        <IconButton onClick={handleSync} color="primary" sx={{
+                      <Tooltip title={uiText("Sync All Data")} arrow>
+                        <IconButton onClick={handleSync} color="primary" disabled={isSyncing} aria-label={isSyncing ? uiText("Refreshing data") : uiText("Refresh all data")} sx={{
+                          display: { xs: 'none', md: 'inline-flex' },
                           bgcolor: 'rgba(46, 125, 50, 0.08)',
                           '&:hover': { bgcolor: 'rgba(46, 125, 50, 0.15)' }
                         }}>
@@ -897,18 +884,18 @@ const App: React.FC = () => {
                         </IconButton>
                       </Tooltip>
 
-                      <Tooltip title="Toggle Theme" arrow>
-                        <IconButton onClick={toggleTheme} color="inherit">
+                      <Tooltip title={uiText("Toggle Theme")} arrow>
+                        <IconButton onClick={toggleTheme} color="inherit" aria-label={mode === 'dark' ? uiText("Switch to light theme") : uiText("Switch to dark theme")} sx={{ display: { xs: 'none', md: 'inline-flex' } }}>
                           {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
                         </IconButton>
                       </Tooltip>
 
-                      <Tooltip title="Account Settings" arrow>
-                        <IconButton onClick={handleProfileClick} sx={{ p: 0.5, ml: 1 }}>
+                      <Tooltip title={uiText("Account Settings")} arrow>
+                        <Button onClick={handleProfileClick} color="inherit" aria-label={uiText("Account menu")} aria-haspopup="menu" aria-expanded={profileMenuOpen} aria-controls={profileMenuOpen ? 'account-menu' : undefined} sx={{ p: .5, minWidth: 0, gap: 1, ml: .5, borderRadius: 1.5, border: '1px solid', borderColor: 'divider', textAlign: 'left', '&:hover': { transform: 'none', boxShadow: 'none' } }}>
                           <Avatar
                             alt={user.name || user.username}
                             sx={{
-                              bgcolor: 'primary.main',
+                              bgcolor: 'primary.dark',
                               width: 36,
                               height: 36,
                               fontSize: '0.9rem',
@@ -918,10 +905,13 @@ const App: React.FC = () => {
                           >
                             {(user.name || user.username)?.charAt(0).toUpperCase()}
                           </Avatar>
-                        </IconButton>
+                            <Box sx={{ display: { xs: 'none', lg: 'block' }, maxWidth: 110, minWidth: 0 }}><Typography fontSize={12} fontWeight={650} noWrap>{user.name || user.username}</Typography><Typography fontSize={10} color="text.secondary" noWrap>{(user.role || 'VIEWER').toLowerCase()}</Typography></Box>
+                          <KeyboardArrowDownRounded sx={{ fontSize: 17, display: { xs: 'none', sm: 'block' } }} />
+                      </Button>
                       </Tooltip>
 
                       <Menu
+                        id="account-menu"
                         anchorEl={anchorEl}
                         open={profileMenuOpen}
                         onClose={handleProfileClose}
@@ -937,222 +927,73 @@ const App: React.FC = () => {
                         <Divider />
                         <MenuItem onClick={() => { handleProfileClose(); setProfileModalOpen(true); }} sx={{ borderRadius: '8px', py: 1 }}>
                           <ListItemIcon><PersonIcon fontSize="small" /></ListItemIcon>
-                          My Profile & Account
-                        </MenuItem>
+                          {uiText("My Profile & Account ", 'forms')}</MenuItem>
                         <MenuItem onClick={() => { handleProfileClose(); navigateTo('security'); }} sx={{ borderRadius: '8px', py: 1 }}>
                           <ListItemIcon><SecurityIcon fontSize="small" /></ListItemIcon>
-                          Security & 2FA
-                        </MenuItem>
+                          {uiText("Security & 2FA ", 'forms')}</MenuItem>
                         <MenuItem onClick={() => { handleProfileClose(); navigateTo('sessions'); }} sx={{ borderRadius: '8px', py: 1 }}>
                           <ListItemIcon><SessionsIcon fontSize="small" /></ListItemIcon>
-                          Active Sessions
-                        </MenuItem>
+                          {uiText("Active Sessions ", 'forms')}</MenuItem>
                         <MenuItem onClick={() => { handleProfileClose(); navigateTo('settings'); }} sx={{ borderRadius: '8px', py: 1 }}>
                           <ListItemIcon><SettingsIcon fontSize="small" /></ListItemIcon>
-                          System Settings
-                        </MenuItem>
+                          {uiText("System Settings ", 'forms')}</MenuItem>
+                        <Divider sx={{ my: 0.5, display: { md: 'none' } }} />
+                        <MenuItem onClick={() => { handleProfileClose(); void handleSync(); }} disabled={isSyncing} sx={{ display: { md: 'none' } }}><ListItemIcon><SyncIcon fontSize="small" /></ListItemIcon>{uiText("Refresh all data", 'forms')}</MenuItem>
+                        <MenuItem onClick={() => { handleProfileClose(); toggleTheme(); }} sx={{ display: { md: 'none' } }}><ListItemIcon>{mode === 'dark' ? <LightModeIcon fontSize="small" /> : <DarkModeIcon fontSize="small" />}</ListItemIcon>{mode === 'dark' ? uiText("Light theme", 'forms') : uiText("Dark theme", 'forms')}</MenuItem>
                         <Divider sx={{ my: 0.5 }} />
                         <MenuItem onClick={handleLogout} sx={{ color: 'error.main', py: 1.5, m: 0.5, borderRadius: '8px' }}>
                           <ListItemIcon sx={{ color: 'error.main' }}>
                             <LogoutIcon fontSize="small" />
                           </ListItemIcon>
-                          Logout
-                        </MenuItem>
+                          {uiText("Logout ", 'forms')}</MenuItem>
                       </Menu>
                     </Box>
                   </Toolbar>
                 </AppBar>
                 <Drawer
-                  variant="permanent"
+                  variant={isCompact ? 'temporary' : 'permanent'}
+                  open={isCompact ? mobileNavOpen : true}
+                  onClose={() => setMobileNavOpen(false)}
+                  ModalProps={{ keepMounted: true }}
                   sx={{
-                    width: drawerOpen ? drawerWidth : drawerCollapsedWidth,
-                    flexShrink: 0,
+                    ...(isCompact ? {} : { width: drawerOpen ? drawerWidth : drawerCollapsedWidth, flexShrink: 0 }),
                     [`& .MuiDrawer-paper`]: {
-                      width: drawerOpen ? drawerWidth : drawerCollapsedWidth,
+                      width: navExpanded ? drawerWidth : drawerCollapsedWidth,
                       boxSizing: 'border-box',
                       transition: (theme) => theme.transitions.create('width', {
                         easing: theme.transitions.easing.sharp,
                         duration: theme.transitions.duration.enteringScreen,
                       }),
-                      overflowX: 'hidden'
+                      overflowX: 'hidden',
+                      height: '100dvh',
+                      borderRadius: 0,
+                      maxWidth: 'calc(100vw - 24px)',
+                      backgroundImage: 'none',
+                      bgcolor: 'background.paper',
                     },
                   }}
                 >
-                  <Toolbar />
-                  {/* Company Logo Header */}
-                  {drawerOpen && (
-                    <Box sx={{ px: 3, py: 2, borderBottom: 1, borderColor: 'divider', mb: 1 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                        <Avatar
-                          sx={{
-                            bgcolor: 'primary.main',
-                            width: 40,
-                            height: 40,
-                            fontSize: '1.2rem',
-                            fontWeight: 'bold',
-                          }}
-                        >
-                          {settings?.companyName?.charAt(0) || 'E'}
-                        </Avatar>
-                        <Box>
-                          <Typography variant="subtitle1" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
-                            {settings?.companyName || 'EverGreen'}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            Inventory System
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </Box>
-                  )}
-                  <Box sx={{ overflow: 'auto', flexGrow: 1, py: 2 }}>
-                    {navGroups.map((group, gIdx) => {
-                      const filteredItems = group.items.filter(item => {
-                        if (!isCompanyPageVisible(item.page, settings)) return false;
-                        if (!item.requiredRole) return true;
-                        return item.requiredRole === user.role;
-                      });
-                      if (filteredItems.length === 0) return null;
-                      return (
-                        <Box key={gIdx}>
-                          {drawerOpen && group.label && (
-                            <Typography
-                              variant="overline"
-                              sx={{
-                                px: 3, py: 0.5, display: 'block',
-                                color: 'text.disabled', fontWeight: 700,
-                                fontSize: '0.65rem', letterSpacing: '0.12em'
-                              }}
-                            >
-                              {group.label}
-                            </Typography>
-                          )}
-                          {!drawerOpen && gIdx > 0 && (
-                            <Divider sx={{ my: 1, mx: 1.5, opacity: 0.4 }} />
-                          )}
-                          <List disablePadding>
-                            {filteredItems.map((item) => (
-                              <ListItem key={item.text} disablePadding sx={{ display: 'block', mb: 0.5 }}>
-                                <Tooltip
-                                  title={
-                                    <Box sx={{ p: 0.5, maxWidth: 260 }}>
-                                      <Typography variant="body2" sx={{ fontWeight: 700, fontSize: '0.82rem' }}>
-                                        {labelFor(item.text)}
-                                      </Typography>
-                                      {item.description && (
-                                        <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 0.35, lineHeight: 1.35 }}>
-                                          {item.description}
-                                        </Typography>
-                                      )}
-                                    </Box>
-                                  }
-                                  placement="right"
-                                  arrow
-                                  enterDelay={250}
-                                >
-                                  <ListItemButton
-                                    selected={currentPage === item.page}
-                                    onClick={() => navigateTo(item.page)}
-                                    sx={{
-                                      minHeight: 44,
-                                      justifyContent: drawerOpen ? 'initial' : 'center',
-                                      px: 2,
-                                      mx: 1,
-                                      borderRadius: '12px',
-                                      transition: 'all 0.18s ease',
-                                      '&.Mui-selected': {
-                                        bgcolor: mode === 'dark'
-                                          ? 'rgba(16, 185, 129, 0.12)'
-                                          : 'rgba(16, 185, 129, 0.1)',
-                                        color: 'primary.main',
-                                        '& .MuiListItemIcon-root': {
-                                          color: 'primary.main',
-                                        },
-                                        '&:hover': {
-                                          bgcolor: mode === 'dark'
-                                            ? 'rgba(16, 185, 129, 0.18)'
-                                            : 'rgba(16, 185, 129, 0.15)',
-                                        }
-                                      },
-                                      '&:hover': {
-                                        bgcolor: mode === 'dark' ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.03)',
-                                        transform: drawerOpen ? 'translateX(3px)' : 'none',
-                                      }
-                                    }}
-                                  >
-                                    <ListItemIcon
-                                      sx={{
-                                        minWidth: 0,
-                                        mr: drawerOpen ? 1.5 : 'auto',
-                                        justifyContent: 'center',
-                                        color: currentPage === item.page ? 'primary.main' : 'text.secondary',
-                                        transition: 'color 0.2s ease',
-                                      }}
-                                    >
-                                      {item.badge ? (
-                                        <Badge badgeContent={item.badge} color="error" variant="dot">
-                                          {item.icon}
-                                        </Badge>
-                                      ) : (
-                                        item.icon
-                                      )}
-                                    </ListItemIcon>
-                                    {drawerOpen && (
-                                      <ListItemText
-                                        primary={labelFor(item.text)}
-                                        primaryTypographyProps={{
-                                          variant: 'body2',
-                                          fontWeight: currentPage === item.page ? 700 : 500,
-                                          color: currentPage === item.page ? 'text.primary' : 'text.secondary',
-                                          sx: { transition: 'color 0.2s ease', fontSize: '0.87rem' }
-                                        }}
-                                      />
-                                    )}
-                                  </ListItemButton>
-                                </Tooltip>
-                              </ListItem>
-                            ))}
-                          </List>
-                          {gIdx < navGroups.length - 1 && drawerOpen && (
-                            <Divider sx={{ my: 1, mx: 2, opacity: 0.5 }} />
-                          )}
-                        </Box>
-                      );
-                    })}
-                  </Box>
-
-                  {/* User info at bottom of sidebar */}
-                  {drawerOpen && (
-                    <Box
-                      onClick={() => setProfileModalOpen(true)}
-                      sx={{
-                      p: 2,
-                      borderTop: 1,
-                      borderColor: 'divider',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1.5,
-                      cursor: 'pointer',
-                      transition: 'background-color 0.2s',
-                      '&:hover': { bgcolor: 'action.hover' },
-                    }}>
-                      <Avatar sx={{ bgcolor: 'primary.main', width: 32, height: 32, fontSize: '0.8rem', fontWeight: 'bold' }}>
-                        {(user.name || user.username)?.charAt(0).toUpperCase()}
-                      </Avatar>
-                      <Box sx={{ flex: 1, minWidth: 0 }}>
-                        <Typography variant="body2" fontWeight={600} noWrap>{user.name || user.username}</Typography>
-                        <Typography variant="caption" color="text.secondary" noWrap>{user.role}</Typography>
-                      </Box>
-                    </Box>
-                  )}
+                  <WorkspaceNavigation
+                    groups={visibleNavGroups}
+                    currentPage={currentPage} expanded={navExpanded} compact={isCompact}
+                    companyName={settings?.companyName || 'EverGreen'} logo={settings?.logo}
+                    username={user.name || user.username} role={user.role || 'VIEWER'}
+                    labelFor={labelFor} onNavigate={navigateTo} onToggle={handleDrawerToggle}
+                    onProfile={() => { setMobileNavOpen(false); setProfileModalOpen(true); }}
+                    onLogout={handleLogout}
+                  />
                 </Drawer>
                 <Box
                   component="main"
+                  id="workspace-main"
+                  tabIndex={-1}
+                  ref={mainRef}
                   sx={{
                     flexGrow: 1,
-                    p: { xs: 2.5, md: 4 },
-                    width: { sm: `calc(100% - ${drawerOpen ? drawerWidth : drawerCollapsedWidth}px)` },
-                    height: '100vh',
+                    p: { xs: 2, md: 3 },
+                    width: isCompact ? '100%' : `calc(100% - ${drawerOpen ? drawerWidth : drawerCollapsedWidth}px)`,
+                    minWidth: 0,
+                    height: '100dvh',
                     display: 'flex',
                     flexDirection: 'column',
                     overflowY: 'auto',
@@ -1166,7 +1007,7 @@ const App: React.FC = () => {
                     }),
                   }}
                 >
-                  <Toolbar sx={{ mb: 1 }} />
+                  <Box aria-hidden="true" sx={{ minHeight: { xs: 112, sm: 72 }, flexShrink: 0, mb: 1 }} />
                   <Breadcrumbs
                     items={getBreadcrumbItems()}
                     onNavigate={(path) => setCurrentPage(path)}
@@ -1182,7 +1023,11 @@ const App: React.FC = () => {
                       m: 0
                     }}
                   >
+                    {/* Keyed by page: a crash stays inside that screen, and navigating away clears it. */}
+                    <ErrorBoundary key={currentPage}>
                     <Suspense fallback={<LinearProgress />}>
+                    {/* Page roots often use maxWidth with mx: auto; in a flex column that sizes them to their content, so pin them to the column width. */}
+                    <Box key={currentPage} className="anim-page-in" sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1, minWidth: 0, '& > *': { width: '100%', minWidth: 0 } }}>
                       {currentPage === 'workspace' && <UnifiedWorkspace onNavigate={navigateTo} profile={settings} />}
                       {currentPage === 'jobwork' && <JobWork />}
                       {currentPage === 'operations' && <OperationsDesk />}
@@ -1212,8 +1057,6 @@ const App: React.FC = () => {
                           username={user.username}
                           themeName={themeName}
                           onThemeChange={setThemeName}
-                          floatingNav={floatingNav}
-                          onFloatingNavChange={setFloatingNav}
                         />
                       )}
                       {/* ── Merged sub-project pages ── */}
@@ -1227,17 +1070,19 @@ const App: React.FC = () => {
                       {currentPage === 'yarnsupplier' && <YarnSupplierPortal />}
                       {currentPage === 'yarncompliance' && <YarnComplianceReports />}
                       {currentPage === 'command-center' && <CommandCenter onNavigate={setCurrentPage} />}
-                      {currentPage === 'integrations' && (user.role === 'ADMIN' ? <Integrations /> : <Typography role="alert">Company administrator access is required.</Typography>)}
+                      {currentPage === 'integrations' && (user.role === 'ADMIN' ? <Integrations /> : <Typography role="alert">{uiText("Company administrator access is required.")}</Typography>)}
 
                       {!allPages.includes(currentPage) && (
                         <Box sx={{ p: 4, textAlign: 'center' }}>
                           <Typography variant="h4" sx={{ mb: 2, fontWeight: 'bold' }}>
                             {currentPage.charAt(0).toUpperCase() + currentPage.slice(1)}
                           </Typography>
-                          <Typography color="text.secondary">This page is currently under development.</Typography>
+                          <Typography color="text.secondary">{uiText("This page is currently under development.")}</Typography>
                         </Box>
                       )}
+                    </Box>
                     </Suspense>
+                    </ErrorBoundary>
                   </Container>
                 </Box>
               </Box>
@@ -1248,21 +1093,18 @@ const App: React.FC = () => {
                 onUserUpdate={(updated) => {
                   const newUser = { ...user, ...updated };
                   setUser(newUser);
-                  localStorage.setItem('user', JSON.stringify(newUser));
+                  saveUser(newUser);
                 }}
-                mode={mode}
-                onToggleTheme={toggleTheme}
-                themeName={themeName}
-                onThemeChange={setThemeName}
                 language={language}
                 onToggleLanguage={toggleLanguage}
-                floatingNav={floatingNav}
-                onFloatingNavChange={setFloatingNav}
                 onNavigate={(pg) => {
                   setProfileModalOpen(false);
                   setCurrentPage(pg);
                 }}
               />
+              <Suspense fallback={null}>
+                <FloatingAgent key={`${user.username}:${user.role}`} username={user.username} />
+              </Suspense>
             </ConfirmProvider>
           </KeyboardShortcutsProvider>
         </NotificationsProvider>
@@ -1271,4 +1113,5 @@ const App: React.FC = () => {
   );
 };
 
-export default App;
+export default function LicensedApp() {
+  useUiLanguage(); return <InstallationGate url={(import.meta.env.VITE_API_URL || '/api/backend').replace(/\/+$/, '') + '/license/status'}><App /></InstallationGate>; }

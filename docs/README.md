@@ -7,9 +7,11 @@ Start with the [Quick Start](../QUICK_START.md). Inside the app, the searchable 
 | Document | Read it to learn |
 | --- | --- |
 | [Architecture](ARCHITECTURE.md) | How the system is built, which code owns each rule, and how to make a change safely |
+| [Graphify workflow](GRAPHIFY.md) | Build/query the architecture graph and run the required staged commit gate |
 | [Architecture decision](decisions/0001-installation-and-data-boundaries.md) | Why the modular monolith and separate customer installations are retained, with rollout and rollback gates |
 | [Business flow](BUSINESS_FLOW.md) | How material and money move, who owns each handoff, and the end-to-end acceptance check |
 | [Integrations](INTEGRATIONS.md) | CSV import, Tally export, and the webhook and e-Way Bill designs |
+| [Helpdesk setup](HELPDESK_SETUP.md) | Queues, SLA calendars, SMTP replies, local antivirus, signed connectors and implementation limits |
 | [Desktop delivery](DESKTOP_DELIVERY.md) | Electron development, packaging and customer installation |
 | [Installation, deployment and updates](ONE_CLICK_DELIVERY.md) | Windows installer, hosted commands, provider runner setup and recovery |
 | [Weighbridge agent](WEIGHBRIDGE_AGENT_ARCHITECTURE.md) | Indicator protocols, receipt signing and label printing |
@@ -23,9 +25,11 @@ Start with the [Quick Start](../QUICK_START.md). Inside the app, the searchable 
 | Document | Read it to learn |
 | --- | --- |
 | [Project status](PROJECT_AUDIT.md) | Current findings, readiness by business flow, and the validation record |
+| [4 November Graphify review](audits/2026-11-04/GRAPHIFY_REVIEW.md) | Source-verified findings from the technical/business review and Reface, with graph limitations and priorities |
 | [Implementation backlog](IMPLEMENTATION_BACKLOG.md) | Open work packages, their acceptance criteria and the register IDs they close |
 | [Shared issue register](audits/2026-10-11/issue-register.md) | Every individual defect, with severity, priority and the test to add |
-| [15 October review](audits/2026-10-15/REPORT.md) | The latest code, flow and UI review, plus the repository clean-up |
+| [30 October review](audits/2026-10-30/REPORT.md) | How the running application behaves: every screen in a browser at desktop and phone width, the business flow through the live API, and what was fixed |
+| [15 October review](audits/2026-10-15/REPORT.md) | The latest code, flow and architecture review, plus the repository clean-up |
 
 ## Product and business
 
@@ -58,9 +62,14 @@ The [Integrations operating guide](wiki/pages/Integrations.md) is the exception 
 | [2026-10-06](audits/2026-10-06/BUSINESS_FLOW_REVIEW.md) | Business-flow review and the [parity register](audits/2026-10-06/PARITY_REGISTER.md) for the merged source projects |
 | [2026-10-11](audits/2026-10-11/REPORT.md) | Production-readiness audit, the shared issue register, and the [gate workflow audit](audits/2026-10-11/GATE_WORKFLOW_AUDIT.md) |
 | [2026-10-15](audits/2026-10-15/REPORT.md) | Code, flow and UI review, documentation consolidation and repository clean-up |
+| [2026-10-30](audits/2026-10-30/REPORT.md) | Running-application review in a browser and against the live API, with fixes |
 
 ## Keeping docs honest
 
 - When a workflow changes, update its code, the in-app guide and its acceptance checks together.
 - Describe what the code does today. Label anything proposed as proposed.
 - Never infer readiness from a document's title or from a passing build.
+# Cloud delivery planning
+
+See [cloud, web, desktop and assisted installation](CLOUD_WEB_DESKTOP_PLAN.md) for the current runtime, prerequisite setup steps, owner credential boundary and implementation gates.
+

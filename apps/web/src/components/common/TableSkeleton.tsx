@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage } from "../../i18n";
 import React from 'react';
 import {
   Table,
@@ -20,6 +21,7 @@ const TableSkeleton: React.FC<TableSkeletonProps> = ({
   columns,
   hasActions = true,
 }) => {
+  useUiLanguage();
   return (
     <Table>
       <TableHead>

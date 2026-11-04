@@ -1,0 +1,531 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body><aside style="position:relative;z-index:9999;background:#0f172a;color:#fff;padding:12px 20px;font:13px Arial,sans-serif;text-align:center"><a href="../" style="color:#6ee7b7">? All themes</a> ? Reference concept preview ? figures and claims are illustrative</aside>
+<title>EverGreen for Textile Mills</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Figtree:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout concept: editorial-industrial single column. A rotating CSS 3D yarn spool opens the page, a lit thread runs
+   through material -> mill -> market, and every claim carries a readiness label (In app / Pilot / Planned / Illustrative). */
+:root{
+  --bg:#0A130F; --surface:#101D17; --surface-2:#16281F; --line:#25392E;
+  --fg:#EFEBDD; --muted:#9DB0A5; --green:#3FA77C; --green-deep:#0F3D2E;
+  --thread:#E0714A; --thread-dark:#8E3A1F; --amber:#D9A441; --on-thread:#1A0B05;
+  --flange:#E9E3D0; --shadow:0 18px 40px rgba(0,0,0,.35);
+  --font-display:"Bricolage Grotesque","Helvetica Neue",Arial,sans-serif;
+  --font-body:"Figtree","Helvetica Neue",Arial,sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#F6F4EC; --surface:#FCFBF6; --surface-2:#ECE9DC; --line:#D3D9CC;
+    --fg:#0E211A; --muted:#4D6458; --green:#1C6B4C; --green-deep:#DDE9DF;
+    --thread:#C4552F; --thread-dark:#7A2E16; --amber:#8A6210; --on-thread:#FFF6F0;
+    --flange:#1B3A2D; --shadow:0 14px 30px rgba(20,50,35,.12); color-scheme:light;
+  }
+}
+:root[data-theme="light"]{
+  --bg:#F6F4EC; --surface:#FCFBF6; --surface-2:#ECE9DC; --line:#D3D9CC;
+  --fg:#0E211A; --muted:#4D6458; --green:#1C6B4C; --green-deep:#DDE9DF;
+  --thread:#C4552F; --thread-dark:#7A2E16; --amber:#8A6210; --on-thread:#FFF6F0;
+  --flange:#1B3A2D; --shadow:0 14px 30px rgba(20,50,35,.12); color-scheme:light;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--fg);font:400 16px/1.6 var(--font-body);padding-block:0;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:30}
+h1,h2,h3{font-family:var(--font-display);line-height:1.05;margin:0;text-wrap:balance;letter-spacing:-.02em}
+h1{font-size:clamp(2.6rem,7vw,5.2rem);font-weight:700}
+h2{font-size:clamp(1.9rem,4.2vw,3rem);font-weight:600}
+h3{font-size:1.2rem;font-weight:600;letter-spacing:-.01em}
+p{margin:0}
+a{color:inherit}
+.wrap{max-width:1160px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+section{padding-block:clamp(56px,9vw,104px);border-top:1px solid var(--line)}
+.eyebrow{font:500 .75rem/1 var(--font-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--thread);margin-bottom:16px;display:block}
+.lede{color:var(--muted);max-width:62ch;margin-top:16px;font-size:1.08rem}
+.head{display:grid;gap:4px;margin-bottom:40px}
+:focus-visible{outline:2px solid var(--thread);outline-offset:3px;border-radius:4px}
+
+/* nav */
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;align-items:center;gap:20px;min-height:60px}
+.brand{font:700 1.15rem var(--font-display);text-decoration:none;display:flex;align-items:center;gap:10px;letter-spacing:-.02em}
+.brand i{width:22px;height:22px;border-radius:50%;background:conic-gradient(var(--thread),var(--green),var(--thread));display:inline-block;position:relative}
+.brand i::after{content:"";position:absolute;inset:7px;border-radius:50%;background:var(--bg)}
+.links{display:flex;gap:18px;margin-left:auto;font-size:.9rem;color:var(--muted)}
+.links a{text-decoration:none;padding:6px 0}
+.links a:hover{color:var(--fg)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:600 .95rem var(--font-body);padding:12px 20px;border-radius:999px;border:1px solid transparent;cursor:pointer;text-decoration:none;transition:transform .15s,background .15s}
+.btn:hover{transform:translateY(-1px)}
+.btn.primary{background:var(--thread);color:var(--on-thread)}
+.btn.ghost{border-color:var(--line);color:var(--fg);background:transparent}
+.btn.ghost:hover{background:var(--surface-2)}
+.btn.small{padding:8px 16px;font-size:.85rem}
+.nav .btn{margin-left:0}
+@media (max-width:860px){.links{display:none}.nav .btn{margin-left:auto}}
+
+/* hero */
+.hero{border-top:0;padding-top:clamp(36px,6vw,72px);overflow:hidden}
+.hero-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:32px;align-items:center}
+.hero-grid>*{min-width:0}
+.hero h1 em{font-style:normal;color:var(--thread)}
+.hero .lede{font-size:1.2rem}
+.cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:32px}
+.fine{font:400 .78rem/1.5 var(--font-mono);color:var(--muted);margin-top:24px;max-width:56ch}
+@media (max-width:900px){.hero-grid{grid-template-columns:1fr}}
+
+.stage{position:relative;height:440px;perspective:1100px;display:grid;place-items:center;min-width:0}
+.stage::before{content:"";position:absolute;inset:8% 4%;border-radius:50%;background:radial-gradient(closest-side,color-mix(in srgb,var(--green) 28%,transparent),transparent 70%)}
+.tilt{position:relative;width:200px;height:200px;transform-style:preserve-3d;transform:rotateX(-20deg)}
+.spin{position:absolute;inset:0;transform-style:preserve-3d;animation:spin 24s linear infinite}
+.strip{position:absolute;left:50%;top:50%;width:19px;height:156px;margin:-78px 0 0 -9.5px;backface-visibility:hidden;
+  background:repeating-linear-gradient(0deg,var(--thread) 0 2px,var(--thread-dark) 2px 3px,color-mix(in srgb,var(--thread) 80%,#fff) 3px 5px);
+  transform:rotateY(calc(var(--i) * 10deg)) translateZ(90px)}
+.flange{position:absolute;left:50%;top:50%;width:216px;height:216px;margin:-108px;border-radius:50%;
+  background:radial-gradient(circle,var(--bg) 0 17%,transparent 17.5%),conic-gradient(from 0deg,var(--flange),color-mix(in srgb,var(--flange) 70%,#000),var(--flange));
+  box-shadow:inset 0 0 0 5px color-mix(in srgb,var(--flange) 60%,#000)}
+.flange.top{transform:translateY(-82px) rotateX(90deg)}
+.flange.bot{transform:translateY(82px) rotateX(90deg)}
+.orbit{position:absolute;left:50%;top:50%;width:360px;height:360px;margin:-180px;transform:rotateX(76deg);transform-style:preserve-3d}
+.orbit i{position:absolute;inset:0;border-radius:50%;border:1.5px dashed color-mix(in srgb,var(--thread) 70%,transparent);animation:orbit 14s linear infinite}
+.orbit i::after{content:"";position:absolute;left:50%;top:-6px;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:var(--thread);box-shadow:0 0 18px 4px var(--thread)}
+.tag{position:absolute;font:500 .72rem/1.3 var(--font-mono);background:var(--surface);border:1px solid var(--line);padding:6px 10px;border-radius:6px;color:var(--muted);box-shadow:var(--shadow);animation:float 6s ease-in-out infinite}
+.tag b{color:var(--fg);font-weight:500;display:block}
+.tag.a{left:2%;top:10%}.tag.b{right:0;top:42%;animation-delay:-2s}.tag.c{left:8%;bottom:6%;animation-delay:-4s}
+.pause{position:absolute;right:0;bottom:0;z-index:3}
+@keyframes spin{to{transform:rotateY(360deg)}}
+@keyframes orbit{to{transform:rotate(360deg)}}
+@keyframes float{50%{transform:translateY(-8px)}}
+@media (max-width:520px){.stage{height:380px}.tilt{transform:rotateX(-20deg) scale(.82)}.tag.b{display:none}}
+
+/* readiness chips */
+.chip{display:inline-block;font:500 .68rem/1 var(--font-mono);letter-spacing:.08em;text-transform:uppercase;padding:5px 8px;border-radius:4px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.chip.live{color:var(--green);border-color:color-mix(in srgb,var(--green) 55%,transparent)}
+.chip.plan{color:var(--amber);border-color:color-mix(in srgb,var(--amber) 55%,transparent)}
+.chip.ill{color:var(--thread);border-color:color-mix(in srgb,var(--thread) 55%,transparent)}
+.legend{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin-top:28px;font-size:.85rem;color:var(--muted)}
+
+/* flow */
+.flow{display:grid;grid-template-columns:1fr 90px 1fr 90px 1fr;align-items:stretch}
+.flow>*{min-width:0}
+.step{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:24px;display:grid;gap:12px;align-content:start;box-shadow:var(--shadow);transform:translateZ(0)}
+.step .n{font:500 .72rem var(--font-mono);color:var(--muted);letter-spacing:.12em;text-transform:uppercase}
+.step ul{margin:0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:6px}
+.step li{font:400 .74rem var(--font-mono);background:var(--surface-2);border-radius:4px;padding:4px 8px;color:var(--muted)}
+.link{align-self:center;height:3px;border-radius:3px;background:linear-gradient(90deg,transparent 0,var(--thread) 40%,#fff 50%,var(--thread) 60%,transparent 100%) 0 0/200% 100%,var(--line);animation:run 2.6s linear infinite}
+@keyframes run{from{background-position:200% 0,0 0}to{background-position:-100% 0,0 0}}
+@media (max-width:860px){.flow{grid-template-columns:1fr}.link{width:3px;height:44px;justify-self:center;background:linear-gradient(180deg,transparent 0,var(--thread) 40%,#fff 50%,var(--thread) 60%,transparent 100%) 0 0/100% 200%,var(--line);animation-name:runv}
+@keyframes runv{from{background-position:0 200%,0 0}to{background-position:0 -100%,0 0}}}
+
+/* scenarios */
+.tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.tab{font:600 .9rem var(--font-body);padding:10px 18px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer}
+.tab[aria-selected="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.sim{display:grid;grid-template-columns:.9fr 1.1fr;gap:20px}
+.sim>*{min-width:0}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:24px}
+.tiles{display:grid;gap:12px;margin-top:20px}
+.tile{display:flex;justify-content:space-between;gap:12px;align-items:baseline;border-bottom:1px solid var(--line);padding-bottom:10px}
+.tile span{color:var(--muted);font-size:.9rem}
+.tile b{font:500 1.15rem var(--font-mono);font-variant-numeric:tabular-nums}
+.ledger{list-style:none;margin:16px 0 0;padding:0;display:grid;gap:0}
+.ledger li{display:grid;grid-template-columns:64px 1fr;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);animation:in .4s ease both}
+.ledger time{font:500 .8rem var(--font-mono);color:var(--thread)}
+.ledger small{display:block;color:var(--muted);font-size:.82rem}
+@keyframes in{from{opacity:0;transform:translateY(6px)}}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:18px}
+@media (max-width:860px){.sim{grid-template-columns:1fr}}
+
+/* platform */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.grid>*{min-width:0}
+.mod{padding:24px;border-radius:14px;border:1px solid var(--line);background:var(--surface);display:grid;gap:10px;align-content:start;transition:transform .2s,border-color .2s}
+.mod:hover{transform:translateY(-4px);border-color:var(--thread)}
+.mod p{color:var(--muted);font-size:.95rem}
+.mod .top{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.mod .u{font:400 .75rem var(--font-mono);color:var(--muted)}
+@media (max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:560px){.grid{grid-template-columns:1fr}}
+
+/* calculator */
+.calc{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.calc>*{min-width:0}
+label{display:grid;gap:6px;font-size:.88rem;color:var(--muted)}
+input,select,textarea{font:400 1rem var(--font-body);background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:11px 12px;width:100%}
+textarea{min-height:110px;resize:vertical}
+.fields{display:grid;gap:14px}
+.big{font:700 clamp(2.2rem,5vw,3.4rem) var(--font-display);letter-spacing:-.03em;color:var(--thread);font-variant-numeric:tabular-nums}
+.note{font:400 .78rem/1.5 var(--font-mono);color:var(--muted);margin-top:14px}
+@media (max-width:860px){.calc{grid-template-columns:1fr}}
+
+/* plans */
+.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.plans>*{min-width:0}
+.plan{padding:28px;border:1px solid var(--line);border-radius:14px;background:var(--surface);display:grid;gap:14px;align-content:start}
+.plan.pick{background:var(--green-deep);border-color:var(--green)}
+.plan ul{margin:0;padding:0;list-style:none;display:grid;gap:8px;color:var(--muted);font-size:.93rem}
+.plan li::before{content:"";display:inline-block;width:10px;height:2px;background:var(--thread);margin-right:10px;vertical-align:middle}
+.price{font:500 .85rem var(--font-mono);color:var(--muted)}
+@media (max-width:860px){.plans{grid-template-columns:1fr}}
+
+/* integrations */
+.tools{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px}
+.tools input{max-width:340px}
+.int{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.int>*{min-width:0}
+.list{display:grid;gap:8px;align-content:start}
+.item{display:flex;justify-content:space-between;gap:10px;align-items:center;text-align:left;width:100%;padding:14px 16px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font:500 .95rem var(--font-body);cursor:pointer}
+.item small{display:block;color:var(--muted);font-weight:400;font-size:.8rem}
+.item[aria-pressed="true"]{border-color:var(--thread)}
+pre{margin:0;font:400 .8rem/1.6 var(--font-mono);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto;color:var(--fg)}
+@media (max-width:860px){.int{grid-template-columns:1fr}}
+
+/* deploy */
+.ports{width:100%;border-collapse:collapse;font-size:.92rem}
+.ports th,.ports td{text-align:left;padding:12px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.ports th{font:500 .72rem var(--font-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.ports td:first-child{font-family:var(--font-mono);color:var(--thread)}
+.scroll{overflow-x:auto}
+.two{display:grid;grid-template-columns:1.1fr .9fr;gap:20px}
+.two>*{min-width:0}
+@media (max-width:860px){.two{grid-template-columns:1fr}}
+
+/* proof + faq */
+details{border-bottom:1px solid var(--line);padding:16px 0}
+summary{cursor:pointer;font:600 1.05rem var(--font-display);list-style:none;display:flex;justify-content:space-between;gap:16px}
+summary::after{content:"+";color:var(--thread);font-family:var(--font-mono)}
+details[open] summary::after{content:"–"}
+details p{color:var(--muted);margin-top:10px;max-width:68ch}
+.slot{border:1px dashed var(--line);border-radius:14px;padding:24px;display:grid;gap:10px;align-content:start}
+.slot p{color:var(--muted);font-size:.93rem}
+
+/* contact + scout */
+.form{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form>*{min-width:0}
+.form .full{grid-column:1/-1}
+@media (max-width:640px){.form{grid-template-columns:1fr}}
+.out{margin-top:20px;display:grid;gap:10px}
+.chat{display:grid;gap:10px;margin:16px 0;max-height:300px;overflow-y:auto}
+.msg{padding:12px 14px;border-radius:12px;font-size:.93rem;max-width:90%}
+.msg.q{background:var(--surface-2);justify-self:end}
+.msg.a{background:var(--surface);border:1px solid var(--line)}
+.sugg{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.chk{display:flex;gap:10px;align-items:flex-start;font-size:.88rem;color:var(--muted)}
+.chk input{width:auto;margin-top:4px}
+footer{border-top:1px solid var(--line);padding-block:40px calc(40px + env(safe-area-inset-bottom,0px));color:var(--muted);font-size:.85rem}
+footer .wrap{display:grid;gap:10px}
+
+/* motion control */
+.paused *,.paused *::before,.paused *::after{animation-play-state:paused!important}
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+</style>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="#top"><i></i>EverGreen</a>
+    <nav class="links" aria-label="Sections">
+      <a href="#flow">Flow</a><a href="#scenarios">Scenarios</a><a href="#platform">Platform</a><a href="#calculator">Calculator</a>
+      <a href="#plans">Plans</a><a href="#integrations">Integrations</a><a href="#faq">FAQ</a>
+    </nav>
+    <a class="btn primary small" href="#contact">Book a demo</a>
+  </div>
+</header>
+
+<main id="top">
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow">Mill software for spinning, weaving and job work</span>
+      <h1>Every kilo of yarn, <em>accounted for.</em></h1>
+      <p class="lede">EverGreen follows a lot from the gate weighment to the invoice. Inward, production, stock, job work and billing sit on one record, so the owner, the accountant and the shop floor read the same numbers.</p>
+      <div class="cta">
+        <a class="btn primary" href="#contact">Book a demo</a>
+        <a class="btn ghost" href="#platform">Tour the product</a>
+      </div>
+      <p class="fine">Scenarios, payloads and plans on this page are illustrative. They show how EverGreen is meant to work and are not proof of a customer deployment.</p>
+    </div>
+    <div class="stage" id="stage" aria-label="Rotating 3D yarn spool with an orbiting thread. Decorative.">
+      <div class="tilt"><div class="spin" id="spin"><div class="flange top"></div><div class="flange bot"></div></div><div class="orbit"><i></i></div></div>
+      <div class="tag a"><b>Lot C-2041</b>30s combed · 3,240 kg</div>
+      <div class="tag b"><b>Cone 118 / 640</b>Packed, label printed</div>
+      <div class="tag c"><b>Invoice INV-0916</b>Linked to lot</div>
+      <button class="btn ghost small pause" id="pause" aria-pressed="false">Pause motion</button>
+    </div>
+  </div>
+</section>
+
+<section id="flow">
+  <div class="wrap">
+    <div class="head"><span class="eyebrow">Material, mill, market</span><h2>One thread runs through the whole mill.</h2>
+      <p class="lede">A lot gets its identity at the gate and keeps it. Every weighment, issue, loss and sale points back to the same lot.</p></div>
+    <div class="flow">
+      <div class="step"><span class="n">Material</span><h3>Inward and stores</h3><p class="lede" style="margin:0;font-size:.95rem">Gate weighment, supplier, grade and moisture on receipt. Bales get lot numbers.</p><ul><li>weighbridge</li><li>supplier</li><li>lot no.</li></ul></div>
+      <div class="link" aria-hidden="true"></div>
+      <div class="step"><span class="n">Mill</span><h3>Production and job work</h3><p class="lede" style="margin:0;font-size:.95rem">Issue to each department, record output and waste, and track material sent out for job work.</p><ul><li>issue</li><li>waste %</li><li>job work</li></ul></div>
+      <div class="link" aria-hidden="true"></div>
+      <div class="step"><span class="n">Market</span><h3>Commerce and invoices</h3><p class="lede" style="margin:0;font-size:.95rem">Orders, dispatch and GST invoices drawn from finished stock, with a Tally XML export.</p><ul><li>order</li><li>invoice</li><li>Tally XML</li></ul></div>
+    </div>
+    <div class="legend"><span>Readiness labels used on this page:</span><span class="chip live">In app</span><span class="chip plan">Planned</span><span class="chip ill">Illustrative</span></div>
+  </div>
+</section>
+
+<section id="scenarios">
+  <div class="wrap">
+    <div class="head"><span class="eyebrow">Scenario simulator</span><h2>See a day from three desks.</h2>
+      <p class="lede">Pick a role and step through a sample day. Figures are invented for demonstration.</p></div>
+    <div class="tabs" role="tablist" id="tabs"></div>
+    <div class="sim">
+      <div class="panel"><span class="chip ill">Illustrative data</span><h3 id="pTitle" style="margin-top:14px"></h3><p class="lede" id="pDesc" style="font-size:.95rem"></p><div class="tiles" id="tiles"></div></div>
+      <div class="panel"><h3>Day ledger</h3><ul class="ledger" id="ledger"></ul>
+        <div class="row"><button class="btn primary small" id="next">Next event</button><button class="btn ghost small" id="reset">Reset</button><span class="note" id="count" style="margin:0"></span></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="platform">
+  <div class="wrap">
+    <div class="head"><span class="eyebrow">Platform</span><h2>Six workflows, one stock position.</h2>
+      <p class="lede">Module descriptions reflect the intended product. Confirm the current state of each module in the demo before relying on it.</p></div>
+    <div class="grid" id="mods"></div>
+  </div>
+</section>
+
+<section id="calculator">
+  <div class="wrap">
+    <div class="head"><span class="eyebrow">Fit calculator</span><h2>Estimate the size of the prize.</h2>
+      <p class="lede">Enter your own numbers. The result is an estimate from your assumptions, not a verified saving.</p></div>
+    <div class="calc">
+      <div class="panel fields">
+        <label for="kg">Yarn processed per month (kg)<input id="kg" type="number" min="0" value="20000"></label>
+        <label for="cost">Average material value (₹ per kg)<input id="cost" type="number" min="0" value="260"></label>
+        <label for="pts">Wastage you expect to recover (percentage points)<input id="pts" type="number" min="0" step="0.1" value="0.5"></label>
+        <label for="inv">Invoices per month<input id="inv" type="number" min="0" value="300"></label>
+        <label for="min">Minutes saved per invoice<input id="min" type="number" min="0" value="6"></label>
+      </div>
+      <div class="panel">
+        <span class="chip ill">Estimate</span>
+        <p class="lede" style="margin-top:18px">Material value recovered per month</p>
+        <div class="big" id="r1">₹0</div>
+        <p class="lede" style="margin-top:20px">Accounts time freed per month</p>
+        <div class="big" id="r2">0 h</div>
+        <p class="note">Material = kg × value × points ÷ 100. Time = invoices × minutes ÷ 60. Real savings depend on your current wastage, which EverGreen can measure after a few weeks of lot-level records.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="plans">
+  <div class="wrap">
+    <div class="head"><span class="eyebrow">Proposed plans</span><h2>Packages by mill size.</h2>
+      <p class="lede">These are proposed groupings. Prices, limits and terms are confirmed in a written quote.</p></div>
+    <div class="plans">
+      <div class="plan"><span class="chip plan">Proposed</span><h3>Single unit</h3><p class="price">Price to be confirmed</p><ul><li>One mill, one site</li><li>Inward, stock and production</li><li>Invoices and Tally XML export</li></ul></div>
+      <div class="plan pick"><span class="chip plan">Proposed</span><h3>Mill with job work</h3><p class="price">Price to be confirmed</p><ul><li>Everything in Single unit</li><li>Job work in and out</li><li>Owner console reports</li></ul></div>
+      <div class="plan"><span class="chip plan">Proposed</span><h3>Group</h3><p class="price">Price to be confirmed</p><ul><li>Several units under one owner</li><li>Consolidated stock and receivables</li><li>Planned connectors by agreement</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<section id="integrations">
+  <div class="wrap">
+    <div class="head"><span class="eyebrow">Integrations and hardware</span><h2>What connects today, what is planned.</h2>
+      <p class="lede">Search the connector profiles. Only the Tally XML export exists in the app. Everything else is a planned profile, and its payload is an illustration.</p></div>
+    <div class="tools">
+      <label style="flex:1;min-width:200px;max-width:340px">Search<input id="q" type="search" placeholder="Tally, GST, weighbridge"></label>
+      <label>Type<select id="kind"><option value="">All</option><option>Software</option><option>Hardware</option></select></label>
+    </div>
+    <div class="int"><div class="list" id="ilist"></div><div><div class="row" style="margin:0 0 10px"><b id="iname"></b><span class="chip ill">Illustrative payload</span></div><pre id="ipay"></pre></div></div>
+  </div>
+</section>
+
+<section id="deploy">
+  <div class="wrap">
+    <div class="head"><span class="eyebrow">Deployment</span><h2>Run it locally, then on your own domain.</h2>
+      <p class="lede">This page provisions no infrastructure. It explains what a local or container setup involves.</p></div>
+    <div class="two">
+      <div class="panel scroll"><table class="ports"><thead><tr><th>Port</th><th>Surface</th></tr></thead><tbody>
+        <tr><td>3300</td><td>This marketing site. Public, separate from the apps below.</td></tr>
+        <tr><td>5174</td><td>Owner console.</td></tr>
+        <tr><td>4001</td><td>Mill operations. Development portal links point here.</td></tr></tbody></table></div>
+      <div class="panel"><h3>Tenant portal link</h3><p class="lede" style="font-size:.95rem">Set <code>VITE_TENANT_PORTAL_URL</code> when building for production. Without it, the site asks visitors to request access and links to no host.</p>
+        <pre style="margin-top:14px">VITE_TENANT_PORTAL_URL=https://your-tenant-domain</pre></div>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap">
+    <div class="head"><span class="eyebrow">Trust and support</span><h2>Evidence first, promises second.</h2></div>
+    <div class="two">
+      <div>
+        <details open><summary>Are there customer stories?</summary><p>Not yet on this page. Any story we publish will name the mill, the period and the measured change, and will come with permission. Sample scenarios are labelled as such.</p></details>
+        <details><summary>Are the numbers on this page real results?</summary><p>No. Figures in the simulator and calculator are examples or your own inputs. Verified outcomes come from lot-level records after a pilot.</p></details>
+        <details><summary>What about compliance and SLAs?</summary><p>Compliance claims and service levels are confirmed in writing for your plan. Nothing here is a certification or a guarantee.</p></details>
+        <details><summary>Does EverGreen connect to Tally?</summary><p>The app can export Tally XML. Other connectors are planned profiles, as listed above.</p></details>
+        <details><summary>What happens to the contact form?</summary><p>It prepares a draft for you to copy and send. It does not deliver anything until a delivery endpoint is configured for the build.</p></details>
+      </div>
+      <div class="slot"><span class="chip plan">Slot reserved</span><h3>Verified evidence goes here</h3><p>A published story needs a mill name, a baseline period, a measured result and sign-off. Until those exist, this space stays empty on purpose.</p><p>Support commitments, such as hours and response times, are agreed per plan and listed in your order form.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="wrap">
+    <div class="head"><span class="eyebrow">Book a demo</span><h2>Prepare your enquiry.</h2>
+      <p class="lede">Fill this in and copy the draft. Nothing is sent from this page.</p></div>
+    <div class="two">
+      <form class="panel form" id="cform" novalidate>
+        <label for="cn">Your name<input id="cn" required placeholder="Name"></label>
+        <label for="cm">Mill or company<input id="cm" placeholder="Mill name"></label>
+        <label for="cr">Role<select id="cr"><option>Owner</option><option>Finance or accounts</option><option>Operations</option><option>Trader</option></select></label>
+        <label for="cp">Phone or email<input id="cp" placeholder="How we reach you"></label>
+        <label class="full" for="ci">What should the demo cover?<select id="ci"><option>Inward and stock</option><option>Production and wastage</option><option>Job work</option><option>Invoices and Tally export</option><option>Full walkthrough</option></select></label>
+        <label class="full" for="cx">Notes<textarea id="cx" placeholder="Units, products, current tools"></textarea></label>
+        <div class="full"><button class="btn primary" type="submit">Prepare draft</button></div>
+      </form>
+      <div class="panel"><h3>Your draft</h3><textarea id="draft" readonly style="margin-top:14px;min-height:220px" placeholder="Your enquiry draft appears here."></textarea>
+        <div class="row"><button class="btn ghost small" id="copy" type="button">Copy draft</button><span class="note" id="cmsg" style="margin:0" role="status">Not sent. Copy it into your own email or message.</span></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="scout">
+  <div class="wrap">
+    <div class="head"><span class="eyebrow">Scout</span><h2>Ask about the product.</h2>
+      <p class="lede">Scout answers product questions only. It cannot see any business data. In this page it replies from fixed answers. Live answers through Groq need an endpoint configured at build time.</p></div>
+    <div class="panel">
+      <label class="chk" for="consent"><input id="consent" type="checkbox"><span>I agree that my question may be processed to produce an answer, and I will not enter private business data.</span></label>
+      <div class="chat" id="chat" aria-live="polite"><div class="msg a">Hello. Ask what EverGreen covers, how plans work, or what is ready today.</div></div>
+      <div class="sugg" id="sugg"></div>
+      <form class="row" id="sform" style="margin:0"><label for="sq" style="flex:1;min-width:220px">Your question<input id="sq" placeholder="Does it export to Tally?"></label><button class="btn primary" type="submit" style="align-self:end">Ask Scout</button></form>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer><div class="wrap"><b style="color:var(--fg)">EverGreen</b><span>Validate case studies, figures, compliance claims and SLAs against real evidence before public launch. Sample scenarios, simulators and proposed plans are not proof of a working deployment.</span></div></footer>
+
+<script>
+(function(){
+  var $=function(s){return document.querySelector(s)};
+  // spool strips
+  var spin=$("#spin"),frag=document.createDocumentFragment();
+  for(var i=0;i<36;i++){var d=document.createElement("div");d.className="strip";d.style.setProperty("--i",i);frag.appendChild(d)}
+  spin.insertBefore(frag,spin.firstChild);
+
+  // pause
+  var pb=$("#pause");
+  var reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function setPause(p){document.body.classList.toggle("paused",p);pb.setAttribute("aria-pressed",p);pb.textContent=p?"Play motion":"Pause motion"}
+  pb.addEventListener("click",function(){setPause(!document.body.classList.contains("paused"))});
+  if(reduce){pb.hidden=true}
+
+  // scenarios
+  var P={
+    Owner:{t:"Owner: the morning view",d:"Stock, job work and money owed on one screen.",tiles:[["Stock on hand","41,860 kg"],["Open job work lots","6"],["Receivables due in 7 days","₹12.4 L"]],
+      ev:[["06:10","Inward lot C-2041","18 bales, 3,240 kg weighed at the gate"],["08:40","Carding issue","1,200 kg issued, 4.1% waste recorded"],["11:15","Job work out","Lot J-77, 800 kg to dyer, return due in 5 days"],["14:30","Dispatch","Order SO-212 loaded, 2,100 kg"],["17:05","Day closed","Waste above standard in one department flagged"]]},
+    Accountant:{t:"Accountant: from dispatch to voucher",d:"Invoices come from dispatched stock, so nothing is typed twice.",tiles:[["Invoices drafted today","14"],["Awaiting dispatch proof","2"],["Tally export ready","12 vouchers"]],
+      ev:[["09:00","Dispatch matched","SO-212 linked to lot C-2041"],["09:20","Invoice drafted","INV-0916 with HSN and GST split"],["12:00","Purchase bill booked","Supplier bill matched to inward weighment"],["16:40","Export","Sales and purchase vouchers as Tally XML"],["17:30","Short weight query","Supplier bill differs from gate weight by 14 kg"]]},
+    Operations:{t:"Operations: on the floor",d:"Issues, output and waste recorded where the work happens.",tiles:[["Lots in process","9"],["Cones packed today","640"],["Waste vs standard","+0.3 pt"]],
+      ev:[["06:30","Shift start","Lot C-2041 issued to blow room"],["09:10","Output logged","Carding sliver 1,150 kg"],["12:20","Packing","Cones 1 to 640 labelled"],["15:00","Hold","Lot C-2036 held for quality check"],["18:00","Handover","Open issues passed to night shift"]]}
+  };
+  var cur="Owner",shown=2,tabs=$("#tabs");
+  Object.keys(P).forEach(function(k){var b=document.createElement("button");b.className="tab";b.setAttribute("role","tab");b.textContent=k;b.addEventListener("click",function(){cur=k;shown=2;draw()});tabs.appendChild(b)});
+  function draw(){
+    var p=P[cur];
+    Array.prototype.forEach.call(tabs.children,function(b){b.setAttribute("aria-selected",b.textContent===cur)});
+    $("#pTitle").textContent=p.t;$("#pDesc").textContent=p.d;
+    $("#tiles").innerHTML=p.tiles.map(function(t){return '<div class="tile"><span>'+t[0]+'</span><b>'+t[1]+'</b></div>'}).join("");
+    $("#ledger").innerHTML=p.ev.slice(0,shown).map(function(e){return '<li><time>'+e[0]+'</time><div>'+e[1]+'<small>'+e[2]+'</small></div></li>'}).join("");
+    $("#count").textContent=shown+" of "+p.ev.length+" events";
+    $("#next").disabled=shown>=p.ev.length;
+  }
+  $("#next").addEventListener("click",function(){shown++;draw()});
+  $("#reset").addEventListener("click",function(){shown=2;draw()});
+  draw();
+
+  // modules
+  var M=[["Inward","Gate weighment, lot numbers, supplier and grade.","kg · bale · lot"],["Production","Department issues, output and waste against standard.","issue · output · waste"],["Inventory","Raw, work in process and finished stock by lot and location.","lot · godown"],["Job work","Material sent out and received back, with expected loss.","challan · return"],["Commerce","Quotes, orders and dispatch with party-wise history.","order · dispatch"],["Invoices","GST invoices from dispatched stock and a Tally XML export.","invoice · voucher"]];
+  $("#mods").innerHTML=M.map(function(m){return '<article class="mod"><div class="top"><h3>'+m[0]+'</h3><span class="u">'+m[2]+'</span></div><p>'+m[1]+'</p></article>'}).join("");
+
+  // calculator
+  var inr=new Intl.NumberFormat("en-IN",{maximumFractionDigits:0});
+  function calc(){
+    var v=function(id){return Math.max(0,parseFloat($(id).value)||0)};
+    $("#r1").textContent="₹"+inr.format(v("#kg")*v("#cost")*v("#pts")/100);
+    $("#r2").textContent=(Math.round(v("#inv")*v("#min")/60*10)/10)+" h";
+  }
+  ["#kg","#cost","#pts","#inv","#min"].forEach(function(s){$(s).addEventListener("input",calc)});calc();
+
+  // integrations
+  var I=[
+    ["Tally Prime XML export","Software","In app","Sales and purchase vouchers"],
+    ["GST e-invoice (IRP)","Software","Planned","Invoice registration"],
+    ["E-way bill","Software","Planned","Transport document from dispatch"],
+    ["Zoho Books","Software","Planned","Accounts sync"],
+    ["WhatsApp Business","Software","Planned","Dispatch and dues messages"],
+    ["Bank statement CSV","Software","Planned","Receipt matching"],
+    ["Weighbridge indicator","Hardware","Planned","Gate weight over serial. Site check needed"],
+    ["QR label printer","Hardware","Planned","Cone and bale labels"],
+    ["Handheld scanner","Hardware","Planned","Scan lots at issue and dispatch"],
+    ["Biometric attendance","Hardware","Planned","Shift records"]
+  ];
+  var sel=0,view=[];
+  var tallyXml='&lt;ENVELOPE&gt;\n  &lt;VOUCHER VCHTYPE="Sales"&gt;\n    &lt;DATE&gt;20261101&lt;/DATE&gt;\n    &lt;VOUCHERNUMBER&gt;INV-0916&lt;/VOUCHERNUMBER&gt;\n    &lt;PARTYLEDGERNAME&gt;Sample Traders&lt;/PARTYLEDGERNAME&gt;\n    &lt;AMOUNT&gt;-546000.00&lt;/AMOUNT&gt;\n  &lt;/VOUCHER&gt;\n&lt;/ENVELOPE&gt;';
+  function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;")}
+  function renderI(){
+    var q=$("#q").value.toLowerCase(),k=$("#kind").value;
+    view=I.filter(function(x){return (!k||x[1]===k)&&(!q||(x[0]+" "+x[3]).toLowerCase().indexOf(q)>-1)});
+    if(sel>=view.length)sel=0;
+    $("#ilist").innerHTML=view.length?"":'<p class="note">No connector matches that search.</p>';
+    view.forEach(function(x,n){
+      var b=document.createElement("button");b.className="item";b.setAttribute("aria-pressed",n===sel);
+      b.innerHTML='<span>'+x[0]+'<small>'+x[3]+'</small></span><span class="chip '+(x[2]==="In app"?"live":"plan")+'">'+x[2]+'</span>';
+      b.addEventListener("click",function(){sel=n;renderI()});$("#ilist").appendChild(b);
+    });
+    var x=view[sel];
+    $("#iname").textContent=x?x[0]:"";
+    if(!x){$("#ipay").textContent="";return}
+    $("#ipay").innerHTML=x[0].indexOf("Tally")===0?tallyXml:esc(JSON.stringify({connector:x[0],status:x[2]==="In app"?"available":"planned profile",example:{reference:"INV-0916",lot:"C-2041",quantity_kg:2100}},null,2));
+  }
+  $("#q").addEventListener("input",renderI);$("#kind").addEventListener("change",renderI);renderI();
+
+  // contact draft
+  $("#cform").addEventListener("submit",function(e){
+    e.preventDefault();
+    var g=function(id){return $(id).value.trim()||"(not given)"};
+    $("#draft").value="Subject: EverGreen demo request\n\nHello,\n\nI would like a demo of EverGreen.\n\nName: "+g("#cn")+"\nMill or company: "+g("#cm")+"\nRole: "+g("#cr")+"\nContact: "+g("#cp")+"\nDemo focus: "+g("#ci")+"\n\nNotes: "+g("#cx")+"\n\nThank you.";
+    $("#cmsg").textContent="Draft ready. It has not been sent.";
+  });
+  $("#copy").addEventListener("click",function(){
+    var t=$("#draft");if(!t.value){$("#cmsg").textContent="Prepare a draft first.";return}
+    function sel2(){t.select();$("#cmsg").textContent="Select and copy the text above."}
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t.value).then(function(){$("#cmsg").textContent="Copied. Paste it into your email or message. Nothing was sent."},sel2)}else sel2();
+  });
+
+  // scout (fixed answers)
+  var A=[
+    [/tally|export|accounts/,"The app can export Tally XML. Other connectors, such as GST e-invoice and e-way bill, are planned profiles and not live."],
+    [/price|plan|cost|package/,"Plans on this page are proposals. Prices and terms are confirmed in a written quote."],
+    [/cover|module|feature|what/,"EverGreen covers inward, production, inventory, job work, commerce and invoices, all tied to lot numbers."],
+    [/story|case|customer|proof|real/,"No customer stories are published on this page yet. Scenarios and calculator figures are illustrative."],
+    [/data|private|security|safe/,"Scout cannot see any business data. Please do not enter private figures in this chat."],
+    [/hardware|weigh|scanner|label/,"Weighbridge, label printers and scanners are planned connector profiles. Fit depends on a site check."]
+  ];
+  var sugg=["What does EverGreen cover?","Does it export to Tally?","Is pricing final?","Are the stories real?"];
+  sugg.forEach(function(s){var b=document.createElement("button");b.type="button";b.className="btn ghost small";b.textContent=s;b.addEventListener("click",function(){ask(s)});$("#sugg").appendChild(b)});
+  function add(c,t){var m=document.createElement("div");m.className="msg "+c;m.textContent=t;$("#chat").appendChild(m);$("#chat").scrollTop=1e5}
+  function ask(q){
+    if(!$("#consent").checked){add("a","Please tick the consent box first.");return}
+    add("q",q);var l=q.toLowerCase(),r="I can answer questions about what EverGreen covers, plans, Tally export and readiness. For anything else, book a demo.";
+    for(var i=0;i<A.length;i++){if(A[i][0].test(l)){r=A[i][1];break}}
+    add("a",r);
+  }
+  $("#sform").addEventListener("submit",function(e){e.preventDefault();var v=$("#sq").value.trim();if(v){ask(v);$("#sq").value=""}});
+})();
+</script>
+
+</body></html>

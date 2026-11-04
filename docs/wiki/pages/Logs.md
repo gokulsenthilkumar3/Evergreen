@@ -25,10 +25,11 @@ Paths are relative to the client API base (`/api/backend` by default in the brow
 
 | Method | Path expression | Source |
 | --- | --- | --- |
-| GET | `/logs` | [apps/web/src/pages/Logs.tsx:98](../../../apps/web/src/pages/Logs.tsx) |
+| GET | `/logs` | [apps/web/src/pages/Logs.tsx:100](../../../apps/web/src/pages/Logs.tsx) |
 
 ## Composed behavior
 
+- [i18n.ts](../../../apps/web/src/i18n.ts)
 - [api.ts](../../../apps/web/src/utils/api.ts)
 - [dateFilters.ts](../../../apps/web/src/utils/dateFilters.ts)
 - [excelGenerator.ts](../../../apps/web/src/utils/excelGenerator.ts)

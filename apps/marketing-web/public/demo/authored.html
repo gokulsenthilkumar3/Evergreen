@@ -1,0 +1,1117 @@
+<!doctype html>
+<html lang="en" data-motion="on" data-images="on" data-sound="off">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="robots" content="noindex,nofollow" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="theme-color" content="#f2ede1" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'"
+    />
+    <title>EverGreen — Textile operating system / specification</title>
+    <meta
+      name="description"
+      content="A specification for textile operations: the record, the software, the arithmetic and the limits. Prepare a local brief for your mill."
+    />
+    <link rel="icon" href="./assets/mark-paper.svg" />
+    <link rel="stylesheet" href="./authored.css" />
+    <link rel="stylesheet" href="./textile-studio.css" />
+    <script type="module" src="./authored.js"></script>
+    <script type="module" src="./textile-studio.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to the specification</a>
+    <header class="running-head">
+      <a href="#cover">EverGreen</a
+      ><span class="running-title"
+        >Textile operating system · Specification 2026</span
+      ><span id="section-position">Section 1 of 6</span>
+      <div class="reading-tools">
+        <button id="motion-toggle" type="button" aria-pressed="false">
+          Motion: on</button
+        ><button id="images-toggle" type="button" aria-pressed="false">
+          Text view</button
+        ><button id="sound-toggle" type="button" aria-pressed="false">
+          Sound: off</button
+        ><button id="print-spec" type="button">Print</button>
+      </div>
+    </header>
+    <nav class="contents" aria-label="Specification contents">
+      <span>Contents</span><a href="#record">The record</a
+      ><a href="#spec">The spec</a><a href="#arithmetic">The arithmetic</a
+      ><a href="#limits">The limits</a><a href="#brief">The brief</a>
+    </nav>
+    <svg
+      class="margin-thread"
+      viewBox="0 0 40 1000"
+      preserveAspectRatio="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M20 0Q-2 50 20 100T20 200T20 300T20 400T20 500T20 600T20 700T20 800T20 900T20 1000"
+      />
+      <path
+        class="thread-highlight"
+        d="M20 0Q-2 50 20 100T20 200T20 300T20 400T20 500T20 600T20 700T20 800T20 900T20 1000"
+      />
+    </svg>
+    <main id="main">
+      <div class="studio-palette" aria-label="Colour palette"><a class="theme-command-link" href="./ThemeCommand/">New: Command Cinema ?</a>
+        <span><a href="./">? All themes</a> ? THE COLOUR OF CRAFT</span
+        ><button data-palette="forest" aria-pressed="true">
+          Forest & copper</button
+        ><button data-palette="indigo" aria-pressed="false">
+          Indigo & saffron</button
+        ><button data-palette="clay" aria-pressed="false">Clay & rose</button>
+      </div>
+      <section
+        id="cover"
+        class="document-section cover"
+        data-section="1"
+        aria-labelledby="cover-title"
+      >
+        <div class="cover-masthead">
+          <span>EverGreen</span>
+          <p>Textile operating system<br />Specification · Review copy R2</p>
+        </div>
+        <div class="cover-layout">
+          <div class="cover-copy">
+            <h1 id="cover-title">Keep the record where the work happens.</h1>
+            <p class="cover-intent">
+              A specification for inward material, production, stock, job work
+              and invoicing. Written for the person who has to justify the
+              purchase.
+            </p>
+            <dl class="cover-details">
+              <dt>Prepared for</dt>
+              <dd id="prepared-for">Your mill</dd>
+              <dt>Issue</dt>
+              <dd>1 November 2026 · concept, not a customer deployment</dd>
+              <dt>Contact Us</dt>
+              <dd>
+                Sales team<br /><a
+                  data-contact="salesEmail"
+                  href="mailto:sales@evergreen.com"
+                  >sales@evergreen.com</a
+                ><br /><span data-hours>09:00–18:00 IST</span>
+              </dd>
+            </dl>
+            <a class="primary-link" href="#record"
+              >Read the specification <span aria-hidden="true">→</span></a
+            >
+            <p class="reader-question">
+              Which reconciliation takes longest in your business?
+              <a href="#brief">Put that question in the brief.</a>
+            </p>
+          </div>
+          <figure class="package-figure technical-figure">
+            <svg
+              viewBox="0 0 470 390"
+              role="img"
+              aria-labelledby="package-title package-desc"
+            >
+              <title id="package-title">
+                An illustrative yarn package and its record fields
+              </title>
+              <desc id="package-desc">
+                A technical line drawing of a yarn package. Example fields show
+                count 40 Ne, package mass 1.8 kilograms and lot reference
+                EG-DEMO-001. These are illustrative values, not a measured
+                package.
+              </desc>
+              <defs>
+                <linearGradient id="yarn-volume">
+                  <stop stop-color="#806445" />
+                  <stop offset=".25" stop-color="#edcf96" />
+                  <stop offset=".52" stop-color="#fff0c9" />
+                  <stop offset=".8" stop-color="#ba8956" />
+                  <stop offset="1" stop-color="#624b37" />
+                </linearGradient>
+                <pattern
+                  id="yarn-wind"
+                  width="6"
+                  height="5"
+                  patternUnits="userSpaceOnUse"
+                >
+                  <path d="M0 1h6" stroke="#fff2cc" stroke-opacity=".45" />
+                </pattern>
+              </defs>
+              <path
+                class="yarn-solid"
+                d="M143 87L116 286c0 45 198 45 198 0L287 87Z"
+                fill="url(#yarn-volume)"
+              />
+              <path
+                d="M143 87L116 286c0 45 198 45 198 0L287 87Z"
+                fill="url(#yarn-wind)"
+              />
+              <g class="package-outline">
+                <ellipse cx="215" cy="87" rx="72" ry="25" />
+                <path
+                  d="M143 87 116 286c0 45 198 45 198 0L287 87M116 286c0-45 198-45 198 0M143 87c0 45 144 45 144 0"
+                />
+                <ellipse cx="215" cy="87" rx="16" ry="6" />
+                <path
+                  d="M136 139c0 42 158 42 158 0M130 183c0 43 170 43 170 0M124 228c0 44 182 44 182 0"
+                />
+              </g>
+              <g class="package-cutaway">
+                <path
+                  d="M205 75h20v225h-20ZM164 105l-20 175h61V105ZM225 105v175h61l-20-175Z"
+                />
+              </g>
+              <g class="dimension-lines">
+                <path d="M145 84 95 45H25M289 180h51l28-34h75M215 315v34h173" />
+                <text x="25" y="31">COUNT / 40 Ne</text>
+                <text x="330" y="130">MASS / 1.8 kg</text>
+                <text x="249" y="372">LOT / EG-DEMO-001</text>
+              </g>
+            </svg>
+            <div class="spool-view">
+              <canvas
+                id="hero-spool"
+                aria-label="Interactive three dimensional yarn package"
+              ></canvas
+              ><button id="spool-enable" type="button">
+                Explore yarn in 3D ?
+              </button>
+              <p id="spool-status" role="status">
+                Material study ? original procedural geometry
+              </p>
+            </div>
+            <figcaption>
+              <b>Fig. 1.</b> A package is not its record. Count, mass and lot
+              reference shown here are illustrative. Hover on a fine-pointer
+              device to inspect the drawn interior; it never auto-rotates.
+            </figcaption>
+          </figure>
+        </div>
+        <aside class="margin-note">
+          A supplier document.<br />Read it, question it,<br />print it.
+        </aside>
+      </section>
+
+      <section
+        id="record"
+        class="document-section record-section"
+        data-section="2"
+        aria-labelledby="record-title"
+      >
+        <div class="prose opening">
+          <h2 id="record-title">The record</h2>
+          <p>
+            Material changes form. The reference should not disappear with it.
+          </p>
+          <p>
+            A receipt can become a production input, a stock movement, a challan
+            and eventually an invoice. This sketch shows the questions that
+            belong at those handoffs. It does not imply that every legacy
+            register is already reconciled automatically.
+          </p>
+        </div>
+        <figure class="carding-figure technical-figure full-figure">
+          <svg
+            viewBox="0 0 900 300"
+            role="img"
+            aria-labelledby="card-title card-desc"
+          >
+            <title id="card-title">
+              Carding process: feed, licker-in, cylinder, flats and doffer
+            </title>
+            <desc id="card-desc">
+              Original simplified process drawing. Fibre enters at the feed and
+              licker-in, moves to the main cylinder under the flats, then passes
+              to the doffer and exits as sliver. Waste is extracted near the
+              licker-in and flats. This is not a machine-setting diagram.
+            </desc>
+            <g class="machine-lines">
+              <path d="M45 146h98v40H45ZM143 154h44M144 176h44" />
+              <circle cx="216" cy="170" r="29" />
+              <circle cx="424" cy="157" r="102" />
+              <circle cx="614" cy="174" r="57" />
+              <circle cx="716" cy="191" r="17" />
+              <path
+                d="M672 192h28m33 0h113M329 43h187M335 51h176M335 60h176M358 257v18h130v-18M196 205v48h45M331 72l-35 26M171 109l32 32M592 95l15 23M713 146v28M800 170v18"
+              />
+              <path
+                class="fibre-path"
+                d="M64 164h120c14-66 66-70 105-56 45-97 203-91 248 32 14-22 59-17 78-2 26 14 33 39 28 54h185"
+              />
+              <path class="waste-path" d="m202 210-10 61m162-198-53 29" />
+            </g>
+            <g class="figure-labels">
+              <text x="50" y="128">FEED</text>
+              <text x="151" y="94">LICKER-IN</text>
+              <text x="380" y="163">CYLINDER</text>
+              <text x="384" y="26">FLATS</text>
+              <text x="568" y="79">DOFFER</text>
+              <text x="752" y="155">SLIVER</text>
+              <text x="155" y="292">WASTE EXTRACTION</text>
+            </g>
+          </svg>
+          <figcaption>
+            <b>Fig. 2.</b> Carding, simplified: feed and licker-in, main
+            cylinder under the flats, then doffer and sliver delivery. Original
+            drawing informed by CottonWorks and Cotton Incorporated’s carding
+            guidance.<sup><a href="#source-1">1</a></sup> No dimensions, machine
+            settings or loss percentages are asserted.
+          </figcaption>
+        </figure>
+        <figure class="weave-study"><div><span class="studio-kicker">FROM FIBRE TO FABRIC</span><h3>A thousand threads.<br>One shared direction.</h3><p>Warp meets weft in a dimensional study of indigo, copper and cotton.</p></div><div class="loom-perspective" aria-hidden="true"><div class="loom-plane"><i class="warp"></i><i class="warp"></i><i class="warp"></i><i class="warp"></i><i class="warp"></i><i class="warp"></i><i class="warp"></i><i class="warp"></i><i class="warp"></i><i class="warp"></i><i class="warp"></i><i class="warp"></i><i class="warp"></i><i class="warp"></i><i class="warp"></i><i class="warp"></i><i class="warp"></i><i class="warp"></i><i class="warp"></i><i class="warp"></i><i class="warp"></i><i class="warp"></i><i class="weft"></i><i class="weft"></i><i class="weft"></i><i class="weft"></i><i class="weft"></i><i class="weft"></i><i class="weft"></i><i class="weft"></i><i class="weft"></i><i class="weft"></i><i class="weft"></i><i class="weft"></i><i class="weft"></i><i class="weft"></i><i class="weft"></i><i class="weft"></i><span class="shuttle"></span></div></div><figcaption>Original 2D / CSS 3D textile study. Illustrative, not machine telemetry.</figcaption></figure><div class="record-workbench full-figure">
+          <div class="flow-column">
+            <div
+              class="layer-controls"
+              role="tablist"
+              aria-label="Read the handoff as"
+            >
+              <button
+                role="tab"
+                id="layer-material"
+                aria-controls="flow-panel"
+                aria-selected="true"
+                data-layer="material"
+              >
+                Material</button
+              ><button
+                role="tab"
+                id="layer-data"
+                aria-controls="flow-panel"
+                aria-selected="false"
+                tabindex="-1"
+                data-layer="data"
+              >
+                Recorded</button
+              ><button
+                role="tab"
+                id="layer-value"
+                aria-controls="flow-panel"
+                aria-selected="false"
+                tabindex="-1"
+                data-layer="value"
+              >
+                Value
+              </button>
+            </div>
+            <div
+              id="flow-panel"
+              role="tabpanel"
+              aria-labelledby="layer-material"
+            >
+              <ol class="record-flow">
+                <li>
+                  <button class="record-node" data-node="receive">
+                    <span>Receive</span
+                    ><svg viewBox="0 0 80 55" aria-hidden="true">
+                      <path
+                        d="M8 45V14h56v31ZM8 14 25 5h47L64 14M64 45l8-9V5M13 25h46M13 32h46M28 16v27M48 16v27"
+                      /></svg
+                    ><small>Cotton enters stores</small>
+                  </button>
+                </li>
+                <li>
+                  <button class="record-node" data-node="make">
+                    <span>Make</span
+                    ><svg viewBox="0 0 80 55" aria-hidden="true">
+                      <path
+                        d="M6 44h65M14 43V14h45v29M21 14V6h31v8M23 34h29M25 25h6m9 0h6M64 43V19h9"
+                      /></svg
+                    ><small>Fibre becomes yarn</small>
+                  </button>
+                </li>
+                <li>
+                  <button class="record-node" data-node="hold">
+                    <span>Hold</span
+                    ><svg viewBox="0 0 80 55" aria-hidden="true">
+                      <ellipse cx="40" cy="11" rx="19" ry="7" />
+                      <path
+                        d="m21 11-6 32c0 12 50 12 50 0l-6-32M20 24c0 13 40 13 40 0M17 35c0 12 46 12 46 0"
+                      /></svg
+                    ><small>Stock awaits its next step</small>
+                  </button>
+                </li>
+                <li>
+                  <button class="record-node" data-node="process">
+                    <span>Process</span
+                    ><svg viewBox="0 0 80 55" aria-hidden="true">
+                      <path
+                        d="M8 17h59l-9-8M67 17l-9 8M70 40H13l9 8M13 40l9-8M8 25v8m62-8v8"
+                      /></svg
+                    ><small>A challan leaves the mill</small>
+                  </button>
+                </li>
+                <li>
+                  <button class="record-node" data-node="deliver">
+                    <span>Deliver</span
+                    ><svg viewBox="0 0 80 55" aria-hidden="true">
+                      <path d="M6 9h39v31H6ZM45 19h15l12 13v8H45M60 19v14h12" />
+                      <circle cx="20" cy="42" r="7" />
+                      <circle cx="61" cy="42" r="7" /></svg
+                    ><small>Goods are handed over</small>
+                  </button>
+                </li>
+                <li>
+                  <button class="record-node" data-node="account">
+                    <span>Account / XML</span
+                    ><svg viewBox="0 0 80 55" aria-hidden="true">
+                      <path
+                        d="M20 3h30l11 11v38H20ZM49 3v13h12M28 25h23M28 32h23M28 39h17"
+                      /></svg
+                    ><small>Invoice, payment and export</small>
+                  </button>
+                </li>
+              </ol>
+              <p class="figure-note">
+                Select a stage to inspect the physical handoff, its record, what
+                can go missing and the reference.
+              </p>
+            </div>
+          </div>
+          <aside class="fault-panel" aria-labelledby="fault-heading">
+            <h3 id="fault-heading">Remove one record.</h3>
+            <fieldset>
+              <legend>Choose the failure to inspect</legend>
+              <label
+                ><input type="radio" name="fault" value="gate" checked />Lot ID
+                lost at the gate</label
+              ><label
+                ><input type="radio" name="fault" value="jobwork" />Job-work
+                challan not reconciled</label
+              ><label
+                ><input type="radio" name="fault" value="invoice" />Invoice
+                against the wrong batch</label
+              ><label
+                ><input type="radio" name="fault" value="none" />No fault
+                highlighted</label
+              >
+            </fieldset>
+            <div id="fault-reading" aria-live="polite">
+              <p id="fault-consequence">
+                The opening quantity and supplier reference can no longer be
+                checked against the later invoice.
+              </p>
+              <dl class="voices">
+                <dt>The owner sees</dt>
+                <dd id="fault-owner">
+                  Stock that cannot be aged by the original lot with confidence.
+                </dd>
+                <dt>The accountant sees</dt>
+                <dd id="fault-accountant">
+                  A billed quantity that cannot be traced back to the receipt.
+                </dd>
+                <dt>The floor sees</dt>
+                <dd id="fault-floor">
+                  Material without its original identity at the next shift.
+                </dd>
+              </dl>
+              <small
+                >Illustrative failure analysis. No customer loss or percentage
+                is claimed.</small
+              >
+            </div>
+            <noscript
+              ><p>
+                A missing challan can conceal a partial return. A wrong batch
+                reference can disconnect an invoice from its dispatch. Ask for
+                these two cases to be demonstrated too.
+              </p></noscript
+            >
+          </aside>
+        </div>
+
+        <div class="record-narrative" id="record-narrative">
+          <div class="narrative-sticky">
+            <div class="narrative-intro">
+              <h3>Follow a reference through the mill.</h3>
+              <p>
+                The documents below are illustrative and remain selectable text.
+                Native scroll advances the desktop sequence. Use the step
+                buttons on a phone or with motion paused.
+              </p>
+              <a href="#mill-hall" class="quiet-link">Skip the sequence</a>
+            </div>
+            <div class="narrative-composition">
+              <div class="ticket-track" aria-hidden="true">
+                <span id="ticket-pulse"></span>
+              </div>
+              <article class="record-ticket">
+                <span>ILLUSTRATIVE RECORD</span>
+                <h4 id="ticket-title">Receipt R-01</h4>
+                <ul id="ticket-fields">
+                  <li>Lot: EG-DEMO-001</li>
+                  <li>Supplier reference: example only</li>
+                  <li>Opening quantity: to be measured</li>
+                </ul>
+                <div class="ticket-stamp" id="ticket-stamp">
+                  Reference retained
+                </div>
+              </article>
+              <div class="narrative-reading">
+                <p id="narrative-index">1 / 7</p>
+                <h4 id="narrative-title">A lot arrives.</h4>
+                <p id="narrative-body">
+                  The receipt is the first place the physical quantity and the
+                  supplier reference belong together.
+                </p>
+                <div class="step-controls">
+                  <button type="button" id="step-prev" disabled>Previous</button
+                  ><button type="button" id="step-next">Next step</button>
+                </div>
+              </div>
+            </div>
+            <ol class="narrative-index" aria-label="Record narrative steps">
+              <li>
+                <button data-step="0" aria-current="step">Receipt</button>
+              </li>
+              <li><button data-step="1">Production</button></li>
+              <li><button data-step="2">Stock</button></li>
+              <li><button data-step="3">Challan</button></li>
+              <li><button data-step="4">Dispatch</button></li>
+              <li><button data-step="5">Invoice</button></li>
+              <li><button data-step="6">XML</button></li>
+            </ol>
+            <noscript
+              ><ol>
+                <li>Keep the receipt with the input record.</li>
+                <li>Record consumption, output and waste.</li>
+                <li>Give stock a location.</li>
+                <li>Compare challan and partial returns.</li>
+                <li>Retain the dispatch reference.</li>
+                <li>Check the invoice’s source.</li>
+                <li>Review the exported XML in a test company.</li>
+              </ol></noscript
+            >
+          </div>
+        </div>
+
+        <figure class="hall-figure full-figure" id="mill-hall">
+          <div class="hall-caption-top">
+            <h3>A hall, drawn as a place.</h3>
+            <p>
+              Sixty illustrative bobbins. No telemetry, availability or
+              efficiency data.
+            </p>
+          </div>
+          <div class="hall-stage">
+            <svg
+              id="hall-fallback"
+              viewBox="0 0 1100 450"
+              role="img"
+              aria-labelledby="hall-title hall-description"
+            >
+              <title id="hall-title">Illustrative spinning hall layout</title>
+              <desc id="hall-description">
+                Four rows of fifteen bobbins. Use the record selector below to
+                inspect any example position without a pointer or WebGL.
+              </desc>
+              <defs>
+                <g id="bobbin-symbol">
+                  <ellipse cx="0" cy="-33" rx="7" ry="3" />
+                  <path
+                    d="m-7-33-4 32c0 7 22 7 22 0l-4-32M-10-8c0 6 20 6 20 0M-9-18c0 6 18 6 18 0M0-34v-9"
+                  />
+                </g>
+              </defs>
+              <path class="hall-floor" d="M80 315 510 72l510 215-417 140Z" />
+              <g id="hall-positions">
+                <use href="#bobbin-symbol" transform="translate(115 301)" />
+                <use href="#bobbin-symbol" transform="translate(144 286)" />
+                <use href="#bobbin-symbol" transform="translate(173 271)" />
+                <use href="#bobbin-symbol" transform="translate(202 256)" />
+                <use href="#bobbin-symbol" transform="translate(231 241)" />
+                <use href="#bobbin-symbol" transform="translate(260 226)" />
+                <use href="#bobbin-symbol" transform="translate(289 211)" />
+                <use href="#bobbin-symbol" transform="translate(318 196)" />
+                <use href="#bobbin-symbol" transform="translate(347 181)" />
+                <use href="#bobbin-symbol" transform="translate(376 166)" />
+                <use href="#bobbin-symbol" transform="translate(405 151)" />
+                <use href="#bobbin-symbol" transform="translate(434 136)" />
+                <use href="#bobbin-symbol" transform="translate(463 121)" />
+                <use href="#bobbin-symbol" transform="translate(492 106)" />
+                <use href="#bobbin-symbol" transform="translate(521 91)" />
+                <use href="#bobbin-symbol" transform="translate(230 333)" />
+                <use href="#bobbin-symbol" transform="translate(259 318)" />
+                <use href="#bobbin-symbol" transform="translate(288 303)" />
+                <use href="#bobbin-symbol" transform="translate(317 288)" />
+                <use href="#bobbin-symbol" transform="translate(346 273)" />
+                <use href="#bobbin-symbol" transform="translate(375 258)" />
+                <use href="#bobbin-symbol" transform="translate(404 243)" />
+                <use href="#bobbin-symbol" transform="translate(433 228)" />
+                <use href="#bobbin-symbol" transform="translate(462 213)" />
+                <use href="#bobbin-symbol" transform="translate(491 198)" />
+                <use href="#bobbin-symbol" transform="translate(520 183)" />
+                <use href="#bobbin-symbol" transform="translate(549 168)" />
+                <use href="#bobbin-symbol" transform="translate(578 153)" />
+                <use href="#bobbin-symbol" transform="translate(607 138)" />
+                <use href="#bobbin-symbol" transform="translate(636 123)" />
+                <use href="#bobbin-symbol" transform="translate(345 365)" />
+                <use href="#bobbin-symbol" transform="translate(374 350)" />
+                <use href="#bobbin-symbol" transform="translate(403 335)" />
+                <use href="#bobbin-symbol" transform="translate(432 320)" />
+                <use href="#bobbin-symbol" transform="translate(461 305)" />
+                <use href="#bobbin-symbol" transform="translate(490 290)" />
+                <use href="#bobbin-symbol" transform="translate(519 275)" />
+                <use href="#bobbin-symbol" transform="translate(548 260)" />
+                <use href="#bobbin-symbol" transform="translate(577 245)" />
+                <use href="#bobbin-symbol" transform="translate(606 230)" />
+                <use href="#bobbin-symbol" transform="translate(635 215)" />
+                <use href="#bobbin-symbol" transform="translate(664 200)" />
+                <use href="#bobbin-symbol" transform="translate(693 185)" />
+                <use href="#bobbin-symbol" transform="translate(722 170)" />
+                <use href="#bobbin-symbol" transform="translate(751 155)" />
+                <use href="#bobbin-symbol" transform="translate(460 397)" />
+                <use href="#bobbin-symbol" transform="translate(489 382)" />
+                <use href="#bobbin-symbol" transform="translate(518 367)" />
+                <use href="#bobbin-symbol" transform="translate(547 352)" />
+                <use href="#bobbin-symbol" transform="translate(576 337)" />
+                <use href="#bobbin-symbol" transform="translate(605 322)" />
+                <use href="#bobbin-symbol" transform="translate(634 307)" />
+                <use href="#bobbin-symbol" transform="translate(663 292)" />
+                <use href="#bobbin-symbol" transform="translate(692 277)" />
+                <use href="#bobbin-symbol" transform="translate(721 262)" />
+                <use href="#bobbin-symbol" transform="translate(750 247)" />
+                <use href="#bobbin-symbol" transform="translate(779 232)" />
+                <use href="#bobbin-symbol" transform="translate(808 217)" />
+                <use href="#bobbin-symbol" transform="translate(837 202)" />
+                <use href="#bobbin-symbol" transform="translate(866 187)" />
+              </g></svg
+            ><canvas id="hall-canvas" aria-hidden="true"></canvas>
+          </div>
+          <div class="hall-controls">
+            <button type="button" id="hall-enable">Load the 3D study</button
+            ><label for="hall-select"
+              >Inspect example position<select id="hall-select">
+                <option value="0">H01</option>
+              </select></label
+            ><button type="button" id="hall-inspect">
+              Read its example record</button
+            ><span id="hall-status" role="status"
+              >Static drawing. The 3D module has not been loaded.</span
+            >
+          </div>
+          <figcaption>
+            <b>Fig. 3.</b> A procedural study of a spinning hall, not a digital
+            twin. The optional 3D rendering uses local geometry with a static
+            alternative. Device reduced-motion and low-power preferences keep
+            the static view.
+          </figcaption>
+        </figure>
+        <aside class="margin-note">
+          The question is not<br />how much data exists.<br />It is which
+          record<br />answers the dispute.
+        </aside>
+      </section>
+
+      <section
+        id="spec"
+        class="document-section"
+        data-section="3"
+        aria-labelledby="spec-title"
+      >
+        <div class="prose">
+          <h2 id="spec-title">The spec</h2>
+          <p>
+            Tally and a spreadsheet may already answer part of the job. The
+            question is which physical handoff still needs a record. The table
+            states the software’s scope without pretending that every
+            integration has been commissioned.
+          </p>
+        </div>
+        <div class="spec-sheet full-figure" id="spec-sheet">
+          <div
+            class="table-scroll"
+            tabindex="0"
+            role="region"
+            aria-label="Software specification table"
+          >
+            <table>
+              <caption>
+                Software specification / inputs, outputs and present limits
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Ref.</th>
+                  <th scope="col">Capability</th>
+                  <th scope="col">Input</th>
+                  <th scope="col">Output</th>
+                  <th scope="col">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>1.1</td>
+                  <th scope="row">Inward entry</th>
+                  <td>Supplier, date, quantity and receipt details</td>
+                  <td>Saved inward and stock records</td>
+                  <td>Implemented</td>
+                </tr>
+                <tr>
+                  <td>1.2</td>
+                  <th scope="row">Production</th>
+                  <td>Input batch, consumption, output and waste</td>
+                  <td>Production record for reconciliation</td>
+                  <td>Implemented</td>
+                </tr>
+                <tr>
+                  <td>1.3</td>
+                  <th scope="row">Job work</th>
+                  <td>Party, issue and return quantities</td>
+                  <td>Challan, return and outstanding comparison</td>
+                  <td>Implemented</td>
+                </tr>
+                <tr>
+                  <td>1.4</td>
+                  <th scope="row">Invoices & Tally export</th>
+                  <td>Saved customer, catalogue items, issuer and payments</td>
+                  <td>Invoice, payment allocation and sales/receipt XML</td>
+                  <td>Implemented; target-company import unverified</td>
+                </tr>
+                <tr class="planned">
+                  <td>2.1</td>
+                  <th scope="row">Hardware & PLC connections</th>
+                  <td>Device protocol and field commissioning</td>
+                  <td>Proposed automated capture</td>
+                  <td>Unverified by device; do not assume support</td>
+                </tr>
+                <tr class="planned">
+                  <td>2.2</td>
+                  <th scope="row">Statutory registration</th>
+                  <td>Authorized provider, credentials and tested schema</td>
+                  <td>Proposed e-Way Bill / IRP connection</td>
+                  <td>Not connected in this build</td>
+                </tr>
+                <tr class="evidence-row">
+                  <td>3.1</td>
+                  <th scope="row">Named-mill savings</th>
+                  <td>Measured baseline and customer approval</td>
+                  <td>A published case study</td>
+                  <td>Not available</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <p class="prose small-note">
+          The software has separate operational and commerce paths. Include
+          their reconciliation in the demonstration; do not infer a complete
+          chain merely because each module exists.
+        </p>
+        <div class="document-silence">
+          <blockquote>“Which record would settle this?”</blockquote>
+          <p>
+            A question for the next shift.<br />EverGreen specification, 1
+            November 2026.
+          </p>
+        </div>
+        <aside class="margin-note">
+          Ask for a test lot.<br />Follow it past the<br />uncomfortable
+          handoff.
+        </aside>
+      </section>
+
+      <section
+        id="arithmetic"
+        class="document-section"
+        data-section="4"
+        aria-labelledby="arithmetic-title"
+      >
+        <div class="prose">
+          <h2 id="arithmetic-title">The arithmetic</h2>
+          <p>
+            This is not a saving attributed to EverGreen. It is a worked example
+            you can change, and then disagree with.
+          </p>
+        </div>
+        <div class="arithmetic-layout full-figure">
+          <form id="arithmetic-form" class="printed-form">
+            <label for="invoice-count">Invoices per month</label
+            ><input
+              id="invoice-count"
+              type="number"
+              min="0"
+              max="100000"
+              step="1"
+              value="40"
+              required
+            /><label for="average-value">Average invoice value (₹)</label
+            ><input
+              id="average-value"
+              type="number"
+              min="0"
+              max="100000000"
+              step="100"
+              value="50000"
+              required
+            /><label for="days-reduced">Billing lag reduced (days)</label
+            ><input
+              id="days-reduced"
+              type="number"
+              min="0"
+              max="365"
+              step="0.5"
+              value="3"
+              required
+            /><label for="cost-of-capital">Annual cost of capital (%)</label
+            ><input
+              id="cost-of-capital"
+              type="number"
+              min="0"
+              max="100"
+              step="0.5"
+              value="12"
+              required
+            />
+            <p id="arithmetic-error" class="field-error" role="status"></p>
+          </form>
+          <div class="worked-example" aria-label="Worked arithmetic example">
+            <p>Illustrative, using the inputs at left</p>
+            <ol id="worked-lines">
+              <li>40 invoices/month</li>
+              <li>× ₹50,000 average</li>
+              <li>× 3 days reduced ÷ 30</li>
+              <li class="sum">= ₹2,00,000 working capital released</li>
+              <li>× 12% annual cost of capital</li>
+              <li class="sum">= ₹24,000/year carrying-cost equivalent</li>
+            </ol>
+          </div>
+        </div>
+        <div class="prose">
+          <h3>How this could be wrong</h3>
+          <p>
+            The model assumes a shorter billing delay produces earlier
+            collection. If the customer simply pays later, the capital is not
+            released. Delivery delays, disputed quantities, credit terms,
+            seasonality and collection risk are excluded. A faster invoice does
+            not by itself create cash.
+          </p>
+          <dl class="footnote-apparatus">
+            <dt>Method</dt>
+            <dd>
+              Monthly invoices × average invoice value × days reduced ÷ 30.
+              Carrying-cost equivalent is that capital × annual rate ÷ 100.
+            </dd>
+            <dt>Source</dt>
+            <dd>
+              User-supplied inputs and arithmetic, not an industry benchmark.
+            </dd>
+            <dt>Sensitivity</dt>
+            <dd id="sensitivity">
+              At 1.5 / 3 / 4.5 days: ₹1,00,000 / ₹2,00,000 / ₹3,00,000 capital.
+            </dd>
+            <dt>Excluded</dt>
+            <dd>
+              Extra revenue, proven savings, delivery risk, tax effects and any
+              guarantee of payment.
+            </dd>
+          </dl>
+        </div>
+        <aside class="margin-note">
+          Bring a number<br />you can defend.<br />The example cannot.
+        </aside>
+      </section>
+
+      <section
+        id="limits"
+        class="document-section"
+        data-section="5"
+        aria-labelledby="limits-title"
+      >
+        <div class="prose">
+          <h2 id="limits-title">The limits</h2>
+          <p>
+            The purchase decision includes the things that can go wrong. Ask
+            about them before signing.
+          </p>
+        </div>
+        <div
+          class="table-scroll full-figure"
+          tabindex="0"
+          role="region"
+          aria-label="Failure modes and exit planning"
+        >
+          <table class="limits-table">
+            <thead>
+              <tr>
+                <th scope="col">What happens</th>
+                <th scope="col">The limit</th>
+                <th scope="col">What to arrange</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">The internet stops</th>
+                <td>
+                  Local access still needs a valid signed activation and an
+                  unexpired offline deadline. Online services and renewal can
+                  become unavailable.
+                </td>
+                <td>
+                  Test the chosen LAN deployment with the internet disconnected.
+                  Know the signed deadline.
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">The licence is not renewed</th>
+                <td>
+                  Access is blocked when the signed subscription or offline
+                  allowance expires. A company subscription setting alone does
+                  not issue an activation.
+                </td>
+                <td>
+                  Agree renewal, recovery and data-access procedures before
+                  purchase.
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">The vendor disappears</th>
+                <td>
+                  Hosting, signing services, fixes and updates can stop. Source
+                  code alone does not provide a database, keys or a working
+                  deployment.
+                </td>
+                <td>
+                  Agree possession of backups, export formats, keys and exit
+                  terms. Test the actual export and recovery path.
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">The accountant leaves</th>
+                <td>
+                  Ledger names, mappings and reconciliation knowledge do not
+                  transfer automatically.
+                </td>
+                <td>
+                  Keep a written chart-of-accounts mapping and train a second
+                  person.
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">A statutory rule changes</th>
+                <td>
+                  The application is not a compliance guarantee. An unconfigured
+                  statutory connector does not file or register documents.
+                </td>
+                <td>
+                  Confirm current requirements with the responsible adviser and
+                  authority before using a workflow.
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">Data is corrupted or the host is lost</th>
+                <td>
+                  Recovery depends on backups, protected keys and tested
+                  restores. Database-at-rest encryption is a deployment
+                  responsibility, not a badge on this page.
+                </td>
+                <td>
+                  Choose a backup schedule, protected storage and a restore
+                  drill. Keep recovery material under owner control.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="prose">
+          <h3>How the Tally exporter was tested</h3>
+          <p>
+            Automated tests cover XML generation, ledger signs, date filters,
+            voids and receipt reversals. There is no configured TallyPrime
+            company in this workspace against which an import has been verified.
+            Ask for a test using your own ledger names and voucher requirements.
+          </p>
+          <p class="missing-evidence">
+            <strong>What is not here.</strong> There is no named customer case
+            study with a measured baseline and written customer approval. We
+            will not replace missing evidence with an illustrative testimonial.
+          </p>
+          <details>
+            <summary>Sources and technical references</summary>
+            <ol class="bibliography">
+              <li id="source-1">
+                <a
+                  href="https://cottonworks.com/learning-hub/yarn-manufacturing/fiber-preparation-for-spinning/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >CottonWorks: fibre preparation for spinning.</a
+                >
+                Process context, not an EverGreen performance claim.
+              </li>
+              <li>
+                <a
+                  href="https://www.cottoninc.com/wp-content/uploads/2017/12/TRI-1008-Quality-Carding.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >Cotton Incorporated: Quality Carding.</a
+                >
+                Reference for cylinder, flats, licker-in and doffer
+                relationships.
+              </li>
+              <li>
+                <a
+                  href="https://www.w3.org/WAI/WCAG22/Techniques/css/C39"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >W3C: reduced-motion preference.</a
+                >
+                This page remains readable with motion disabled.
+              </li>
+              <li>
+                Implementation: the application’s Tally export service and
+                regression tests. No external Tally import is represented as
+                verified.
+              </li>
+            </ol>
+          </details>
+        </div>
+        <aside class="margin-note">
+          A test restore is<br />more useful than<br />a backup promise.
+        </aside>
+      </section>
+
+      <section
+        id="brief"
+        class="document-section"
+        data-section="6"
+        aria-labelledby="brief-title"
+      >
+        <div class="prose">
+          <h2 id="brief-title">The brief</h2>
+          <p>
+            Write down the handoff you want demonstrated. The draft belongs to
+            you.
+          </p>
+        </div>
+        <div class="brief-layout full-figure">
+          <form id="brief-form" class="printed-form">
+            <label for="brief-mill">Mill</label
+            ><input
+              id="brief-mill"
+              type="text"
+              maxlength="120"
+              autocomplete="organization"
+              placeholder="Your business name"
+            /><label for="brief-role">Your role</label
+            ><select id="brief-role">
+              <option>Owner</option>
+              <option>Accountant</option>
+              <option>Operations</option>
+              <option>Other</option></select
+            ><label for="brief-goal">What needs to make sense</label
+            ><textarea
+              id="brief-goal"
+              rows="5"
+              maxlength="1500"
+              placeholder="Describe the reconciliation or decision you want to see. Keep personal data and credentials out."
+            ></textarea>
+            <details id="brief-context">
+              <summary>Add more context</summary>
+              <label for="brief-extra">Other records or constraints</label
+              ><textarea id="brief-extra" rows="3" maxlength="1000"></textarea>
+            </details>
+          </form>
+          <div class="brief-document">
+            <span class="small-caps">Draft for discussion</span>
+            <pre id="brief-preview">
+EverGreen specification brief
+Mill: Not specified
+Perspective: Owner
+What needs to make sense: Not specified
+
+Local draft. Nothing has been sent.</pre
+            >
+            <div class="document-actions">
+              <button type="button" id="copy-brief">Copy draft</button
+              ><button type="button" id="download-brief">Download .txt</button>
+            </div>
+            <p id="brief-status" role="status">
+              Nothing has been sent. This draft is yours.
+            </p>
+          </div>
+        </div>
+        <div class="contact-block full-figure">
+          <h3>Contact Us</h3>
+          <p>
+            Working hours: <span data-hours>09:00–18:00 IST</span>. Working days
+            and response times are not specified.
+          </p>
+          <dl>
+            <dt>Sales team</dt>
+            <dd>
+              <a data-contact="salesEmail" href="mailto:sales@evergreen.com"
+                >sales@evergreen.com</a
+              >
+            </dd>
+            <dt>Marketing team</dt>
+            <dd>
+              <a
+                data-contact="marketingEmail"
+                href="mailto:marketing@evergreen.com"
+                >marketing@evergreen.com</a
+              >
+            </dd>
+            <dt>Licensing team</dt>
+            <dd>
+              <a
+                data-contact="licensingEmail"
+                href="mailto:licensing@evergreen.com"
+                >licensing@evergreen.com</a
+              >
+            </dd>
+            <dt>Support team</dt>
+            <dd>
+              <a data-contact="supportEmail" href="mailto:support@evergreen.com"
+                >support@evergreen.com</a
+              >
+            </dd>
+          </dl>
+          <p class="small-note" id="contact-source">
+            Published defaults. These details can be edited by the owner in
+            Marketing settings.
+          </p>
+        </div>
+        <aside class="margin-note">
+          Do not send a key.<br />Send the question<br />the record must answer.
+        </aside>
+      </section>
+    </main>
+    <footer class="colophon">
+      <p>
+        EverGreen · Textile operating system<br />Specification review copy R2 ·
+        2026
+      </p>
+      <p>
+        Original technical figures; illustrative records.<br />Local drafts. No
+        analytics or model calls.
+      </p>
+      <div>
+        <a href="./OVERVIEW.md">Implementation notes</a
+        ><a href="/">Current marketing homepage</a
+        ><a href="#cover">Back to the cover</a>
+      </div>
+    </footer>
+    <dialog id="record-dialog" aria-labelledby="dialog-title">
+      <form method="dialog">
+        <button class="dialog-close" aria-label="Close record details">
+          Close
+        </button>
+      </form>
+      <h2 id="dialog-title">The record</h2>
+      <dl id="dialog-fields"></dl>
+      <div id="voucher-detail" hidden>
+        <h3>The application’s voucher structure</h3>
+        <p>
+          Illustrative values in the exporter’s sales-voucher structure. This
+          excerpt is not a complete import envelope; the complete download comes
+          from the application.
+        </p>
+        <ol id="voucher-lines" class="voucher-lines"></ol>
+        <div class="document-actions">
+          <button id="copy-xml" type="button">Copy excerpt</button
+          ><button id="download-xml" type="button">Download XML</button>
+        </div>
+        <p id="xml-status" role="status"></p>
+      </div>
+    </dialog>
+  </body>
+</html>

@@ -13,6 +13,7 @@ import { useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNotifications } from '../context/NotificationsContext';
 import api from '../utils/api';
+import { hasProductionOn, lowStockThreshold, overdueInvoices, type InvoiceForAlert } from '../utils/alerts';
 
 const SYNC_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 const PRODUCTION_ALERT_HOUR = 10;        // don't alert before 10am
@@ -41,7 +42,7 @@ export function useNotificationSync(settings: any) {
 
     useEffect(() => {
         if (!yarnStock || typeof yarnStock !== 'object' || !settings) return;
-        const threshold: number = Number(settings.lowStockThreshold) || 100;
+        const threshold = lowStockThreshold(settings);
 
         Object.entries(yarnStock).forEach(([count, qty]) => {
             if (typeof qty !== 'number') return;
@@ -63,43 +64,35 @@ export function useNotificationSync(settings: any) {
     const { data: invoices, refetch: refetchInvoices } = useQuery({
         queryKey: ['notif-invoices'],
         queryFn: async () => {
-            const res = await api.get('/billing/invoices');
-            return Array.isArray(res.data) ? res.data : (res.data?.data || []);
+            // Live invoicing is /commerce/invoices; the retired billing list used other field names.
+            const res = await api.get('/commerce/invoices');
+            return (Array.isArray(res.data) ? res.data : []) as InvoiceForAlert[];
         },
         staleTime: SYNC_INTERVAL_MS,
     });
 
     useEffect(() => {
         if (!invoices || !Array.isArray(invoices)) return;
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        invoices.forEach((inv: any) => {
-            if (!inv.dueDate || (inv.paidAmount ?? 0) >= (inv.totalAmount ?? 0)) return;
-            const due = new Date(inv.dueDate);
-            due.setHours(0, 0, 0, 0);
-            if (due < today) {
-                const key = `overdue-invoice-${inv.id}`;
-                if (!alreadyFired.current.has(key)) {
-                    alreadyFired.current.add(key);
-                    const outstanding = (inv.totalAmount ?? 0) - (inv.paidAmount ?? 0);
-                    addNotification({
-                        title: `Overdue Invoice: ${inv.invoiceNumber || inv.id}`,
-                        message: `₹${Number(outstanding).toLocaleString('en-IN')} outstanding. Due ${new Date(inv.dueDate).toLocaleDateString('en-IN')}.`,
-                        type: 'error',
-                        dedupeKey: key,
-                        link: 'business',
-                    });
-                }
-            }
-        });
+        for (const { invoice, outstanding } of overdueInvoices(invoices)) {
+            const key = `overdue-invoice-${invoice.id}`;
+            if (alreadyFired.current.has(key)) continue;
+            alreadyFired.current.add(key);
+            addNotification({
+                title: `Overdue Invoice: ${invoice.invoiceNo || invoice.id}`,
+                message: `₹${outstanding.toLocaleString('en-IN')} outstanding. Due ${new Date(invoice.dueDate!).toLocaleDateString('en-IN')}.`,
+                type: 'error',
+                dedupeKey: key,
+                link: 'business',
+            });
+        }
     }, [invoices, addNotification]);
 
     // ── 3. No Production Today (only after 10am IST) ──────────────────────────
     const { data: productionHistory, refetch: refetchProduction } = useQuery({
         queryKey: ['notif-production'],
         queryFn: async () => {
-            const res = await api.get('/production');
+            const today = new Date().toLocaleDateString('en-CA');
+            const res = await api.get('/production', { params: { from: today, to: today } });
             return Array.isArray(res.data) ? res.data : (res.data?.data || []);
         },
         staleTime: SYNC_INTERVAL_MS,
@@ -113,9 +106,7 @@ export function useNotificationSync(settings: any) {
 
         const todayStr = now.toLocaleDateString('en-CA'); // YYYY-MM-DD in local time
         const key = `no-production-${todayStr}`;
-        const hasToday = productionHistory.some(
-            (p: any) => p.date?.startsWith(todayStr)
-        );
+        const hasToday = hasProductionOn(productionHistory, todayStr);
         if (!hasToday && !alreadyFired.current.has(key)) {
             alreadyFired.current.add(key);
             addNotification({

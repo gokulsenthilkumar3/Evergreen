@@ -11,5 +11,10 @@
     "skipLibCheck": true,
     "moduleResolution": "Node"
   },
-  "include": ["index.ts"]
+  "include": [
+    "index.ts",
+    "licensing.ts",
+    "licensing-online.ts",
+    "ai-server.ts"
+  ]
 }

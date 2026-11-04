@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage } from "../../i18n";
 import React from 'react';
 import { Box, Typography, Button, Paper, Fade, Stack } from '@mui/material';
 import {
@@ -25,6 +26,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
   onAction,
   icon,
 }) => {
+  useUiLanguage();
   const config = {
     empty: {
       icon: <InboxIcon sx={{ fontSize: 80, color: 'text.disabled', mb: 2, opacity: 0.6 }} />,

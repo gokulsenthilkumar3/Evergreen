@@ -1,10 +1,12 @@
+import { uiText, useUiLanguage } from "../i18n";
 import React, { Suspense, useMemo, useRef } from 'react';
 import { Box, useMediaQuery, useTheme } from '@mui/material';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Float, OrbitControls, Environment } from '@react-three/drei';
+import { Float, OrbitControls, Environment, Lightformer } from '@react-three/drei';
 import * as THREE from 'three';
 
 const YarnCore = () => {
+  useUiLanguage();
   const core = useRef<THREE.Group>(null);
   const accent = useRef<THREE.Mesh>(null);
   const theme = useTheme();
@@ -48,6 +50,7 @@ const YarnCore = () => {
 };
 
 const DashboardScene: React.FC = () => {
+  useUiLanguage();
   const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
   const theme = useTheme();
 
@@ -83,7 +86,11 @@ const DashboardScene: React.FC = () => {
             <YarnCore />
           </Float>
           <OrbitControls enablePan={false} enableZoom={false} enableRotate={!prefersReducedMotion} autoRotate={!prefersReducedMotion} autoRotateSpeed={0.6} />
-          <Environment preset={theme.palette.mode === 'dark' ? 'night' : 'studio'} />
+          {/* Lit by local light panels: a preset would download an HDR file and fail offline. */}
+          <Environment resolution={64}>
+              <Lightformer intensity={theme.palette.mode === 'dark' ? 0.8 : 1.6} position={[0, 4, 3]} scale={[8, 2, 1]} />
+              <Lightformer intensity={0.7} position={[-4, 1, -3]} rotation-y={Math.PI / 2} scale={[6, 2, 1]} color={theme.palette.primary.light} />
+          </Environment>
         </Suspense>
       </Canvas>
     </Box>

@@ -1,19 +1,85 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+  Optional,
+} from '@nestjs/common';
 import { createHash, timingSafeEqual } from 'node:crypto';
 import type { Request } from 'express';
+import { validateProviderSession } from './provider-session';
+import { PrismaService } from '../services/prisma.service';
 
 @Injectable()
 export class ProviderAccessGuard implements CanActivate {
-  canActivate(context: ExecutionContext): boolean {
-    const req = context.switchToHttp().getRequest<Request & { providerActor?: string }>();
+  constructor(@Optional() private readonly prisma?: PrismaService) {}
+
+  canActivate(context: ExecutionContext): boolean | Promise<boolean> {
+    const req = context
+      .switchToHttp()
+      .getRequest<Request & { providerActor?: string }>();
+    if (req.method === 'POST' && req.path === '/licensing/lease') return true; // Device-proof authentication is enforced by the lease endpoint.
     // Allow public health and root status probes
-    if (req.method === 'GET' && ['/', '/health'].includes(req.path)) {
+    if (
+      req.method === 'GET' &&
+      ['/', '/health', '/license/status', '/public/marketing-settings'].includes(req.path)
+    ) {
       return true;
     }
 
     const expected = process.env.ADMIN_API_KEY?.trim();
-    if (!expected || expected.length < 32 || /^(evergreen_master_admin_dev_token|provider_master_key|change_in_production|REPLACE_WITH)/i.test(expected)) {
-      throw new UnauthorizedException('ADMIN_API_KEY must be configured before provider access is enabled');
+    if (
+      !expected ||
+      expected.length < 32 ||
+      /^(evergreen_master_admin_dev_token|provider_master_key|eg_provider_operator_key_32bytes_secret_token|change_in_production|REPLACE_WITH)/i.test(
+        expected,
+      )
+    ) {
+      throw new UnauthorizedException(
+        'ADMIN_API_KEY must be configured before provider access is enabled',
+      );
+    }
+
+    // A company key can authenticate only that company's metrics endpoint.
+    // It never grants provider-console, licence-management or deployment access.
+    const companyKey = req.headers['x-company-key'];
+    if (companyKey !== undefined) {
+      const match = /^\/companies\/([a-zA-Z0-9_-]{1,128})\/(?:v1\/)?sync\/?$/.exec(req.path);
+      if (req.method !== 'POST' || !match || typeof companyKey !== 'string' || !this.prisma) {
+        throw new UnauthorizedException('Company sync credentials are not valid for this endpoint');
+      }
+      return this.prisma.company.findUnique({ where: { id: match[1] }, select: { apiKey: true } }).then(company => {
+        const digest = (value: string) => createHash('sha256').update(value).digest();
+        if (!company?.apiKey || !timingSafeEqual(digest(companyKey), digest(company.apiKey))) {
+          throw new UnauthorizedException('Invalid company sync credentials');
+        }
+        req.providerActor = `Company:${match[1]}`;
+        return true;
+      });
+    }
+
+    if (
+      !req.headers.authorization &&
+      !req.headers['x-provider-key'] &&
+      validateProviderSession(req.headers.cookie, expected)
+    ) {
+      const origin = req.headers.origin;
+      const allowed = (
+        process.env.ADMIN_CORS_ORIGIN ||
+        'http://localhost:5173,http://localhost:5174'
+      )
+        .split(',')
+        .map((value) => value.trim());
+      if (
+        (origin && !allowed.includes(origin)) ||
+        (!['GET', 'HEAD'].includes(req.method) && !origin)
+      )
+        throw new UnauthorizedException(
+          'Provider session origin is not authorized',
+        );
+      req.providerActor =
+        process.env.ADMIN_API_ACTOR?.trim() || 'Provider operator';
+      return true;
     }
 
     // Extract credential from Authorization Bearer or X-Provider-Key header
@@ -26,7 +92,9 @@ export class ProviderAccessGuard implements CanActivate {
     }
 
     if (!supplied) {
-      throw new UnauthorizedException('Provider authentication credentials required');
+      throw new UnauthorizedException(
+        'Provider authentication credentials required',
+      );
     }
 
     // Constant-time hash comparison to prevent timing attacks
@@ -35,12 +103,15 @@ export class ProviderAccessGuard implements CanActivate {
     const expectedDigest = digest(expected);
 
     if (!timingSafeEqual(suppliedDigest, expectedDigest)) {
-      throw new UnauthorizedException('Invalid provider authentication credentials');
+      throw new UnauthorizedException(
+        'Invalid provider authentication credentials',
+      );
     }
 
     // Actor identity is server-owned. A caller-controlled header is not an
     // auditable identity and must never overwrite the authenticated principal.
-    req.providerActor = process.env.ADMIN_API_ACTOR?.trim() || 'Provider operator';
+    req.providerActor =
+      process.env.ADMIN_API_ACTOR?.trim() || 'Provider operator';
     return true;
   }
 }

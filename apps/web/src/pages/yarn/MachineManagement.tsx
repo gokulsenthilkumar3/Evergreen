@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage, uiLocale, uiTemplate, uiScopedTemplate, uiDateLocale } from "../../i18n";
 import React, { useState } from 'react';
 import {
   Add as AddIcon,
@@ -82,6 +83,7 @@ const initialInspectionForm = {
 };
 
 const MachineManagement: React.FC = () => {
+  useUiLanguage();
   const [tab, setTab] = useState(0);
   const [openMachineDialog, setOpenMachineDialog] = useState(false);
   const [openInspectionDialog, setOpenInspectionDialog] = useState(false);
@@ -122,12 +124,12 @@ const MachineManagement: React.FC = () => {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['machines'] });
-      toast.success('Machine registered successfully');
+      toast.success(uiText('Machine registered successfully', 'feedback'));
       setOpenMachineDialog(false);
       setMachineForm(initialMachineForm);
     },
     onError: (err: any) => {
-      toast.error(err?.response?.data?.message || 'Failed to register machine');
+      toast.error(uiText(err?.response?.data?.message || 'Failed to register machine', 'feedback'));
     },
   });
 
@@ -144,12 +146,12 @@ const MachineManagement: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['machine-inspections'] });
       queryClient.invalidateQueries({ queryKey: ['machines'] });
-      toast.success('Maintenance inspection logged successfully');
+      toast.success(uiText('Maintenance inspection logged successfully', 'feedback'));
       setOpenInspectionDialog(false);
       setInspectionForm(initialInspectionForm);
     },
     onError: (err: any) => {
-      toast.error(err?.response?.data?.message || 'Failed to log inspection');
+      toast.error(uiText(err?.response?.data?.message || 'Failed to log inspection', 'feedback'));
     },
   });
 
@@ -174,11 +176,9 @@ const MachineManagement: React.FC = () => {
           <MachineIcon color="primary" sx={{ fontSize: 36 }} />
           <Box>
             <Typography variant="h4" fontWeight={800}>
-              Machine Management
-            </Typography>
+              {uiText("Machine Management ")}</Typography>
             <Typography color="text.secondary">
-              Plant asset registry, maintenance schedules & breakdown logging
-            </Typography>
+              {uiText("Plant asset registry, maintenance schedules & breakdown logging ")}</Typography>
           </Box>
         </Box>
 
@@ -192,8 +192,7 @@ const MachineManagement: React.FC = () => {
               queryClient.invalidateQueries({ queryKey: ['machine-inspections'] });
             }}
           >
-            Refresh
-          </Button>
+            {uiText("Refresh ")}</Button>
 
           {tab === 0 ? (
             <Button
@@ -201,8 +200,7 @@ const MachineManagement: React.FC = () => {
               startIcon={<AddIcon />}
               onClick={() => setOpenMachineDialog(true)}
             >
-              Register Machine
-            </Button>
+              {uiText("Register Machine ")}</Button>
           ) : (
             <Button
               variant="contained"
@@ -210,16 +208,14 @@ const MachineManagement: React.FC = () => {
               onClick={() => setOpenInspectionDialog(true)}
               disabled={machines.length === 0}
             >
-              Log Maintenance
-            </Button>
+              {uiText("Log Maintenance ")}</Button>
           )}
         </Box>
       </Box>
 
       {(machineError || inspectionError) && (
         <Alert severity="error" sx={{ mb: 2 }}>
-          Failed to load machine or maintenance data from server.
-        </Alert>
+          {uiText("Failed to load machine or maintenance data from server. ")}</Alert>
       )}
 
       {/* KPI Cards */}
@@ -228,8 +224,7 @@ const MachineManagement: React.FC = () => {
           <Card variant="outlined" sx={{ borderRadius: 3 }}>
             <CardContent sx={{ py: 2 }}>
               <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                TOTAL REGISTERED
-              </Typography>
+                {uiText("TOTAL REGISTERED ")}</Typography>
               <Typography variant="h5" fontWeight={800} color="#3b82f6">
                 {machines.length}
               </Typography>
@@ -241,8 +236,7 @@ const MachineManagement: React.FC = () => {
           <Card variant="outlined" sx={{ borderRadius: 3 }}>
             <CardContent sx={{ py: 2 }}>
               <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                OPERATIONAL
-              </Typography>
+                {uiText("OPERATIONAL ")}</Typography>
               <Typography variant="h5" fontWeight={800} color="#059669">
                 {activeCount}
               </Typography>
@@ -254,8 +248,7 @@ const MachineManagement: React.FC = () => {
           <Card variant="outlined" sx={{ borderRadius: 3 }}>
             <CardContent sx={{ py: 2 }}>
               <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                OPEN INSPECTIONS / REPAIRS
-              </Typography>
+                {uiText("OPEN INSPECTIONS / REPAIRS ")}</Typography>
               <Typography variant="h5" fontWeight={800} color="#ef4444">
                 {underMaint}
               </Typography>
@@ -267,8 +260,7 @@ const MachineManagement: React.FC = () => {
           <Card variant="outlined" sx={{ borderRadius: 3 }}>
             <CardContent sx={{ py: 2 }}>
               <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                INACTIVE / STANDBY
-              </Typography>
+                {uiText("INACTIVE / STANDBY ")}</Typography>
               <Typography variant="h5" fontWeight={800} color="#8b5cf6">
                 {inactiveCount}
               </Typography>
@@ -290,8 +282,8 @@ const MachineManagement: React.FC = () => {
             '& .MuiTab-root': { textTransform: 'none', fontWeight: 600 },
           }}
         >
-          <Tab label={`Machine Registry (${machines.length})`} />
-          <Tab label={`Maintenance & Inspections (${inspections.length})`} />
+          <Tab label={uiScopedTemplate('tabs')`Machine Registry (${machines.length})`} />
+          <Tab label={uiScopedTemplate('tabs')`Maintenance & Inspections (${inspections.length})`} />
         </Tabs>
 
         {/* Tab 0: Registry */}
@@ -300,14 +292,13 @@ const MachineManagement: React.FC = () => {
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 700 }}>Serial No</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Machine Name</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Type</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Manufacturer</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{uiText("Serial No", 'tables')}</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{uiText("Machine Name", 'tables')}</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{uiText("Type", 'tables')}</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{uiText("Manufacturer", 'tables')}</TableCell>
                   <TableCell align="right" sx={{ fontWeight: 700 }}>
-                    Commission Date
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
+                    {uiText("Commission Date ", 'tables')}</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{uiText("Status", 'tables')}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -320,14 +311,13 @@ const MachineManagement: React.FC = () => {
                 ) : machines.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} align="center" sx={{ color: 'text.secondary', py: 4 }}>
-                      No machines registered yet. Click &quot;Register Machine&quot; to add.
-                    </TableCell>
+                      {uiText("No machines registered yet. Click \"Register Machine\" to add. ", 'tables')}</TableCell>
                   </TableRow>
                 ) : (
                   machines.map((m) => (
                     <TableRow key={m.id} hover>
                       <TableCell>
-                        <Chip label={m.serialNo || `M-${m.id}`} size="small" variant="outlined" />
+                        <Chip label={m.serialNo || uiScopedTemplate('tables')`M-${m.id}`} size="small" variant="outlined" />
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2" fontWeight={600}>
@@ -342,11 +332,11 @@ const MachineManagement: React.FC = () => {
                       <TableCell>{m.type}</TableCell>
                       <TableCell>{m.manufacturer || '—'}</TableCell>
                       <TableCell align="right">
-                        {m.purchasedAt ? new Date(m.purchasedAt).toLocaleDateString('en-IN') : '—'}
+                        {m.purchasedAt ? new Date(m.purchasedAt).toLocaleDateString(uiDateLocale()) : '—'}
                       </TableCell>
                       <TableCell>
                         <Chip
-                          label={m.active ? 'Operational' : 'Decommissioned'}
+                          label={m.active ? uiText("Operational", 'tables') : uiText("Decommissioned", 'tables')}
                           size="small"
                           color={m.active ? 'success' : 'default'}
                           variant="outlined"
@@ -366,15 +356,14 @@ const MachineManagement: React.FC = () => {
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 700 }}>Machine</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Inspection Type</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Description</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{uiText("Machine", 'tables')}</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{uiText("Inspection Type", 'tables')}</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{uiText("Description", 'tables')}</TableCell>
                   <TableCell align="right" sx={{ fontWeight: 700 }}>
-                    Service Cost
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Logged By</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Date</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
+                    {uiText("Service Cost ", 'tables')}</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{uiText("Logged By", 'tables')}</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{uiText("Date", 'tables')}</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{uiText("Status", 'tables')}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -387,15 +376,14 @@ const MachineManagement: React.FC = () => {
                 ) : inspections.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} align="center" sx={{ color: 'text.secondary', py: 4 }}>
-                      No maintenance or inspection records yet.
-                    </TableCell>
+                      {uiText("No maintenance or inspection records yet. ", 'tables')}</TableCell>
                   </TableRow>
                 ) : (
                   inspections.map((i) => (
                     <TableRow key={i.id} hover>
                       <TableCell>
                         <Typography variant="body2" fontWeight={600}>
-                          {i.machine?.name || `Machine #${i.machineId}`}
+                          {i.machine?.name || uiScopedTemplate('tables')`Machine #${i.machineId}`}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
                           {i.machine?.type}
@@ -419,12 +407,12 @@ const MachineManagement: React.FC = () => {
                         <Typography variant="body2">{i.description || '—'}</Typography>
                       </TableCell>
                       <TableCell align="right">
-                        {i.cost ? `₹${i.cost.toLocaleString('en-IN')}` : '—'}
+                        {i.cost ? uiScopedTemplate('tables')`₹${i.cost.toLocaleString(uiLocale())}` : '—'}
                       </TableCell>
                       <TableCell>{i.createdBy || 'Technician'}</TableCell>
                       <TableCell>
                         <Typography variant="body2" color="text.secondary">
-                          {new Date(i.date).toLocaleDateString('en-IN')}
+                          {new Date(i.date).toLocaleDateString(uiDateLocale())}
                         </Typography>
                       </TableCell>
                       <TableCell>
@@ -459,14 +447,13 @@ const MachineManagement: React.FC = () => {
         PaperProps={{ sx: { borderRadius: 3 } }}
       >
         <DialogTitle sx={{ fontWeight: 700, borderBottom: 1, borderColor: 'divider' }}>
-          Register New Machine Asset
-        </DialogTitle>
+          {uiText("Register New Machine Asset ")}</DialogTitle>
         <DialogContent sx={{ pt: 3 }}>
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
-                label="Machine Name / Designation"
-                placeholder="e.g. Ring Frame #04"
+                label={uiText("Machine Name / Designation", 'forms')}
+                placeholder={uiText("e.g. Ring Frame #04", 'forms')}
                 fullWidth
                 size="small"
                 required
@@ -476,27 +463,27 @@ const MachineManagement: React.FC = () => {
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
               <FormControl fullWidth size="small">
-                <InputLabel>Machine Type</InputLabel>
+                <InputLabel>{uiText("Machine Type", 'forms')}</InputLabel>
                 <Select
                   value={machineForm.type}
-                  label="Machine Type"
+                  label={uiText("Machine Type", 'forms')}
                   onChange={(e) => setMachineForm({ ...machineForm, type: e.target.value })}
                 >
-                  <MenuItem value="Ring Frame">Ring Frame</MenuItem>
-                  <MenuItem value="Carding Machine">Carding Machine</MenuItem>
-                  <MenuItem value="Draw Frame">Draw Frame</MenuItem>
-                  <MenuItem value="Comber">Comber</MenuItem>
-                  <MenuItem value="Simplex / Speed Frame">Simplex / Speed Frame</MenuItem>
-                  <MenuItem value="Auto Coner / Winding">Auto Coner / Winding</MenuItem>
-                  <MenuItem value="Blow Room">Blow Room</MenuItem>
-                  <MenuItem value="OE Rotor">OE Rotor</MenuItem>
+                  <MenuItem value="Ring Frame">{uiText("Ring Frame", 'forms')}</MenuItem>
+                  <MenuItem value="Carding Machine">{uiText("Carding Machine", 'forms')}</MenuItem>
+                  <MenuItem value="Draw Frame">{uiText("Draw Frame", 'forms')}</MenuItem>
+                  <MenuItem value="Comber">{uiText("Comber", 'forms')}</MenuItem>
+                  <MenuItem value="Simplex / Speed Frame">{uiText("Simplex / Speed Frame", 'forms')}</MenuItem>
+                  <MenuItem value="Auto Coner / Winding">{uiText("Auto Coner / Winding", 'forms')}</MenuItem>
+                  <MenuItem value="Blow Room">{uiText("Blow Room", 'forms')}</MenuItem>
+                  <MenuItem value="OE Rotor">{uiText("OE Rotor", 'forms')}</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
-                label="Serial Number"
-                placeholder="SN-LR9-8823"
+                label={uiText("Serial Number", 'forms')}
+                placeholder={uiText("SN-LR9-8823", 'forms')}
                 fullWidth
                 size="small"
                 value={machineForm.serialNo}
@@ -505,8 +492,8 @@ const MachineManagement: React.FC = () => {
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
-                label="Manufacturer / OEM"
-                placeholder="e.g. LMW / Rieter / Saurer"
+                label={uiText("Manufacturer / OEM", 'forms')}
+                placeholder={uiText("e.g. LMW / Rieter / Saurer", 'forms')}
                 fullWidth
                 size="small"
                 value={machineForm.manufacturer}
@@ -516,7 +503,7 @@ const MachineManagement: React.FC = () => {
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 type="date"
-                label="Purchased / Commission Date"
+                label={uiText("Purchased / Commission Date", 'forms')}
                 InputLabelProps={{ shrink: true }}
                 fullWidth
                 size="small"
@@ -526,8 +513,8 @@ const MachineManagement: React.FC = () => {
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
-                label="Notes / Location Tag"
-                placeholder="Shed B, Row 2"
+                label={uiText("Notes / Location Tag", 'forms')}
+                placeholder={uiText("Shed B, Row 2", 'forms')}
                 fullWidth
                 size="small"
                 value={machineForm.notes}
@@ -538,14 +525,13 @@ const MachineManagement: React.FC = () => {
         </DialogContent>
         <DialogActions sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
           <Button onClick={() => setOpenMachineDialog(false)} color="inherit">
-            Cancel
-          </Button>
+            {uiText("Cancel ")}</Button>
           <Button
             variant="contained"
             disabled={!machineForm.name.trim() || !machineForm.type.trim() || createMachineMutation.isPending}
             onClick={() => createMachineMutation.mutate(machineForm)}
           >
-            {createMachineMutation.isPending ? 'Registering...' : 'Register Machine'}
+            {createMachineMutation.isPending ? uiText("Registering...") : uiText("Register Machine")}
           </Button>
         </DialogActions>
       </Dialog>
@@ -559,23 +545,22 @@ const MachineManagement: React.FC = () => {
         PaperProps={{ sx: { borderRadius: 3 } }}
       >
         <DialogTitle sx={{ fontWeight: 700, borderBottom: 1, borderColor: 'divider' }}>
-          Log Machine Maintenance / Inspection
-        </DialogTitle>
+          {uiText("Log Machine Maintenance / Inspection ")}</DialogTitle>
         <DialogContent sx={{ pt: 3 }}>
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, sm: 8 }}>
               <FormControl fullWidth size="small" required>
-                <InputLabel>Select Machine</InputLabel>
+                <InputLabel>{uiText("Select Machine", 'forms')}</InputLabel>
                 <Select
                   value={inspectionForm.machineId}
-                  label="Select Machine"
+                  label={uiText("Select Machine", 'forms')}
                   onChange={(e) =>
                     setInspectionForm({ ...inspectionForm, machineId: Number(e.target.value) })
                   }
                 >
                   {machines.map((m) => (
                     <MenuItem key={m.id} value={m.id}>
-                      {m.name} ({m.type} - {m.serialNo || `ID #${m.id}`})
+                      {m.name} ({m.type} - {m.serialNo || uiScopedTemplate('forms')`ID #${m.id}`})
                     </MenuItem>
                   ))}
                 </Select>
@@ -583,40 +568,40 @@ const MachineManagement: React.FC = () => {
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
               <FormControl fullWidth size="small">
-                <InputLabel>Inspection Type</InputLabel>
+                <InputLabel>{uiText("Inspection Type", 'forms')}</InputLabel>
                 <Select
                   value={inspectionForm.type}
-                  label="Inspection Type"
+                  label={uiText("Inspection Type", 'forms')}
                   onChange={(e) =>
                     setInspectionForm({ ...inspectionForm, type: e.target.value })
                   }
                 >
-                  <MenuItem value="ROUTINE">Routine</MenuItem>
-                  <MenuItem value="PREVENTIVE">Preventive</MenuItem>
-                  <MenuItem value="BREAKDOWN">Breakdown</MenuItem>
+                  <MenuItem value="ROUTINE">{uiText("Routine", 'forms')}</MenuItem>
+                  <MenuItem value="PREVENTIVE">{uiText("Preventive", 'forms')}</MenuItem>
+                  <MenuItem value="BREAKDOWN">{uiText("Breakdown", 'forms')}</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
               <FormControl fullWidth size="small">
-                <InputLabel>Status</InputLabel>
+                <InputLabel>{uiText("Status", 'forms')}</InputLabel>
                 <Select
                   value={inspectionForm.status}
-                  label="Status"
+                  label={uiText("Status", 'forms')}
                   onChange={(e) =>
                     setInspectionForm({ ...inspectionForm, status: e.target.value })
                   }
                 >
-                  <MenuItem value="PENDING">Pending Action</MenuItem>
-                  <MenuItem value="IN_PROGRESS">In Progress</MenuItem>
-                  <MenuItem value="COMPLETED">Completed</MenuItem>
+                  <MenuItem value="PENDING">{uiText("Pending Action", 'forms')}</MenuItem>
+                  <MenuItem value="IN_PROGRESS">{uiText("In Progress", 'forms')}</MenuItem>
+                  <MenuItem value="COMPLETED">{uiText("Completed", 'forms')}</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 type="number"
-                label="Repair / Service Cost (₹)"
+                label={uiText("Repair / Service Cost (₹)", 'forms')}
                 fullWidth
                 size="small"
                 value={inspectionForm.cost || ''}
@@ -627,8 +612,8 @@ const MachineManagement: React.FC = () => {
             </Grid>
             <Grid size={{ xs: 12 }}>
               <TextField
-                label="Description / Fault Details"
-                placeholder="Spindle bearing replacement, lubrication, vibration check..."
+                label={uiText("Description / Fault Details", 'forms')}
+                placeholder={uiText("Spindle bearing replacement, lubrication, vibration check...", 'forms')}
                 fullWidth
                 multiline
                 rows={3}
@@ -641,8 +626,8 @@ const MachineManagement: React.FC = () => {
             </Grid>
             <Grid size={{ xs: 12 }}>
               <TextField
-                label="Technician / Inspector Name"
-                placeholder="Gokul S."
+                label={uiText("Technician / Inspector Name", 'forms')}
+                placeholder={uiText("Gokul S.", 'forms')}
                 fullWidth
                 size="small"
                 value={inspectionForm.createdBy}
@@ -655,14 +640,13 @@ const MachineManagement: React.FC = () => {
         </DialogContent>
         <DialogActions sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
           <Button onClick={() => setOpenInspectionDialog(false)} color="inherit">
-            Cancel
-          </Button>
+            {uiText("Cancel ")}</Button>
           <Button
             variant="contained"
             disabled={!inspectionForm.machineId || createInspectionMutation.isPending}
             onClick={() => createInspectionMutation.mutate(inspectionForm)}
           >
-            {createInspectionMutation.isPending ? 'Logging...' : 'Save Inspection'}
+            {createInspectionMutation.isPending ? uiText("Logging...") : uiText("Save Inspection")}
           </Button>
         </DialogActions>
       </Dialog>

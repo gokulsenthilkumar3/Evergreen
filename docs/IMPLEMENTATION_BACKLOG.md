@@ -43,6 +43,11 @@ Owners are roles to assign, not named people. Sizes: S is 1–2, M is 3–5 and 
 | 2026-10-15 | Repository clean-up (UI-020) | Unreachable web code, unused dependencies, archives and built bundles removed; see the [15 October report](audits/2026-10-15/REPORT.md) |
 | 2026-10-17 | EG-02 sync transport and counters (partial) | Explicit endpoint/company configuration, HTTPS validation, 10-second HTTP deadline, redirect rejection, per-process overlap guard and actual lifetime invoice counts; 77 sync tests pass; tenant authentication and billing periods remain open |
 | 2026-10-17 | API test contract gate (TEST-006 partial) | Six TypeScript errors fixed; root type-check and CI verification now include API unit and HTTP test files; 293 API tests pass, with 47 affected tests rechecked after mock cleanup; broader integration/device acceptance remains open |
+| 2026-10-30 | Running-application review | First browser review of every staff screen at 1440 and 390 px plus a live API probe on a disposable database; see the [30 October report](audits/2026-10-30/REPORT.md) |
+| 2026-10-30 | EG-16 input rules (partial) | Catalogue type, amount and GST range checks; customer and supplier GSTIN, email, phone and state; catalogue GST rate and GSTIN-based seller state on orders and invoices; shared rules in `packages/types/gst.ts` (API-001, BIZ-020, BIZ-022) |
+| 2026-10-30 | EG-19 Tally export corrections (partial) | Void invoices and internal payment rows excluded, ledgers named by rate, balancing round-off, whole last day; verified on live data (INT-001 resolved, INT-002 partial) |
+| 2026-10-30 | Phone layout, offline scenes and form guards | Overlay navigation, page-root width rule, local 3D lighting with a 2D fallback, reduced motion, double-click guards (UI-007, UI-015, UI-023 to UI-029) |
+| 2026-10-30 | Linux CI gate | Desktop runtime refuses backslash paths on every platform, so `test:release` passes on the ubuntu runner |
 
 ## Release sequence and dependencies
 

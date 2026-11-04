@@ -1,0 +1,222 @@
+.eg-assistant {
+  --eg-ai-bg: #0e211e;
+  --eg-ai-line: #315047;
+  box-sizing: border-box;
+  font:
+    14px/1.6 system-ui,
+    sans-serif;
+  color: #ecf5ef;
+  background: var(--eg-ai-bg);
+  border: 1px solid var(--eg-ai-line);
+  border-radius: 20px;
+  overflow: hidden;
+  max-width: 960px;
+  width: 100%;
+  box-shadow: 0 16px 48px #001b1514;
+  text-align: left;
+  color-scheme: dark;
+}
+.eg-assistant * {
+  box-sizing: border-box;
+}
+.eg-assistant-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px 24px 16px;
+  background: linear-gradient(120deg, #173c31, #10251f);
+}
+.eg-assistant-eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  color: #9de7c4;
+  font-weight: 750;
+}
+.eg-assistant h2 {
+  font:
+    650 24px/1.2 system-ui,
+    sans-serif;
+  margin: 7px 0;
+}
+.eg-assistant p {
+  margin: 6px 0;
+}
+.eg-assistant-header p,
+.eg-assistant-note {
+  color: #b6ccc0;
+}
+.eg-assistant-status {
+  padding: 10px 24px;
+  background: #ffffff06;
+  border-block: 1px solid var(--eg-ai-line);
+  font-size: 12px;
+  color: #b9dec9;
+}
+.eg-assistant-messages {
+  max-height: 360px;
+  min-height: 190px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 20px 24px;
+}
+.eg-assistant-prompts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+.eg-assistant button {
+  font: inherit;
+  border: 1px solid #496258;
+  color: #e3f6ea;
+  background: #1a352a;
+  border-radius: 9px;
+  padding: 8px 12px;
+  cursor: pointer;
+  min-height: 40px;
+}
+.eg-assistant button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.eg-assistant button:hover:not(:disabled) {
+  background: #28513e;
+}
+.eg-assistant :focus-visible {
+  outline: 2px solid #9aefc6;
+  outline-offset: 3px;
+}
+.eg-assistant-message {
+  padding: 13px 16px;
+  border: 1px solid #315047;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  background: #142d24;
+}
+.eg-assistant-message > span {
+  font-weight: 700;
+  font-size: 11px;
+  color: #9cdbb7;
+}
+.eg-assistant-message p {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.eg-assistant-user {
+  margin-left: 28px;
+  background: #213a32;
+}
+.eg-assistant-form {
+  border-top: 1px solid var(--eg-ai-line);
+  padding: 18px 24px;
+}
+.eg-assistant-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  font-size: 12px;
+  margin-bottom: 16px;
+  color: #c0d7c9;
+}
+.eg-assistant-consent input {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  margin-top: 3px;
+  accent-color: #8bdcb0;
+}
+.eg-assistant-form > label:not(.eg-assistant-consent) {
+  display: block;
+  font-weight: 650;
+  font-size: 12px;
+  margin-bottom: 7px;
+}
+.eg-assistant textarea {
+  width: 100%;
+  resize: vertical;
+  max-height: 160px;
+  min-height: 80px;
+  padding: 12px;
+  background: #071a13;
+  border: 1px solid #5c7b6a;
+  color: #f2fbf5;
+  border-radius: 10px;
+  font: inherit;
+}
+.eg-assistant-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+}
+.eg-assistant-actions button[type="submit"] {
+  background: #a3e9bf;
+  color: #0d291b;
+  border-color: #a3e9bf;
+  font-weight: 750;
+}
+.eg-assistant .eg-assistant-error {
+  color: #ffb9a8;
+  font-size: 13px;
+}
+.eg-assistant-note {
+  font-size: 11px;
+  margin-top: 12px !important;
+}
+.eg-assistant-dock {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 1200;
+  max-width: calc(100vw - 32px);
+}
+.eg-assistant-floating {
+  width: 420px;
+  max-width: 100%;
+  margin-bottom: 12px;
+  max-height: calc(100dvh - 110px);
+  overflow-y: auto;
+  box-shadow: 0 20px 80px #0006;
+}
+.eg-assistant-floating .eg-assistant-messages {
+  max-height: 220px;
+}
+.eg-assistant-launcher {
+  float: right;
+  border: 1px solid #acd7bd;
+  border-radius: 999px;
+  padding: 13px 20px;
+  background: #133d2d;
+  color: #f5fff8;
+  font:
+    650 14px system-ui,
+    sans-serif;
+  cursor: pointer;
+  box-shadow: 0 8px 30px #0003;
+  min-height: 46px;
+}
+.eg-assistant-launcher:focus-visible {
+  outline: 3px solid #86dfa9;
+  outline-offset: 3px;
+}
+@media (max-width: 600px) {
+  .eg-assistant-dock {
+    right: 16px;
+    bottom: 16px;
+  }
+  .eg-assistant-header,
+  .eg-assistant-form,
+  .eg-assistant-messages {
+    padding: 16px;
+  }
+  .eg-assistant h2 {
+    font-size: 21px;
+  }
+  .eg-assistant-floating .eg-assistant-messages {
+    max-height: 180px;
+  }
+  .eg-assistant-prompts {
+    flex-direction: column;
+  }
+}

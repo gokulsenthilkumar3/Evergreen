@@ -1,5 +1,6 @@
+import { uiLocale, uiTemplate, uiText } from "../../i18n";
 import React, { Suspense, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Box, Button, MenuItem, Select, useMediaQuery, createTheme, ThemeProvider, useTheme } from '@mui/material';
+import { Alert, Box, Button, TextField, Autocomplete, useMediaQuery, createTheme, ThemeProvider, useTheme } from '@mui/material';
 import { useFullscreen } from '../../hooks/useFullscreen';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Html, OrbitControls } from '@react-three/drei';
@@ -100,7 +101,7 @@ function PinCallout({ position, code, label, color = '#0284c7', isDark }: { posi
       >
         <div style={{ width: 6, height: 6, borderRadius: '50%', background: color, boxShadow: `0 0 6px ${color}` }} />
         <span style={{ color: color, fontWeight: 800 }}>{code}</span>
-        <span style={{ opacity: 0.85 }}>{label}</span>
+        <span style={{ opacity: 0.85 }}>{uiText(label, 'forms')}</span>
       </div>
     </Html>
   );
@@ -254,7 +255,8 @@ function Truck({ motion, speed, offset = 0 }: { motion: boolean; speed: number; 
 }
 
 function World({ props, motion, speed, selected, onSelect, view, onFocus, isDark }: { props: Props; motion: boolean; speed: number; selected: number | null; onSelect: (id: number) => void; view: View; onFocus: (view: View) => void; isDark?: boolean }) {
-  const shown = props.machines.slice(0, 12);
+  const selectedAsset = props.machines.find(machine => machine.id === selected);
+  const shown = selectedAsset ? [selectedAsset, ...props.machines.filter(machine => machine.id !== selected)].slice(0, 12) : props.machines.slice(0, 12);
   const chosen = props.machines.find(m => m.id === selected);
   if (chosen && !shown.some(m => m.id === chosen.id)) shown[shown.length - 1] = chosen;
   return <>
@@ -266,9 +268,9 @@ function World({ props, motion, speed, selected, onSelect, view, onFocus, isDark
     <Block position={[0, 0.035, -1]} size={[21, 0.04, 13]} color={isDark ? '#1e293b' : '#e8eef3'} />
     {[-9, 7].flatMap(z => Array.from({ length: 11 }, (_, i) => <Block key={`${z}-${i}`} position={[-10 + i * 2, 0.055, z]} size={[0.9, 0.02, 0.06]} color="#ffffff" />))}
     <Landscape />
-    <Building position={[-7, 0, -4]} title="Cotton receiving" detail={props.stockAvailable ? `${props.cottonKg.toLocaleString('en-IN')} kg · ≈ ${props.cottonBales} bales` : 'Stock unavailable'} selected={view === 'Receiving'} onClick={() => onFocus('Receiving')} />
+    <Building position={[-7, 0, -4]} title="Cotton receiving" detail={props.stockAvailable ? `${props.cottonKg.toLocaleString(uiLocale())} kg · ≈ ${props.cottonBales} bales` : 'Stock unavailable'} selected={view === 'Receiving'} onClick={() => onFocus('Receiving')} />
     <Building position={[0, 0, -4]} title="Production hall" detail={props.machinesAvailable ? `${props.machines.length} registered machines` : 'Machine data unavailable'} width={6} selected={view === 'Production'} onClick={() => onFocus('Production')} />
-    <Building position={[7, 0, -4]} title="Yarn warehouse" detail={props.stockAvailable ? `${props.yarnKg.toLocaleString('en-IN')} kg · ${props.yarnBags} bag equivalents` : 'Stock unavailable'} color="#168d78" selected={view === 'Warehouse'} onClick={() => onFocus('Warehouse')} />
+    <Building position={[7, 0, -4]} title="Yarn warehouse" detail={props.stockAvailable ? `${props.yarnKg.toLocaleString(uiLocale())} kg · ${props.yarnBags} bag equivalents` : 'Stock unavailable'} color="#168d78" selected={view === 'Warehouse'} onClick={() => onFocus('Warehouse')} />
     <Building position={[-8, 0, 2]} title="People & office" detail="Staff · customers · finance" width={3} color="#6d86b6" selected={view === 'People'} onClick={() => onFocus('People')} />
     <Building position={[8, 0, 2]} title="Quality & dispatch" detail={`${props.qualityAvailable ? props.qualityHolds : '—'} recorded holds · ${props.dispatchAvailable ? props.dispatchCount : '—'} dispatch records`} width={3} color="#bc9956" selected={view === 'Dispatch'} onClick={() => onFocus('Dispatch')} />
     <Stock position={[-8, 0, -1.5]} count={props.cottonBales} />
@@ -353,7 +355,7 @@ function World({ props, motion, speed, selected, onSelect, view, onFocus, isDark
     <PinCallout position={[6.5, 3.8, 2.5]} code="Bay 01" label="Illustrative dispatch bay" color="#10b981" isDark={isDark} />
     <PinCallout position={[9.2, 3.8, 2.5]} code="Bay 02" label="Illustrative loading bay" color="#0284c7" isDark={isDark} />
     <PinCallout position={[-7, 3.8, -2.5]} code="Inward Yard" label="Raw Cotton Bales" color="#f59e0b" isDark={isDark} />
-    <PinCallout position={[0, 3.8, -2]} code="Machine Hall" label={`${props.machines.length} Equipment Units`} color="#8b5cf6" isDark={isDark} />
+    <PinCallout position={[0, 3.8, -2]} code="Machine Hall" label={uiTemplate`${props.machines.length} Equipment Units`} color="#8b5cf6" isDark={isDark} />
   </>;
 }
 
@@ -408,13 +410,13 @@ export default function CampusScene(props: Props) {
     setTour(false);
     setView('Production');
   };
-  const detail = view === 'Receiving' ? (props.stockAvailable ? `${props.cottonKg.toLocaleString('en-IN')} kg cotton · approximately ${props.cottonBales} bales` : 'Cotton stock unavailable')
+  const detail = view === 'Receiving' ? (props.stockAvailable ? `${props.cottonKg.toLocaleString(uiLocale())} kg cotton · approximately ${props.cottonBales} bales` : 'Cotton stock unavailable')
     : view === 'Production' ? (props.machinesAvailable ? `${props.machines.length} registered machines · select one to inspect` : 'Machine data unavailable')
-      : view === 'Warehouse' ? (props.stockAvailable ? `${props.yarnKg.toLocaleString('en-IN')} kg yarn · ${props.yarnBags} bag equivalents` : 'Yarn stock unavailable')
+      : view === 'Warehouse' ? (props.stockAvailable ? `${props.yarnKg.toLocaleString(uiLocale())} kg yarn · ${props.yarnBags} bag equivalents` : 'Yarn stock unavailable')
         : view === 'People' ? 'People, customers and finance · open a workspace below'
       : view === 'Dispatch' ? `${props.dispatchAvailable ? props.dispatchCount : '—'} recorded dispatches · ${props.qualityAvailable ? props.qualityHolds : '—'} quality holds`
         : 'Receiving → production → yarn warehouse → dispatch';
-  const number = (value: number, known?: boolean) => known ? value.toLocaleString('en-IN') : '—';
+  const number = (value: number, known?: boolean) => known ? value.toLocaleString(uiLocale()) : '—';
   const chosen = props.machines.find(machine => machine.id === selected);
   const zones: Record<View, ZoneInfo> = {
     Campus: { title: 'Factory overview', subtitle: 'From raw cotton to finished yarn. Select a building to explore its records.', facts: [['Cotton in store', number(props.cottonKg, props.stockAvailable) + ' kg'], ['Yarn in store', number(props.yarnKg, props.stockAvailable) + ' kg'], ['Registered machines', number(props.machines.length, props.machinesAvailable)]], links: [['Inventory', 'inventory'], ['Production & job work', 'production'], ['Customers & ledger', 'customers']] },
@@ -442,7 +444,7 @@ export default function CampusScene(props: Props) {
   );
 
   return <ThemeProvider theme={campusTheme}><Box ref={container} sx={{ minWidth: 0, scrollMarginTop: 12, '&:fullscreen': { overflow: 'auto', bgcolor: 'background.default', p: 1 }, '& button': { minHeight: 44, textTransform: 'none', fontWeight: 600 }, '& button:focus-visible': { outline: '2px solid #087f65', outlineOffset: -2 } }}>
-    <Button onClick={fullscreen.toggle}>{fullscreen.fullscreen ? 'Exit TV fullscreen' : 'TV fullscreen'}</Button>
+    <Button onClick={fullscreen.toggle}>{fullscreen.fullscreen ? 'Exit fullscreen' : 'Fullscreen'}</Button>
     {fullscreen.error && <Alert severity="info">{fullscreen.error}</Alert>}
     <CampusWorkspace view={view} views={VIEWS} focus={value => focus(value as View)}
       motion={motion} playing={playing} reduced={reduced} toggleMotion={() => setMotion(value => !value)}
@@ -457,10 +459,13 @@ export default function CampusScene(props: Props) {
       ]}
       zone={zones[view]} activity={props.activity} metrics={props.metrics} onNavigate={props.onNavigate}
       selectedMachine={chosen?.name} onInspect={() => { if (chosen) props.onMachineClick?.(chosen); }} clearSelection={() => setSelected(null)}
-      machineSelector={<Select displayEmpty fullWidth size="small" value={chosen?.id ?? ''} inputProps={{ 'aria-label': 'Inspect machine' }} onChange={event => selectMachine(Number(event.target.value))} sx={{ height: 42, fontSize: 12 }}>
-        <MenuItem value="" disabled>{props.machines.length ? 'Find a machine…' : props.machinesAvailable ? 'No machines registered' : 'Machine data unavailable'}</MenuItem>
-        {props.machines.map(machine => <MenuItem key={machine.id} value={machine.id}>{machine.name}</MenuItem>)}
-      </Select>}
+      machineSelector={<Autocomplete options={props.machines} value={chosen ?? null}
+        getOptionLabel={machine => machine.name}
+        isOptionEqualToValue={(a, b) => a.id === b.id}
+        onChange={(_, machine) => { if (machine) selectMachine(machine.id); else setSelected(null); }}
+        noOptionsText={props.machinesAvailable ? 'No matching machines' : 'Machine data unavailable'}
+        renderInput={params => <TextField {...params} label="Find a machine" size="small" />}
+      />}
     >
       <SceneBoundary fallback={<FloorCanvas {...props} simulateFlow={playing} />}>
         <Suspense fallback={<Box sx={{ p: 5 }}>Preparing factory view…</Box>}>

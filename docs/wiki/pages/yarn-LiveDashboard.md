@@ -18,7 +18,7 @@ No literal Tab controls in this file. Check composed components and dynamic navi
 
 | Control / label | Handler | Source |
 | --- | --- | --- |
-| Refresh | `{handleRefresh}` | [apps/web/src/pages/yarn/LiveDashboard.tsx:83](../../../apps/web/src/pages/yarn/LiveDashboard.tsx) |
+| {uiText("Refresh ")} | `{handleRefresh}` | [apps/web/src/pages/yarn/LiveDashboard.tsx:83](../../../apps/web/src/pages/yarn/LiveDashboard.tsx) |
 
 ## API calls
 
@@ -26,11 +26,12 @@ Paths are relative to the client API base (`/api/backend` by default in the brow
 
 | Method | Path expression | Source |
 | --- | --- | --- |
-| GET | `/machines` | [apps/web/src/pages/yarn/LiveDashboard.tsx:51](../../../apps/web/src/pages/yarn/LiveDashboard.tsx) |
-| GET | `/machines/inspections` | [apps/web/src/pages/yarn/LiveDashboard.tsx:57](../../../apps/web/src/pages/yarn/LiveDashboard.tsx) |
+| GET | `/machines` | [apps/web/src/pages/yarn/LiveDashboard.tsx:53](../../../apps/web/src/pages/yarn/LiveDashboard.tsx) |
+| GET | `/machines/inspections` | [apps/web/src/pages/yarn/LiveDashboard.tsx:59](../../../apps/web/src/pages/yarn/LiveDashboard.tsx) |
 
 ## Composed behavior
 
+- [i18n.ts](../../../apps/web/src/i18n.ts)
 - [api.ts](../../../apps/web/src/utils/api.ts)
 
 ## Verify the workflow

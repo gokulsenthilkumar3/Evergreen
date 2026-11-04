@@ -18,10 +18,10 @@ No literal Tab controls in this file. Check composed components and dynamic navi
 
 | Control / label | Handler | Source |
 | --- | --- | --- |
-| Refresh | `{() => queryClient.invalidateQueries({ queryKey: ['quality-inspections'] })}` | [apps/web/src/pages/yarn/QualityControl.tsx:163](../../../apps/web/src/pages/yarn/QualityControl.tsx) |
-| Record Inspection | `{() => setOpenDialog(true)}` | [apps/web/src/pages/yarn/QualityControl.tsx:172](../../../apps/web/src/pages/yarn/QualityControl.tsx) |
-| Cancel | `{() => setOpenDialog(false)}` | [apps/web/src/pages/yarn/QualityControl.tsx:480](../../../apps/web/src/pages/yarn/QualityControl.tsx) |
-| {createInspectionMutation.isPending ? 'Recording...' : 'Save Inspection'} | `{() => createInspectionMutation.mutate(form)}` | [apps/web/src/pages/yarn/QualityControl.tsx:483](../../../apps/web/src/pages/yarn/QualityControl.tsx) |
+| {uiText("Refresh ")} | `{() => queryClient.invalidateQueries({ queryKey: ['quality-inspections'] })}` | [apps/web/src/pages/yarn/QualityControl.tsx:163](../../../apps/web/src/pages/yarn/QualityControl.tsx) |
+| {uiText("Record Inspection ")} | `{() => setOpenDialog(true)}` | [apps/web/src/pages/yarn/QualityControl.tsx:171](../../../apps/web/src/pages/yarn/QualityControl.tsx) |
+| {uiText("Cancel ")} | `{() => setOpenDialog(false)}` | [apps/web/src/pages/yarn/QualityControl.tsx:466](../../../apps/web/src/pages/yarn/QualityControl.tsx) |
+| {createInspectionMutation.isPending ? uiText("Recording...") : uiText("Save Inspection")} | `{() => createInspectionMutation.mutate(form)}` | [apps/web/src/pages/yarn/QualityControl.tsx:468](../../../apps/web/src/pages/yarn/QualityControl.tsx) |
 
 ## API calls
 
@@ -29,12 +29,13 @@ Paths are relative to the client API base (`/api/backend` by default in the brow
 
 | Method | Path expression | Source |
 | --- | --- | --- |
-| GET | `/workflows` | [apps/web/src/pages/yarn/QualityControl.tsx:78](../../../apps/web/src/pages/yarn/QualityControl.tsx) |
-| GET | `url` | [apps/web/src/pages/yarn/QualityControl.tsx:92](../../../apps/web/src/pages/yarn/QualityControl.tsx) |
-| POST | `/quality/inspections` | [apps/web/src/pages/yarn/QualityControl.tsx:98](../../../apps/web/src/pages/yarn/QualityControl.tsx) |
+| GET | `/workflows` | [apps/web/src/pages/yarn/QualityControl.tsx:80](../../../apps/web/src/pages/yarn/QualityControl.tsx) |
+| GET | `url` | [apps/web/src/pages/yarn/QualityControl.tsx:94](../../../apps/web/src/pages/yarn/QualityControl.tsx) |
+| POST | `/quality/inspections` | [apps/web/src/pages/yarn/QualityControl.tsx:100](../../../apps/web/src/pages/yarn/QualityControl.tsx) |
 
 ## Composed behavior
 
+- [i18n.ts](../../../apps/web/src/i18n.ts)
 - [api.ts](../../../apps/web/src/utils/api.ts)
 
 ## Verify the workflow

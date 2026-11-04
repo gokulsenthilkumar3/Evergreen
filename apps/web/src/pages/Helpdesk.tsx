@@ -1,297 +1,894 @@
-import React, { useMemo, useState } from 'react';
 import {
-    Box,
-    Typography,
-    Paper,
-    Grid,
-    TextField,
-    Button,
-    Chip,
-    Card,
-    CardContent,
-    Accordion,
-    AccordionSummary,
-    AccordionDetails,
-    Avatar,
-    Divider,
-    InputAdornment,
-    Fade,
-} from '@mui/material';
+  uiText,
+  useUiLanguage,
+  uiLocale,
+  uiTemplate,
+  uiScopedTemplate,
+} from "../i18n";
+import { useEffect, useRef, useState } from "react";
 import {
-    ExpandMore as ExpandMoreIcon,
-    Search as SearchIcon,
-    HeadsetMic as HelpdeskIcon,
-    Send as SendIcon,
-    CheckCircle as ResolvedIcon,
-    HourglassEmpty as PendingIcon,
-    Help as HelpIcon,
-    SupportAgent as SupportAgentIcon,
-    LocalActivity as SLAIcon,
-    MarkChatRead as TicketIcon,
-} from '@mui/icons-material';
-import { usePersist } from '../hooks/usePersist';
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Alert,
+  Box,
+  Button,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Grid,
+  MenuItem,
+  Paper,
+  Stack,
+  TextField,
+  Typography,
+  Checkbox,
+} from "@mui/material";
+import { ExpandMore, Refresh, SupportAgent } from "@mui/icons-material";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import api from "../utils/api";
+import { getStoredUser } from "../utils/authStorage";
+import StaffAssistant from "../components/StaffAssistant";
+import HelpdeskTicketInspector from "../components/HelpdeskTicketInspector";
+import HelpdeskOperationsPanel from "../components/HelpdeskOperationsPanel";
+import {
+  HelpdeskBulkActions,
+  HelpdeskImport,
+} from "../components/HelpdeskBulkImport";
+import { tableToCSV } from "../utils/csvGenerator";
 
-const FAQ_ITEMS = [
-    {
-        q: 'How do I create a new invoice?',
-        a: 'Navigate to Billing → Invoices tab and click the "New Invoice" button at the top right. Fill in the customer details, add line items, and click "Save Invoice".',
-        category: 'Billing',
-    },
-    {
-        q: 'How do I record a payment against an invoice?',
-        a: 'In the Invoices list, click the payment icon (₹) on any unpaid invoice, enter the payment amount and method, then click "Record Payment".',
-        category: 'Billing',
-    },
-    {
-        q: 'How do I add inward stock (cotton)?',
-        a: 'Go to Inward / Batch from the sidebar. Click "New Inward Entry", fill in the batch details including source, count, bags, weight, and rate, then save.',
-        category: 'Inventory',
-    },
-    {
-        q: 'How do I record production output?',
-        a: 'Navigate to Production from the sidebar. Click "New Production Entry", select the input batch, enter the output yarn count and weight, then save.',
-        category: 'Production',
-    },
-    {
-        q: 'How do I manage user roles?',
-        a: 'Go to User Management (Admin only). You can create users with roles: VIEWER, MODIFIER, or ADMIN.',
-        category: 'Admin',
-    },
-    {
-        q: 'How do I change the company name or logo?',
-        a: 'Go to Settings from the sidebar. Update the Company Name, Address, GSTIN, and upload a logo. These will appear on all your invoices.',
-        category: 'Settings',
-    },
-    {
-        q: 'What is the difference between Inward and Production?',
-        a: 'Inward Entry records incoming raw cotton stock into your inventory. Production Entry records the conversion of cotton into yarn, tracking wastage automatically.',
-        category: 'Inventory',
-    },
-    {
-        q: 'How do I export data to Excel or PDF?',
-        a: 'On most list pages there are export buttons at the top right. Invoices can be printed as PDF directly from the invoice view.',
-        category: 'Export',
-    },
-];
-
-const CATEGORY_COLORS: Record<string, string> = {
-    Billing: '#059669',
-    Inventory: '#0284c7',
-    Production: '#7c3aed',
-    Admin: '#dc2626',
-    Settings: '#d97706',
-    Export: '#0891b2',
+type Ticket = {
+  id: string;
+  subject: string;
+  description: string;
+  category: string;
+  priority: string;
+  status: string;
+  createdBy: string;
+  resolution?: string;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+  proof?:string;
 };
-
-const statusIconMap: Record<string, React.ReactNode> = {
-    Resolved: <ResolvedIcon color="success" fontSize="small" />,
-    Pending: <PendingIcon color="warning" fontSize="small" />,
-    'In Progress': <PendingIcon color="info" fontSize="small" />,
+const initialForm = {
+  subject: "",
+  description: "",
+  category: "QUESTION",
+  priority: "NORMAL",
 };
-
-const supportCards = [
-    { label: 'Typical reply', value: 'Not connected', icon: <SLAIcon fontSize="small" />, tone: '#0891b2' },
-    { label: 'Live support', value: 'Mon–Sat', icon: <SupportAgentIcon fontSize="small" />, tone: '#7c3aed' },
-    { label: 'Open channels', value: 'FAQ + Drafts', icon: <TicketIcon fontSize="small" />, tone: '#059669' },
+const categories = {
+  BUG: "Bug report",
+  QUESTION: "Workflow question",
+  ACCESS: "Access and activation",
+  INTEGRATION: "Integrations",
+  BILLING: "Billing question",
+  DATA: "Data issue",
+};
+const faqs = [
+  [
+    "How do I create an invoice?",
+    "Open Business Desk, choose Invoices, select a saved customer and catalogue items, then review the quantities, prices, taxes and issuer details before saving. Download the PDF from the saved invoice.",
+  ],
+  [
+    "How do I import customers or products?",
+    "An administrator can open Migration & integrations, download the CSV template, map columns and inspect every preview issue before confirming. Check import history after submission.",
+  ],
+  [
+    "Does Tally export post automatically?",
+    "No. Select dates and voucher types in Migration & integrations, preview the summary and download XML. Review and import it into the correct Tally company. The connection check is read-only.",
+  ],
+  [
+    "How do I recover access or renew activation?",
+    "Use Forgot password on the sign-in page. Accounts with MFA still require an authenticator or unused recovery code. If neither is available, contact your installation administrator. Expired installations need a valid owner-signed activation. Never put passwords, owner keys or recovery codes in tickets.",
+  ],
+  [
+    "Who can see my support ticket?",
+    "You can see your tickets and public replies. Installation administrators can see the queue and private administrator notes. Tickets and replies are saved on this installation; they are not emailed or sent to an external support service.",
+  ],
+  [
+    "Can the AI assistant modify my records?",
+    "No. Loom provides guidance using only the conversation you choose to send to Groq. It has no tools to query balances, change records, issue licences or execute commands. Verify its advice before acting.",
+  ],
 ];
-
-const Helpdesk: React.FC = () => {
-    const { items: tickets, add: addTicket } = usePersist<any>('helpdesk_tickets', []);
-    const [faqSearch, setFaqSearch] = useState('');
-    const [ticketForm, setTicketForm] = useState({ subject: '', type: 'Bug', description: '' });
-    const [submitted, setSubmitted] = useState(false);
-
-    const filteredFAQs = useMemo(
-        () =>
-            FAQ_ITEMS.filter(
-                (item) =>
-                    !faqSearch ||
-                    item.q.toLowerCase().includes(faqSearch.toLowerCase()) ||
-                    item.a.toLowerCase().includes(faqSearch.toLowerCase())
-            ),
-        [faqSearch]
+const failureMessage = (failure: unknown) => {
+  const message = (failure as { response?: { data?: { message?: unknown } } })
+    ?.response?.data?.message;
+  return typeof message === "string"
+    ? message
+    : Array.isArray(message)
+      ? message.join(". ")
+      : "The request could not be completed. Check the connection and retry.";
+};
+export default function Helpdesk() {
+  useUiLanguage();
+  const queryClient = useQueryClient();
+  const [form, setForm] = useState(initialForm);
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("ALL");
+  const [queueFilter, setQueueFilter] = useState(""),
+    [priorityFilter, setPriorityFilter] = useState("ALL"),
+    [assignmentFilter, setAssignmentFilter] = useState("ALL");
+  const [notice, setNotice] = useState("");
+  const [selected, setSelected] = useState<Ticket | null>(null);
+  const [status, setStatus] = useState("OPEN");
+  const [resolution, setResolution] = useState("");
+  const linkedTicket = () => {
+    const match = window.location.pathname.match(
+      /^\/helpdesk\/tickets\/([^/]+)$/,
     );
-
-    const stats = [
-        { label: 'Tickets raised', value: tickets.length.toString().padStart(2, '0') },
-        { label: 'Resolved', value: tickets.filter((ticket: any) => ticket.status === 'Resolved').length.toString().padStart(2, '0') },
-        { label: 'Pending', value: tickets.filter((ticket: any) => ticket.status !== 'Resolved').length.toString().padStart(2, '0') },
-    ];
-
-    const handleSubmitTicket = () => {
-        if (!ticketForm.subject.trim() || !ticketForm.description.trim()) return;
-        addTicket({
-            id: `LOCAL-${crypto.randomUUID()}`,
-            subject: ticketForm.subject,
-            type: ticketForm.type,
-            description: ticketForm.description,
-            status: 'Pending',
-            date: new Date().toISOString().split('T')[0],
-            priority: ticketForm.type === 'Bug' ? 'High' : 'Medium',
-        });
-        setSubmitted(true);
-    };
-
-    return (
-        <Box sx={{ width: '100%' }}>
-            <Box sx={{ mb: 4, p: { xs: 2.5, md: 3 }, borderRadius: 4, border: '1px solid', borderColor: 'divider', background: 'linear-gradient(135deg, rgba(8,145,178,0.12) 0%, rgba(124,58,237,0.08) 100%)' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
-                    <Avatar sx={{ bgcolor: 'primary.main', width: 48, height: 48 }}>
-                        <HelpdeskIcon />
-                    </Avatar>
-                    <Box>
-                        <Typography variant="h4" fontWeight={800}>Helpdesk</Typography>
-                        <Typography variant="body2" color="text.secondary">Find answers and save local ticket drafts. Drafts stay in this browser and are not sent to support.</Typography>
+    try {
+      return match ? decodeURIComponent(match[1]) : null;
+    } catch {
+      return null;
+    }
+  };
+  const [inspectedId, setInspectedId] = useState<string | null>(linkedTicket);
+  useEffect(() => {
+    const pop = () => setInspectedId(linkedTicket());
+    window.addEventListener("popstate", pop);
+    return () => window.removeEventListener("popstate", pop);
+  }, []);
+  const [cursor, setCursor] = useState<string | null>(null),
+    [previousCursors, setPreviousCursors] = useState<(string | null)[]>([]);
+  const [selectedTickets, setSelectedTickets] = useState<
+    Record<string, number>
+  >({});
+  const resetPage = () => {
+    setCursor(null);
+    setPreviousCursors([]);
+  };
+  const request = useRef<{ json: string; key: string } | null>(null);
+  const submitting = useRef(false);
+  const [drafts] = useState<
+    { id: string; subject: string; description: string }[]
+  >(() => {
+    try {
+      const value = JSON.parse(
+        localStorage.getItem("evergreen_helpdesk_tickets") || "[]",
+      );
+      return Array.isArray(value)
+        ? value.filter(
+            (item) =>
+              typeof item.subject === "string" &&
+              typeof item.description === "string",
+          )
+        : [];
+    } catch {
+      return [];
+    }
+  });
+  let role = "VIEWER";
+  let username = "";
+  try {
+    username =
+      (JSON.parse(getStoredUser() || "{}") as { username?: string }).username ||
+      "";
+    role =
+      (JSON.parse(getStoredUser() || "{}") as { role?: string }).role || role;
+  } catch {
+    /* Server authorizes every operation. */
+  }
+  const tickets = useQuery<
+    Ticket[] | { items: Ticket[]; nextCursor: string | null; total: number }
+  >({
+    queryKey: [
+      "helpdesk-tickets",
+      username,
+      role,
+      search,
+      filter,
+      cursor,
+      queueFilter,
+      priorityFilter,
+      assignmentFilter,
+    ],
+    queryFn: async ({ signal }) =>
+      (
+        await api.get("/helpdesk/queue", {
+          signal,
+          params: {
+            q: search,
+            status: filter,
+            cursor: cursor || undefined,
+            limit: 25,
+            queue: queueFilter || undefined,
+            priority: priorityFilter,
+            assignment: assignmentFilter,
+          },
+        })
+      ).data,
+    refetchInterval: 30000,
+  });
+  const queueOptions = useQuery<any[]>({
+    queryKey: ["helpdesk-queue-options", username, role],
+    queryFn: async () => (await api.get("/helpdesk/resources/QUEUE")).data,
+  });
+  const categoryOptions = useQuery<any[]>({
+    queryKey: ["helpdesk-category-options", username, role],
+    queryFn: async () => (await api.get("/helpdesk/resources/CATEGORY")).data,
+  });
+  const create = useMutation({
+    mutationFn: async () => {
+      const body = {
+        ...form,
+        subject: form.subject.trim(),
+        description: form.description.trim(),
+      };
+      const json = JSON.stringify(body);
+      if (!request.current || request.current.json !== json)
+        request.current = { json, key: crypto.randomUUID() };
+      return (
+        await api.post("/helpdesk/tickets", {
+          ...body,
+          requestKey: request.current.key,
+        })
+      ).data as Ticket;
+    },
+    onSuccess: (ticket) => {
+      setNotice(
+        uiTemplate`Ticket ${ticket.id} saved to this installation. An administrator can now review it.`,
+      );
+      setForm(initialForm);
+      request.current = null;
+      void queryClient.invalidateQueries({ queryKey: ["helpdesk-tickets"] });
+    },
+  });
+  const update = useMutation({
+    mutationFn: async () =>
+      api.patch(`/helpdesk/tickets/${selected!.id}`, {
+        status,
+        resolution,
+        version: selected!.version,
+      }),
+    onSuccess: () => {
+      setSelected(null);
+      void queryClient.invalidateQueries({ queryKey: ["helpdesk-tickets"] });
+    },
+  });
+  const rows = Array.isArray(tickets.data)
+    ? tickets.data
+    : tickets.data?.items || [];
+  const total = Array.isArray(tickets.data)
+    ? tickets.data.length
+    : tickets.data?.total || 0;
+  const nextCursor = Array.isArray(tickets.data)
+    ? null
+    : tickets.data?.nextCursor;
+  const visible = rows.filter((ticket) => true);
+  return (
+    <Box sx={{ width: "100%" }}>
+      <Paper
+        elevation={0}
+        sx={{
+          p: { xs: 2.5, md: 4 },
+          mb: 3,
+          border: "1px solid",
+          borderColor: "divider",
+          borderRadius: 4,
+          background:
+            "linear-gradient(125deg, rgba(32,122,88,.13), rgba(69,134,172,.06))",
+        }}
+      >
+        <Stack direction="row" spacing={2} alignItems="center">
+          <SupportAgent color="primary" sx={{ fontSize: 38 }} />
+          <Box>
+            <Typography variant="overline" color="primary">
+              {uiText("EVERGREEN / SUPPORT ")}
+            </Typography>
+            <Typography variant="h4" fontWeight={750}>
+              {uiText("Helpdesk ")}
+            </Typography>
+          </Box>
+        </Stack>
+        <Typography color="text.secondary" sx={{ mt: 2, maxWidth: 760 }}>
+          {uiText(
+            "Find a workflow answer, ask Loom, or send an issue to your installation administrator. Track the response here. External support delivery and response times are not configured. ",
+          )}
+        </Typography>
+        <Stack direction="row" flexWrap="wrap" gap={1} sx={{ mt: 2 }}>
+          {[
+            [
+              "In queue",
+              rows.filter((row) => !["RESOLVED", "CLOSED"].includes(row.status))
+                .length,
+            ],
+            [
+              "Resolved",
+              rows.filter((row) => row.status === "RESOLVED").length,
+            ],
+            ["Visible tickets", rows.length],
+          ].map(([label, count]) => (
+            <Chip
+              key={label}
+              label={uiTemplate`${label}: ${count}`}
+              variant="outlined"
+            />
+          ))}
+        </Stack>
+      </Paper>
+      <HelpdeskOperationsPanel
+        username={username}
+        role={role}
+        onTicket={setInspectedId}
+        onView={(view) => {
+          setSearch(view.q || "");
+          setFilter(view.status || "ALL");
+          setQueueFilter(view.queue || "");
+          setPriorityFilter(view.priority || "ALL");
+          setAssignmentFilter(view.assignment || "ALL");
+          resetPage();
+        }}
+      />
+      {notice && (
+        <Alert severity="success" onClose={() => setNotice("")} sx={{ mb: 2 }}>
+          {notice}
+        </Alert>
+      )}
+      <Grid container spacing={3}>
+        <Grid size={{ xs: 12, lg: 7 }}>
+          <Paper variant="outlined" sx={{ p: 3, borderRadius: 3 }}>
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              gap={2}
+              justifyContent="space-between"
+            >
+              <Box>
+                <Typography variant="h6" fontWeight={750}>
+                  {role === "ADMIN"
+                    ? uiText("Installation queue")
+                    : uiText("Your tickets")}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {uiText(
+                    "Search covers all visible tickets. Pages contain up to 25 tickets and refresh every 30 seconds.",
+                  )}{" "}
+                  {uiText("Matching tickets")}: {total}
+                </Typography>
+              </Box>
+              <Button
+                startIcon={<Refresh />}
+                onClick={() => void tickets.refetch()}
+                disabled={tickets.isFetching}
+              >
+                {uiText("Refresh ")}
+              </Button>
+            </Stack>
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              gap={2}
+              sx={{ my: 2 }}
+            >
+              <TextField
+                label={uiText("Search tickets", "forms")}
+                value={search}
+                onChange={(event) => {
+                  setSearch(event.target.value);
+                  resetPage();
+                }}
+                size="small"
+                fullWidth
+              />
+              <TextField
+                select
+                label={uiText("Status", "forms")}
+                value={filter}
+                onChange={(event) => {
+                  setFilter(event.target.value);
+                  resetPage();
+                }}
+                size="small"
+                sx={{ minWidth: 170 }}
+              >
+                {[
+                  "ALL",
+                  "OPEN",
+                  "IN_PROGRESS",
+                  "PENDING",
+                  "ON_HOLD",
+                  "RESOLVED",
+                  "CLOSED",
+                  "REOPENED",
+                ].map((value) => (
+                  <MenuItem value={value} key={value}>
+                    {uiText(value)}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Stack>
+            <Stack direction="row" gap={1} flexWrap="wrap" sx={{ mb: 2 }}>
+              <TextField
+                select
+                size="small"
+                label={uiText("Queue filter")}
+                value={queueFilter}
+                onChange={(event) => {
+                  setQueueFilter(event.target.value);
+                  resetPage();
+                }}
+                sx={{ minWidth: 150 }}
+              >
+                <MenuItem value="">{uiText("All queues")}</MenuItem>
+                {[
+                  ...new Map([
+                    ...["TRIAGE", "TECHNICAL", "ACCESS", "BILLING"].map(
+                      (key) => [key, uiText(key)] as [string, string],
+                    ),
+                    ...(queueOptions.data || [])
+                      .filter(
+                        (row) =>
+                          row.kind === "QUEUE" && row.status === "ACTIVE",
+                      )
+                      .map((row) => [row.key, row.title] as [string, string]),
+                  ]).entries(),
+                ].map(([key, label]) => (
+                  <MenuItem key={key} value={key}>
+                    {label}
+                  </MenuItem>
+                ))}
+              </TextField>
+              <TextField
+                select
+                size="small"
+                label={uiText("Priority filter")}
+                value={priorityFilter}
+                onChange={(event) => {
+                  setPriorityFilter(event.target.value);
+                  resetPage();
+                }}
+                sx={{ minWidth: 130 }}
+              >
+                {["ALL", "LOW", "NORMAL", "HIGH", "URGENT"].map((value) => (
+                  <MenuItem key={value} value={value}>
+                    {uiText(value)}
+                  </MenuItem>
+                ))}
+              </TextField>
+              <TextField
+                select
+                size="small"
+                label={uiText("Assignment filter")}
+                value={assignmentFilter}
+                onChange={(event) => {
+                  setAssignmentFilter(event.target.value);
+                  resetPage();
+                }}
+                sx={{ minWidth: 160 }}
+              >
+                {["ALL", "MINE", "UNASSIGNED"].map((value) => (
+                  <MenuItem key={value} value={value}>
+                    {uiText(value)}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Stack>
+            <Stack direction="row" gap={1} flexWrap="wrap" sx={{ mb: 2 }}>
+              <Button
+                disabled={!rows.length}
+                onClick={() =>
+                  tableToCSV(
+                    [
+                      "id",
+                      "subject",
+                      "category",
+                      "priority",
+                      "status",
+                      "requester",
+                      "createdAt",
+                    ],
+                    rows.map((row) => [
+                      row.id,
+                      row.subject,
+                      row.category,
+                      row.priority,
+                      row.status,
+                      row.createdBy,
+                      row.createdAt,
+                    ]),
+                    "helpdesk-current-page",
+                  )
+                }
+              >
+                {uiText("Export this page as CSV")}
+              </Button>
+              {role === "ADMIN" && (
+                <>
+                  <HelpdeskImport />
+                  <HelpdeskBulkActions
+                    tickets={Object.entries(selectedTickets).map(
+                      ([id, version]) => ({ id, version }),
+                    )}
+                    onDone={() => setSelectedTickets({})}
+                  />
+                </>
+              )}
+            </Stack>
+            {tickets.isPending && (
+              <Typography role="status">
+                {uiText("Loading your queue...")}
+              </Typography>
+            )}
+            {tickets.isError && (
+              <Alert severity="error">
+                {failureMessage(tickets.error)}{" "}
+                <Button onClick={() => void tickets.refetch()}>
+                  {uiText("Retry")}
+                </Button>
+              </Alert>
+            )}
+            {!tickets.isPending && !tickets.isError && !visible.length && (
+              <Box sx={{ p: 4, textAlign: "center" }}>
+                <Typography fontWeight={700}>
+                  {rows.length
+                    ? uiText("No matching tickets")
+                    : uiText("No tickets yet")}
+                </Typography>
+                <Typography color="text.secondary">
+                  {rows.length
+                    ? uiText("Try another search or status.")
+                    : uiText(
+                        "Use the issue form when you need an administrator to review something.",
+                      )}
+                </Typography>
+              </Box>
+            )}
+            <Stack gap={1.5}>
+              {visible.map((ticket) => (
+                <Paper
+                  key={ticket.id}
+                  variant="outlined"
+                  sx={{ p: 2, borderRadius: 2 }}
+                >
+                  <Stack
+                    direction="row"
+                    alignItems="center"
+                    justifyContent="space-between"
+                    gap={1}
+                  >
+                    <Typography
+                      fontWeight={750}
+                      sx={{ overflowWrap: "anywhere" }}
+                    >
+                      {role === "ADMIN" && (
+                        <Checkbox
+                          inputProps={{
+                            "aria-label": `${uiText("Select ticket")} ${ticket.subject}`,
+                          }}
+                          checked={ticket.id in selectedTickets}
+                          disabled={
+                            !(ticket.id in selectedTickets) &&
+                            Object.keys(selectedTickets).length >= 50
+                          }
+                          onChange={(event) =>
+                            setSelectedTickets((previous) => {
+                              const next = { ...previous };
+                              if (event.target.checked)
+                                next[ticket.id] = ticket.version;
+                              else delete next[ticket.id];
+                              return next;
+                            })
+                          }
+                        />
+                      )}
+                      {ticket.subject}
+                    </Typography>
+                    <Chip
+                      size="small"
+                      color={
+                        ["RESOLVED", "CLOSED"].includes(ticket.status)
+                          ? "warning"
+                          : "default"
+                      }
+                      label={uiText(ticket.status)}
+                    />
+                    {ticket.proof&&<Chip size="small" variant="outlined" color={ticket.proof==='verified'?'success':ticket.proof==='failed'?'error':'warning'} label={uiText(({recorded:'Recorded',requested:'Resolution awaiting confirmation',verified:'Requester confirmed fixed',failed:'Requester reported still broken',stale:'Closed without confirmation for 14 days'} as Record<string,string>)[ticket.proof]||'Recorded')}/>}
+                  </Stack>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{
+                      my: 1,
+                      whiteSpace: "pre-wrap",
+                      overflowWrap: "anywhere",
+                    }}
+                  >
+                    {ticket.description}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {ticket.id} /{" "}
+                    {new Date(ticket.updatedAt).toLocaleString(uiLocale())} /{" "}
+                    {ticket.createdBy} / {uiText(ticket.priority)}
+                  </Typography>
+                  {ticket.resolution && (
+                    <Alert severity="info" sx={{ mt: 1 }}>
+                      {uiText("Proposed resolution:")} {ticket.resolution}
+                    </Alert>
+                  )}
+                  <Button
+                    size="small"
+                    onClick={() => setInspectedId(ticket.id)}
+                  >
+                    {uiText("Open conversation and proof")}
+                  </Button>
+                  {role === "ADMIN" && (
+                    <Box sx={{ mt: 1 }}>
+                      <Button
+                        size="small"
+                        onClick={() => {
+                          setSelected(ticket);
+                          setStatus(ticket.status);
+                          setResolution(ticket.resolution || "");
+                          update.reset();
+                        }}
+                      >
+                        {uiText("Update status ")}
+                      </Button>
                     </Box>
-                </Box>
-                <Grid container spacing={2}>
-                    {supportCards.map((card) => (
-                        <Grid key={card.label} size={{ xs: 12, md: 4 }}>
-                            <Paper elevation={0} sx={{ p: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                    <Avatar sx={{ bgcolor: `${card.tone}18`, color: card.tone, width: 40, height: 40 }}>{card.icon}</Avatar>
-                                    <Box>
-                                        <Typography variant="caption" color="text.secondary">{card.label}</Typography>
-                                        <Typography variant="body1" fontWeight={700}>{card.value}</Typography>
-                                    </Box>
-                                </Box>
-                            </Paper>
-                        </Grid>
-                    ))}
-                </Grid>
-            </Box>
-
-            <Grid container spacing={3}>
-                <Grid size={{ xs: 12, lg: 7 }}>
-                    <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
-                        <Box sx={{ p: 3, borderBottom: '1px solid', borderColor: 'divider', bgcolor: 'action.hover' }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, mb: 2 }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                    <HelpIcon color="primary" />
-                                    <Typography variant="h6" fontWeight={800}>Frequently Asked Questions</Typography>
-                                </Box>
-                                <Chip label={`${filteredFAQs.length} found`} size="small" variant="outlined" />
-                            </Box>
-                            <TextField
-                                fullWidth
-                                size="small"
-                                placeholder="Search questions, features, or workflows..."
-                                value={faqSearch}
-                                onChange={(e) => setFaqSearch(e.target.value)}
-                                InputProps={{
-                                    startAdornment: (
-                                        <InputAdornment position="start">
-                                            <SearchIcon fontSize="small" color="action" />
-                                        </InputAdornment>
-                                    ),
-                                }}
-                                sx={{ bgcolor: 'background.paper', borderRadius: 2 }}
-                            />
-                        </Box>
-                        <Box sx={{ maxHeight: 520, overflowY: 'auto' }}>
-                            {filteredFAQs.length === 0 ? (
-                                <Box sx={{ p: 4, textAlign: 'center' }}>
-                                    <Typography fontWeight={700}>No matching questions found.</Typography>
-                                    <Typography variant="body2" color="text.secondary">Try a broader search or raise a ticket below.</Typography>
-                                </Box>
-                            ) : (
-                                filteredFAQs.map((item, i) => (
-                                    <Accordion key={i} disableGutters elevation={0} sx={{ '&:before': { display: 'none' }, borderBottom: '1px solid', borderColor: 'divider', transition: 'transform 180ms ease, background-color 180ms ease', '&:hover': { bgcolor: 'action.hover' } }}>
-                                        <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ px: 3 }}>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
-                                                <Chip label={item.category} size="small" sx={{ bgcolor: `${CATEGORY_COLORS[item.category]}15`, color: CATEGORY_COLORS[item.category], fontWeight: 700, fontSize: '0.65rem' }} />
-                                                <Typography variant="body2" fontWeight={700}>{item.q}</Typography>
-                                            </Box>
-                                        </AccordionSummary>
-                                        <AccordionDetails sx={{ px: 3, py: 2, bgcolor: 'background.default' }}>
-                                            <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.75 }}>{item.a}</Typography>
-                                        </AccordionDetails>
-                                    </Accordion>
-                                ))
-                            )}
-                        </Box>
-                    </Paper>
-                </Grid>
-
-                <Grid size={{ xs: 12, lg: 5 }}>
-                    <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', p: 3, mb: 3 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2.5 }}>
-                            <Avatar sx={{ bgcolor: 'primary.main', width: 40, height: 40 }}><HelpdeskIcon fontSize="small" /></Avatar>
-                            <Box>
-                                <Typography variant="h6" fontWeight={800}>Save a Ticket Draft</Typography>
-                                <Typography variant="body2" color="text.secondary">Keep it short, specific, and easy to route.</Typography>
-                            </Box>
-                        </Box>
-                        {submitted ? (
-                            <Fade in>
-                                <Box sx={{ textAlign: 'center', py: 4 }}>
-                                    <ResolvedIcon color="success" sx={{ fontSize: 48, mb: 1.5 }} />
-                                    <Typography variant="h6" fontWeight={800} gutterBottom>Draft saved locally</Typography>
-                                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>We’ll get back to you within 24 hours.</Typography>
-                                    <Button variant="outlined" size="small" onClick={() => { setSubmitted(false); setTicketForm({ subject: '', type: 'Bug', description: '' }); }}>Raise another</Button>
-                                </Box>
-                            </Fade>
-                        ) : (
-                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                <TextField label="Subject" fullWidth size="small" value={ticketForm.subject} onChange={(e) => setTicketForm({ ...ticketForm, subject: e.target.value })} />
-                                <TextField select label="Type" fullWidth size="small" value={ticketForm.type} onChange={(e) => setTicketForm({ ...ticketForm, type: e.target.value })} SelectProps={{ native: true }}>
-                                    <option value="Bug">🐛 Bug Report</option>
-                                    <option value="Feature">💡 Feature Request</option>
-                                    <option value="Question">❓ Question</option>
-                                    <option value="Other">📋 Other</option>
-                                </TextField>
-                                <TextField label="Description" fullWidth size="small" multiline rows={4} value={ticketForm.description} onChange={(e) => setTicketForm({ ...ticketForm, description: e.target.value })} placeholder="Tell us what happened, what you expected, and any steps to reproduce." />
-                                <Button variant="contained" startIcon={<SendIcon />} onClick={handleSubmitTicket} disabled={!ticketForm.subject.trim() || !ticketForm.description.trim()} sx={{ py: 1.1, borderRadius: 2 }}>Save draft</Button>
-                            </Box>
-                        )}
-                    </Paper>
-
-                    <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', p: 3 }}>
-                        <Typography variant="h6" fontWeight={800} gutterBottom>Recent Tickets</Typography>
-                        <Grid container spacing={1.5} sx={{ mb: 2 }}>
-                            {stats.map((stat) => (
-                                <Grid key={stat.label} size={{ xs: 4 }}>
-                                    <Paper elevation={0} sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover', textAlign: 'center' }}>
-                                        <Typography variant="caption" color="text.secondary">{stat.label}</Typography>
-                                        <Typography variant="h6" fontWeight={800}>{stat.value}</Typography>
-                                    </Paper>
-                                </Grid>
-                            ))}
-                        </Grid>
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                            {tickets.length === 0 && (
-                                <Box sx={{ textAlign: 'center', py: 3 }}>
-                                    <Typography fontWeight={700}>No local drafts yet.</Typography>
-                                    <Typography variant="body2" color="text.secondary">Your local drafts will appear here.</Typography>
-                                </Box>
-                            )}
-                            {tickets.map((ticket: any) => (
-                                <Card key={ticket.id} elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, transition: 'transform 180ms ease, box-shadow 180ms ease', '&:hover': { transform: 'translateY(-2px)', boxShadow: 3 } }}>
-                                    <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                                        <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 2 }}>
-                                            <Box sx={{ flex: 1, minWidth: 0 }}>
-                                                <Typography variant="body2" fontWeight={700} gutterBottom noWrap>{ticket.subject}</Typography>
-                                                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
-                                                    <Typography variant="caption" color="text.disabled">{ticket.id}</Typography>
-                                                    <Divider orientation="vertical" flexItem />
-                                                    <Typography variant="caption" color="text.disabled">{ticket.date}</Typography>
-                                                    <Chip label={ticket.priority} size="small" color={ticket.priority === 'High' ? 'error' : 'warning'} variant="outlined" sx={{ height: 18, fontSize: '0.6rem' }} />
-                                                </Box>
-                                            </Box>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, whiteSpace: 'nowrap' }}>
-                                                {statusIconMap[ticket.status]}
-                                                <Typography variant="caption" color="text.secondary">{ticket.status}</Typography>
-                                            </Box>
-                                        </Box>
-                                    </CardContent>
-                                </Card>
-                            ))}
-                        </Box>
-                    </Paper>
-                </Grid>
-            </Grid>
-        </Box>
-    );
-};
-
-export default Helpdesk;
+                  )}
+                </Paper>
+              ))}
+            </Stack>
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              sx={{ mt: 2 }}
+            >
+              <Button
+                disabled={!previousCursors.length || tickets.isFetching}
+                onClick={() => {
+                  setCursor(previousCursors[previousCursors.length - 1]);
+                  setPreviousCursors((previous) => previous.slice(0, -1));
+                }}
+              >
+                {uiText("Previous page")}
+              </Button>
+              <Button
+                disabled={!nextCursor || tickets.isFetching}
+                onClick={() => {
+                  setPreviousCursors((previous) => [...previous, cursor]);
+                  setCursor(nextCursor || null);
+                }}
+              >
+                {uiText("Next page")}
+              </Button>
+            </Stack>
+          </Paper>
+        </Grid>
+        <Grid size={{ xs: 12, lg: 5 }}>
+          <Paper
+            component="form"
+            variant="outlined"
+            sx={{ p: 3, borderRadius: 3 }}
+            onSubmit={async (event) => {
+              event.preventDefault();
+              if (submitting.current) return;
+              submitting.current = true;
+              try {
+                await create.mutateAsync();
+              } catch {
+                /* Mutation error remains visible. */
+              } finally {
+                submitting.current = false;
+              }
+            }}
+          >
+            <Typography variant="h6" fontWeight={750}>
+              {uiText("Report an issue ")}
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ my: 1 }}>
+              {uiText(
+                "Include the page, steps, expected result and actual result. Keep credentials and customer personal data out. ",
+              )}
+            </Typography>
+            <Stack gap={2} sx={{ mt: 2 }}>
+              <TextField
+                label={uiText("Subject", "forms")}
+                value={form.subject}
+                onChange={(event) =>
+                  setForm({ ...form, subject: event.target.value })
+                }
+                required
+                inputProps={{ minLength: 3, maxLength: 160 }}
+                disabled={create.isPending}
+              />
+              <TextField
+                select
+                label={uiText("Category", "forms")}
+                value={form.category}
+                onChange={(event) =>
+                  setForm({ ...form, category: event.target.value })
+                }
+                disabled={create.isPending}
+              >
+                {[
+                  ...Object.entries(categories),
+                  ...(categoryOptions.data || [])
+                    .filter(
+                      (row) =>
+                        row.kind === "CATEGORY" &&
+                        row.status === "ACTIVE" &&
+                        !Object.hasOwn(categories, row.key),
+                    )
+                    .map((row) => [row.key, row.title] as [string, string]),
+                ].map(([value, label]) => (
+                  <MenuItem key={value} value={value}>
+                    {uiText(label, "forms")}
+                  </MenuItem>
+                ))}
+              </TextField>
+              <TextField
+                select
+                label={uiText("Priority", "forms")}
+                value={form.priority}
+                onChange={(event) =>
+                  setForm({ ...form, priority: event.target.value })
+                }
+                disabled={create.isPending}
+              >
+                {["LOW", "NORMAL", "HIGH", "URGENT"].map((value) => (
+                  <MenuItem key={value} value={value}>
+                    {uiText(value)}
+                  </MenuItem>
+                ))}
+              </TextField>
+              <TextField
+                label={uiText("What happened?", "forms")}
+                multiline
+                minRows={5}
+                value={form.description}
+                onChange={(event) =>
+                  setForm({ ...form, description: event.target.value })
+                }
+                required
+                inputProps={{ minLength: 10, maxLength: 4000 }}
+                helperText={uiScopedTemplate(
+                  "forms",
+                )`${form.description.length}/4000 characters`}
+                disabled={create.isPending}
+              />
+              {create.isError && (
+                <Alert severity="error">
+                  {failureMessage(create.error)}{" "}
+                  {uiText(" Your text is preserved for retry. ")}
+                </Alert>
+              )}
+              <Button
+                type="submit"
+                variant="contained"
+                disabled={
+                  create.isPending ||
+                  form.subject.trim().length < 3 ||
+                  form.description.trim().length < 10
+                }
+              >
+                {create.isPending
+                  ? uiText("Saving ticket...")
+                  : uiText("Save ticket to installation")}
+              </Button>
+            </Stack>
+            {drafts.length > 0 && (
+              <Box sx={{ mt: 3 }}>
+                <Typography variant="subtitle2">
+                  {uiText("Previous browser drafts ")}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {uiText(
+                    "These were never submitted. Select one to review before sending; the original draft is kept. ",
+                  )}
+                </Typography>
+                {drafts.map((draft, index) => (
+                  <Button
+                    key={`${draft.id}-${index}`}
+                    size="small"
+                    disabled={create.isPending}
+                    onClick={() =>
+                      setForm({
+                        ...initialForm,
+                        subject: draft.subject.slice(0, 160),
+                        description: draft.description.slice(0, 4000),
+                      })
+                    }
+                  >
+                    {draft.subject}
+                  </Button>
+                ))}
+              </Box>
+            )}
+          </Paper>
+        </Grid>
+      </Grid>
+      <Box sx={{ mt: 4 }}>
+        <Typography variant="h5" fontWeight={750} sx={{ mb: 2 }}>
+          {uiText("Quick answers ")}
+        </Typography>
+        {faqs.map(([question, answer]) => (
+          <Accordion key={question} disableGutters>
+            <AccordionSummary expandIcon={<ExpandMore />}>
+              <Typography fontWeight={650}>{uiText(question)}</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Typography color="text.secondary">{uiText(answer)}</Typography>
+            </AccordionDetails>
+          </Accordion>
+        ))}
+      </Box>
+      <Box sx={{ mt: 4 }}>
+        <StaffAssistant />
+      </Box>
+      <Dialog
+        open={!!selected}
+        onClose={() => {
+          if (!update.isPending) setSelected(null);
+        }}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>{uiText("Update ticket")}</DialogTitle>
+        <DialogContent>
+          <Stack gap={2} sx={{ pt: 1 }}>
+            <TextField
+              select
+              label={uiText("Ticket status", "forms")}
+              value={status}
+              onChange={(event) => setStatus(event.target.value)}
+              disabled={update.isPending}
+            >
+              {[
+                "OPEN",
+                "IN_PROGRESS",
+                "PENDING",
+                "ON_HOLD",
+                "RESOLVED",
+                "CLOSED",
+                "REOPENED",
+              ].map((value) => (
+                <MenuItem key={value} value={value}>
+                  {uiText(value)}
+                </MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              label={uiText("Resolution or progress note", "forms")}
+              multiline
+              minRows={3}
+              value={resolution}
+              onChange={(event) => setResolution(event.target.value)}
+              inputProps={{ maxLength: 2000 }}
+              disabled={update.isPending}
+              required
+            />
+            {update.isError && (
+              <Alert severity="error">{failureMessage(update.error)}</Alert>
+            )}
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button disabled={update.isPending} onClick={() => setSelected(null)}>
+            {uiText("Cancel ")}
+          </Button>
+          <Button
+            disabled={update.isPending || !resolution.trim()}
+            onClick={() => update.mutate()}
+          >
+            {update.isPending ? uiText("Saving...") : uiText("Save update")}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {inspectedId && (
+        <HelpdeskTicketInspector
+          key={inspectedId}
+          id={inspectedId}
+          username={username}
+          role={role}
+          onClose={() => {
+            setInspectedId(null);
+            if (window.location.pathname.startsWith("/helpdesk/tickets/"))
+              window.history.replaceState(null, "", "/helpdesk");
+          }}
+        />
+      )}
+    </Box>
+  );
+}

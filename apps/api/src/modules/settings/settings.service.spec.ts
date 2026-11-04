@@ -60,4 +60,35 @@ describe('SettingsService', () => {
       updatedBy: 'owner',
     });
   });
+
+  it('rejects a seller state that disagrees with the company GSTIN', async () => {
+    await expect(
+      service.updateSettings({
+        gstin: '33ABCDE1234F1Z5',
+        sellerState: 'Kerala',
+      }),
+    ).rejects.toThrow(/registered in Tamil Nadu, not Kerala/);
+    prisma.systemSettings.findFirst.mockResolvedValue({
+      id: 1,
+      gstin: '32ABCDE1234F1Z5',
+    });
+    await expect(
+      service.updateSettings({ sellerState: 'Tamil Nadu' }),
+    ).rejects.toThrow(/registered in Kerala/);
+    expect(prisma.systemSettings.update).not.toHaveBeenCalled();
+  });
+
+  it('stores the canonical spelling of a matching seller state', async () => {
+    await service.updateSettings({
+      gstin: '33ABCDE1234F1Z5',
+      sellerState: ' tamil nadu ',
+    });
+    expect(prisma.systemSettings.update).toHaveBeenCalledWith({
+      where: { id: 1 },
+      data: { gstin: '33ABCDE1234F1Z5', sellerState: 'Tamil Nadu' },
+    });
+    await expect(
+      service.updateSettings({ sellerState: 'Atlantis' }),
+    ).rejects.toThrow(BadRequestException);
+  });
 });

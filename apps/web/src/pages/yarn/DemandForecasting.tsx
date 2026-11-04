@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage, uiLocale, uiTemplate, getUiRevision, uiDateLocale, uiScopedTemplate } from "../../i18n";
 import React, { useMemo } from 'react';
 import {
   AutoAwesome as ForecastIcon,
@@ -53,6 +54,7 @@ interface ForecastRow {
 }
 
 const DemandForecasting: React.FC = () => {
+  useUiLanguage();
   const queryClient = useQueryClient();
 
   const {
@@ -78,7 +80,7 @@ const DemandForecasting: React.FC = () => {
 
       return {
         key,
-        month: date.toLocaleDateString('en-IN', { month: 'short', year: '2-digit' }),
+        month: date.toLocaleDateString(uiDateLocale(), { month: 'short', year: '2-digit' }),
         actual: value,
         projected: null,
         status: 'Historical',
@@ -96,7 +98,7 @@ const DemandForecasting: React.FC = () => {
 
       return {
         key,
-        month: date.toLocaleDateString('en-IN', { month: 'short', year: '2-digit' }),
+        month: date.toLocaleDateString(uiDateLocale(), { month: 'short', year: '2-digit' }),
         actual: null,
         projected: avg,
         status: 'Projected',
@@ -112,7 +114,7 @@ const DemandForecasting: React.FC = () => {
       totalValidOrders,
       projectedThreeMonths,
     };
-  }, [orders]);
+  }, [orders, getUiRevision()]);
 
   return (
     <Box sx={{ width: '100%' }}>
@@ -131,11 +133,9 @@ const DemandForecasting: React.FC = () => {
           <ForecastIcon color="primary" sx={{ fontSize: 36 }} />
           <Box>
             <Typography variant="h4" fontWeight={800}>
-              Demand Forecasting
-            </Typography>
+              {uiText("Demand Forecasting ")}</Typography>
             <Typography color="text.secondary">
-              Order-value outlook calculated from recorded sales order history
-            </Typography>
+              {uiText("Order-value outlook calculated from recorded sales order history ")}</Typography>
           </Box>
         </Box>
 
@@ -145,31 +145,26 @@ const DemandForecasting: React.FC = () => {
           disabled={isLoading || isRefetching}
           onClick={() => queryClient.invalidateQueries({ queryKey: ['commerce-orders'] })}
         >
-          {isRefetching ? 'Refreshing...' : 'Refresh'}
+          {isRefetching ? uiText("Refreshing...") : uiText("Refresh")}
         </Button>
       </Box>
 
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
-          Could not load sales orders for the forecast. Please verify your connection.
-        </Alert>
+          {uiText("Could not load sales orders for the forecast. Please verify your connection. ")}</Alert>
       )}
 
       {/* Baseline calculation notice */}
       <Alert severity="info" sx={{ mb: 3 }}>
-        <strong>Projection Model:</strong> 3-month trailing moving average of non-cancelled sales
-        orders. Provides an operational planning baseline for procurement and spinning schedules.
-      </Alert>
+        <strong>{uiText("Projection Model:")}</strong> {uiText(" 3-month trailing moving average of non-cancelled sales orders. Provides an operational planning baseline for procurement and spinning schedules. ")}</Alert>
 
       {isLoading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', p: 6 }}>
-          <CircularProgress aria-label="Loading sales history" />
+          <CircularProgress aria-label={uiText("Loading sales history")} />
         </Box>
       ) : forecast.avg === null ? (
         <Alert severity="warning">
-          There is not enough recorded sales order history to calculate a projection yet. Once sales
-          orders are placed in Business Desk, demand trajectories will populate automatically.
-        </Alert>
+          {uiText("There is not enough recorded sales order history to calculate a projection yet. Once sales orders are placed in Business Desk, demand trajectories will populate automatically. ")}</Alert>
       ) : (
         <>
           {/* Summary KPIs */}
@@ -180,10 +175,9 @@ const DemandForecasting: React.FC = () => {
                   <TrendingUpIcon sx={{ color: '#059669', fontSize: 36 }} />
                   <Box>
                     <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                      BASELINE MONTHLY DEMAND
-                    </Typography>
+                      {uiText("BASELINE MONTHLY DEMAND ")}</Typography>
                     <Typography variant="h5" fontWeight={800} color="#059669">
-                      ₹{forecast.avg.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                      {uiText("₹")}{forecast.avg.toLocaleString(uiLocale(), { maximumFractionDigits: 0 })}
                     </Typography>
                   </Box>
                 </CardContent>
@@ -196,10 +190,9 @@ const DemandForecasting: React.FC = () => {
                   <CalendarIcon sx={{ color: '#2563eb', fontSize: 36 }} />
                   <Box>
                     <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                      3-MONTH PROJECTED VALUE
-                    </Typography>
+                      {uiText("3-MONTH PROJECTED VALUE ")}</Typography>
                     <Typography variant="h5" fontWeight={800} color="#2563eb">
-                      ₹{forecast.projectedThreeMonths.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                      {uiText("₹")}{forecast.projectedThreeMonths.toLocaleString(uiLocale(), { maximumFractionDigits: 0 })}
                     </Typography>
                   </Box>
                 </CardContent>
@@ -212,11 +205,9 @@ const DemandForecasting: React.FC = () => {
                   <OrderIcon sx={{ color: '#8b5cf6', fontSize: 36 }} />
                   <Box>
                     <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                      ACTIVE ORDERS ANALYZED
-                    </Typography>
+                      {uiText("ACTIVE ORDERS ANALYZED ")}</Typography>
                     <Typography variant="h5" fontWeight={800} color="#8b5cf6">
-                      {forecast.totalValidOrders} Orders
-                    </Typography>
+                      {forecast.totalValidOrders} {uiText(" Orders ")}</Typography>
                   </Box>
                 </CardContent>
               </Card>
@@ -226,8 +217,7 @@ const DemandForecasting: React.FC = () => {
           {/* Interactive Chart */}
           <Paper variant="outlined" sx={{ p: 3, borderRadius: 3, mb: 3 }}>
             <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 2 }}>
-              6-Month Historical Revenue vs 3-Month Projection
-            </Typography>
+              {uiText("6-Month Historical Revenue vs 3-Month Projection ")}</Typography>
             <Box sx={{ width: '100%', height: 350 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={forecast.rows} margin={{ top: 10, right: 30, bottom: 5, left: 20 }}>
@@ -241,14 +231,14 @@ const DemandForecasting: React.FC = () => {
                     formatter={(value) =>
                       value == null
                         ? '—'
-                        : `₹${Number(value).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
+                        : `₹${Number(value).toLocaleString(uiLocale(), { maximumFractionDigits: 0 })}`
                     }
                   />
                   <Legend />
                   <Line
                     type="monotone"
                     dataKey="actual"
-                    name="Recorded Sales (₹)"
+                    name={uiText("Recorded Sales (₹)", 'charts')}
                     stroke="#059669"
                     strokeWidth={3}
                     dot={{ r: 4 }}
@@ -257,7 +247,7 @@ const DemandForecasting: React.FC = () => {
                   <Line
                     type="monotone"
                     dataKey="projected"
-                    name="Projected Demand (₹)"
+                    name={uiText("Projected Demand (₹)", 'charts')}
                     stroke="#2563eb"
                     strokeWidth={2}
                     strokeDasharray="5 5"
@@ -273,21 +263,18 @@ const DemandForecasting: React.FC = () => {
           <Paper variant="outlined" sx={{ borderRadius: 3, overflow: 'hidden' }}>
             <Box sx={{ p: 2, bgcolor: 'action.hover', borderBottom: 1, borderColor: 'divider' }}>
               <Typography variant="subtitle2" fontWeight={700}>
-                Monthly Demand Breakdown
-              </Typography>
+                {uiText("Monthly Demand Breakdown ")}</Typography>
             </Box>
             <TableContainer>
               <Table size="small">
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: 700 }}>Month</TableCell>
-                    <TableCell sx={{ fontWeight: 700 }}>Period Type</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>{uiText("Month", 'tables')}</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>{uiText("Period Type", 'tables')}</TableCell>
                     <TableCell align="right" sx={{ fontWeight: 700 }}>
-                      Actual Order Value
-                    </TableCell>
+                      {uiText("Actual Order Value ", 'tables')}</TableCell>
                     <TableCell align="right" sx={{ fontWeight: 700 }}>
-                      Projected Value
-                    </TableCell>
+                      {uiText("Projected Value ", 'tables')}</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -304,12 +291,12 @@ const DemandForecasting: React.FC = () => {
                       </TableCell>
                       <TableCell align="right" sx={{ fontWeight: 600 }}>
                         {row.actual !== null
-                          ? `₹${row.actual.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
+                          ? uiScopedTemplate('tables')`₹${row.actual.toLocaleString(uiLocale(), { maximumFractionDigits: 0 })}`
                           : '—'}
                       </TableCell>
                       <TableCell align="right" sx={{ color: 'primary.main', fontWeight: 600 }}>
                         {row.projected !== null
-                          ? `₹${row.projected.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
+                          ? uiScopedTemplate('tables')`₹${row.projected.toLocaleString(uiLocale(), { maximumFractionDigits: 0 })}`
                           : '—'}
                       </TableCell>
                     </TableRow>

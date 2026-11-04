@@ -40,6 +40,15 @@ const clientIp = (context: ExecutionContext): string => {
 // Nest may instantiate a method-scoped guard for each authentication route.
 // Keep one budget across password and passkey entry points in this process.
 const publicAuthLimit = new SlidingWindowLimit();
+const helpdeskLimit = new SlidingWindowLimit();
+
+@Injectable()
+export class HelpdeskRateLimitGuard implements CanActivate {
+  canActivate(context: ExecutionContext): boolean {
+    const request = context.switchToHttp().getRequest<Request & { user?: { userId?: number } }>();
+    return helpdeskLimit.check(`${request.user?.userId || 'unknown'}:${clientIp(context)}`,40,'Too many helpdesk submissions. Please try again later.');
+  }
+}
 
 @Injectable()
 export class PublicOrderRateLimitGuard implements CanActivate {

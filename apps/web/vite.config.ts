@@ -32,6 +32,7 @@ const directApiProxy: ProxyOptions = {
 
 // https://vite.dev/config/
 export default defineConfig({
+  envPrefix: ['VITE_API_URL', 'VITE_SUPPORT_PHONE'],
   plugins: [react()],
   base: './',
   server: {

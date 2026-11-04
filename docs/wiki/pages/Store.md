@@ -18,14 +18,14 @@ No literal Tab controls in this file. Check composed components and dynamic navi
 
 | Control / label | Handler | Source |
 | --- | --- | --- |
-| Open public shop | `delegated / form submit` | [apps/web/src/pages/Store.tsx:49](../../../apps/web/src/pages/Store.tsx) |
-| Manage catalogue | `{() => onNavigate?.('catalogue')}` | [apps/web/src/pages/Store.tsx:49](../../../apps/web/src/pages/Store.tsx) |
-| Sales orders | `{() => onNavigate?.('orders')}` | [apps/web/src/pages/Store.tsx:49](../../../apps/web/src/pages/Store.tsx) |
-| Add to order | `{() => changeQuantity(item, 1)}` | [apps/web/src/pages/Store.tsx:60](../../../apps/web/src/pages/Store.tsx) |
-| Add customer | `{() => onNavigate?.('customers')}` | [apps/web/src/pages/Store.tsx:68](../../../apps/web/src/pages/Store.tsx) |
-| {`Remove ${row.item!.name}`} | `{() => changeQuantity(row.item!, -1)}` | [apps/web/src/pages/Store.tsx:69](../../../apps/web/src/pages/Store.tsx) |
-| {`Add ${row.item!.name}`} | `{() => changeQuantity(row.item!, 1)}` | [apps/web/src/pages/Store.tsx:69](../../../apps/web/src/pages/Store.tsx) |
-| {saving ? 'Reserving…' : 'Create sales order'} | `{reserveOrder}` | [apps/web/src/pages/Store.tsx:73](../../../apps/web/src/pages/Store.tsx) |
+| {uiText("Open public shop")} | `delegated / form submit` | [apps/web/src/pages/Store.tsx:51](../../../apps/web/src/pages/Store.tsx) |
+| {uiText("Manage catalogue")} | `{() => onNavigate?.('catalogue')}` | [apps/web/src/pages/Store.tsx:51](../../../apps/web/src/pages/Store.tsx) |
+| {uiText("Sales orders")} | `{() => onNavigate?.('orders')}` | [apps/web/src/pages/Store.tsx:51](../../../apps/web/src/pages/Store.tsx) |
+| {uiText("Add to order")} | `{() => changeQuantity(item, 1)}` | [apps/web/src/pages/Store.tsx:62](../../../apps/web/src/pages/Store.tsx) |
+| {uiText("Add customer")} | `{() => onNavigate?.('customers')}` | [apps/web/src/pages/Store.tsx:70](../../../apps/web/src/pages/Store.tsx) |
+| {uiTemplate`Remove ${row.item!.name}`} | `{() => changeQuantity(row.item!, -1)}` | [apps/web/src/pages/Store.tsx:71](../../../apps/web/src/pages/Store.tsx) |
+| {uiTemplate`Add ${row.item!.name}`} | `{() => changeQuantity(row.item!, 1)}` | [apps/web/src/pages/Store.tsx:71](../../../apps/web/src/pages/Store.tsx) |
+| {saving ? uiText("Reserving…") : uiText("Create sales order")} | `{reserveOrder}` | [apps/web/src/pages/Store.tsx:75](../../../apps/web/src/pages/Store.tsx) |
 
 ## API calls
 
@@ -33,12 +33,13 @@ Paths are relative to the client API base (`/api/backend` by default in the brow
 
 | Method | Path expression | Source |
 | --- | --- | --- |
-| GET | `/commerce/items` | [apps/web/src/pages/Store.tsx:20](../../../apps/web/src/pages/Store.tsx) |
-| GET | `/commerce/customers` | [apps/web/src/pages/Store.tsx:21](../../../apps/web/src/pages/Store.tsx) |
-| POST | `/commerce/orders` | [apps/web/src/pages/Store.tsx:38](../../../apps/web/src/pages/Store.tsx) |
+| GET | `/commerce/items` | [apps/web/src/pages/Store.tsx:22](../../../apps/web/src/pages/Store.tsx) |
+| GET | `/commerce/customers` | [apps/web/src/pages/Store.tsx:23](../../../apps/web/src/pages/Store.tsx) |
+| POST | `/commerce/orders` | [apps/web/src/pages/Store.tsx:40](../../../apps/web/src/pages/Store.tsx) |
 
 ## Composed behavior
 
+- [i18n.ts](../../../apps/web/src/i18n.ts)
 - [api.ts](../../../apps/web/src/utils/api.ts)
 
 ## Verify the workflow

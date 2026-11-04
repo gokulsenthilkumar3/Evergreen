@@ -6,6 +6,11 @@ import { AppService } from './app.service';
 import { IS_PUBLIC_KEY } from './decorators/public.decorator';
 import { ROLES_KEY } from './decorators/roles.decorator';
 import { PrismaService } from './services/prisma.service';
+jest.mock('@evergreen/types/licensing', () => ({
+  requireInstallationLicence: jest.fn(() => {
+    throw new Error('No activation');
+  }),
+}));
 
 const handler = (name: 'index' | 'health' | 'status') =>
   AppController.prototype[name];
@@ -81,7 +86,7 @@ describe('AppController health routes', () => {
     expect(reflector.get(ROLES_KEY, handler('status'))).toEqual(['ADMIN']);
   });
 
-  it('exposes no other routes', () => {
+  it('exposes only health, operational status and minimal activation status', () => {
     const routes = Object.getOwnPropertyNames(AppController.prototype).filter(
       (name) =>
         name !== 'constructor' &&
@@ -90,7 +95,13 @@ describe('AppController health routes', () => {
           AppController.prototype[name as keyof AppController],
         ),
     );
-    expect(routes.sort()).toEqual(['health', 'index', 'status']);
+    expect(routes.sort()).toEqual([
+      'health',
+      'index',
+      'licenceStatus',
+      'status',
+    ]);
+    expect(controller.licenceStatus()).toEqual({ active: false });
   });
 });
 

@@ -4,18 +4,37 @@
   "main": "./dist/index.js",
   "types": "./index.ts",
   "exports": {
+    "./owner-public-key": {"types":"./owner-public-key.ts","require":"./dist/owner-public-key.js","default":"./dist/owner-public-key.js"},
+    "./ai-server": {
+      "browser": null,
+      "types": "./ai-server.ts",
+      "require": "./dist/ai-server.js",
+      "default": "./dist/ai-server.js"
+    },
     ".": {
       "types": "./index.ts",
       "browser": "./index.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.js",
       "default": "./dist/index.js"
+    },
+    "./licensing": {
+      "browser": null,
+      "types": "./licensing.ts",
+      "require": "./dist/licensing.js",
+      "default": "./dist/licensing.js"
+    },
+    "./licensing-online": {
+      "browser": null,
+      "types": "./licensing-online.ts",
+      "require": "./dist/licensing-online.js",
+      "default": "./dist/licensing-online.js"
     }
   },
   "scripts": {
     "build": "tsc"
   },
   "devDependencies": {
-    "typescript": "latest"
+    "typescript": "5.9.3"
   }
 }

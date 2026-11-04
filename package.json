@@ -5,6 +5,11 @@
   "description": "Ever Green Yarn Management System",
   "overrides": {
     "proxy-addr": "2.0.8",
+    "@angular-devkit/core": "19.2.24",
+    "undici@6": "6.29.1",
+    "@nestjs/platform-express": {
+      "multer": "2.5.0"
+    },
     "@nestjs/swagger": {
       "js-yaml": "5.4.3"
     }
@@ -14,6 +19,11 @@
     "packages/*"
   ],
   "scripts": {
+    "graph:build": "graphify extract . --code-only --max-workers 2 && graphify cluster-only . --no-label",
+    "graph:check": "node scripts/graphify/commit-check.mjs staged",
+    "graph:ci": "node scripts/graphify/commit-check.mjs ci",
+    "graph:hooks": "node scripts/graphify/commit-check.mjs install-hooks",
+    "graph:test": "node --test scripts/graphify/commit-check.test.mjs",
     "start": "node scripts/dev-all.mjs",
     "start:all": "node scripts/dev-all.mjs",
     "dev:all": "node scripts/dev-all.mjs",
@@ -21,13 +31,18 @@
     "dev": "node scripts/dev-evergreen.js",
     "setup:check": "node scripts/setup-check.js",
     "agent:check": "node agent-system/validate.mjs && node --test agent-system/runtime/planner.test.mjs",
-    "db:studio": "npm run db:studio -w @evergreen/database -- --hostname 127.0.0.1",
+    "db:studio": "node scripts/security/prisma-studio.cjs tenant",
+    "db:studio:tenant": "node scripts/security/prisma-studio.cjs tenant",
+    "db:studio:provider": "node scripts/security/prisma-studio.cjs provider",
     "build": "npm run build --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "docs:generate": "node scripts/generate-knowledge.mjs",
     "docs:check": "node scripts/generate-knowledge.mjs --check && node scripts/check-knowledge-links.mjs",
+    "check:boundaries": "node scripts/check-browser-boundaries.mjs",
+    "test:boundaries": "node --test scripts/check-browser-boundaries.test.mjs",
+    "test:data": "node --test scripts/data/*.test.mjs",
     "typecheck": "npm run typecheck -w apps/api && npx tsc --noEmit -p apps/web/tsconfig.json",
-    "verify": "npm run generate -w @evergreen/database && npm run migrate:check -w @evergreen/database && npm run generate -w @evergreen/admin-database && npm run migrate:check -w @evergreen/admin-database && npm run typecheck && npm test && npm run test:e2e -w apps/api && npm run agent:check && npm run test:maintenance && npm run test:release && npm run audit:check && npm run docs:check && npm run build",
+    "verify": "npm run generate -w @evergreen/database && npm run migrate:check -w @evergreen/database && npm run postgres:check -w @evergreen/database && npm run generate -w @evergreen/admin-database && npm run migrate:check -w @evergreen/admin-database && npm run typecheck && npm run check:boundaries && npm run test:boundaries && npm run test:data && npm test && npm run test:e2e -w apps/api && npm run agent:check && npm run test:maintenance && npm run test:release && npm run audit:check && npm run docs:check && npm run build",
     "desktop": "npm run start -w apps/desktop",
     "dist:desktop": "npm run dist -w apps/desktop",
     "release:desktop": "node scripts/release/desktop.mjs",
@@ -38,7 +53,12 @@
     "audit:roadmap": "node scripts/roadmap-audit.mjs",
     "audit:surface": "node scripts/project-audit.mjs",
     "audit:check": "node scripts/roadmap-audit.mjs --check && node scripts/project-audit.mjs --check",
-    "test:maintenance": "node --test scripts/audit.test.mjs"
+    "test:maintenance": "node --test scripts/audit.test.mjs",
+    "owner:start": "node scripts/security/owner-host.cjs start",
+    "owner:activate": "node scripts/security/owner-host.cjs activate",
+    "license:help": "node scripts/security/owner-license.cjs help",
+    "test:licensing": "npm run build -w @evergreen/types && node --test scripts/security/licensing.test.cjs",
+    "test:ai": "npm run build -w @evergreen/types && node --test scripts/security/ai-agents.test.cjs"
   },
   "keywords": [],
   "author": "",

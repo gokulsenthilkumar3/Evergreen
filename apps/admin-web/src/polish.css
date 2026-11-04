@@ -1,0 +1,183 @@
+/* Final interaction layer. All colors follow the workspace appearance settings. */
+:root {
+  --ui-ease: cubic-bezier(.22, 1, .36, 1);
+  --ui-ring: color-mix(in srgb, var(--studio-accent) 32%, transparent);
+}
+.admin-main-viewport {
+  background: radial-gradient(ellipse at 85% 0%, var(--studio-accent-wash), transparent 55%);
+}
+.admin-app .glass-panel,
+.deck-panel,
+.deck-stat {
+  border-radius: 14px;
+  box-shadow: 0 8px 28px -18px #0005, inset 0 1px 0 var(--studio-line);
+}
+.admin-app .ops-stat,
+.admin-app .record-card-grid > .glass-panel {
+  clip-path: none;
+}
+.deck-hero {
+  border-radius: 20px;
+  border: 1px solid #b3baff24;
+  box-shadow: inset 0 1px 0 #ffffff0c, 0 20px 50px -32px #0009;
+}
+.deck-heading h1,
+.page-title { letter-spacing: -.045em; }
+.deck-panel h2 { font-weight: 600; }
+.deck-stat { position: relative; overflow: hidden; }
+.deck-stat::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 100% 0%, var(--studio-accent-wash), transparent 70%);
+}
+.deck-stat > strong { font-variant-numeric: tabular-nums; }
+.admin-app .nav-tab-btn {
+  border-radius: 9px;
+  position: relative;
+  min-height: 42px;
+}
+.admin-app .nav-tab-btn.active {
+  background: linear-gradient(100deg, var(--studio-accent-wash), transparent);
+  box-shadow: inset 3px 0 var(--studio-accent);
+  border-color: var(--studio-border);
+}
+.admin-app .nav-tab-btn:hover { background-color: var(--studio-hover); }
+.admin-app .command-trigger:hover {
+  border-color: var(--studio-accent);
+  box-shadow: 0 0 0 3px var(--studio-accent-wash);
+}
+.admin-app :is(.btn-ghost, .btn-table-action, .deck-button, .deck-inspect-button) {
+  border-radius: 8px;
+  min-height: 36px;
+}
+.admin-app :is(input, select, textarea) { border-radius: 8px; }
+.admin-app :is(input, select, textarea):focus-visible {
+  outline: 2px solid var(--studio-accent);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px var(--studio-accent-wash);
+}
+.admin-app .status-pill { border-radius: 999px; }
+.deck-panel { overflow: hidden; }
+.deck-company-table tbody tr:hover,
+.deck-recent-row:hover { background-color: var(--studio-hover); }
+.deck-company-link:hover strong { color: var(--studio-accent); }
+.deck-inspect-button:hover { background: var(--studio-accent-wash); color: var(--studio-accent); }
+.admin-app .modal-dialog-box,
+.command-palette {
+  border-radius: 18px;
+  box-shadow: 0 32px 100px #0006, 0 0 0 1px var(--studio-border);
+}
+.action-banner { border-radius: 10px; }
+
+/* The entry screen shares the same materials, with more generous reading sizes. */
+.gate-root:has(.gate-story) {
+  max-width: none;
+  padding-inline: max(6%, calc((100vw - 1200px) / 2));
+  background:
+    radial-gradient(ellipse at 10% 25%, #848bdb13, transparent 50%),
+    radial-gradient(ellipse at 90% 75%, #61cba90a, transparent 45%), #111217;
+}
+.gate-story-eyebrow { font-size: 10px; color: #a3abc4; }
+.gate-story-copy p { font-size: 14px; max-width: 360px; }
+.gate-story h2 em { color: #bdc5ff; }
+.gate-card {
+  max-width: 430px;
+  padding: clamp(26px, 3vw, 40px);
+  border-color: #b4bcf01c;
+  border-radius: 20px;
+  background: linear-gradient(145deg, #222531, #191b23 65%);
+  box-shadow: 0 24px 80px #0003, inset 0 1px #ffffff08;
+}
+.gate-badge { font-size: 10px; color: #b1bad5; }
+.gate-badge-dot { width: 6px; height: 6px; background: #8cdbbe; }
+.gate-title { font-size: 30px; }
+.gate-subtitle { font-size: 13px; color: #a6aec4; }
+.gate-label { font-size: 12px; }
+.gate-input { min-height: 50px; font-size: 14px; border-radius: 9px; }
+.gate-submit-btn {
+  min-height: 48px;
+  font-size: 13px;
+  border-radius: 9px;
+  box-shadow: inset 0 1px #ffffff40;
+}
+.gate-submit-btn:hover:not(:disabled) { box-shadow: 0 6px 24px #aeb6ed25; }
+.gate-summary,
+.gate-details p { font-size: 12px; }
+.gate-code { font-size: 11px; }
+.gate-footer { font-size: 10px; color: #929cb5; }
+.gate-art-label { font-size: 9px; padding: 10px 14px; border-color: #aab3ff28; }
+.gate-story-footer { font-size: 11px; color: #929cb5; }
+
+@keyframes ui-arrive {
+  from { opacity: 0; translate: 0 14px; }
+  to { opacity: 1; translate: 0 0; }
+}
+@keyframes ui-hover-float {
+  50% { transform: translateY(-7px); }
+}
+@keyframes ui-orbit-glow {
+  50% { opacity: .45; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-owner-motion="reduced"]) .admin-app :is(button, input, select, textarea),
+  html:not([data-owner-motion="reduced"]) :is(.deck-stat, .deck-panel, .glass-panel, .deck-company-table tr, .deck-recent-row) {
+    transition: transform 240ms var(--ui-ease), background-color 180ms ease,
+      border-color 180ms ease, box-shadow 240ms ease, color 180ms ease;
+  }
+  html:not([data-owner-motion="reduced"]) .admin-main-viewport > section,
+  html:not([data-owner-motion="reduced"]) .deck > * {
+    animation: ui-arrive 550ms var(--ui-ease) both;
+  }
+  html:not([data-owner-motion="reduced"]) .deck > :nth-child(2) { animation-delay: 60ms; }
+  html:not([data-owner-motion="reduced"]) .deck > :nth-child(3) { animation-delay: 120ms; }
+  html:not([data-owner-motion="reduced"]) .deck > :nth-child(4) { animation-delay: 180ms; }
+  html:not([data-owner-motion="reduced"]) .deck-stat-row > .deck-stat {
+    animation: ui-arrive 550ms var(--ui-ease) both;
+    animation-delay: 100ms;
+  }
+  html:not([data-owner-motion="reduced"]) .deck-stat-row > :nth-child(2) { animation-delay: 160ms; }
+  html:not([data-owner-motion="reduced"]) .deck-stat-row > :nth-child(3) { animation-delay: 220ms; }
+  html:not([data-owner-motion="reduced"]) .deck-stat-row > :nth-child(4) { animation-delay: 280ms; }
+  html:not([data-owner-motion="reduced"]) .deck-satellite { animation: ui-hover-float 7s ease-in-out infinite; }
+  html:not([data-owner-motion="reduced"]) .deck-satellite:nth-child(even) { animation-delay: -3s; }
+  html:not([data-owner-motion="reduced"]) .deck-orbit { animation: ui-orbit-glow 6s ease-in-out infinite; }
+  html:not([data-owner-motion="reduced"]) .gate-story-copy { animation: ui-arrive 700ms var(--ui-ease) both; }
+  html:not([data-owner-motion="reduced"]) .gate-card { animation: ui-arrive 700ms 100ms var(--ui-ease) both; }
+  html:not([data-owner-motion="reduced"]) .gate-art-label { animation: ui-hover-float 8s ease-in-out infinite; }
+  html:not([data-owner-motion="reduced"]) .gate-art-label.label-b { animation-delay: -3s; }
+  html:not([data-owner-motion="reduced"]) .gate-art-label.label-c { animation-delay: -5s; }
+  html:not([data-owner-motion="reduced"]) .command-palette,
+  html:not([data-owner-motion="reduced"]) .action-banner { animation: ui-arrive 250ms var(--ui-ease) both; }
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  html:not([data-owner-motion="reduced"]) .deck-stat:hover {
+    transform: translateY(-4px);
+    border-color: var(--ui-ring);
+    box-shadow: 0 14px 32px -16px #0006;
+  }
+  html:not([data-owner-motion="reduced"]) .admin-app .nav-tab-btn:hover .nav-icon { transform: translateX(2px); }
+  html:not([data-owner-motion="reduced"]) .admin-app button:active:not(:disabled) { transform: translateY(1px); }
+}
+@media (max-width: 720px) {
+  .gate-root:has(.gate-story) { padding: 28px 20px; }
+  .gate-card { max-width: none; }
+  .gate-story h2 { line-height: 1.25; }
+  .deck-hero { border-radius: 14px; }
+}
+/* Both the OS preference and the in-app preference disable every motion layer. */
+html[data-owner-motion="reduced"] *,
+html[data-owner-motion="reduced"] *::before,
+html[data-owner-motion="reduced"] *::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

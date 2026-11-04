@@ -18,7 +18,8 @@ No literal Tab controls in this file. Check composed components and dynamic navi
 
 | Control / label | Handler | Source |
 | --- | --- | --- |
-| Revoke | `{() => { if (window.confirm('Are you sure you want to revoke this session?')) { revokeSessionMutation.mutate(session.id); } }}` | [apps/web/src/pages/SessionManagement.tsx:154](../../../apps/web/src/pages/SessionManagement.tsx) |
+| {uiText('Retry')} | `{()=>void refetch()}` | [apps/web/src/pages/SessionManagement.tsx:76](../../../apps/web/src/pages/SessionManagement.tsx) |
+| {uiText("Revoke ", 'tables')} | `{async () => { if (await confirm({title:uiText('Revoke sessions'),message:uiText('Revoke this session? If it is your current session, you will be signed out.'),severity:'warning'})) { revokeSessionMutation.mutate(session.id); } }}` | [apps/web/src/pages/SessionManagement.tsx:161](../../../apps/web/src/pages/SessionManagement.tsx) |
 
 ## API calls
 
@@ -26,13 +27,15 @@ Paths are relative to the client API base (`/api/backend` by default in the brow
 
 | Method | Path expression | Source |
 | --- | --- | --- |
-| GET | `/sessions` | [apps/web/src/pages/SessionManagement.tsx:31](../../../apps/web/src/pages/SessionManagement.tsx) |
-| DELETE | `'/sessions/${id}/revoke'` | [apps/web/src/pages/SessionManagement.tsx:47](../../../apps/web/src/pages/SessionManagement.tsx) |
+| GET | `/sessions` | [apps/web/src/pages/SessionManagement.tsx:36](../../../apps/web/src/pages/SessionManagement.tsx) |
+| DELETE | `'/sessions/${id}/revoke'` | [apps/web/src/pages/SessionManagement.tsx:52](../../../apps/web/src/pages/SessionManagement.tsx) |
 
 ## Composed behavior
 
+- [i18n.ts](../../../apps/web/src/i18n.ts)
 - [api.ts](../../../apps/web/src/utils/api.ts)
 - [EmptyState.tsx](../../../apps/web/src/components/common/EmptyState.tsx)
+- [ConfirmContext.tsx](../../../apps/web/src/context/ConfirmContext.tsx)
 
 ## Verify the workflow
 

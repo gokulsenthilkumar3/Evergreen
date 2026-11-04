@@ -1,3 +1,4 @@
+import { uiLocale, uiDateLocale } from "../../i18n";
 import React, { useEffect, useRef } from 'react';
 import { Box, Typography, Chip, useTheme } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -48,7 +49,7 @@ const KIND_META: Record<EventKind, { emoji: string; color: string; label: string
 function timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
   if (!Number.isFinite(diff)) return 'Date unavailable';
-  if (diff < 0) return new Date(iso).toLocaleDateString('en-IN');
+  if (diff < 0) return new Date(iso).toLocaleDateString(uiDateLocale());
   const s = Math.floor(diff / 1000);
   if (s < 60) return `${s}s ago`;
   const m = Math.floor(s / 60);

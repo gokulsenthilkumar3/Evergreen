@@ -1,3 +1,9 @@
+import { OwnerAssistantController } from './modules/owner-licensing/owner-assistant.controller';
+import { MarketingSettingsController, MarketingSettingsService } from './modules/control/marketing-settings.controller';
+import { ProviderSessionController } from './modules/owner-licensing/provider-session.controller';
+import { OwnerLicensingController } from './modules/owner-licensing/owner-licensing.controller';
+import { InstallationLeaseService } from './services/installation-lease.service';
+import { InstallationLicenseGuard } from './guards/installation-license.guard';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './modules/database/database.module';
@@ -19,7 +25,19 @@ import { ControlModule } from './modules/control/control.module';
     CicdModule,
     ControlModule,
   ],
-  controllers: [AppController],
-  providers: [AppService, { provide:APP_GUARD, useClass:ProviderAccessGuard }],
+  controllers: [
+    AppController,
+    OwnerLicensingController,
+    ProviderSessionController,
+    OwnerAssistantController,
+    MarketingSettingsController,
+  ],
+  providers: [
+    InstallationLeaseService,
+    MarketingSettingsService,
+    { provide: APP_GUARD, useClass: InstallationLicenseGuard },
+    AppService,
+    { provide: APP_GUARD, useClass: ProviderAccessGuard },
+  ],
 })
 export class AppModule {}

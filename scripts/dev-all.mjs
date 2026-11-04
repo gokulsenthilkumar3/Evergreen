@@ -21,19 +21,44 @@ const __dirname = path.dirname(__filename);
 const root = path.resolve(__dirname, '..');
 const require = createRequire(import.meta.url);
 
-// Locate npm CLI
-const npmCli = (process.env.npm_execpath && fs.existsSync(process.env.npm_execpath))
-  ? process.env.npm_execpath
-  : (fs.existsSync('C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js'))
-    ? 'C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js'
-    : path.join(root, 'node_modules', 'npm', 'bin', 'npm-cli.js');
+// Locate npm CLI: beside the running Node (node_modules/npm on Windows, ../lib/node_modules/npm on Linux and macOS).
+const npmCli = [
+  process.env.npm_execpath,
+  path.join(path.dirname(process.execPath), 'node_modules', 'npm', 'bin', 'npm-cli.js'),
+  path.join(path.dirname(process.execPath), '..', 'lib', 'node_modules', 'npm', 'bin', 'npm-cli.js'),
+  path.join(root, 'node_modules', 'npm', 'bin', 'npm-cli.js'),
+].find(candidate => candidate && fs.existsSync(candidate));
+if (!npmCli) throw new Error('npm was not found next to Node.js. Start EverGreen with npm run dev:all.');
 
-// Locate vite binary
+// Locate default vite binary
 let viteBin = path.join(root, 'node_modules', 'vite', 'bin', 'vite.js');
 try {
   const resolved = require.resolve('vite/package.json');
   viteBin = path.join(path.dirname(resolved), 'bin', 'vite.js');
 } catch {}
+
+function getViteBin(workspaceDir) {
+  const local = path.join(workspaceDir, 'node_modules', 'vite', 'bin', 'vite.js');
+  if (fs.existsSync(local)) return local;
+  return viteBin;
+}
+
+const installationLicensing = require('@evergreen/types/licensing');
+installationLicensing.requireInstallationLicence('tenant');
+installationLicensing.requireInstallationLicence('provider');
+const tenantPort = Number(process.env.EVERGREEN_PUBLIC_PORT || 4000);
+const tenantOwnerEnvironment = installationLicensing.ownerHostEnvironment('tenant');
+const providerOwnerEnvironment = installationLicensing.ownerHostEnvironment('provider');
+if (tenantOwnerEnvironment.DATABASE_URL) process.env.DATABASE_URL = tenantOwnerEnvironment.DATABASE_URL;
+if (providerOwnerEnvironment.ADMIN_DATABASE_URL) process.env.ADMIN_DATABASE_URL = providerOwnerEnvironment.ADMIN_DATABASE_URL;
+
+const ownerKeyDirectory = process.env.EVERGREEN_OWNER_KEY_DIRECTORY || path.join(process.env.LOCALAPPDATA || '', 'EverGreen', 'owner-keys');
+const providerKeyFile = path.join(ownerKeyDirectory, 'provider-access-key.dpapi');
+if (fs.existsSync(providerKeyFile)) {
+  const { unprotectOwnerData } = require('@evergreen/types/licensing');
+  process.env.ADMIN_API_KEY = unprotectOwnerData(fs.readFileSync(providerKeyFile).toString('base64')).toString('utf8');
+}
+if (!process.env.ADMIN_API_KEY || process.env.ADMIN_API_KEY.length < 32) throw new Error('Configure an owner-controlled provider key before starting the admin service');
 
 const SERVICES = [
   {
@@ -44,7 +69,7 @@ const SERVICES = [
     cmd: process.execPath,
     args: [path.join(root, 'apps', 'admin-api', 'dist', 'main.js')],
     healthUrl: 'http://127.0.0.1:4300/health',
-    env: { ADMIN_API_PORT: '4300', PORT: '4300' },
+    env: { ADMIN_API_PORT: '4300', PORT: '4300', ADMIN_API_KEY: process.env.ADMIN_API_KEY },
     role: 'Central licensing, remote actions & telemetry',
   },
   {
@@ -64,7 +89,7 @@ const SERVICES = [
     port: 5174,
     cwd: path.join(root, 'apps', 'admin-web'),
     cmd: process.execPath,
-    args: [viteBin, '--port', '5174', '--strictPort'],
+    args: [getViteBin(path.join(root, 'apps', 'admin-web')), '--port', '5174', '--strictPort'],
     healthUrl: 'http://localhost:5174/',
     proxyHealthUrl: 'http://localhost:5174/admin-api/health',
     env: {},
@@ -73,13 +98,13 @@ const SERVICES = [
   {
     id: 'tenant-web',
     name: 'Customer Tenant Web',
-    port: 4000,
+    port: tenantPort,
     cwd: path.join(root, 'apps', 'web'),
     cmd: process.execPath,
-    args: [viteBin, '--port', '4000', '--strictPort'],
-    healthUrl: 'http://localhost:4000/',
-    proxyHealthUrl: 'http://localhost:4000/api/backend/health?format=json',
-    env: { EVERGREEN_PUBLIC_PORT: '4000', EVERGREEN_API_PORT: '4301' },
+    args: [getViteBin(path.join(root, 'apps', 'web')), '--port', String(tenantPort), '--strictPort'],
+    healthUrl: `http://localhost:${tenantPort}/`,
+    proxyHealthUrl: `http://localhost:${tenantPort}/api/backend/health?format=json`,
+    env: { EVERGREEN_PUBLIC_PORT: String(tenantPort), EVERGREEN_API_PORT: '4301' },
     role: 'Mill management, grace alert banner & Book-Ellam registers',
   },
   {
@@ -88,10 +113,21 @@ const SERVICES = [
     port: 3300,
     cwd: path.join(root, 'apps', 'marketing-web'),
     cmd: process.execPath,
-    args: [viteBin, '--port', '3300', '--strictPort'],
+    args: [getViteBin(path.join(root, 'apps', 'marketing-web')), '--port', '3300', '--strictPort'],
     healthUrl: 'http://localhost:3300/',
     env: {},
     role: 'Product showcase, pricing POC calculator & self-deploy generator',
+  },
+  {
+    id: 'db-studio',
+    name: 'Prisma Studio (DB UI)',
+    port: 5555,
+    cwd: path.join(root, 'packages', 'database'),
+    cmd: process.execPath,
+    args: [path.join(root, 'node_modules', 'prisma', 'build', 'index.js'), 'studio', '--port', '5555', '--hostname', '127.0.0.1', '--browser', 'none', '--schema', path.join(root, 'packages', 'database', 'prisma', 'schema.prisma')],
+    healthUrl: 'http://127.0.0.1:5555/',
+    env: {},
+    role: 'Visual database explorer & schema inspector',
   },
 ];
 
@@ -230,8 +266,10 @@ async function preflightChecks() {
 
   // 4. Seed Admin DB if needed
   try {
-    spawnSync(process.execPath, [path.join(root, 'scripts', 'seed-admin.mjs')], { cwd: root, stdio: 'pipe' });
-    console.log('   ✅ Provider Admin DB seed verified');
+    if (process.env.EVERGREEN_SEED_DEMO === 'true') {
+      spawnSync(process.execPath, [path.join(root, 'scripts', 'seed-admin.mjs')], { cwd: root, stdio: 'pipe' });
+      console.log('   Demo seed explicitly enabled');
+    }
   } catch {}
 
   // 5. Backend Builds
@@ -277,7 +315,7 @@ async function main() {
 
   // 3. Launch Services
   console.log('\n🚀 [3/4] Launching APIs & Frontends concurrently...');
-  const apis = SERVICES.filter((s) => s.id.endsWith('-api'));
+  const apis = SERVICES.filter((s) => s.id.endsWith('-api') || (s.id === 'db-studio' && process.env.EVERGREEN_ENABLE_DB_STUDIO === 'true'));
   const uis = SERVICES.filter((s) => s.id.endsWith('-web'));
 
   for (const s of apis) {
@@ -297,7 +335,7 @@ async function main() {
 
     child.stdout.on('data', (d) => {
       const line = d.toString().trim();
-      if (line.includes('listening') || line.includes('started') || line.includes('Documentation')) {
+      if (line.includes('listening') || line.includes('started') || line.includes('Documentation') || line.includes('Prisma Studio') || line.includes('http://')) {
         console.log(`     [${s.id}] ${line}`);
       }
     });
@@ -384,7 +422,7 @@ async function main() {
   }
 
   // Verify proxy links
-  if (await probeUrl('http://localhost:4000/api/backend/health?format=json')) {
+  if (await probeUrl(`http://localhost:${tenantPort}/api/backend/health?format=json`)) {
     console.log('   🟢 Customer Web -> Tenant API Proxy is VERIFIED');
   }
   if (await probeUrl('http://localhost:5174/admin-api/health')) {
@@ -396,10 +434,10 @@ async function main() {
   console.log('   🎉 ALL EVERGREEN SURFACES, APIS & DATABASES ARE ONLINE & ACTIVE!     ');
   console.log('========================================================================\n');
   console.log('  🌐 1. CUSTOMER TENANT APP (Isolated Mill Client)');
-  console.log('     • Web UI:          http://localhost:4000/   (Port 4000)');
+  console.log(`     • Web UI:          http://localhost:${tenantPort}/   (Port ${tenantPort})`);
   console.log('     • Features:        Daily Ops, Stock, Billing, 30-Day Grace Alert, Book-Ellam Ledger');
-  console.log('     • API & Swagger:   http://localhost:4000/api/docs (proxied) | Direct: http://127.0.0.1:4301/api/docs');
-  console.log('     • Health Check:    http://localhost:4000/health (HTML) | http://localhost:4000/health?format=json');
+  console.log(`     • API & Swagger:   http://localhost:${tenantPort}/api/docs (proxied) | Direct: http://127.0.0.1:4301/api/docs`);
+  console.log(`     • Health Check:    http://localhost:${tenantPort}/health (HTML) | http://localhost:${tenantPort}/health?format=json`);
   console.log('     • Isolated DB:     SQLite (packages/database/prisma/dev.db)\n');
 
   console.log('  ⚡ 2. PROVIDER ADMIN CONTROL PLANE (Master Operations)');
@@ -413,6 +451,12 @@ async function main() {
   console.log('     • Landing Page:    http://localhost:3300/   (Port 3300)');
   console.log('     • Features:        Interactive Tier Calculator, Cloud Architectures, Grace Safety Promise');
   console.log('                        Single-Click Auto-Deploy Terminal Simulator\n');
+
+  console.log('  🗄️ 4. DATABASE STUDIO & STORAGE');
+  console.log('     • Prisma Studio:   http://127.0.0.1:5555/   (Port 5555)');
+  console.log('     • Features:        Visual interactive database browser & table inspector');
+  console.log('     • Customer Tenant: SQLite (packages/database/prisma/dev.db)');
+  console.log('     • Provider Admin:  SQLite (packages/admin-database/prisma/admin.db)\n');
 
   console.log('------------------------------------------------------------------------');
   console.log('  Press Ctrl+C anytime to stop all services.');

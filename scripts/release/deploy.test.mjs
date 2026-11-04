@@ -3,7 +3,18 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
+import { spawnSync } from 'node:child_process';
 import { deploy, parseOptions, createEnvironment } from './deploy.mjs';
+
+test('workflow rejects checkout-owned installation state before any Docker operation', () => {
+  const result = spawnSync(process.execPath, ['scripts/release/workflow-deploy.mjs'], {
+    encoding: 'utf8', windowsHide: true,
+    env: { ...process.env, TARGET: 'test', RELEASE_SHA: 'a'.repeat(40), STATE_DIRECTORY: path.resolve('.evergreen/unsafe-workflow-state') },
+  });
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /state must be outside the checkout/);
+  assert.equal(fs.existsSync('.evergreen/unsafe-workflow-state'), false);
+});
 
 function fixture(t) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'evergreen-release-'));
@@ -72,6 +83,23 @@ test('invalid targets and arguments are rejected before deployment', () => {
   assert.throws(() => parseOptions(['install', '--project', '../other', '--release', '1']), /Project/);
   assert.throws(() => parseOptions(['update', '--release', 'x;command']), /release/);
   assert.throws(() => parseOptions(['update']), /release/);
+});
+
+test('PostgreSQL updates are blocked before Docker work for both file and inherited configuration', async t => {
+  const f = fixture(t);
+  await deploy(f.options('install'), async () => {});
+  const previous = process.env.EVERGREEN_TENANT_DATABASE_URL;
+  try {
+    process.env.EVERGREEN_TENANT_DATABASE_URL = 'postgresql://fixture:fixture@localhost/fixture';
+    await assert.rejects(deploy(f.options('update'), async () => assert.fail('must not invoke Docker')), /pg_dump/);
+    delete process.env.EVERGREEN_TENANT_DATABASE_URL;
+    fs.appendFileSync(path.join(f.dir, 'installation.env'), 'EVERGREEN_TENANT_DATABASE_URL=postgresql://fixture:fixture@localhost/fixture\n');
+    await assert.rejects(deploy(f.options('update'), async () => assert.fail('must not invoke Docker')), /pg_dump/);
+    assert.equal(f.read('state.json').release, 'revision-1');
+  } finally {
+    if (previous === undefined) delete process.env.EVERGREEN_TENANT_DATABASE_URL;
+    else process.env.EVERGREEN_TENANT_DATABASE_URL = previous;
+  }
 });
 test('separate state directories get distinct Compose projects even when their display slug matches', async t => {
   const first = fixture(t), second = fixture(t);

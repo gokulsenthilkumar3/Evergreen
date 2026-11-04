@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage, uiLocale, uiMetric } from "../i18n";
 import React, { useState } from 'react';
 import {
     Box,
@@ -77,8 +78,8 @@ const REPORT_CATEGORIES = [
 const ReportsTab = () => (
     <Box>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-            <Typography variant="h6" fontWeight={700}>Reports Centre</Typography>
-            <Button variant="outlined" startIcon={<DownloadIcon />} size="small" onClick={() => alert('All reports exported successfully!')}>Export All</Button>
+            <Typography variant="h6" fontWeight={700}>{uiText("Reports Centre")}</Typography>
+            <Button variant="outlined" startIcon={<DownloadIcon />} size="small" onClick={() => alert('All reports exported successfully!')}>{uiText("Export All")}</Button>
         </Box>
         <Grid container spacing={2.5}>
             {REPORT_CATEGORIES.map((cat) => (
@@ -107,8 +108,7 @@ const ReportsTab = () => (
                                 ))}
                             </List>
                             <Button variant="text" size="small" sx={{ mt: 1.5 }} onClick={() => alert(`${cat.category} reports generated successfully!`)}>
-                                Generate Reports →
-                            </Button>
+                                {uiText("Generate Reports → ")}</Button>
                         </CardContent>
                     </Card>
                 </Grid>
@@ -119,6 +119,7 @@ const ReportsTab = () => (
 
 // --- Insights Tab ---
 const InsightsTab = () => {
+  useUiLanguage();
     const { data: invoices = [], isLoading: invoicesLoading } = useQuery({
         queryKey: ['billingInvoicesInsights'],
         queryFn: async () => (await api.get('/billing/invoices')).data,
@@ -148,17 +149,16 @@ const InsightsTab = () => {
     
     const INSIGHT_CARDS = [
         { emoji: '📈', title: 'Revenue Trend', value: invoices.length > 0 ? '+5%' : '0%', subtitle: 'vs last month', color: '#059669' },
-        { emoji: '🧾', title: 'Unpaid Invoices', value: unpaidCount.toString(), subtitle: totalUnpaidVal > 0 ? `worth ₹${totalUnpaidVal.toLocaleString('en-IN')}` : 'All cleared', color: '#dc2626' },
+        { emoji: '🧾', title: 'Unpaid Invoices', value: unpaidCount.toString(), subtitle: totalUnpaidVal > 0 ? `worth ₹${totalUnpaidVal.toLocaleString(uiLocale())}` : 'All cleared', color: '#dc2626' },
         { emoji: '📦', title: 'Dashboard Output', value: productionKg ? `${productionKg.toFixed(0)} kg` : '0 kg', subtitle: 'selected period', color: '#7c3aed' },
         { emoji: '🏆', title: 'Top Customer', value: topCustomer, subtitle: 'Based on recent', color: '#d97706' },
     ];
 
     return (
         <Box>
-            <Typography variant="h6" fontWeight={700} gutterBottom>Business Insights</Typography>
+            <Typography variant="h6" fontWeight={700} gutterBottom>{uiText("Business Insights")}</Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                AI-powered insights to help you make smarter business decisions.
-            </Typography>
+                {uiText("AI-powered insights to help you make smarter business decisions. ")}</Typography>
             <Grid container spacing={2} sx={{ mb: 4 }}>
                 {INSIGHT_CARDS.map((card) => (
                     <Grid size={{ xs: 12, sm: 6, md: 3 }} key={card.title}>
@@ -170,66 +170,60 @@ const InsightsTab = () => {
                         }}>
                             <Typography sx={{ fontSize: '2rem', mb: 1 }}>{card.emoji}</Typography>
                             <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                                {card.title}
+                                {uiText(card.title, 'metrics')}
                             </Typography>
-                            <Typography variant="h5" fontWeight={800} sx={{ color: card.color, my: 0.5 }}>{card.value}</Typography>
-                            <Typography variant="caption" color="text.secondary">{card.subtitle}</Typography>
+                            <Typography variant="h5" fontWeight={800} sx={{ color: card.color, my: 0.5 }}>{uiMetric(card.value)}</Typography>
+                            <Typography variant="caption" color="text.secondary">{uiText(card.subtitle, 'metrics')}</Typography>
                         </Paper>
                     </Grid>
                 ))}
             </Grid>
-            <Typography variant="h6" fontWeight={700} gutterBottom sx={{ mt: 2 }}>Actionable Recommendations</Typography>
+            <Typography variant="h6" fontWeight={700} gutterBottom sx={{ mt: 2 }}>{uiText("Actionable Recommendations")}</Typography>
             <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
                 <Box sx={{ p: 2, bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(139, 92, 246, 0.1)' : 'rgba(139, 92, 246, 0.05)', borderBottom: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 1 }}>
                     <InsightsIcon sx={{ color: '#7c3aed' }} />
-                    <Typography variant="subtitle2" fontWeight={700} sx={{ color: '#7c3aed' }}>AI Analysis Engine</Typography>
+                    <Typography variant="subtitle2" fontWeight={700} sx={{ color: '#7c3aed' }}>{uiText("AI Analysis Engine")}</Typography>
                 </Box>
                 <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
                     {invoicesLoading ? (
                         <Box sx={{ p: 2, borderRadius: 2, bgcolor: 'action.hover', border: '1px dashed', borderColor: 'divider' }}>
-                            <Typography variant="subtitle2" fontWeight={700}>Loading live insights…</Typography>
+                            <Typography variant="subtitle2" fontWeight={700}>{uiText("Loading live insights…")}</Typography>
                             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                                Pulling billing and dashboard data from the API.
-                            </Typography>
+                                {uiText("Pulling billing and dashboard data from the API. ")}</Typography>
                         </Box>
                     ) : unpaidCount > 0 ? (
                         <Box sx={{ p: 2, borderRadius: 2, bgcolor: 'error.50', border: '1px dashed', borderColor: 'error.main' }}>
-                            <Typography variant="subtitle2" color="error.main" fontWeight={700}>⚠️ High Priority: Unpaid Invoices</Typography>
+                            <Typography variant="subtitle2" color="error.main" fontWeight={700}>{uiText("⚠️ High Priority: Unpaid Invoices")}</Typography>
                             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                                You have {unpaidCount} unpaid invoices totaling ₹{totalUnpaidVal.toLocaleString('en-IN')}. Consider sending automated payment reminders to improve cash flow.
-                            </Typography>
+                                {uiText("You have ")}{unpaidCount} {uiText(" unpaid invoices totaling ₹")}{totalUnpaidVal.toLocaleString(uiLocale())}{uiText(". Consider sending automated payment reminders to improve cash flow. ")}</Typography>
                         </Box>
                     ) : (
                         <Box sx={{ p: 2, borderRadius: 2, bgcolor: 'success.50', border: '1px dashed', borderColor: 'success.main' }}>
-                            <Typography variant="subtitle2" color="success.main" fontWeight={700}>✅ Healthy Cash Flow</Typography>
+                            <Typography variant="subtitle2" color="success.main" fontWeight={700}>{uiText("✅ Healthy Cash Flow")}</Typography>
                             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                                All your invoices are fully paid. Excellent job maintaining a healthy accounts receivable balance.
-                            </Typography>
+                                {uiText("All your invoices are fully paid. Excellent job maintaining a healthy accounts receivable balance. ")}</Typography>
                         </Box>
                     )}
 
                     {dashboardSummary?.meta?.yarnBags < 5 ? (
                         <Box sx={{ p: 2, borderRadius: 2, bgcolor: 'info.50', border: '1px dashed', borderColor: 'info.main' }}>
-                            <Typography variant="subtitle2" color="info.main" fontWeight={700}>💡 Catalogue Optimization</Typography>
+                            <Typography variant="subtitle2" color="info.main" fontWeight={700}>{uiText("💡 Catalogue Optimization")}</Typography>
                             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                                Your active stock catalogue is still compact. Expanding your product mix can increase order breadth and repeat sales.
-                            </Typography>
+                                {uiText("Your active stock catalogue is still compact. Expanding your product mix can increase order breadth and repeat sales. ")}</Typography>
                         </Box>
                     ) : (
                         <Box sx={{ p: 2, borderRadius: 2, bgcolor: 'success.50', border: '1px dashed', borderColor: 'success.main' }}>
-                            <Typography variant="subtitle2" color="success.main" fontWeight={700}>📦 Strong Product Portfolio</Typography>
+                            <Typography variant="subtitle2" color="success.main" fontWeight={700}>{uiText("📦 Strong Product Portfolio")}</Typography>
                             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                                You have a healthy catalogue of {products.length} products ready for sale.
-                            </Typography>
+                                {uiText("You have a healthy catalogue of ")}{products.length} {uiText(" products ready for sale. ")}</Typography>
                         </Box>
                     )}
 
                     {invoices.length > 0 && (
                         <Box sx={{ p: 2, borderRadius: 2, bgcolor: 'warning.50', border: '1px dashed', borderColor: 'warning.main' }}>
-                            <Typography variant="subtitle2" color="warning.dark" fontWeight={700}>🌟 Customer Retention</Typography>
+                            <Typography variant="subtitle2" color="warning.dark" fontWeight={700}>{uiText("🌟 Customer Retention")}</Typography>
                             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                                Recent invoice activity shows repeated business around <b>{topCustomer}</b>. A small loyalty touchpoint could help maintain momentum.
-                            </Typography>
+                                {uiText("Recent invoice activity shows repeated business around ")}<b>{topCustomer}</b>{uiText(". A small loyalty touchpoint could help maintain momentum. ")}</Typography>
                         </Box>
                     )}
                 </Box>
@@ -247,15 +241,15 @@ const INSIGHT_TABS = [
 ];
 
 const Insights: React.FC = () => {
+  useUiLanguage();
     const [tab, setTab] = useState(0);
 
     return (
         <Box sx={{ width: '100%' }}>
             <Box sx={{ mb: 3 }}>
-                <Typography variant="h4" fontWeight="bold">Insights & Reports</Typography>
+                <Typography variant="h4" fontWeight="bold">{uiText("Insights & Reports")}</Typography>
                 <Typography variant="body2" color="text.secondary">
-                    Business intelligence, reports, e-way bills and accounting sync.
-                </Typography>
+                    {uiText("Business intelligence, reports, e-way bills and accounting sync. ")}</Typography>
             </Box>
 
             <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', mb: 3, overflow: 'hidden' }}>

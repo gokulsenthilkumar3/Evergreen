@@ -21,6 +21,9 @@
 **/*.pfx
 **/*.p12
 **/*.key
+**/*.dpapi
+**/installation-key.json
+**/owner-keys
 **/*.tsbuildinfo
 backups
 apps/desktop/backend

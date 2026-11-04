@@ -1,3 +1,5 @@
+import { dateKey } from '../utils/dateKey';
+import { uiText, useUiLanguage, uiLocale, formatUiDecimal, uiTemplate, uiDateLocale, uiScopedTemplate } from "../i18n";
 import React, { useState } from 'react';
 import {
     Box,
@@ -93,6 +95,7 @@ interface TabPanelProps {
 }
 
 function TabPanel(props: TabPanelProps) {
+  useUiLanguage();
     const { children, value, index, ...other } = props;
     return (
         <div
@@ -113,6 +116,7 @@ interface ProductionEntryProps {
 }
 
 const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username }) => {
+  useUiLanguage();
     const queryClient = useQueryClient();
 
     // Date Filtering State
@@ -131,7 +135,7 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
         },
     });
 
-    const [date, setDate] = useState(new Date().toLocaleDateString('en-CA'));
+    const [date, setDate] = useState(dateKey());
     const [startTime, setStartTime] = useState(() => localTimeValue());
     const [timingError, setTimingError] = useState<DeleteGuardErrorPayload | null>(null);
     const [isSaving, setIsSaving] = useState(false);
@@ -274,8 +278,8 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
 
     const validateStart = () => {
         const timestamp = productionTimestamp(date, startTime);
-        if (!timestamp) { toast.error('Enter a valid production date and start time'); return null; }
-        if (new Date(timestamp).getTime() > Date.now()) { toast.error('Production cannot start in the future', { description: 'Choose the time the run actually started.' }); return null; }
+        if (!timestamp) { toast.error(uiText('Enter a valid production date and start time', 'feedback')); return null; }
+        if (new Date(timestamp).getTime() > Date.now()) { toast.error(uiText('Production cannot start in the future', 'feedback'), { description: 'Choose the time the run actually started.' }); return null; }
         return timestamp;
     };
 
@@ -429,7 +433,7 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
         setWaste({ blowRoom: '', carding: '', oe: '', others: '' });
         setIntermediate('');
         setProcessingCost('');
-        setDate(new Date().toLocaleDateString('en-CA'));
+        setDate(dateKey());
         setStartTime(localTimeValue());
         setTimingError(null);
         setEditStartRequest(0);
@@ -453,7 +457,7 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
         if (type === 'pdf') {
             const headers = ['Date', 'Consumed (kg)', 'Produced (kg)', 'Waste (kg)', 'Efficiency (%)'];
             const rows = data.map((row: any) => [
-                new Date(row.date).toLocaleDateString(),
+                new Date(row.date).toLocaleDateString(uiDateLocale()),
                 row.totalConsumed,
                 row.totalProduced,
                 row.totalWaste,
@@ -462,7 +466,7 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
             generatePDF('Production Report', headers, rows, filename);
         } else if (type === 'excel') {
             const excelData = data.map((row: any) => ({
-                Date: new Date(row.date).toLocaleDateString(),
+                Date: new Date(row.date).toLocaleDateString(uiDateLocale()),
                 'Consumed (kg)': row.totalConsumed,
                 'Produced (kg)': row.totalProduced,
                 'Waste (kg)': row.totalWaste,
@@ -480,19 +484,18 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
         <Box sx={{ maxWidth: '100%', width: '100%' }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                 <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-                    Production / Mixing
-                    {isLoading && <LinearProgress sx={{ mt: 1, borderRadius: 1 }} />}
+                    {uiText("Production / Mixing ")}{isLoading && <LinearProgress sx={{ mt: 1, borderRadius: 1 }} />}
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
                     <FormControl size="small" sx={{ minWidth: 120 }}>
-                        <InputLabel>Date Filter</InputLabel>
+                        <InputLabel>{uiText("Date Filter", 'forms')}</InputLabel>
                         <Select
                             value={dateFilter}
-                            label="Date Filter"
+                            label={uiText("Date Filter", 'forms')}
                             onChange={(e) => setDateFilter(e.target.value as DateFilterType)}
                         >
                             {DATE_FILTER_OPTIONS_WITH_ALL.map(opt => (
-                                <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
+                                <MenuItem key={opt.value} value={opt.value}>{uiText(opt.label, 'forms')}</MenuItem>
                             ))}
                         </Select>
                     </FormControl>
@@ -500,7 +503,7 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                     {dateFilter === 'custom' && (
                         <>
                             <GlassDatePicker
-                                label="From"
+                                label={uiText("From", 'forms')}
                                 size="small"
                                 value={customFrom}
                                 onChange={(e) => setCustomFrom(e.target.value)}
@@ -508,7 +511,7 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                                 sx={{ width: 140 }}
                             />
                             <GlassDatePicker
-                                label="To"
+                                label={uiText("To", 'forms')}
                                 size="small"
                                 value={customTo}
                                 onChange={(e) => setCustomTo(e.target.value)}
@@ -527,8 +530,7 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                             startIcon={<AddIcon />}
                             onClick={handleOpenWizard}
                         >
-                            Add Production
-                        </Button>
+                            {uiText("Add Production ")}</Button>
                     )}
                 </Box>
             </Box>
@@ -538,14 +540,14 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Date</TableCell>
-                            <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Batch ID(s)</TableCell>
-                            <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Consumed (kg)</TableCell>
-                            <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Produced (kg)</TableCell>
-                            <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Waste (kg)</TableCell>
-                            <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Intermediate (kg)</TableCell>
-                            <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Efficiency (%)</TableCell>
-                            <TableCell align="center" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Actions</TableCell>
+                            <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>{uiText("Date", 'tables')}</TableCell>
+                            <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>{uiText("Batch ID(s)", 'tables')}</TableCell>
+                            <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>{uiText("Consumed (kg)", 'tables')}</TableCell>
+                            <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>{uiText("Produced (kg)", 'tables')}</TableCell>
+                            <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>{uiText("Waste (kg)", 'tables')}</TableCell>
+                            <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>{uiText("Intermediate (kg)", 'tables')}</TableCell>
+                            <TableCell align="right" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>{uiText("Efficiency (%)", 'tables')}</TableCell>
+                            <TableCell align="center" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>{uiText("Actions", 'tables')}</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -560,7 +562,7 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                                 <TableCell colSpan={8} sx={{ py: 4 }}>
                                     <EmptyState
                                         type="empty"
-                                        title="No Production Entries"
+                                        title={uiText("No Production Entries", 'tables')}
                                         message="No production entries found. Start by adding a new production entry."
                                         actionLabel={userRole !== 'VIEWER' ? "Add Production" : undefined}
                                         onAction={userRole !== 'VIEWER' ? handleOpenWizard : undefined}
@@ -571,9 +573,9 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                             recentProduction.map((row: any) => (
                                 <TableRow key={row.id} hover>
                                     <TableCell>
-                                        <Tooltip title={row.entryTimestamp ? new Date(row.entryTimestamp).toLocaleString() : new Date(row.date).toLocaleString()} arrow placement="top">
+                                        <Tooltip title={row.entryTimestamp ? new Date(row.entryTimestamp).toLocaleString(uiLocale()) : new Date(row.date).toLocaleString(uiLocale())} arrow placement="top">
                                             <Box component="span" sx={{ cursor: 'help', borderBottom: '1px dotted', borderColor: 'divider' }}>
-                                                {new Date(row.date).toLocaleDateString()}
+                                                {new Date(row.date).toLocaleDateString(uiDateLocale())}
                                             </Box>
                                         </Tooltip>
                                     </TableCell>
@@ -595,22 +597,22 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                                     <TableCell align="right">{row.totalWaste}</TableCell>
                                     <TableCell align="right">{row.totalIntermediate || 0}</TableCell>
                                     <TableCell align="right">
-                                        {((row.totalProduced / row.totalConsumed) * 100).toFixed(2)}%
+                                        {formatUiDecimal(((row.totalProduced / row.totalConsumed) * 100), 2)}%
                                     </TableCell>
                                     <TableCell align="center">
                                         <Stack direction="row" spacing={0.5} justifyContent="center" alignItems="center">
-                                            <Tooltip title="Print Production & Yarn Label (Barcode & QR)">
+                                            <Tooltip title={uiText("Print Production & Yarn Label (Barcode & QR)", 'tables')}>
                                                 <IconButton
                                                     size="small"
                                                     color="primary"
                                                     onClick={() => setLabelProduction(row)}
-                                                    aria-label="Generate QR and Barcode Label"
+                                                    aria-label={uiText("Generate QR and Barcode Label", 'tables')}
                                                 >
                                                     <QrIcon fontSize="small" />
                                                 </IconButton>
                                             </Tooltip>
                                             {(userRole === 'ADMIN') && (
-                                                <Tooltip title="Delete Entry">
+                                                <Tooltip title={uiText("Delete Entry", 'tables')}>
                                                     <IconButton
                                                         size="small"
                                                         color="error"
@@ -638,7 +640,7 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                 aria-labelledby="production-wizard-title"
                 aria-describedby="production-wizard-title-description"
             >
-                <EntryWizardHeader id="production-wizard-title" stage="02 · Production" title="Production Entry"
+                <EntryWizardHeader id="production-wizard-title" stage="02 · Production" title={uiText("Production Entry")}
                     description="Follow cotton from the selected batches through yarn, waste, and material still in process."
                     icon={<PrecisionManufacturingOutlined />} busy={isSaving} onClose={handleCloseWizard} />
                 <DialogContent sx={{ p: { xs: 2, sm: 3 } }}>
@@ -648,7 +650,7 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                         <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
                             {steps.map((label) => (
                                 <Step key={label}>
-                                    <StepLabel>{label}</StepLabel>
+                                    <StepLabel>{uiText(label, 'forms')}</StepLabel>
                                 </Step>
                             ))}
                         </Stepper>
@@ -657,29 +659,27 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                         {activeStep === 0 && (
                             <Box>
                                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 2 }}>
-                                    <TextField type="date" label="Production Date" value={date} size="small" fullWidth
+                                    <TextField type="date" label={uiText("Production Date", 'forms')} value={date} size="small" fullWidth
                                         onChange={e => { setDate(e.target.value); setTimingError(null); }} InputLabelProps={{ shrink: true }} />
-                                    <TextField type="time" label="Production start time" value={startTime} size="small" fullWidth
+                                    <TextField type="time" label={uiText("Production start time", 'forms')} value={startTime} size="small" fullWidth
                                         inputRef={startTimeInput}
                                         onChange={e => { setStartTime(e.target.value); setTimingError(null); }} InputLabelProps={{ shrink: true }}
-                                        inputProps={{ step: 1 }} helperText="Local time the run started; checked against batch receipt." />
+                                        inputProps={{ step: 1 }} helperText={uiText("Local time the run started; checked against batch receipt.", 'forms')} />
                                 </Stack>
 
                                 <Alert severity="info" sx={{ mb: 3, borderRadius: '12px', fontSize: '0.85rem' }}>
-                                    Choose cotton available on the production date and allow at least 61 seconds after receipt before starting production. Before saving, account for the full input as yarn, waste, or intermediate material; the balance must be within 0.01 kg.
-                                </Alert>
+                                    {uiText("Choose cotton available on the production date and allow at least 61 seconds after receipt before starting production. Before saving, account for the full input as yarn, waste, or intermediate material; the balance must be within 0.01 kg. ")}</Alert>
 
                                 <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
-                                    Cotton Consumption
-                                </Typography>
+                                    {uiText("Cotton Consumption ")}</Typography>
 
                                 <TableContainer component={Paper} variant="outlined">
                                     <Table size="small">
                                         <TableHead>
                                             <TableRow>
-                                                <TableCell>Batch No</TableCell>
-                                                <TableCell>Bale</TableCell>
-                                                <TableCell>Weight (kg)</TableCell>
+                                                <TableCell>{uiText("Batch No", 'tables')}</TableCell>
+                                                <TableCell>{uiText("Bale", 'tables')}</TableCell>
+                                                <TableCell>{uiText("Weight (kg)", 'tables')}</TableCell>
                                                 <TableCell width={50}></TableCell>
                                             </TableRow>
                                         </TableHead>
@@ -700,13 +700,13 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                                                                 value={item.batchNo}
                                                                 onChange={(e) => handleConsumedChange(item.id, 'batchNo', e.target.value)}
                                                                 fullWidth
-                                                                label="Select Batch"
+                                                                label={uiText("Select Batch", 'forms')}
                                                             >
                                                                 {availableBatches.map((b: any) => (
                                                                     <MenuItem key={b.batchId} value={b.batchId}>
                                                                         <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', gap: 2 }}>
                                                                             <span><strong>{b.batchId}</strong> — {b.supplier}</span>
-                                                                            <Chip label={`${b.kg.toFixed(0)} kg left`} size="small" color="success" variant="outlined" sx={{ fontSize: '0.65rem', height: 18 }} />
+                                                                            <Chip label={uiScopedTemplate('forms')`${formatUiDecimal(b.kg, 0)} kg left`} size="small" color="success" variant="outlined" sx={{ fontSize: '0.65rem', height: 18 }} />
                                                                         </Box>
                                                                     </MenuItem>
                                                                 ))}
@@ -726,16 +726,16 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                                                                     }}>
                                                                         <Stack direction="row" spacing={1.5} divider={<Divider orientation="vertical" flexItem />}>
                                                                             <Box sx={{ textAlign: 'center' }}>
-                                                                                <Typography variant="caption" color="text.secondary" display="block">Original</Typography>
-                                                                                <Typography variant="caption" fontWeight={700}>{b.originalBale} bales / {b.originalKg} kg</Typography>
+                                                                                <Typography variant="caption" color="text.secondary" display="block">{uiText("Original")}</Typography>
+                                                                                <Typography variant="caption" fontWeight={700}>{b.originalBale} {uiText(" bales / ")}{b.originalKg} {uiText(" kg")}</Typography>
                                                                             </Box>
                                                                             <Box sx={{ textAlign: 'center' }}>
-                                                                                <Typography variant="caption" color="warning.main" display="block">Used</Typography>
-                                                                                <Typography variant="caption" fontWeight={700} color="warning.main">{b.usedBale} bales / {b.usedKg} kg</Typography>
+                                                                                <Typography variant="caption" color="warning.main" display="block">{uiText("Used")}</Typography>
+                                                                                <Typography variant="caption" fontWeight={700} color="warning.main">{b.usedBale} {uiText(" bales / ")}{b.usedKg} {uiText(" kg")}</Typography>
                                                                             </Box>
                                                                             <Box sx={{ textAlign: 'center' }}>
-                                                                                <Typography variant="caption" color="success.main" display="block">Remaining</Typography>
-                                                                                <Typography variant="caption" fontWeight={700} color="success.main">{b.bale} bales / {b.kg.toFixed(2)} kg</Typography>
+                                                                                <Typography variant="caption" color="success.main" display="block">{uiText("Remaining")}</Typography>
+                                                                                <Typography variant="caption" fontWeight={700} color="success.main">{b.bale} {uiText(" bales / ")}{formatUiDecimal(b.kg, 2)} {uiText(" kg")}</Typography>
                                                                             </Box>
                                                                         </Stack>
                                                                     </Box>
@@ -748,11 +748,11 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                                                                 type="number"
                                                                 value={item.bale}
                                                                 onChange={(e) => handleConsumedChange(item.id, 'bale', e.target.value)}
-                                                                label="Bales consumed"
-                                                                InputProps={{ endAdornment: <InputAdornment position="end">bales</InputAdornment> }}
+                                                                label={uiText("Bales consumed", 'forms')}
+                                                                InputProps={{ endAdornment: <InputAdornment position="end">{uiText("bales", 'forms')}</InputAdornment> }}
                                                                 fullWidth
                                                                 error={baleVal > maxBale || baleVal <= 0}
-                                                                helperText={item.batchNo ? `Max: ${maxBale}` : ''}
+                                                                helperText={item.batchNo ? uiScopedTemplate('forms')`Max: ${maxBale}` : ''}
                                                             />
                                                         </TableCell>
                                                         <TableCell>
@@ -761,17 +761,17 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                                                                 type="number"
                                                                 value={item.weight}
                                                                 onChange={(e) => handleConsumedChange(item.id, 'weight', e.target.value)}
-                                                                label="Cotton weight"
-                                                                InputProps={{ endAdornment: <InputAdornment position="end">kg</InputAdornment> }}
+                                                                label={uiText("Cotton weight", 'forms')}
+                                                                InputProps={{ endAdornment: <InputAdornment position="end">{uiText("kg", 'forms')}</InputAdornment> }}
                                                                 fullWidth
                                                                 error={weightVal > maxWeight || weightVal <= 0}
-                                                                helperText={item.batchNo ? `Max: ${maxWeight} kg` : ''}
+                                                                helperText={item.batchNo ? uiScopedTemplate('forms')`Max: ${maxWeight} kg` : ''}
                                                             />
                                                         </TableCell>
                                                         <TableCell>
                                                             <IconButton
                                                                 size="small"
-                                                                aria-label="Remove cotton row"
+                                                                aria-label={uiText("Remove cotton row", 'tables')}
                                                                 onClick={() => removeConsumed(item.id)}
                                                                 disabled={consumed.length === 1}
                                                             >
@@ -790,13 +790,12 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                                     onClick={addConsumed}
                                     sx={{ mt: 2 }}
                                 >
-                                    Add Row
-                                </Button>
+                                    {uiText("Add Row ")}</Button>
 
-                                <EntrySummary title="Cotton selected for this run">
-                                    <SummaryValue label="Batches" value={new Set(consumed.filter(item => item.batchNo).map(item => item.batchNo)).size} />
-                                    <SummaryValue label="Bales consumed" value={consumed.reduce((sum, item) => sum + (parseFloat(item.bale) || 0), 0)} />
-                                    <SummaryValue label="Total consumed" value={`${getTotalConsumed().toFixed(2)} kg`} />
+                                <EntrySummary title={uiText("Cotton selected for this run")}>
+                                    <SummaryValue label={uiText("Batches")} value={new Set(consumed.filter(item => item.batchNo).map(item => item.batchNo)).size} />
+                                    <SummaryValue label={uiText("Bales consumed")} value={consumed.reduce((sum, item) => sum + (parseFloat(item.bale) || 0), 0)} />
+                                    <SummaryValue label={uiText("Total consumed")} value={`${getTotalConsumed().toFixed(2)} kg`} />
                                 </EntrySummary>
                             </Box>
                         )}
@@ -805,25 +804,24 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                         {activeStep === 1 && (
                             <Box>
                                 <Paper sx={{ mb: 3 }}>
-                                    <Tabs value={outputTab} onChange={(_, v) => setOutputTab(v)} variant="scrollable" scrollButtons="auto" aria-label="Production output categories">
-                                        <Tab label="Yarn Production" />
-                                        <Tab label="Waste Breakdown" />
-                                        <Tab label="Intermediate" />
+                                    <Tabs value={outputTab} onChange={(_, v) => setOutputTab(v)} variant="scrollable" scrollButtons="auto" aria-label={uiText("Production output categories")}>
+                                        <Tab label={uiText("Yarn Production", 'tabs')} />
+                                        <Tab label={uiText("Waste Breakdown", 'tabs')} />
+                                        <Tab label={uiText("Intermediate", 'tabs')} />
                                     </Tabs>
 
                                     <TabPanel value={outputTab} index={0}>
                                         <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
-                                            Yarn Production
-                                        </Typography>
+                                            {uiText("Yarn Production ")}</Typography>
 
                                         <TableContainer component={Paper} variant="outlined">
                                             <Table size="small">
                                                 <TableHead>
                                                     <TableRow>
-                                                        <TableCell>Count</TableCell>
-                                                        <TableCell>Weight (kg)</TableCell>
-                                                        <TableCell>Bags (60kg)</TableCell>
-                                                        <TableCell>Remaining (kg)</TableCell>
+                                                        <TableCell>{uiText("Count", 'tables')}</TableCell>
+                                                        <TableCell>{uiText("Weight (kg)", 'tables')}</TableCell>
+                                                        <TableCell>{uiText("Bags (60kg)", 'tables')}</TableCell>
+                                                        <TableCell>{uiText("Remaining (kg)", 'tables')}</TableCell>
                                                         <TableCell width={50}></TableCell>
                                                     </TableRow>
                                                 </TableHead>
@@ -835,7 +833,7 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                                                                     select
                                                                     size="small"
                                                                     value={item.count}
-                                                                    label="Yarn count"
+                                                                    label={uiText("Yarn count", 'forms')}
                                                                     onChange={(e) => handleProducedChange(item.id, 'count', e.target.value)}
                                                                     fullWidth
                                                                 >
@@ -855,18 +853,18 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                                                                     size="small"
                                                                     type="number"
                                                                     value={item.weight}
-                                                                    label="Yarn weight"
-                                                                    InputProps={{ endAdornment: <InputAdornment position="end">kg</InputAdornment> }}
+                                                                    label={uiText("Yarn weight", 'forms')}
+                                                                    InputProps={{ endAdornment: <InputAdornment position="end">{uiText("kg", 'forms')}</InputAdornment> }}
                                                                     onChange={(e) => handleProducedChange(item.id, 'weight', e.target.value)}
                                                                     fullWidth
                                                                 />
                                                             </TableCell>
                                                             <TableCell>{item.bags}</TableCell>
-                                                            <TableCell>{item.remainingLog.toFixed(2)}</TableCell>
+                                                            <TableCell>{formatUiDecimal(item.remainingLog, 2)}</TableCell>
                                                             <TableCell>
                                                                 <IconButton
                                                                     size="small"
-                                                                    aria-label="Remove yarn row"
+                                                                    aria-label={uiText("Remove yarn row", 'tables')}
                                                                     onClick={() => removeProduced(item.id)}
                                                                     disabled={produced.length === 1}
                                                                 >
@@ -884,48 +882,46 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                                             onClick={addProduced}
                                             sx={{ mt: 2 }}
                                         >
-                                            Add Count
-                                        </Button>
+                                            {uiText("Add Count ")}</Button>
 
-                                        <EntrySummary title="Finished yarn">
-                                            <SummaryValue label="Total produced" value={`${getTotalProduced().toFixed(2)} kg`} />
-                                            <SummaryValue label="Full bags" value={produced.reduce((sum, item) => sum + item.bags, 0)} />
+                                        <EntrySummary title={uiText("Finished yarn")}>
+                                            <SummaryValue label={uiText("Total produced")} value={`${getTotalProduced().toFixed(2)} kg`} />
+                                            <SummaryValue label={uiText("Full bags")} value={produced.reduce((sum, item) => sum + item.bags, 0)} />
                                         </EntrySummary>
                                     </TabPanel>
 
                                     <TabPanel value={outputTab} index={1}>
                                         <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
-                                            Waste Breakdown
-                                        </Typography>
+                                            {uiText("Waste Breakdown ")}</Typography>
 
                                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                                             <TextField
-                                                label="Blow Room Waste (kg)"
-                                                InputProps={{ endAdornment: <InputAdornment position="end">kg</InputAdornment> }}
+                                                label={uiText("Blow Room Waste (kg)", 'forms')}
+                                                InputProps={{ endAdornment: <InputAdornment position="end">{uiText("kg", 'forms')}</InputAdornment> }}
                                                 type="number"
                                                 value={waste.blowRoom}
                                                 onChange={(e) => handleWasteChange('blowRoom', e.target.value)}
                                                 fullWidth
                                             />
                                             <TextField
-                                                label="Carding Waste (kg)"
-                                                InputProps={{ endAdornment: <InputAdornment position="end">kg</InputAdornment> }}
+                                                label={uiText("Carding Waste (kg)", 'forms')}
+                                                InputProps={{ endAdornment: <InputAdornment position="end">{uiText("kg", 'forms')}</InputAdornment> }}
                                                 type="number"
                                                 value={waste.carding}
                                                 onChange={(e) => handleWasteChange('carding', e.target.value)}
                                                 fullWidth
                                             />
                                             <TextField
-                                                label="OE Waste (kg)"
-                                                InputProps={{ endAdornment: <InputAdornment position="end">kg</InputAdornment> }}
+                                                label={uiText("OE Waste (kg)", 'forms')}
+                                                InputProps={{ endAdornment: <InputAdornment position="end">{uiText("kg", 'forms')}</InputAdornment> }}
                                                 type="number"
                                                 value={waste.oe}
                                                 onChange={(e) => handleWasteChange('oe', e.target.value)}
                                                 fullWidth
                                             />
                                             <TextField
-                                                label="Others (kg)"
-                                                InputProps={{ endAdornment: <InputAdornment position="end">kg</InputAdornment> }}
+                                                label={uiText("Others (kg)", 'forms')}
+                                                InputProps={{ endAdornment: <InputAdornment position="end">{uiText("kg", 'forms')}</InputAdornment> }}
                                                 type="number"
                                                 value={waste.others}
                                                 onChange={(e) => handleWasteChange('others', e.target.value)}
@@ -933,22 +929,20 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                                             />
                                         </Box>
 
-                                        <EntrySummary title="Waste accounted for">
-                                            <SummaryValue label="Total waste" value={`${getTotalWaste().toFixed(2)} kg`} />
+                                        <EntrySummary title={uiText("Waste accounted for")}>
+                                            <SummaryValue label={uiText("Total waste")} value={`${getTotalWaste().toFixed(2)} kg`} />
                                         </EntrySummary>
                                     </TabPanel>
 
                                     <TabPanel value={outputTab} index={2}>
                                         <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
-                                            Intermediate Material
-                                        </Typography>
+                                            {uiText("Intermediate Material ")}</Typography>
                                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                                            Material still in process (sliver, roving, etc.) that has not yet been converted to finished yarn or classified as waste.
-                                        </Typography>
+                                            {uiText("Material still in process (sliver, roving, etc.) that has not yet been converted to finished yarn or classified as waste. ")}</Typography>
 
                                         <TextField
-                                            label="Intermediate Weight (kg)"
-                                            InputProps={{ endAdornment: <InputAdornment position="end">kg</InputAdornment> }}
+                                            label={uiText("Intermediate Weight (kg)", 'forms')}
+                                            InputProps={{ endAdornment: <InputAdornment position="end">{uiText("kg", 'forms')}</InputAdornment> }}
                                             type="number"
                                             value={intermediate}
                                             onChange={(e) => {
@@ -958,45 +952,44 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                                                 }
                                             }}
                                             fullWidth
-                                            helperText="This creates a traceable WIP lot. Complete it later in Business flows."
+                                            helperText={uiText("This creates a traceable WIP lot. Complete it later in Business flows.", 'forms')}
                                         />
-                                        <TextField sx={{ mt: 2 }} fullWidth label="Allocated processing cost (₹)" type="number" value={processingCost} onChange={e => setProcessingCost(e.target.value)} helperText="Verified labour, power and overhead allocated to this run. Raw-material cost comes from its receipt." />
+                                        <TextField sx={{ mt: 2 }} fullWidth label={uiText("Allocated processing cost (₹)", 'forms')} type="number" value={processingCost} onChange={e => setProcessingCost(e.target.value)} helperText={uiText("Verified labour, power and overhead allocated to this run. Raw-material cost comes from its receipt.", 'forms')} />
 
-                                        <EntrySummary title="Material still in process">
-                                            <SummaryValue label="Total intermediate" value={`${getTotalIntermediate().toFixed(2)} kg`} />
+                                        <EntrySummary title={uiText("Material still in process")}>
+                                            <SummaryValue label={uiText("Total intermediate")} value={`${getTotalIntermediate().toFixed(2)} kg`} />
                                         </EntrySummary>
                                     </TabPanel>
                                 </Paper>
 
                                 {/* Summary */}
                                 <Paper sx={{ p: 2, bgcolor: 'background.default' }}>
-                                    <Typography variant="h6" sx={{ mb: 2 }}>Material balance</Typography>
+                                    <Typography variant="h6" sx={{ mb: 2 }}>{uiText("Material balance")}</Typography>
                                     <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: '1fr 1fr 1fr 1fr' }, gap: 2 }}>
                                         <Box>
-                                            <Typography variant="body2" color="text.secondary">Input</Typography>
-                                            <Typography variant="h6">{getTotalConsumed().toFixed(2)} kg</Typography>
+                                            <Typography variant="body2" color="text.secondary">{uiText("Input")}</Typography>
+                                            <Typography variant="h6">{formatUiDecimal(getTotalConsumed(), 2)} {uiText(" kg")}</Typography>
                                         </Box>
                                         <Box>
-                                            <Typography variant="body2" color="text.secondary">Output (Yarn)</Typography>
-                                            <Typography variant="h6" color="success.main">{getTotalProduced().toFixed(2)} kg</Typography>
+                                            <Typography variant="body2" color="text.secondary">{uiText("Output (Yarn)")}</Typography>
+                                            <Typography variant="h6" color="success.main">{formatUiDecimal(getTotalProduced(), 2)} {uiText(" kg")}</Typography>
                                         </Box>
                                         <Box>
-                                            <Typography variant="body2" color="text.secondary">Waste</Typography>
-                                            <Typography variant="h6" color="warning.main">{getTotalWaste().toFixed(2)} kg</Typography>
+                                            <Typography variant="body2" color="text.secondary">{uiText("Waste")}</Typography>
+                                            <Typography variant="h6" color="warning.main">{formatUiDecimal(getTotalWaste(), 2)} {uiText(" kg")}</Typography>
                                         </Box>
                                         <Box>
-                                            <Typography variant="body2" color="text.secondary">Intermediate</Typography>
-                                            <Typography variant="h6" color="info.main">{getTotalIntermediate().toFixed(2)} kg</Typography>
+                                            <Typography variant="body2" color="text.secondary">{uiText("Intermediate")}</Typography>
+                                            <Typography variant="h6" color="info.main">{formatUiDecimal(getTotalIntermediate(), 2)} {uiText(" kg")}</Typography>
                                         </Box>
                                     </Box>
                                     <Box sx={{ mt: 2 }}>
-                                        <Typography variant="body2" color="text.secondary">Balance (should be 0)</Typography>
+                                        <Typography variant="body2" color="text.secondary">{uiText("Balance (should be 0)")}</Typography>
                                         <Typography
                                             variant="h6"
                                             color={Math.abs(getTotalConsumed() - getTotalProduced() - getTotalWaste() - getTotalIntermediate()) <= 0.01 ? 'success.main' : 'error.main'}
                                         >
-                                            {(getTotalConsumed() - getTotalProduced() - getTotalWaste() - getTotalIntermediate()).toFixed(2)} kg
-                                        </Typography>
+                                            {formatUiDecimal((getTotalConsumed() - getTotalProduced() - getTotalWaste() - getTotalIntermediate()), 2)} {uiText(" kg ")}</Typography>
                                     </Box>
                                 </Paper>
                             </Box>
@@ -1009,8 +1002,7 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                                 onClick={handleBack}
                                 startIcon={<BackIcon />}
                             >
-                                Back
-                            </Button>
+                                {uiText("Back ")}</Button>
                             <Box sx={{ display: 'flex', gap: 2 }}>
                                 {activeStep === steps.length - 1 ? (
                                     <Button
@@ -1019,7 +1011,7 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                                         startIcon={<SaveIcon />}
                                         disabled={isSaving}
                                     >
-                                        {isSaving ? 'Saving…' : 'Save Production'}
+                                        {isSaving ? uiText("Saving…") : uiText("Save Production")}
                                     </Button>
                                 ) : (
                                     <Button
@@ -1027,8 +1019,7 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                                         onClick={handleNext}
                                         endIcon={<NextIcon />}
                                     >
-                                        Next
-                                    </Button>
+                                        {uiText("Next ")}</Button>
                                 )}
                             </Box>
                         </Box>
@@ -1041,7 +1032,7 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                     open={Boolean(labelProduction)}
                     onClose={() => setLabelProduction(null)}
                     type="BAG"
-                    title={`Production Label: PRD-${padZero(labelProduction.id, 4)}`}
+                    title={uiTemplate`Production Label: PRD-${padZero(labelProduction.id, 4)}`}
                     code={formatBagCode(
                         labelProduction.producedYarn?.[0]?.count || 'MIX',
                         labelProduction.date,
@@ -1060,11 +1051,11 @@ const ProductionEntry: React.FC<ProductionEntryProps> = ({ userRole, username })
                         v: 1
                     })}
                     metadata={[
-                        { label: 'Date', value: new Date(labelProduction.date).toLocaleDateString('en-IN') },
+                        { label: 'Date', value: new Date(labelProduction.date).toLocaleDateString(uiDateLocale()) },
                         { label: 'Consumed Batches', value: (labelProduction.consumedBatches || []).map((b: any) => b.batchNo).join(', ') || 'N/A' },
-                        { label: 'Total Input', value: `${labelProduction.totalConsumed.toLocaleString()} kg` },
-                        { label: 'Total Produced', value: `${labelProduction.totalProduced.toLocaleString()} kg` },
-                        { label: 'Total Waste', value: `${labelProduction.totalWaste.toLocaleString()} kg` },
+                        { label: 'Total Input', value: `${labelProduction.totalConsumed.toLocaleString(uiLocale())} kg` },
+                        { label: 'Total Produced', value: `${labelProduction.totalProduced.toLocaleString(uiLocale())} kg` },
+                        { label: 'Total Waste', value: `${labelProduction.totalWaste.toLocaleString(uiLocale())} kg` },
                         { label: 'Efficiency', value: `${((labelProduction.totalProduced / labelProduction.totalConsumed) * 100).toFixed(2)}%` },
                     ]}
                 />

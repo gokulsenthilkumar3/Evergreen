@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage, uiLocale, uiDateLocale } from "../../i18n";
 import React, { useRef } from 'react';
 import {
   Dialog,
@@ -128,6 +129,7 @@ export function labelPrintDocument(type: string, code: string, labelHtml: string
  * Procedural SVG 1D Barcode Generator (Code128-style visualization)
  */
 const SimpleSVGBarcode: React.FC<{ value: string; height?: number }> = ({ value, height = 45 }) => {
+  useUiLanguage();
   // Generate deterministic bar widths from characters in string
   const bars: Array<{ width: number; isBlack: boolean }> = [];
   let isBlack = true;
@@ -193,13 +195,14 @@ export const BarcodeQRModal: React.FC<BarcodeQRModalProps> = ({
   metadata,
   millName = 'EverGreen One Textiles',
 }) => {
+  useUiLanguage();
   const printAreaRef = useRef<HTMLDivElement>(null);
 
   const handlePrint = () => {
     if (!printAreaRef.current) return;
     const printWindow = window.open('', '_blank', 'width=650,height=750');
     if (!printWindow) {
-      toast.error('Pop-up blocked. Please allow pop-ups to print barcode labels.');
+      toast.error(uiText('Pop-up blocked. Please allow pop-ups to print barcode labels.', 'feedback'));
       return;
     }
 
@@ -209,7 +212,7 @@ export const BarcodeQRModal: React.FC<BarcodeQRModalProps> = ({
 
   const handleCopy = () => {
     navigator.clipboard.writeText(qrPayload);
-    toast.success('✓ Traceability payload copied to clipboard');
+    toast.success(uiText('✓ Traceability payload copied to clipboard', 'feedback'));
   };
 
   const typeColorMap: Record<LabelType, 'primary' | 'success' | 'warning'> = {
@@ -254,11 +257,10 @@ export const BarcodeQRModal: React.FC<BarcodeQRModalProps> = ({
                   {millName}
                 </Typography>
                 <Typography variant="caption" sx={{ color: '#4b5563' }}>
-                  Industrial Traceability Tag
-                </Typography>
+                  {uiText("Industrial Traceability Tag ")}</Typography>
               </Box>
               <Typography variant="caption" sx={{ fontWeight: 700, color: '#111827' }}>
-                {new Date().toLocaleDateString('en-IN')}
+                {new Date().toLocaleDateString(uiDateLocale())}
               </Typography>
             </Box>
 
@@ -319,12 +321,10 @@ export const BarcodeQRModal: React.FC<BarcodeQRModalProps> = ({
 
       <DialogActions sx={{ px: 3, py: 2, gap: 1 }}>
         <Button startIcon={<CopyIcon />} variant="outlined" size="small" onClick={handleCopy}>
-          Copy Payload
-        </Button>
+          {uiText("Copy Payload ")}</Button>
         <Box sx={{ flex: 1 }} />
         <Button startIcon={<PrintIcon />} variant="contained" color="primary" onClick={handlePrint}>
-          Print Label (4"×3")
-        </Button>
+          {uiText("Print Label (4\"×3\") ")}</Button>
       </DialogActions>
     </Dialog>
   );

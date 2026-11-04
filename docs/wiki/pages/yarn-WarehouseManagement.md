@@ -18,13 +18,13 @@ No literal Tab controls in this file. Check composed components and dynamic navi
 
 | Control / label | Handler | Source |
 | --- | --- | --- |
-| Refresh | `{() => { queryClient.invalidateQueries({ queryKey: ['warehouse-locations'] }); queryClient.invalidateQueries({ queryKey: ['warehouse-movements'] }); }}` | [apps/web/src/pages/yarn/WarehouseManagement.tsx:177](../../../apps/web/src/pages/yarn/WarehouseManagement.tsx) |
-| Add Location | `{() => setOpenLocationDialog(true)}` | [apps/web/src/pages/yarn/WarehouseManagement.tsx:189](../../../apps/web/src/pages/yarn/WarehouseManagement.tsx) |
-| Log Movement | `{() => setOpenMovementDialog(true)}` | [apps/web/src/pages/yarn/WarehouseManagement.tsx:197](../../../apps/web/src/pages/yarn/WarehouseManagement.tsx) |
-| Cancel | `{() => setOpenLocationDialog(false)}` | [apps/web/src/pages/yarn/WarehouseManagement.tsx:488](../../../apps/web/src/pages/yarn/WarehouseManagement.tsx) |
-| {createLocationMutation.isPending ? 'Saving...' : 'Save Location'} | `{() => createLocationMutation.mutate(locationForm)}` | [apps/web/src/pages/yarn/WarehouseManagement.tsx:491](../../../apps/web/src/pages/yarn/WarehouseManagement.tsx) |
-| Cancel | `{() => setOpenMovementDialog(false)}` | [apps/web/src/pages/yarn/WarehouseManagement.tsx:605](../../../apps/web/src/pages/yarn/WarehouseManagement.tsx) |
-| {createMovementMutation.isPending ? 'Logging...' : 'Save Movement'} | `{() => createMovementMutation.mutate(movementForm)}` | [apps/web/src/pages/yarn/WarehouseManagement.tsx:608](../../../apps/web/src/pages/yarn/WarehouseManagement.tsx) |
+| {uiText("Refresh ")} | `{() => { queryClient.invalidateQueries({ queryKey: ['warehouse-locations'] }); queryClient.invalidateQueries({ queryKey: ['warehouse-movements'] }); }}` | [apps/web/src/pages/yarn/WarehouseManagement.tsx:177](../../../apps/web/src/pages/yarn/WarehouseManagement.tsx) |
+| {uiText("Add Location ")} | `{() => setOpenLocationDialog(true)}` | [apps/web/src/pages/yarn/WarehouseManagement.tsx:188](../../../apps/web/src/pages/yarn/WarehouseManagement.tsx) |
+| {uiText("Log Movement ")} | `{() => setOpenMovementDialog(true)}` | [apps/web/src/pages/yarn/WarehouseManagement.tsx:195](../../../apps/web/src/pages/yarn/WarehouseManagement.tsx) |
+| {uiText("Cancel ")} | `{() => setOpenLocationDialog(false)}` | [apps/web/src/pages/yarn/WarehouseManagement.tsx:469](../../../apps/web/src/pages/yarn/WarehouseManagement.tsx) |
+| {createLocationMutation.isPending ? uiText("Saving...") : uiText("Save Location")} | `{() => createLocationMutation.mutate(locationForm)}` | [apps/web/src/pages/yarn/WarehouseManagement.tsx:471](../../../apps/web/src/pages/yarn/WarehouseManagement.tsx) |
+| {uiText("Cancel ")} | `{() => setOpenMovementDialog(false)}` | [apps/web/src/pages/yarn/WarehouseManagement.tsx:584](../../../apps/web/src/pages/yarn/WarehouseManagement.tsx) |
+| {createMovementMutation.isPending ? uiText("Logging...") : uiText("Save Movement")} | `{() => createMovementMutation.mutate(movementForm)}` | [apps/web/src/pages/yarn/WarehouseManagement.tsx:586](../../../apps/web/src/pages/yarn/WarehouseManagement.tsx) |
 
 ## API calls
 
@@ -32,14 +32,15 @@ Paths are relative to the client API base (`/api/backend` by default in the brow
 
 | Method | Path expression | Source |
 | --- | --- | --- |
-| GET | `/warehouse/locations` | [apps/web/src/pages/yarn/WarehouseManagement.tsx:90](../../../apps/web/src/pages/yarn/WarehouseManagement.tsx) |
-| GET | `/commerce/items` | [apps/web/src/pages/yarn/WarehouseManagement.tsx:92](../../../apps/web/src/pages/yarn/WarehouseManagement.tsx) |
-| GET | `/warehouse/movements` | [apps/web/src/pages/yarn/WarehouseManagement.tsx:101](../../../apps/web/src/pages/yarn/WarehouseManagement.tsx) |
-| POST | `/warehouse/locations` | [apps/web/src/pages/yarn/WarehouseManagement.tsx:106](../../../apps/web/src/pages/yarn/WarehouseManagement.tsx) |
-| POST | `/warehouse/movements` | [apps/web/src/pages/yarn/WarehouseManagement.tsx:124](../../../apps/web/src/pages/yarn/WarehouseManagement.tsx) |
+| GET | `/warehouse/locations` | [apps/web/src/pages/yarn/WarehouseManagement.tsx:92](../../../apps/web/src/pages/yarn/WarehouseManagement.tsx) |
+| GET | `/commerce/items` | [apps/web/src/pages/yarn/WarehouseManagement.tsx:94](../../../apps/web/src/pages/yarn/WarehouseManagement.tsx) |
+| GET | `/warehouse/movements` | [apps/web/src/pages/yarn/WarehouseManagement.tsx:103](../../../apps/web/src/pages/yarn/WarehouseManagement.tsx) |
+| POST | `/warehouse/locations` | [apps/web/src/pages/yarn/WarehouseManagement.tsx:108](../../../apps/web/src/pages/yarn/WarehouseManagement.tsx) |
+| POST | `/warehouse/movements` | [apps/web/src/pages/yarn/WarehouseManagement.tsx:126](../../../apps/web/src/pages/yarn/WarehouseManagement.tsx) |
 
 ## Composed behavior
 
+- [i18n.ts](../../../apps/web/src/i18n.ts)
 - [api.ts](../../../apps/web/src/utils/api.ts)
 
 ## Verify the workflow

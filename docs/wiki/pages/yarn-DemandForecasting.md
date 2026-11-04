@@ -18,7 +18,7 @@ No literal Tab controls in this file. Check composed components and dynamic navi
 
 | Control / label | Handler | Source |
 | --- | --- | --- |
-| {isRefetching ? 'Refreshing...' : 'Refresh'} | `{() => queryClient.invalidateQueries({ queryKey: ['commerce-orders'] })}` | [apps/web/src/pages/yarn/DemandForecasting.tsx:142](../../../apps/web/src/pages/yarn/DemandForecasting.tsx) |
+| {isRefetching ? uiText("Refreshing...") : uiText("Refresh")} | `{() => queryClient.invalidateQueries({ queryKey: ['commerce-orders'] })}` | [apps/web/src/pages/yarn/DemandForecasting.tsx:142](../../../apps/web/src/pages/yarn/DemandForecasting.tsx) |
 
 ## API calls
 
@@ -26,10 +26,11 @@ Paths are relative to the client API base (`/api/backend` by default in the brow
 
 | Method | Path expression | Source |
 | --- | --- | --- |
-| GET | `/commerce/orders` | [apps/web/src/pages/yarn/DemandForecasting.tsx:65](../../../apps/web/src/pages/yarn/DemandForecasting.tsx) |
+| GET | `/commerce/orders` | [apps/web/src/pages/yarn/DemandForecasting.tsx:67](../../../apps/web/src/pages/yarn/DemandForecasting.tsx) |
 
 ## Composed behavior
 
+- [i18n.ts](../../../apps/web/src/i18n.ts)
 - [api.ts](../../../apps/web/src/utils/api.ts)
 
 ## Verify the workflow

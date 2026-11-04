@@ -1,0 +1,1156 @@
+# EverGreen — The Authored Version
+### A design plan for the version that doesn't look like a machine made it
+
+**Format:** specification only. No code.  
+**Scope:** the marketing/demo site at `:3300`.
+
+---
+
+## 0. What "looks too AI" actually means
+
+The file you shared is not technically bad. It has a strict CSP, a real WebGL fallback, source citations (CottonWorks), role-based flow, a calculator that shows its formula, an evidence table with verification paths. That's *better* than most agency output. And yet it reads as AI-made.
+
+That's the important diagnosis. The problem isn't quality. The problem is **familiarity of form**. The page is using a set of moves that a large language model has been trained to produce when asked for "a modern SaaS marketing page with a textile theme." Every one of those moves is individually reasonable. Together, they form a fingerprint.
+
+Here is the fingerprint, itemized, so we can remove it deliberately.
+
+### The twelve tells
+
+| # | Tell | Where it appears | Why it reads as AI |
+|---|---|---|---|
+| 1 | **Section-heading formula** — eyebrow + H2 + 1–2 sentence paragraph, repeated 6× | Every section | LLMs default to this rhythm. It's the safe structure. Real editorial pages vary structure deliberately. |
+| 2 | **Numbered eyebrows** — `01 / FOLLOW THE WORK`, `02 / MAKE THE ASSUMPTION VISIBLE` | Every section | Numbered labels are an AI tell because they're trivially generated. |
+| 3 | **Italic serif on the last two words** — "*whole mill.*", "*can question.*", "*can inspect.*", "*One EverGreen.*", "*the thread.*" | Every H2 and H1 | Extremely reliable AI fingerprint. It appears in almost every LLM-generated landing page. |
+| 4 | **Triple parallel headlines** — "Every lot. Every handoff. One clear record." | Hero | Balanced triads are the default rhetorical shape of generated copy. |
+| 5 | **The "compare three options" picker** — Editoral / Dimensional / Cinematic | Top bar + directions section | A real designer rarely presents three directions this way. It's a choice made for the *presenter's* comfort, not the client's. |
+| 6 | **Readiness chips repeated everywhere** — `Implemented / Planned / Illustrative` under every section | Everywhere | Good intent. But 40 repetitions of the same honesty becomes its own stylistic crutch. |
+| 7 | **The annotated technical SVG** — `TRAVERSE`, `BARREL / CORE`, `YARN MASS`, `FLANGE` with leader lines | Hero | The AI's way of signaling "we're technical" is to label a drawing. A real engineering page would show you the spec, not a labeled diagram of the product's *shape*. |
+| 8 | **"Motion desk"** — four treatments, one picker, plus a film scrubbing slider | Hero | Meta-UI about the UI is a giveaway. Users don't need a "motion desk" to understand a mill. |
+| 9 | **The green-and-copper palette** | Whole page | Green + copper + near-black is the current LLM default for "sustainable industrial." It's the new purple gradient. |
+| 10 | **Serif display + sans body + mono labels** | Whole page | It's a good pairing, but it's now so common in AI output that it reads as a template rather than a choice. |
+| 11 | **The soft "Review this direction ↗" bar** | Fixed bar | Inviting the client to *choose the design* in-page is an AI concept of collaboration. Real design review happens in conversation, not via a floating button. |
+| 12 | **Every section resolves with a small honesty note** | Bottom of each section | Excellent ethics. Poor craft. The reader learns the pattern in the first two sections; by section four it reads as a tic. |
+
+There are more (the use of `↗` and `↘` as arrow glyphs, the "Skip to content" link styled as a design element, the "one thread" metaphor stated *four* times), but twelve is enough to make the point.
+
+**The core problem:** the page is *maximally safe*. Every decision is defensible. Nothing is *surprising*. A human designer's work is recognizable because it takes a specific risk — a layout choice that shouldn't work but does, a single odd color, a paragraph where a card should be, a photograph where an illustration would be safer.
+
+The plan below is about taking those risks, deliberately, with reasons.
+
+---
+
+## 1. The premise shifts
+
+### 1.1 Stop designing "a marketing site." Design a **document**.
+
+A mill owner is not scrolling a landing page. They are reading a document sent by a supplier they're evaluating. The mental model is not "HubSpot template." It is **an extract from an industrial trade journal, or a well-printed catalogue from a machine manufacturer in 1974**.
+
+This single shift resolves most of the AI-tells. Documents don't have:
+- Numbered eyebrow labels on every section
+- Readiness chips repeated 40 times
+- A "motion desk"
+- Three design directions to choose from
+
+Documents do have:
+- A colophon
+- Section headers set in a specific type
+- Figures with real captions
+- Footnotes
+- A bibliography
+- Margins that carry notes
+- Occasional long silences (white space)
+
+### 1.2 The metaphor is not "one thread." It's a **specification sheet**.
+
+"One thread" is a poetic idea. It's fine as a tagline. But it's been used *four times* on the current page — in the H1, the flow section, the directions section, and the footer. Repeating the metaphor is the tell.
+
+Replace it with a concrete artifact: **the mill's own spec sheet**. The page is laid out like a technical datasheet: numbered clauses, a specification table, figures with figure numbers, an appendix with standards and sources.
+
+That's how a **real** industrial vendor presents themselves. Not as a lifestyle brand.
+
+### 1.3 The reader is not "the mill owner." The reader is **the person who has to justify the purchase**.
+
+That person is often an accountant, a son/daughter taking over, or a plant manager who has to defend the decision to a board. Their questions are:
+
+- "What does this *actually* do that Tally + a spreadsheet doesn't?"
+- "What breaks?"
+- "Who else uses this? (Or: why does no one else use this?)"
+- "What's the exit cost?"
+- "What happens when the vendor disappears?"
+
+The current page doesn't answer half of these. It answers "what is this" and "is it honest." It doesn't answer **"what if I'm wrong."**
+
+---
+
+## 2. Visual system — real decisions, not safe ones
+
+### 2.1 Palette: drop the green. Ground the color in the material.
+
+Green-and-copper is the AI default. It's also mildly dishonest: **evergreen** is a marketing word, not a cotton color.
+
+Instead, take color from the actual materials in a spinning mill:
+
+| Token | Value | Source | Use |
+|---|---|---|---|
+| `--paper` | `#F2EDE1` | Unbleached cotton cloth | Primary background. Not white. |
+| `--paper-warm` | `#E8DFCB` | Carded sliver under fluorescent light | Panel backgrounds |
+| `--ink` | `#1A1712` | Ink on a paper ticket | Body text |
+| `--ink-soft` | `#4B4438` | Aged paper | Secondary text |
+| `--rule` | `#D4C9B3` | Hairline rules in a printed spec | Borders, dividers |
+| `--indigo` | `#243E5C` | Natural indigo dye | Active states, links, focus |
+| `--madder` | `#8B3A2A` | Madder root red | Warnings, "not shipped," failure states |
+| `--saffron` | `#B8860B` | Saffron / turmeric | Accents used *sparingly* — one per screen |
+
+**Why this works:** it's a **light** page. Almost every AI-generated SaaS page is dark, and dark+neon is the single biggest AI signal in 2024–2025. A cream paper page with one indigo accent immediately reads as *printed*, not *rendered*.
+
+**Contrast:** `--ink` on `--paper` is ~14:1. `--indigo` on `--paper` is ~7.5:1. Passes AAA for body text. `--madder` and `--saffron` are used for ≥18px labels only, or with a symbol prefix, so contrast is not carried by color alone.
+
+**Functional color stays functional:** only `madder` and `indigo` ever mean "status." Nothing is colored decoratively. No gradient. No glass.
+
+### 2.2 Typography: one family, worked hard
+
+The serif + sans + mono trio is the AI default. Replace it with **one family at dramatic scales**, plus a **second family used exactly once per section** as an accent.
+
+| Role | Face | Sizes | Notes |
+|---|---|---|---|
+| Everything | **Literata** (variable, self-hosted, free) | 14 / 17 / 22 / 34 / 56 / 88 px | Literata is designed for long-form reading. It carries warmth at small sizes and authority at large. |
+| Numerals / tables | Literata's tabular figures | same | Enable `font-variant-numeric: tabular-nums lining-nums` globally for data. |
+| Headings only, in a small number of places | **a single grotesque** (e.g. **Inter Tight**, or a system grotesque) at 900 weight | 28 / 48 px | Used at most 3× per page. Not for H2s. Used for **the spec-sheet title, the section number, and the table caption**. |
+
+**Critical detail:** the current page italicizes the last two words of every heading. Stop this. Instead:
+
+- **One** heading on the page gets an italic. Choose which one based on what the sentence *means*, not on how it looks.
+- Everything else is set in Literata at one weight.
+
+**Micro-detail that adds humanity:** allow **real small caps** (via `font-feature-settings: "smcp"`) in the running headers and the spec table. Small caps look hand-set. Uppercase looks generated.
+
+### 2.3 Layout: introduce **asymmetry and margin notes**
+
+The AI layout is a centered `max-width` container with symmetric padding. Break it in three specific ways:
+
+1. **A left gutter** — on screens ≥ 1024 px, a `120px` left margin column carries section numbers, small captions, and occasional notes in the grotesque at 11px. This looks like a printed spec sheet's margin. The main text sits at ~62% width, not 100%.
+2. **Full-bleed figures** — the schematic, the calculator result, and the payload viewer break out of the container and touch both edges. This creates rhythm. Documents do this; SaaS pages don't.
+3. **One deliberately "empty" section** — a page with just a pull-quote, a date, and a source. Long white space. No CTA. This is the single most *human* move available to you, because no AI will ever recommend a section that intentionally does nothing.
+
+### 2.4 Illustration: technical, but **actually** technical
+
+The current page labels a spool like a diagram. Replace it with a **figure from an actual spinning manual**, re-drawn.
+
+Pick **one** figure and do it well. Candidates:
+
+- **A carding machine cross-section**, with the actual roll sequence (licker-in → cylinder → flats → doffer), and a small arrow showing where waste is extracted. This is *specific*. It shows you understand the machine, not just the word.
+- **A ring spindle**, with traveller, ring, and bobbin labeled, and the balloon shape of the yarn path drawn. Again — specific.
+- **A bale → lap → card sliver → comber sliver → drawn sliver → roving → ring yarn** sequence, drawn as one continuous line with **mass per unit length annotated at each stage**. This is the thing a real mill engineer would find convincing.
+
+**Style:** 1 px hairline drawings in `--ink`, on `--paper`. No fills, no glow, no gradient. Numbers and dimensions in the grotesque at 10 px. It should look like it was drawn by an engineer with a technical pen, not by a generator with a glow filter.
+
+**Figures get real captions**, in the format:
+
+> **Fig. 3.** Carding: fibre mass reduces from ~400 g/m at the lap to ~4–6 g/m at the sliver, a roughly 80× reduction. Waste is extracted at the flats and at the licker-in. Diagram adapted from [source], 20XX.
+
+Captions like this do more for credibility than any readiness chip.
+
+### 2.5 Photography: if you can source it, it's the single biggest tell-remover
+
+If the client has access to a real mill (their own, a partner's, a stock license), **two photographs** transform the page:
+
+1. A **macro** of cotton fibre on a carding cylinder.
+2. A **wide** of a spinning hall, shot from a slightly low angle, unpeopled or with one figure.
+
+Placed full-bleed at the top of two sections, with a two-line caption and a photo credit. This alone will do more than every animation on the current page. AI can't fake good photography, and a page with one *real* photo suddenly reads as *made by people who went somewhere*.
+
+If photography is not available, the technical figures (§2.4) do the same job at 60% of the impact.
+
+---
+
+## 3. Information architecture — fewer sections, harder edges
+
+The current page has 9 sections plus a top bar, a fixed review bar, a footer, two dialogs, and an announcement region. It's a lot of surface for what is essentially four ideas.
+
+The authored version has **six** sections. Not because fewer is always better, but because six is what the argument needs.
+
+### 3.1 The six
+
+| # | Section | Job | Length |
+|---|---|---|---|
+| 1 | **Title page** (spec-sheet style) | Identity, date, version, one paragraph of intent, one CTA. Reads like the cover of a document. | 1 screen |
+| 2 | **The record** (the schematic) | The single argument: what a record is, where it's lost, what it holds. Interactive. | 3–4 screens |
+| 3 | **The spec** (a table, not a feature grid) | What the software actually does — as a specification sheet with columns: Capability · Input · Output · Status. | 2 screens |
+| 4 | **The arithmetic** (the calculator, evolved) | A numbers section, but done as a footnote apparatus: one worked example, sources, and a "how to falsify this" panel. | 2 screens |
+| 5 | **The limits** (evidence + deployment + failure modes) | What's shipped, what isn't, what breaks when the internet stops, what happens when you stop paying, what happens when the vendor disappears. | 2–3 screens |
+| 6 | **The brief** (contact) | A document composer, not a form. | 1 screen |
+
+No "three directions." No "motion desk." No "design atelier" bar. No announcement region.
+
+### 3.2 What replaces the top bar
+
+The current fixed bar reads like a *design review tool*. The authored version replaces it with a **running head**, styled like a printed document:
+
+> `EVERGREEN` · `TEXTILE OPERATING SYSTEM` · `SPECIFICATION — 2026` · [Page 2 of 6] · [Motion: on/off]
+
+It's fixed, but it's thin (36px), quiet, and functional. It reads like the header of a real document, not a UI chrome.
+
+### 3.3 What replaces the "three directions"
+
+This is the most important removal. The three-direction picker exists because presenting options feels safe. But **three options is zero decisions**.
+
+If you must present alternatives (for internal review — not on the public site), do it as **three physical copies of the same page** in a private review URL, each at its own path (`/v1`, `/v2`, `/v3`). The default site is **one direction, chosen, argued for in a one-page rationale**.
+
+The rationale should answer:
+- Why this typographic family.
+- Why this palette and not green.
+- Why this figure and not that one.
+- What was rejected and why.
+- What the risks are.
+
+If you can't write the rationale, you haven't decided.
+
+---
+
+## 4. Section-by-section specification
+
+### 4.1 Title page
+
+Not a hero. A **cover**.
+
+```
+                          EVERGREEN
+                          —————————
+                          TEXTILE OPERATING SYSTEM
+                          Specification · 2026
+
+                     (a one-line statement of what
+                      the software is, set in Literata
+                      at 34 px, no more than 120
+                      characters, no italics)
+
+
+     [  A hairline figure of a yarn package,  ]
+     [  drawn in single-weight strokes,        ]
+     [  annotated with three measurements:     ]
+     [  count, mass, lot reference.            ]
+     [                                         ]
+     [  Caption in small caps below.           ]
+
+
+     Prepared for       [empty — the reader's mill goes here]
+     Version            2026.02
+     Status             Concept — not a customer deployment
+     Contact            [a name, an email, not a form]
+
+     → Read the specification
+     → Prepare a brief
+```
+
+Three things to notice:
+
+- **Nothing is decorated.** No gradient, no glow, no chip.
+- **The figure is real** (a yarn package with *measurements*, not a decorative spool with a section toggle).
+- **The contact is a name and an email.** Not "book a demo." A named human. This is one of the strongest trust signals available and it costs nothing.
+
+**No 3D, no motion, no canvas.** The cover does not animate. The first movement on the page happens when the reader scrolls.
+
+### 4.2 The record (the schematic)
+
+This is where the argument lives. Keep the multi-layer flow, but change four things:
+
+1. **Drop the numbered eyebrows.** The section has one heading. That's it.
+2. **Make the schematic full-bleed.** It touches both edges of the viewport. This signals "this is the important thing."
+3. **Add a real fault-injection panel** — not a small checkbox. A panel on the right of the schematic, always visible, with three scenarios:
+
+   - *Lot ID lost at gate*
+   - *Job work challan not reconciled*
+   - *Invoice raised against wrong batch*
+
+   Selecting one **highlights the nodes** where the record breaks, and shows, in the panel, the **commercial consequence** in one sentence and a small number (e.g., "moisture disputes typically cost 0.5–1.5% of cotton value" — with a source).
+
+4. **Cut the role tabs.** The role-based reading is good, but the tabs are a UI conceit. Instead, when a fault is selected, the panel offers **three voices** stacked vertically, not tabbed:
+
+   > **The owner sees:** stock value that can't be aged because it isn't loted.
+   > **The accountant sees:** a voucher that can't be raised because the batch reference is gone.
+   > **The floor sees:** a challan that comes back short with no baseline to argue against.
+
+   All three visible at once. This is a **stronger argument** than tabs, because it shows that a single missing record is simultaneously a commercial, financial, and operational failure. Tabs hide two of the three at any given moment.
+
+5. **The schematic's own node drawer** — keep it, but reduce the fields. Four: **Physical**, **Recorded**, **Missing → consequence**, **Standard reference** (with a citation). The current five-field model is close; the standard reference is what makes it credible.
+
+**Node drawing style:** hairline, no fills, dimension lines like a technical drawing, node labels in small caps. Not iconography.
+
+### 4.3 The spec (a table, not a feature grid)
+
+Replace the six-card module grid with **a single specification table**, in the style of a machine datasheet:
+
+| Ref | Capability | Input | Output | Status |
+|---|---|---|---|---|
+| 1.1 | Inward entry | Weighbridge ticket, moisture reading, supplier invoice | Lot with gross/tare/net, moisture adjustment, supplier ref | Implemented |
+| 1.2 | Production issue | Lot ref, department, quantity | Issue slip, mass-balance entry | Implemented |
+| 1.3 | Job work out | Challan, party, expected return | Open challan, ageing, shortfall at return | Implemented |
+| 1.4 | Invoice draft | Dispatch, contract rate, GST rules | Draft invoice, Tally XML voucher | Implemented |
+| 2.1 | Weighbridge connector | RS-232 (protocol unverified) | Auto-entry of gross/tare | Planned |
+| 2.2 | Loom PLC connector | Modbus/OPC-UA (protocol unverified) | Downtime, RPM, output | Planned |
+| 2.3 | GST e-invoice / IRP | GSTN credentials | IRN, signed QR | Planned |
+| 3.1 | Named-mill savings | Measured baseline, 90 days | Published case study | Not available |
+
+Three things this does that a card grid cannot:
+
+- It **shows the shape of coverage** — you can see at a glance that the inward → invoice path is complete and that everything beyond the mill wall is planned.
+- It **names the protocols**, including "protocol unverified." That phrase is worth more than any chip. It says: *we know that we don't know yet.*
+- It **groups by phase** (1 = shipped, 2 = planned, 3 = evidence), not by marketing name.
+
+Captions and column widths are the design work here. This should *feel* like reading a machine's specification, not a pricing page.
+
+### 4.4 The arithmetic
+
+Keep the calculator, but shift its framing from "savings" to **"a number you can falsify."**
+
+Layout:
+
+- **Left column:** the four inputs, styled as a *printed form* (label above, hairline rule under the field, not a rounded input). No sliders. Native inputs.
+- **Right column:** the result, in a **single worked example**, with the arithmetic shown line by line:
+
+  ```
+  40 invoices/month
+  × ₹50,000 average
+  × 3 days reduced ÷ 30
+  ─────────────────────
+  = ₹2,00,000 of working capital freed
+  × 12% cost of capital
+  ─────────────────────
+  = ₹24,000/year illustrative carrying-cost equivalent
+  ```
+
+  Then a **"How this could be wrong"** paragraph:
+
+  > This is arithmetic, not evidence. It assumes: (a) your invoices are actually paid within 30 days of dispatch today, (b) reducing the billing lag produces collection, not a matching delay in payment, (c) your cost of capital is 12%. If any of these is false, the number is false. In particular, in most textile businesses **dispatch-to-invoice is already fast**; the delay is usually in **dispatch to delivery**, and this calculator does not model that. Bring your own numbers to a call.
+
+  That paragraph is the whole section. It says: *we are not selling you this number.*
+
+- **Below the calculator, a footnote block** with three rows: `Method`, `Sources`, `Excluded from this estimate`. Small caps for the labels, Literata 14 px for the content.
+
+No scenario bars. No animated counters. No "base / conservative / stretch" cards. A table of three numbers in a footnote.
+
+### 4.5 The limits
+
+This is the section that will most distinguish the page from any AI output, because it is the section AI does not write spontaneously. It requires having **thought about failure**.
+
+Structure it as a **failure-modes document**, not an FAQ:
+
+| What | What happens | What you should do |
+|---|---|---|
+| **The internet goes down** | Local deployment keeps working. Synced cloud features stop. Any operations UI that depends on the cloud will lose sync. | Deploy on-premise. Verify offline behaviour on your LAN before go-live. |
+| **The vendor stops operating** | The local database is yours. Export formats (CSV, XML, plain SQL) are supported in the application. **But**: bug fixes stop, security updates stop, and no new statutory changes will be incorporated. | Ensure you have a signed export undertaking and test the export *before* purchase. |
+| **Your accountant leaves** | Every role has an offline-readable export. Chart-of-accounts mapping is documented. | Include chart-of-accounts training in onboarding, not just software training. |
+| **Statutory rule changes** | GST rates, e-invoice thresholds, and e-way bill rules change. **Software is not a compliance guarantee.** | Verify with your CA on every change. Do not rely on the software's defaults alone. |
+| **Data corruption** | Recovery depends on your backup practice. There is no managed backup by default. | Set up a documented backup schedule. Test restores quarterly. |
+| **The claim isn't true** | Every claim on this page carries a status label. **Nothing on this page is a customer result.** | Ask for a demonstration of any claim in your own environment. |
+
+Below the table, one more line:
+
+> **What's not here.** We have not listed a customer case study because there isn't one yet that meets our bar: a named mill, a baseline period of at least 90 days, and the mill's written approval. When that exists, it will be added here with dates, not before.
+
+This section does what no readiness chip can: **it takes responsibility**. That's what makes it human.
+
+### 4.6 The brief
+
+Not a contact form. A **document composer**:
+
+- Three fields: **Mill**, **Your role**, **What needs to make sense**.
+- Live preview of the text that will be produced.
+- A **Copy** and **Download** button. Both produce the same text.
+- No submission endpoint. A visible line: *"Nothing has been sent. This draft is yours."*
+- Below: **a named human's email address, and their working hours.** Not "contact@."
+
+The single strongest trust signal is a name. Use one.
+
+---
+
+## 5. Motion: what to keep, what to cut
+
+The current page has four treatments + a film study + a scrubber + a motion toggle + a section view. That's *six* ways to see the same thing. That's an art project, not a document.
+
+The authored version has **three motions total**:
+
+| Motion | Where | Duration | Why |
+|---|---|---|---|
+| **The thread grows** | Once, on the schematic, when it first enters the viewport | 1.2 s, single stroke-draw | It explains the flow. It happens once. It never repeats. |
+| **The active node** | Schematic, when a node is hovered or focused | 180 ms | It confirms interactivity. |
+| **The fault cascade** | Schematic, when a fault scenario is chosen | 800 ms | It explains *causality* — the thing the current page says it wants and then doesn't do. |
+
+That's it. **No canvas particles. No WebGL. No film scrubber. No section view. No motion desk.** The 3D spool is replaced by the annotated 2D figure from §2.4.
+
+**Why cut the 3D:** the brief said "give me the best 2D animation." The best 2D animation is the one that *explains*. A rotating spool explains nothing. A fault cascade on a schematic explains everything.
+
+**Reduced-motion:** the schematic loads fully drawn. The fault cascade becomes a static state change. The active node becomes a 1 px copper underline. The page is complete without motion. Test this by loading with `prefers-reduced-motion: reduce` and confirming the page still works.
+
+---
+
+## 6. Copy: the voice that reads human
+
+The current copy is competent and slightly anonymous. It has the rhythm of generated text: balanced clauses, parallel structures, every heading with the same shape.
+
+The authored voice has three properties:
+
+### 6.1 Specific over abstract
+
+| Generated | Authored |
+|---|---|
+| "Every lot. Every handoff. One clear record." | "Eight bales in. Six hundred cones out. If the lot number changes on the way, the invoice is wrong." |
+| "A bridge you can inspect." | "The Tally export is a file. Download it, open it in a test company, break it if you can." |
+| "A considered operating system." | "It does six things. Two of them are unusual for textile software. This page explains which two." |
+| "Motion-led storytelling." | "The next scroll shows you where a record breaks." |
+
+### 6.2 Admit the boring parts
+
+Real vendors say things like: *"The first install takes about a day. Most of it is chart-of-accounts mapping."* or *"Our Tally export supports sales and purchase vouchers. It does not support debit notes yet."*
+
+Generated copy says: *"Seamless."* or *"Effortless."*
+
+The rule: **every section should contain one sentence that would be a slight embarrassment to a marketing department.** That sentence is the one that earns trust.
+
+### 6.3 One unresolved question, per section
+
+Real documents sometimes leave a question open. The title page can end with:
+
+> **Question for the reader:** which of your current reconciliations takes the longest? We are trying to learn whether dispatch-to-invoice or job-work return is the more common pain. [Tell us →]
+
+This is more human than any CTA, because it **asks the reader to contribute**, not to convert.
+
+---
+
+## 7. What to delete (the removal list)
+
+The most important part of the plan. Every item on this list was on the current page.
+
+1. **The three-direction picker.** (See §3.3.)
+2. **The "Motion desk"** and its four treatments.
+3. **The film scrubber and the JSX authoring script download.**
+4. **The section-view toggle** on the hero spool.
+5. **The WebGL spool**, and the CSS 3D spool.
+6. **The "Design atelier" fixed bar.** Replace with a running head.
+7. **The "Review this direction ↗" button.** Replace with a named email address.
+8. **The "01 / 02 / 03" numbered eyebrows.** Replace with **section numbers only in the running head** (like a document).
+9. **The italicized last two words of every H2.** Replace with **one** italic on the page.
+10. **The 40 readiness chips.** Replace with the single status column in the spec table + the "What's missing" line in the limits section.
+11. **The animated counters, scenario bars, and gradient charts.** Replace with one worked arithmetic example.
+12. **The announcement region, the skip-link styled as a design element, the "DIALOG" modals.** Modals are fine — but reduce from two to one, and make it a `dialog` with a real close button, not a "design review" pattern.
+13. **The word "Divine"** — and "Omniscient," "God-level," "next-gen," "best-in-class." Not because they're wrong, but because **they undermine every other claim on the page.**
+14. **The "Three readings. One EverGreen." section.** It's design-tool meta-commentary, not content.
+15. **The "The Digital Guru," "The Omniscient View," "The Ascension Path."** These were in the *previous* brief. If they're still anywhere in the copy or the code comments, remove them. A human does not write in that register for a mill owner.
+
+---
+
+## 8. The research layer: what earns authority
+
+The current page cites CottonWorks once. That's a start. The authored version does **one specific research pass** and cites it visibly.
+
+### 8.1 Standards and sources to cite (with confidence levels)
+
+| Topic | Source | What it says | Confidence |
+|---|---|---|---|
+| Fibre → yarn mass flow | **CottonWorks** (cottonworks.com) | Lap → card sliver → comber sliver → drawing → roving → ring yarn; mass per unit length at each stage | High — industry education source |
+| Yarn count definition | **ASTM D2260 / ISO 2060** | Ne = 840-yard hanks per pound | High — standards body |
+| Twist and strength | **SITRA** (South India Textile Research Association) | TPI ↔ count ↔ CSP relationships | High — textile research institute |
+| Specific energy in spinning | **SITRA UKG benchmark** | ~3.564 kWh/kg for 40s Ne carded | High as a benchmark; note it varies by machine |
+| Moisture regain | **ASTM D2495 / IS 236** | Standard regain for cotton; moisture content vs regain distinction | High |
+| 194Q TDS | **Income Tax Act, §194Q** | 0.1% over ₹50 lakh per PAN per FY | High — statutory |
+| GST e-invoice thresholds | **CBIC notifications** | Currently ₹5 Cr AATO for B2B; changes periodically | Medium — verify at time of use |
+| DPP for textiles | **EU ESPR** | Digital Product Passport; textiles phased from ~2027; full coverage by ~2033 | Medium — policy timeline can shift |
+| COPQ in spinning | **Published industry studies** | Often cited at 12–30% in developing-market spinning vs 5–15% optimised | Medium — varies by study and definition |
+
+Every one of these numbers appears **in the page with a footnote**, not in a claim.
+
+### 8.2 Where the research *does not* go
+
+- No "we have deployed at 47 mills."
+- No logos.
+- No customer names.
+- No saving percentages attributed to EverGreen.
+- No "rated #1."
+
+The research earns authority by **being visible and checkable**, not by being quoted as proof.
+
+### 8.3 One specific move that will convince a mill owner
+
+Include a small **"how we tested this"** panel in the limits section:
+
+> **How we tested the Tally export.** On [date], we exported 12 sample sales vouchers from a test company with 4 line items, 2 tax rates, and 1 discount. We imported them into Tally Prime [version] and confirmed voucher totals, tax postings, and party ledger balances. We did not test: debit notes, credit notes, multi-currency, or any non-Indian Tally configuration. If your chart of accounts uses custom voucher types, ask for a demonstration with your own chart before purchase.
+
+This is what a real engineering team writes. It is impossible to generate because it requires having **actually done the test**.
+
+---
+
+## 9. Customer experience: the four things a serious buyer does
+
+A serious buyer will do four things on this page. The design should make each one easy and evidence-rich.
+
+### 9.1 "Show me it works"
+
+The reader should be able to click into **the schematic's node drawer for the Tally node** and see:
+
+- A 20-line XML excerpt.
+- A one-line explanation of *every tag*.
+- A "Copy" and "Download" button.
+- A statement: *"This is the actual format the application produces. Not a mock-up."*
+
+Currently, the page offers this only in §3 of the integrations section, and the XML is not annotated. Move it into the node drawer where the reader is already looking.
+
+### 9.2 "Show me what breaks"
+
+The fault-injection panel (§4.2) is the answer. This is the single most differentiated interaction on the page. Make it prominent, not a checkbox.
+
+### 9.3 "Show me the exit"
+
+The **vendor-stops-operating** row in the limits table (§4.5) is critical. Almost no vendor writes this. It signals: *we have thought about the worst case, and we are not hiding it.*
+
+### 9.4 "Show me who I'm talking to"
+
+A **named human** — name, role, a direct email, working hours in IST. Not "our sales team." Not "contact@."
+
+---
+
+## 10. Accessibility and safety — the authored version
+
+Every item on the current page's a11y list is good. The authored version keeps all of it and adds four things:
+
+1. **`prefers-contrast: more`** support — the page switches to ink on pure white, and functional colors shift to their highest-contrast variants. Tested with simulated color blindness (protanopia, deuteranopia, tritanopia).
+2. **A "read this without images" toggle** in the running head — disables the schematic's decorative strokes, keeps node labels, and preserves the fault-injection interaction as a plain list. This is a real need for readers using screen readers, and the toggle gives sighted readers a preview of what screen-reader users get.
+3. **VoiceOver / NVDA scripted walkthrough** of the schematic, documented in the README so it can be regression-tested.
+4. **A printed version** — the CSS `@media print` stylesheet produces a **readable spec sheet** with the schematic as a static SVG, the calculator as a worked example, and the limits table intact. A document that prints well is a document.
+
+---
+
+## 11. The "does this look human?" checklist
+
+Before any review, run this list. Anything that fails gets removed, not fixed.
+
+- [ ] **No more than one italic serif per section.**
+- [ ] **No numbered eyebrows on more than one section.**
+- [ ] **No green + copper palette.**
+- [ ] **No dark background** except in the schematic figure (if it earns it).
+- [ ] **One CTA per section**, maximum.
+- [ ] **No capability lists longer than six items.**
+- [ ] **No claim that isn't in the spec table or the limits table.**
+- [ ] **At least one sentence per section that a marketing department would edit out.**
+- [ ] **Every number on the page is either (a) an input the reader provided, (b) a cited benchmark, or (c) explicitly marked illustrative.**
+- [ ] **A named human's email address appears on the page.**
+- [ ] **The page prints to at least 4 pages of A4 and reads sensibly as a document.**
+- [ ] **There is a section a scroller will scroll past because nothing is happening in it. That's intentional.**
+- [ ] **Nothing on the page says "seamless," "effortless," "revolutionary," "next-gen," "divine," or "omniscient."**
+- [ ] **Load in `prefers-reduced-motion: reduce` — the page is complete.**
+- [ ] **Load with JavaScript disabled — the schematic's fault list is present as HTML, the calculator shows a worked example, the limits table is present, the contact email is a `mailto:`.**
+
+---
+
+## 12. Build order
+
+The authored version is not smaller than the current one. It is *differently* sized: less surface, more depth per surface.
+
+| Phase | What | Time |
+|---|---|---|
+| 0 | Copy pass: rewrite every section in the authored voice. Nothing else starts until the copy is done. | 1 week |
+| 1 | Print stylesheet first. Design the A4 version. The web version is what the A4 version becomes when it has to. | 3 days |
+| 2 | Typography and palette. Literata, one grotesque, cream + ink + indigo + madder. No layout yet. | 3 days |
+| 3 | The schematic: hairline drawing, node drawer, fault-injection panel. This is the longest phase. | 2 weeks |
+| 4 | The spec table and the limits table. Nothing else. | 3 days |
+| 5 | The calculator as a worked example with footnotes. | 4 days |
+| 6 | The brief composer and the running head. | 3 days |
+| 7 | Accessibility pass: contrast, prefers-contrast, no-images toggle, screen-reader script. | 1 week |
+| 8 | The research footnote block. Cite everything. | 2 days |
+| 9 | The named-email and vendor-exit sections. These are 30 lines of content and three hours of editing. | 1 day |
+| 10 | Performance and CSP verification. | 2 days |
+
+Total: **~6 weeks** of focused work. The current page took longer and does less.
+
+---
+
+## 13. What "authored" means, in one paragraph
+
+The current page is honest, well-built, and reads as if it were made by a large language model trying to be thoughtful. The authored version reads as if it were made by **two people who visited a mill, argued about a word, and then deleted half the page**. It has fewer sections, fewer claims, one photograph if you can get it, one annotated figure that shows you understand the carding process, one fault-injection interaction that shows you understand why it matters, one table that shows you understand what "shipped" means, one paragraph that admits what could make the arithmetic wrong, and one name at the bottom of the page.
+
+That is not less. That is **more**, in the only form that counts.
+
+---
+
+## 14. The single sentence to hold the whole thing together
+
+> **Design this page as though it will be printed, mailed to a mill owner in Coimbatore, and read at a kitchen table — and as though your name is on the cover.**
+
+Every decision on the current page that feels like AI is a decision that would not survive that test. Every decision that survives it will feel like something a person made, because a person did.
+
+---
+
+*This document is the plan. When you're ready to build, the first commit should be a printed A4 of the cover page and the limits table, both readable, both set in Literata, both honest. Everything else follows from those two pages.*
+
+
+
+
+Note : [# EverGreen — The Motion Expansion
+### Every animation, every effect, every interaction — specified, categorized, justified
+
+**Format:** specification only. No code.  
+**Context:** supersedes the motion section of the previous plan. Keeps the editorial identity. This document is *only* about animation, interaction, motion, and the After Effects pipeline.
+
+---
+
+## 0. The rule that makes "more" work
+
+You asked for more animations. Fine. But if I just add more, we're back to the AI look — because AI output fails on animations the same way it fails on copy: **abundance without specificity**.
+
+The human version of "more animation" is not *more effects*. It is **more types of motion** doing **more specific jobs**, each with a reason. So this plan is laid out in layers, and each item passes one test:
+
+> **Can I explain what this animation shows in one sentence, without using the words "delightful," "engaging," or "polished"?**
+
+If yes, it's in. If no, it gets cut. There are 87 animations below. All 87 pass the test. That's the plan.
+
+The second rule: **more animation, not more of it at once.** The page has one ambient thread, one hero film, one scroll-scrubbed narrative, and *hundreds* of micro-interactions. A user meets dozens of animations per session, but never more than three simultaneously. That's how you get "more" without noise.
+
+---
+
+## 1. The five-layer motion architecture
+
+Every animation on the site belongs to exactly one layer. The layers nest.
+
+| Layer | Timescale | Trigger | Frequency | What it does |
+|---|---|---|---|---|
+| **L1 — Micro** | 80–200 ms | Every user input | Continuous | Confirms touch, key, or click. Textile-coded. |
+| **L2 — Meso** | 280–640 ms | State change | On user action | Reveals a transition: tab, drawer, node, card. |
+| **L3 — Macro** | 800–1,600 ms | Section enters | Once per section | Establishes the section's argument visually. |
+| **L4 — Narrative** | Scroll-scrubbed | Scroll position | Once per page | The cinematic centerpiece: a lot travels the mill. |
+| **L5 — Ambient** | 8–24 s loop | Page load | Forever (pausable) | A single thread that binds the page. One element. |
+
+**Critical discipline:** the page has *one* L5 (the thread), *one* L4 (the mill narrative), *six* L3s (one per section), *~14* L2 patterns, and *~60* L1 micro-interactions. The counts are deliberate. More L5 would be noise. Fewer L1 would feel dead.
+
+---
+
+## 2. L1 — Micro-interactions (the 60)
+
+These are the animations a user feels but does not notice. Each one is textile-coded. Each lasts under 200 ms. Each is unique to its trigger — no generic "fade."
+
+### 2.1 Cursor and pointer (6)
+
+| # | Interaction | Motion | Duration |
+|---|---|---|---|
+| 1 | Cursor enters schematic | Cursor becomes a 12 px ring with a 2 px copper center dot (thread-through-needle) | 120 ms fade in |
+| 2 | Cursor hovers a schematic node | Node lifts 2 px, connecting threads to it thicken from 0.5 px to 1 px | 160 ms |
+| 3 | Cursor over copyable text | Cursor shows a tiny stitch icon in the corner | 100 ms |
+| 4 | Cursor on disabled control | Cursor becomes a loose, fraying thread icon | 100 ms |
+| 5 | Cursor leaves the page (`blur`) | All hover states release with an 80 ms yarn-settle ease | 80 ms |
+| 6 | Touch tap | Ripple is not a circle but a short weave pattern expanding outward | 180 ms |
+
+### 2.2 Buttons (6)
+
+| # | Interaction | Motion | Duration |
+|---|---|---|---|
+| 7 | Primary button hover | A 1 px copper thread draws along the bottom edge, left → right | 140 ms |
+| 8 | Primary button press | Button compresses 1 px vertically, then settles — no bounce, just weight | 120 ms |
+| 9 | Secondary button hover | Border thickens from 1 px to 1.5 px; the corners don't scale | 140 ms |
+| 10 | Text link hover | Underline draws L → R with a 2 px fray at the end | 160 ms |
+| 11 | Copy button (XML, brief) | After click, icon morphs to a checkmark that draws itself | 200 ms |
+| 12 | "Download" button | Icon becomes an arrow that travels 4 px and fades, then reappears | 320 ms loop |
+
+### 2.3 Form controls (10)
+
+| # | Interaction | Motion | Duration |
+|---|---|---|---|
+| 13 | Text input focus | Underline draws left → right in copper | 140 ms |
+| 14 | Text input typing | The caret is a 1 px strand that flickers (only on type, not idle) | 400 ms cycle |
+| 15 | Native slider (if used) | Track fills smoothly, thumb has a 1 px thread ring | 120 ms |
+| 16 | Number input up/down | Last digit rolls (odometer style) instead of jumping | 180 ms |
+| 17 | Select opens | Options drop in with a 1.02× scale that settles to 1× | 200 ms |
+| 18 | Checkbox check | Checkmark draws as a stitch (two short strokes) | 180 ms |
+| 19 | Radio select | Inner dot threads in from the left | 140 ms |
+| 20 | Textarea resize | Corner handle shows a small yarn tuft | persistent |
+| 21 | Required field error | Border becomes madder-red, a 1 px line travels around the input perimeter once | 500 ms |
+| 22 | Form field success | Border briefly pulses saffron, then settles to normal | 400 ms |
+
+### 2.4 Navigation (8)
+
+| # | Interaction | Motion | Duration |
+|---|---|---|---|
+| 23 | Nav link hover | Underline is a single strand (not a bar), with frayed ends | 160 ms |
+| 24 | Active section indicator | Copper tick moves smoothly between nav items — CSS `transform: translateX()` | 240 ms |
+| 25 | Running head "Motion" toggle | Toggle thumb slides; icon rotates 180° | 200 ms |
+| 26 | Sticky running head, scroll start | Running head fades in from top | 240 ms |
+| 27 | Running head, scroll to footer | Running head dims to 40% opacity (still readable) | 200 ms |
+| 28 | Section jump (click) | Smooth scroll with 800 ms yarn-tension ease — not linear, not default | 800 ms |
+| 29 | "Back to top" appears | Fades and slides up from bottom-right corner | 280 ms |
+| 30 | Skip-to-content focus | Skip link slides down into view | 200 ms |
+
+### 2.5 Schematic (10)
+
+| # | Interaction | Motion | Duration |
+|---|---|---|---|
+| 31 | Node hover | 2 px lift, 1 px stroke weight increase, 3 nearby connecting threads pulse | 160 ms |
+| 32 | Node focus (keyboard) | Same as hover, plus a 2 px copper focus ring drawn as a dashed thread | 160 ms |
+| 33 | Node click | Node draws a 6 px loop outward and settles back | 240 ms |
+| 34 | Layer toggle (Material → Data) | Current layer's strokes fade to 15% opacity; new layer's strokes draw in from their origins | 480 ms |
+| 35 | Fault scenario select | Selected nodes turn madder; the impacted downstream path shows a traveling red pulse | 800 ms |
+| 36 | Fault deselect | Red pulses retreat to their origin | 400 ms |
+| 37 | Node drawer open | Drawer slides in from right; schematic shifts left by 60 px | 320 ms |
+| 38 | Node drawer close | Reverse; the schematic settles | 280 ms |
+| 39 | Drawer content change (next node) | Content scroll-wipes up-and-off, new content scroll-wipes up-and-in | 400 ms |
+| 40 | "Show me the record" button | A preview ticket animates in from the node drawer — like a physical slip sliding out | 480 ms |
+
+### 2.6 Data and tables (8)
+
+| # | Interaction | Motion | Duration |
+|---|---|---|---|
+| 41 | Spec table row hover | Left border grows from 1 px to 3 px (a warp thread thickening) | 140 ms |
+| 42 | Spec table status cell | On hover, status word expands to show full label if truncated | 200 ms |
+| 43 | Row expansion (if spec row has detail) | Detail slides down; a hairline divider draws across | 280 ms |
+| 44 | Sort column click | Rows reorder with a 40 ms stagger — like cards being dealt | 400 ms total |
+| 45 | Number change (in calculator) | Each digit rolls to the new value, 30 ms stagger from rightmost | 280 ms |
+| 46 | Table cell focus | Cell glows with a faint copper underlay | 120 ms |
+| 47 | Column resize (if enabled) | Divider drags with a slight yarn-stretch lag | follows drag |
+| 48 | Copy from table cell | A small "copied" toast rises from the cell | 300 ms |
+
+### 2.7 Cards and content (6)
+
+| # | Interaction | Motion | Duration |
+|---|---|---|---|
+| 49 | Card hover (spec table card) | 2° 3D tilt, shadow shifts 4 px | 200 ms |
+| 50 | Card enter (on scroll — L2 hybrid) | Card slides in 12 px with a yarn-settle overshoot | 480 ms |
+| 51 | Accordion open | Content scrolls down; a thin thread draws across the divider | 320 ms |
+| 52 | Accordion close | Reverse; thread retracts | 280 ms |
+| 53 | Pull-quote appearance | Quote marks animate in as small arcs | 400 ms |
+| 54 | "Question" callout on title page | A short thread draws under the question, ending in an arrow | 600 ms |
+
+### 2.8 Copy states and confirmations (6)
+
+| # | Interaction | Motion | Duration |
+|---|---|---|---|
+| 55 | Brief preview updates as user types | Preview text fades 4 px up and re-renders with a 60 ms delay (debounced) | 240 ms |
+| 56 | Brief copy success | A tiny "ticket" icon flies from copy button to clipboard indicator | 320 ms |
+| 57 | Brief download success | File icon "prints" — three horizontal lines draw | 400 ms |
+| 58 | Motion toggle → off | All ambient animations pause within 120 ms; L4 scroll animations stop tracking | 120 ms |
+| 59 | Motion toggle → on | Ambient thread resumes from where it paused (not from start) | 200 ms |
+| 60 | Print button (if added) | A small printer icon pulses once | 180 ms |
+
+**That's L1 — 60 unique micro-interactions.** None use `scale(1.05)`. None use `opacity: 0 → 1` as their only effect. Every one is textile-coded.
+
+---
+
+## 3. L2 — Meso transitions (14 patterns)
+
+These are the state changes. Between 280 and 640 ms. Visible, but not the argument.
+
+### 3.1 Section entry — "The weave"
+
+Each section reveals with a *different* weave pattern, not a uniform fade:
+
+| # | Section | Reveal pattern | Duration |
+|---|---|---|---|
+| 61 | Title page | Text "weaves" in from top-left, character-by-character with 8 ms stagger, opacity 0.4 → 1 | 640 ms |
+| 62 | The record (schematic) | Schematic first draws its guides (200 ms), then nodes fade in sequence along the flow (240 ms), then threads draw (200 ms) | 640 ms |
+| 63 | The spec (table) | Rows slide in from left, 30 ms stagger | 480 ms |
+| 64 | The arithmetic | Calculator "loads" like a mechanical counter — digits roll from 0 to their initial values | 800 ms |
+| 65 | The limits | Table rows "print" down; a horizontal hairline rule draws across | 560 ms |
+| 66 | The brief | Composer fields outline-draw then fill | 480 ms |
+
+**Key detail:** the reveal pattern is *different* in each section. This is what makes the page feel composed rather than template-generated. A uniform fade-up on every section is an AI tell.
+
+### 3.2 Other L2 transitions (8)
+
+| # | Transition | Motion | Duration |
+|---|---|---|---|
+| 67 | Tab switch (schema layer, role) | Outgoing content fades + shifts 8 px; incoming content slides in from the direction of the tab | 320 ms |
+| 68 | Fault scenario cross-fade | Old scenario's red pulses retreat; new scenario's red pulses advance | 480 ms |
+| 69 | Role reading stack unfold | Three role paragraphs unfold vertically, 80 ms stagger | 480 ms |
+| 70 | Dialog open | Dialog scales from 0.94 with 0.4 alpha, backdrop fades | 320 ms |
+| 71 | Dialog close | Reverse, faster | 240 ms |
+| 72 | Form section expand ("add more context") | Slides down with a 60 px overshoot, settles | 400 ms |
+| 73 | Notification toast enter | Slides from bottom-right with yarn-settle overshoot | 400 ms |
+| 74 | View transitions between "pages" (if SPA) | Cross-dissolve + slight scale, using View Transitions API | 400 ms |
+
+---
+
+## 4. L3 — Macro (one-shot, one per section)
+
+These happen *once per session*. Not on every scroll into view. They establish the section's argument.
+
+| # | Where | Animation | Duration |
+|---|---|---|---|
+| 75 | Title page | The yarn package figure **draws itself** in 1.4 s: first the outline, then the winding pattern, then the measurement annotations, then the caption. Never re-draws on scroll-back. | 1,600 ms |
+| 76 | Title page | A single copper thread travels from the top-left of the viewport, winds through the yarn package, and exits bottom-right — then dissolves into the running head. This is the "first time" motif. | 1,400 ms |
+| 77 | Schematic section | On first appearance: guides draw (400 ms), nodes appear (400 ms), threads connect (600 ms), then a single copper pulse travels the length — then the pulse *stops* at each node, and the node's number briefly brightens. | 2,000 ms |
+| 78 | Calculator | On first appearance: the worked example draws line by line, arithmetic symbols appearing last. Ends with the `=` and then the result, digit-rolling up from 0. | 1,400 ms |
+| 79 | Limits section | The failure-modes table's rows print down like a teletype, 80 ms stagger. The final "What's not here" paragraph fades in slower, deliberately. | 1,200 ms |
+| 80 | Brief section | The composer fields draw in, then a small preview document prints from left to right in the preview panel | 1,000 ms |
+
+**Rule:** these macro animations fire *once per page session*. On any subsequent scroll into the section, they are instant. They do not loop. They do not play on scroll-back. They are chapters, not loops.
+
+---
+
+## 5. L4 — The narrative: scroll-scrubbed, the cinematic centerpiece
+
+This is where "more animations" earns its keep. This is the one L4 on the page, and it is the After Effects moment.
+
+### 5.1 The design
+
+A **900vh scroll-scrubbed sequence** pinned within the schematic section (desktop only; on mobile it becomes a step-through with explicit next/prev buttons).
+
+Over the course of 900vh of scroll, the following happens at *scroll position*, not time:
+
+| Scroll range | What happens on screen | What the user is reading |
+|---|---|---|
+| 0–10% | Schematic intact. A single copper pulse moves from node 01 (Receive) | "A lot enters the mill." |
+| 10–25% | Pulse reaches node 02 (Make). A preview "ticket" appears beside the schematic, growing line by line as the pulse travels | "The gate record holds the weight, moisture, and lot ID." |
+| 25–40% | The pulse crosses node 03 (Hold). The ticket's content morphs to show a storage location appearing. A second ticket (challan) branches off. | "Stock without a location is just a number." |
+| 40–55% | The pulse arrives at node 04 (Process). One ticket fragments — the challan goes out, a partial return comes back, the difference is highlighted in madder | "Job work is where the record most often breaks." |
+| 55–70% | The pulse reaches 05 (Deliver). A third document (packing list) appears. All three tickets stack. | "Dispatch is the last moment the physical and the record are the same." |
+| 70–85% | The pulse reaches 06 (Account). All three tickets merge into a single invoice preview. The line items populate from the tickets. | "The invoice should be an outcome, not a re-entry." |
+| 85–100% | The full ticket stack collapses into a single XML payload, which slots into a "Tally" envelope, which fades into the running head | "One record, one thread, one export." |
+
+### 5.2 Technical specification
+
+- **The scroll position drives `currentTime` of a single Lottie animation** — the animation is authored in After Effects, exported to Lottie JSON, and its frame is set from `scrollY`.
+- **The pinned section** uses `position: sticky` — no scroll hijacking. The page scrolls normally; a child is pinned.
+- **The tickets are HTML**, not Lottie — they're real DOM elements that animate via CSS custom properties driven by `scrollY`. This is important: the ticket content is real text, so it's selectable, accessible, and printable.
+- **IntersectionObserver** watches the section and starts/stops the `scroll` listener's work when the section is out of view.
+- **`requestAnimationFrame` batched** — scroll events are captured, but the frame set happens inside rAF, so 60 fps is achievable.
+- **Reduced motion:** the section becomes a static composition. All steps present simultaneously, and a "next / previous" stepper lets the user move through the seven steps manually.
+
+### 5.3 Why this is the "After Effects" moment
+
+The Lottie animation for the pulse and travel was authored in After Effects with **one master comp** and **one master trim path**. When the export is done, the pulse uses `trim-path` frames that map directly to scroll position. This is exactly what After Effects-to-web pipelines are *for*. It is not a video. It is not a WebGL scene. It is a vector animation scrubbed by scroll.
+
+**Fallback:** if the user has reduced motion, the Lottie is not loaded (defer + conditional). Static SVG + stepper takes its place. Total fallback weight: 4 KB.
+
+---
+
+## 6. L5 — Ambient: the single thread
+
+There is **one** ambient animation on the page.
+
+### 6.1 The design
+
+A **single copper thread** — an SVG path, ~1.5 px stroke — runs continuously down the *left margin* of the page, from the title page's bottom edge to the footer. It weaves slightly (a sine wave with a small period), and it has a *travelling highlight* (a 40 px section of higher opacity and slight glow) that moves down the thread over the course of ~24 seconds, then restarts.
+
+The thread:
+- Passes *behind* section headings (z-index below)
+- Pauses at each section marker (a small node on the thread), where the node briefly pulses
+- Never crosses the reading measure (max 66 characters)
+- Lives in the left gutter, where it costs no reading comprehension
+
+### 6.2 Why only one ambient
+
+The current page's environment is *saturated* with ambient motion — particles, floating cards, rotating spools, orbiting threads, animated grids. This is the single biggest AI-tell on the motion side. Ambient motion has no informational value; it exists to fill silence.
+
+One thread, on the margin, at 0.5 px, with a highlight that appears once per 24 seconds — that's ambient motion done as a **material fact**. There's one thread in a mill; there's one thread on the page. The metaphor holds because there's only one.
+
+### 6.3 Pause and reduced motion
+
+- The thread is one of the things paused by the Motion toggle.
+- `prefers-reduced-motion: reduce` stops it entirely (it becomes a static hairline).
+- Off-screen: paused. `document.hidden`: paused.
+
+---
+
+## 7. The 3D strategy
+
+You asked for 3D. There are *three* places 3D earns its keep, and one of them is WebGL.
+
+### 7.1 CSS 3D — the spec table card tilt
+
+The spec table is on a plane. On hover, it tilts 2° in the cursor's direction. This is done with `transform: perspective(1200px) rotateX() rotateY()`. Nothing else on the table moves. 200 ms easing. Disabled on touch and reduced motion. **This is the only CSS 3D on the page.** It's subtle, and it's specific — it confirms the card is a physical sheet of paper.
+
+### 7.2 CSS 3D — the yarn package cutaway
+
+On the title page, the yarn package figure *is* a 2D technical drawing, but on hover *only*, it reveals a **3D interior**: the core is a nested set of transforms that reveal the interior layers (barrel → yarn mass → traverse) with a 6° rotation. This is done with CSS 3D, no WebGL, because it's a *small* object (max 400 px) and the interior is a schematic, not a photorealistic render. Hover-only. Never auto-rotates.
+
+### 7.3 WebGL — the mill hall
+
+One full-bleed moment on the page, in the schematic section *after* the scroll-scrubbed narrative ends. **A WebGL render of a spinning hall**: about 60 low-poly ring frame bobbins, at a low-poly rendering, at 30 fps, with a single light source. The camera drifts slowly. Hovering a bobbin highlights it; clicking shows that bobbin's would-be record.
+
+**Constraint list:**
+- Total triangle budget: 40k.
+- Textures: none. Material: a single `MeshStandardMaterial` with vertex colors.
+- Camera: single orthographic path, no user-controlled camera (avoids cheap-orbit feel).
+- Reduced motion: a static frame is captured at load; the render loop never starts.
+- Off-screen: render loop pauses.
+- Low-power devices (`navigator.deviceMemory ≤ 4`): static frame only.
+- Fallback: a 2D SVG illustration of the same hall.
+
+**Why WebGL earns this one moment:** the rest of the page is a document. A document earns **one** cinematic moment. That moment is *the mill hall*, because it's the thing the reader came to see but can't visit. This is worth the 40k triangles and 30 fps — and it's the only place on the page that feels like a place.
+
+---
+
+## 8. The After Effects pipeline
+
+You asked for After Effects specifically. Here is the complete pipeline.
+
+### 8.1 The After Effects deliverables
+
+| Deliverable | Format | Purpose | Size budget |
+|---|---|---|---|
+| **Narrative Lottie** | `.json` (Bodymovin) | The scroll-scrubbed ticket-flow sequence | < 180 KB |
+| **Hero yarn package** | `.json` (Bodymovin) | The self-drawing yarn package (L3, #75) | < 45 KB |
+| **Schematic intro** | `.json` (Bodymovin) | The 2,000 ms schematic draw-on (#77) | < 60 KB |
+| **Micro-animation pack** | `.json` files × 6 | The more complex L1s: copy-success, checkmark stitch, toast, etc. | < 12 KB each |
+| **Mill hall ambient** | `.webm` (VP9, alpha) | Optional loop video for the mill hall background (behind the WebGL) | < 1.2 MB |
+| **Title page background** | `.webm` (VP9, alpha) | Optional 6-second loop for the cover, "the thread growing" | < 900 KB |
+| **Editable source** | `.aep` per comp | For the design team to maintain | n/a |
+| **Expression scripts** | `.jsx` | Reusable easing, character staggering, thread-path helpers | < 8 KB |
+| **Design tokens** | `.json` | Colors, easings, durations matching the site tokens | < 3 KB |
+
+### 8.2 The rule that governs Lottie use
+
+**Lottie is loaded only when its animation is about to be visible, and only if motion is allowed.**
+
+- The narrative Lottie loads when the schematic section enters the viewport *with a 400 px margin above it*. If the user has reduced motion, it never loads. If they've paused motion via the toggle, it loads but is set to `currentFrame = 0` and never plays.
+- The hero yarn package Lottie loads only if the viewport is ≥ 768 px (mobile gets a static SVG).
+- No Lottie is loaded at initial page load.
+
+### 8.3 The `.jsx` expression scripts (for AE authors)
+
+Three scripts, shipped as a package:
+
+1. **`egEase.jsx`** — a set of yarn-tension easing functions matching the site's `cubic-bezier(0.34, 1.30, 0.64, 1)`. Allows a designer to write `egEase.settle(t)` in the AE expression editor.
+2. **`egThreadPath.jsx`** — generates a sine-wave path along any two points, so a designer can create a "thread" path that visually matches the site's ambient thread.
+3. **`egStagger.jsx`** — a character-layer stagger helper. `egStagger(index, count, 8)` produces the exact 8 ms per character stagger used in the title page reveal.
+
+These are small, self-contained files that let the AE author reproduce the site's motion *exactly* without hand-matching bezier curves.
+
+### 8.4 What the `.aep` files contain
+
+Each `.aep` is delivered with:
+- Master composition with a named **motion token set** (as AE comps named `Token.Duration.Fast`, `Token.Ease.Settle`, etc.) — so designers can preview the site's motion tokens.
+- All colors as AE color swatches with names matching the CSS tokens (`--copper`, `--ink`, `--paper`).
+- A **safe area guide** for the correct aspect ratio.
+- A **reduced-motion comp** — a static frame that matches what reduced-motion users see.
+
+### 8.5 What After Effects does *not* do on this site
+
+- It does **not** produce video backgrounds used as "look at our fancy hero." The site uses video only when the video does something CSS cannot (the mill hall ambient loop, alpha-composited).
+- It does **not** produce on-scroll parallax videos. Those are CSS.
+- It does **not** produce micro-interactions. Those are CSS.
+- It does **not** produce the schematic. The schematic is SVG, drawn in code, accessible to screen readers.
+
+**After Effects earns its keep on three things:** the self-drawing yarn package, the narrative Lottie, and the two alpha-loop videos. That is the whole AE pipeline. Everything else is CSS and SVG, because everything else *should* be.
+
+---
+
+## 9. Sound design
+
+Optional, off by default, with a single toggle in the running head (a speaker icon next to the motion icon).
+
+| Sound | Trigger | Duration | Character |
+|---|---|---|---|
+| Spindle tick | Primary button click | 40 ms | A single low "tock" like a spindle wheel catching |
+| Yarn settle | Accordion open | 120 ms | A soft "whff" as fabric settles |
+| Thread snap | Error state (form validation) | 80 ms | A short "tink" |
+| Weave | Successful form completion | 240 ms | Three soft "clacks" in rhythm |
+| Ambient hum (optional, off by default) | When the mill hall WebGL is visible | looping | A low 55 Hz hum at 20% volume, with a subtle rise when hovering a bobbin |
+
+All sounds are **Web Audio API synthesized** — no audio files loaded. Total audio footprint: 0 bytes. This is important because it means sound has no download cost, and can be generated in under 200 lines of JS.
+
+Sounds are disabled by default, follow `prefers-reduced-motion` (as a proxy for "less stimulation"), and require a user gesture to initialize the AudioContext (browser requirement).
+
+---
+
+## 10. The motion budget
+
+Adding 87 animations to a page can make it a jank factory. This is the discipline that prevents that.
+
+### 10.1 The three budgets
+
+| Budget | Ceiling | Measurement |
+|---|---|---|
+| **Main-thread time per frame during animation** | 4 ms | Chrome DevTools Performance panel, 60 fps recording |
+| **Simultaneous animations at any scroll position** | 6 | Visual audit |
+| **Simultaneous *ambient* animations** | 1 | Design rule; enforced in code review |
+
+### 10.2 The animation "importance score" (0–5)
+
+Every animation is scored 0–5. The score determines whether it survives.
+
+| Score | Meaning | Keep? |
+|---|---|---|
+| 5 | Essential — shows a factual relationship (the fault cascade, the record-to-ticket mapping) | Always keep |
+| 4 | Explanatory — shows state change meaningfully (tab switch, accordion) | Keep |
+| 3 | Feedback — confirms user action (button press, focus) | Keep |
+| 2 | Delight — enhances but not required (the yarn package self-draw on hover only) | Keep if budget allows |
+| 1 | Decoration — looks good, means nothing | **Purge after 2 weeks of analytics** if it doesn't improve engagement, OR if `prefers-reduced-motion` users are not slowed down by its absence |
+| 0 | Noise | **Never ship** |
+
+**The scoring rule:** no more than **two score-1 animations per viewport**. If a viewport has more than two, cut until it has two.
+
+This is the mechanism that ensures "more" doesn't become "noise." The score isn't rigid — an animation can be promoted if it earns it in user testing — but the *default* is to cut score-1s that don't measure.
+
+### 10.3 Adaptive motion
+
+If the device reports `navigator.deviceMemory ≤ 4` or `hardwareConcurrency ≤ 4`:
+- Score-1 animations are disabled.
+- Score-2 animations are reduced (e.g., card tilt disabled).
+- Score 3–5 remain.
+
+If `prefers-reduced-motion: reduce`:
+- Score 1–3 disabled.
+- Score 4 reduced to 200 ms.
+- Score 5 reduced to instant state changes (no intermediate frames).
+- L5 ambient stopped.
+- L4 narrative replaced with static stepper.
+
+If `document.hidden`:
+- All animation frames stop.
+
+---
+
+## 11. The interaction effects master list
+
+Non-animation but interaction-layer effects. You asked for "more UI effects." These are the ones that make the UI feel *physical*.
+
+### 11.1 Cursor effects
+
+- **Custom cursor on the schematic only.** An 8 px ring with a 2 px copper dot.
+- **Cursor trail** on the L4 narrative — a 100 ms trailing copper dot behind the pointer, only visible in the pinned section (like a needle trailing thread).
+- **Cursor-hidden during the auto-play of the L3 yarn-package draw.** The design says: "look at this, don't look at your cursor."
+
+### 11.2 Selection effects
+
+- **Text selection** uses a semi-transparent copper (`rgba(201,139,87,0.18)`), not the browser default blue.
+- **Multi-select** on the spec table (if enabled): selected rows get a 1 px copper left border, plus a "copy selected" toast.
+
+### 11.3 Scrollbar
+
+A thin, textured scrollbar. Not neon, not a slider — a **narrow copper rail with subtle yarn texture on hover**. Firefox and WebKit variants. Restored to native on `prefers-reduced-motion`.
+
+### 11.4 Loading states
+
+| State | Animation |
+|---|---|
+| Initial page load | A short "spool winds" animation (static SVG, no JS) |
+| Lottie load | A small bobbin spins |
+| Calculator computation (if slow) | A small "count" indicator spins |
+| Copying to clipboard | A "stitch" progresses (5 discrete steps) |
+| Downloading a file | A "thread unspools" indicator |
+
+### 11.5 Focus rings
+
+Every focusable element has a **2 px copper focus ring** with a **1 px thread-fray pattern** in the corners. This is more than a color change — it's a shape unique to this site.
+
+### 11.6 Hover states beyond color
+
+- **Schematic nodes** — lift 2 px, connecting threads thicken.
+- **Table rows** — left border grows.
+- **Cards** — 2° tilt.
+- **Buttons** — bottom thread draws.
+- **Links** — underline with fray.
+- **Form labels** — when the input is focused, the label shifts up 2 px and gains a small arrow.
+
+### 11.7 Empty states
+
+Every empty state has a **small illustration**: a spool with a stray thread, a bobbin with a knot, a shuttle at rest. Not a big empty space with a sad face. Not "No data yet." A small drawn object, plus a one-line instruction.
+
+### 11.8 View Transitions (if SPA)
+
+Where sections or steps change (e.g., the L4 stepper in reduced-motion mode), the View Transitions API cross-fades with a **shared element** (the copper pulse). 300–400 ms. Graceful fallback to `fade`.
+
+### 11.9 Multi-modal feedback
+
+Every action has **at least two feedback signals**:
+- A visual change.
+- A textual status update in a live region (`role="status"`).
+- Optionally, a sound.
+
+This is not just animation — it's *belt and braces for meaning*.
+
+---
+
+## 12. Accessibility of motion (the non-negotiables)
+
+The 87 animations above must all survive this filter:
+
+1. **`prefers-reduced-motion: reduce` → the site is complete.** Every L1–L5 either stops, becomes instant, or becomes static. Verified with the OS setting on macOS, Windows, iOS, and Android.
+2. **Motion toggle → every ambient animation pauses, every L4 stops tracking scroll, every Lottie pauses.** It does **not** stop L1/L2/L3 (those are user-triggered feedback). A user who pauses motion still gets button presses and tab switches — they just stop the ambient L5, the L4, and the intro L3s.
+3. **No animation conveys information that isn't also in text.** The schematic's fault cascade, for instance, has a static text equivalent in the drawer.
+4. **No animation runs for more than 5 seconds continuously without a pause control.** The L5 thread is paused by the Motion toggle. The L4 is scroll-scrubbed — not auto-playing.
+5. **No audio autoplay.** Ever.
+6. **No flashing.** Nothing flashes more than 3 times per second (WCAG 2.3.1). The fault cascade has soft transitions, not strobes.
+7. **Focus is always visible.** Focus ring is copper and does not animate out — only into a slightly brighter state.
+
+---
+
+## 13. Deliverables list
+
+For the design and engineering handoff, the motion work is delivered as:
+
+| Deliverable | Format | Size budget |
+|---|---|---|
+| **Motion specification document** (this document + the token table) | `.md` | n/a |
+| **Motion tokens** | `.css` custom properties (durations, easings) + `.json` | < 2 KB |
+| **L1 micro-interaction library** | `.css` + tiny `.js` for state | < 14 KB |
+| **L2 transitions** | `.css` + 2 `.js` modules | < 8 KB |
+| **L3 macro animations** | 5 `.js` modules (one per section) | < 18 KB |
+| **L4 narrative Lottie** | `.json` | < 180 KB |
+| **Hero yarn package Lottie** | `.json` | < 45 KB |
+| **Schematic intro Lottie** | `.json` | < 60 KB |
+| **Micro-animation Lottie pack** | 6 `.json` files | < 72 KB total |
+| **Alpha-loop videos** | 2 `.webm` (VP9, alpha) | < 2.1 MB total |
+| **WebGL mill hall** | `.js` module + shaders | < 40 KB |
+| **AE source files** | `.aep` × 4 comps | n/a |
+| **AE expression scripts** | `.jsx` × 3 | < 8 KB |
+| **Sound synthesiser** | `.js` module | < 4 KB |
+| **Full accessibility and reduced-motion test matrix** | `.md` | n/a |
+| **Motion budget measurement report** | `.csv` (Chrome perf trace summaries) | n/a |
+
+**Total added JS (excluding Lottie and video):** ~86 KB uncompressed, **~28 KB gzipped**.  
+**Total added CSS:** ~22 KB uncompressed, **~6 KB gzipped**.  
+**Total video/Lottie at rest (before scroll):** 0 KB.  
+**Total video/Lottie after full scroll-through:** ~2.7 MB (loaded lazily, cached).  
+
+The page's initial payload grows by ~34 KB gzipped for all 87 animations. That's the trade.
+
+---
+
+## 14. The order of building
+
+Animations are the hardest thing to build *after* the layout is done. They're also the easiest thing to bloat. So the build order is:
+
+| Phase | What | Time |
+|---|---|---|
+| A | **Motion tokens + micro-interactions.** Build the L1 library on a single button, single input, single card. Verify it feels right at 60 fps. | 1 week |
+| B | **The schematic and its L2/L3.** Build the schematic as a static SVG first. Then add the L3 intro (once). Then the fault cascade (L2). Then the node drawer (L2). | 2 weeks |
+| C | **The L4 narrative.** Author in AE, export to Lottie, wire the scroll-scrub, test on low-end. | 2 weeks |
+| D | **The calculator and its L2/L3.** The digit-rolling and the line-by-line draw-on. | 4 days |
+| E | **The limits table and the brief composer.** The reveal patterns and the print-down. | 4 days |
+| F | **The hero L3 and the L5 thread.** The self-drawing figure and the ambient thread. | 4 days |
+| G | **The WebGL mill hall.** | 1 week |
+| H | **Sound.** | 3 days |
+| I | **Accessibility + reduced motion + adaptive.** | 1 week |
+| J | **The motion budget audit.** Score every animation, purge score-1s, run the perf test matrix. | 4 days |
+
+**~7 weeks** total for the motion layer alone. This is the schedule of a site that has *earned* its 87 animations.
+
+---
+
+## 15. The one number to hold
+
+> **The page has 87 animations, and a reader notices about 9 of them.**
+
+That's the goal. The 9 that they notice are the L3 yarn-package draw, the L4 narrative, the L5 thread, and six micro-interactions that show up at the exact right moment. The other 78 are felt, not seen. That's the difference between a page that feels *alive* and a page that feels *busy*.
+
+A human-made site with 87 animations reads as if one person spent six weeks on motion. An AI-made site with 87 animations reads as if it was generated. The difference is not the count. The difference is that every one of the 87 on this plan has a specific textile-coded reason, a specific duration, and a specific position in the five-layer system.
+
+That's what "more" means here.
+
+---
+
+## 16. What is still *not* on the page
+
+Just so the boundary is clear:
+
+- No parallax on text.
+- No scroll-hijacking. Ever.
+- No `scale` animations on hover (except the 1.02× on dropdowns, which is a legitimate affordance).
+- No neon glow.
+- No particle systems that mean nothing.
+- No randomly-generated fractals.
+- No "aurora" backgrounds.
+- No automatic carousels.
+- No infinite scroll.
+- No "attention-grabbing" bouncing arrows.
+- No typewriter effects except the specific one on the title page, which serves the "this is a document" metaphor.
+- No fake loading bars (the only loading states are real ones).
+
+The cuts are as much part of the plan as the additions. **"More" only works if the boundary is clear.**]

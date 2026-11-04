@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage } from "../i18n";
 import React, { createContext, useContext, useState, useCallback, useRef } from 'react';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 
@@ -16,6 +17,7 @@ interface ConfirmContextType {
 const ConfirmContext = createContext<ConfirmContextType | undefined>(undefined);
 
 export const ConfirmProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  useUiLanguage();
     const [options, setOptions] = useState<ConfirmOptions>({});
     const [resolveRef, setResolveRef] = useState<((value: boolean) => void) | null>(null);
 

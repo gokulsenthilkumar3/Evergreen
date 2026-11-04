@@ -27,10 +27,10 @@ const TOUR_STEPS: TourStep[] = [
     tag: 'STEP 1 OF 5',
     icon: '⚖️',
     color: 'amber',
-    desc: 'The truck rolls onto the weighbridge. EverGreen captures gross & tare weight directly from Avery or Essae serial ports at the hardware level, enforces SIMA 8.5% moisture allowance standards, and prints a tamper-proof QR lot slip.',
+    desc: 'Record gross and tare weights, measured moisture and the allowance agreed in your purchase contract. Indicator parsing and slip-signing utilities are available; physical serial capture and device provisioning require a supported-hardware pilot.',
     highlights: [
-      'RS-232 serial lock prevents manual weight manipulation by drivers or clerks',
-      'Instant water weight deduction saved an average of ₹4.2 Lakhs/year per mill',
+      'Validate the indicator connection and provision device identity during the pilot',
+      'Review moisture deductions against the purchase contract',
       'QR code printed on thermal sticker follows the cotton lot all the way to cone packing',
     ],
     mockupContent: {
@@ -39,31 +39,31 @@ const TOUR_STEPS: TourStep[] = [
         { name: 'Gross Weight', val: '34,280 kg' },
         { name: 'Tare Weight', val: '14,200 kg' },
         { name: 'Observed Moisture', val: '9.8% (+1.3% excess)' },
-        { name: 'Water Deducted', val: '-261 kg (₹45,675 saved)' },
+        { name: 'Illustrative deduction', val: '261 kg; confirm contract inputs' },
       ],
-      footer: '🔒 Cryptographically signed SHA-256 voucher locked before Tally export',
+      footer: 'Illustrative receipt values; no physical indicator is connected to this tour',
     },
   },
   {
-    title: 'Spindle Telemetry & Machine OEE',
+    title: 'Machine Records & Shift Production',
     tag: 'STEP 2 OF 5',
     icon: '⚙️',
     color: 'emerald',
-    desc: 'Monitor all Ring Frames, Draw Frames, and Carding engines from your phone or office desktop. Get live RPM, end breakage rates, shift production variance, and automatic WhatsApp alerts when any frame dips below efficiency targets.',
+    desc: 'Review recorded machine and shift-production data. The sample gauges below illustrate a possible dashboard; live PLC telemetry and automatic machine alerts require a separately validated integration.',
     highlights: [
-      'Live spindle speed gauges (e.g. 19,400 RPM on 40s Combed)',
-      'OEE tracking by shift (A/B/C) with operator accountability',
-      'Pneumafil waste % tracked in real time to prevent cotton fiber loss',
+      'Maintain machine records and operator-entered production figures',
+      'Compare recorded shifts and production variance',
+      'Review recorded waste against the production balance',
     ],
     mockupContent: {
-      label: 'RING FRAME TELEMETRY · 18,400 SPINDLES ACTIVE',
+      label: 'ILLUSTRATIVE MACHINE DASHBOARD · SAMPLE VALUES',
       metrics: [
         { name: 'Average Spindle RPM', val: '19,450 RPM' },
         { name: 'Factory OEE', val: '94.2%' },
         { name: 'Current Shift Yield', val: '4,821.4 kg' },
         { name: 'Average CSP Lea', val: '2,850 CSP' },
       ],
-      footer: '📱 WhatsApp alert dispatched to Spinning Master on abnormal end-breakage',
+      footer: 'Sample values only; no machine feed or alert was sent',
     },
   },
   {
@@ -81,7 +81,7 @@ const TOUR_STEPS: TourStep[] = [
       label: 'BOOK-ELLAM CROSS-REGISTER AUDIT SEARCH',
       metrics: [
         { name: 'Search Query', val: '"Lot 9402 Tirupur"' },
-        { name: 'Registers Scanned', val: '4 Ledgers in 0.18s' },
+        { name: 'Registers', val: 'Illustrative cross-register lookup' },
         { name: 'Cotton Inward', val: '100 Bales (Shankar-6)' },
         { name: 'Dispatched Gate Pass', val: 'GP-1184 (1,200 Cones)' },
       ],
@@ -93,10 +93,10 @@ const TOUR_STEPS: TourStep[] = [
     tag: 'STEP 4 OF 5',
     icon: '📑',
     color: 'sky',
-    desc: 'Your accountant never has to re-type another invoice or inward note. EverGreen auto-generates 100% valid Tally Prime XML vouchers with automated CGST, SGST, and IGST tax splits and E-Way Bill IRN QR integration.',
+    desc: 'Export purchase, sales and receipt vouchers as Tally XML. An accountant reviews and imports the file, then reconciles the result. e-Way Bill readiness checks do not register a bill or obtain an IRN.',
     highlights: [
       '1-click export of purchase, sales, and payment receipt vouchers',
-      'Zero manual data entry errors — Tally import takes 12 seconds instead of 4 hours',
+      'Review import acknowledgements and reconcile values in Tally',
       'Automatic Interstate IGST split for yarn dispatches to Surat, Panipat, or exports',
     ],
     mockupContent: {
@@ -104,32 +104,32 @@ const TOUR_STEPS: TourStep[] = [
       metrics: [
         { name: 'Voucher Type', val: 'Sales & Dispatch Invoice' },
         { name: 'Tax Categorization', val: 'CGST 2.5% + SGST 2.5%' },
-        { name: 'E-Way Bill Status', val: 'IRN #181092819201 Active' },
-        { name: 'Tally Import Time', val: '12 Seconds (0 Duplicates)' },
+        { name: 'e-Way Bill Status', val: 'External registration required' },
+        { name: 'Tally Import', val: 'Operator review required' },
       ],
-      footer: '💼 Your accountant continues using Tally Prime with zero workflow disruption',
+      footer: 'XML export is available; two-way posting is not implemented',
     },
   },
   {
-    title: '30-Day Active Grace Quota & Multi-Cloud Deploy',
+    title: 'Installation & Licence Setup',
     tag: 'STEP 5 OF 5',
     icon: '🛡️',
     color: 'amber',
-    desc: 'Spinning mills run 24/7/365. EverGreen guarantees your factory operations NEVER stop on license expiry. Enjoy 30 full days of active grace protection, and 1-to-3 minute instant reactivation as soon as your bank UTR is confirmed.',
+    desc: 'Choose a customer-specific local or hosted installation and agree activation terms with the owner. Signed offline deadlines limit local access; renew before expiry and verify backups and recovery for your chosen deployment.',
     highlights: [
-      '100% isolated relational database per mill tenant — zero multi-tenant data sharing',
-      'Deploy on local Ubuntu VM, GCP Cloud Run, AWS ECS, or Azure Container Apps in 1 command',
-      'Active grace policy guarantees factory weighbridge and dispatches keep running',
+      'Separate installation and database per customer',
+      'Local Linux and container deployment helpers need host-specific configuration',
+      'Licence activation, offline validity and renewals follow signed owner terms',
     ],
     mockupContent: {
-      label: 'ENTERPRISE LICENSING & ZERO-LOCKOUT GUARANTEE',
+      label: 'ILLUSTRATIVE INSTALLATION CHECKLIST',
       metrics: [
-        { name: 'Grace Quota', val: '30 Full Days Active' },
-        { name: 'Weighbridge Status', val: '100% Operational' },
-        { name: 'Reactivation SLA', val: '< 3 Minutes on UTR' },
-        { name: 'Deployment Target', val: 'Local VM / GCP / AWS / Azure' },
+        { name: 'Offline Validity', val: 'Signed owner deadline' },
+        { name: 'Hardware Acceptance', val: 'Supported-device pilot required' },
+        { name: 'Renewal', val: 'Owner-assisted activation' },
+        { name: 'Deployment Target', val: 'Configured local or container host' },
       ],
-      footer: '⚡ 1-command installer sets up entire mill stack in under 8 minutes',
+      footer: 'Validate setup, backup and recovery before operational use',
     },
   },
 ];
@@ -169,6 +169,7 @@ export function ProductTourModal({ isOpen, onClose, onStartPoc }: Props) {
             </div>
 
             <h3 className="tour-step-title">{currentStep.icon} {currentStep.title}</h3>
+            <p className="product-readiness-note">Illustrative product tour. Sample figures are not measured customer outcomes.</p>
             <p className="tour-step-desc">{currentStep.desc}</p>
 
             <div className="tour-highlights-box">

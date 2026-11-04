@@ -18,7 +18,7 @@ No literal Tab controls in this file. Check composed components and dynamic navi
 
 | Control / label | Handler | Source |
 | --- | --- | --- |
-| Download drafts | `{download}` | [apps/web/src/pages/SharedPayments.tsx:14](../../../apps/web/src/pages/SharedPayments.tsx) |
+| {uiText("Download drafts")} | `{download}` | [apps/web/src/pages/SharedPayments.tsx:16](../../../apps/web/src/pages/SharedPayments.tsx) |
 
 ## API calls
 
@@ -29,6 +29,7 @@ Paths are relative to the client API base (`/api/backend` by default in the brow
 
 ## Composed behavior
 
+- [i18n.ts](../../../apps/web/src/i18n.ts)
 - [WorkflowDesk.tsx](../../../apps/web/src/pages/WorkflowDesk.tsx)
 
 ## Verify the workflow

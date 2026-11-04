@@ -1,3 +1,5 @@
+import CredentialActionButton from '../components/CredentialActionButton';
+import { uiText, useUiLanguage } from "../i18n";
 import React, { useState } from 'react';
 import {
   Alert,
@@ -31,8 +33,12 @@ import { startRegistration } from '@simplewebauthn/browser';
 import { toast } from 'sonner';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../utils/api';
+import PasskeyManager from '../components/PasskeyManager';
+import AccountSecurityActions from '../components/AccountSecurityActions';
+import { OidcIdentitySettings } from '../components/OidcAccess';
 
 const SecuritySettings: React.FC = () => {
+  useUiLanguage();
   const queryClient = useQueryClient();
 
   // TOTP States
@@ -57,27 +63,13 @@ const SecuritySettings: React.FC = () => {
     queryFn: async () => (await api.get('/auth/me')).data,
   });
 
-  const handleGenerateTotp = async () => {
-    setBusy(true);
-    setSuccess(null);
-    setError(null);
-    try {
-      const res = await api.get('/auth/totp/generate');
-      setQrCodeUrl(res.data.otpauth);
-    } catch (e: any) {
-      setError(e.response?.data?.message || 'Failed to generate TOTP');
-    } finally {
-      setBusy(false);
-    }
-  };
-
   const handleVerifyTotp = async () => {
     setBusy(true);
     setError(null);
     try {
       await api.post('/auth/totp/verify', { code: totpCode });
       setSuccess('Two-Factor Authentication successfully enabled!');
-      toast.success('Two-Factor Authentication enabled');
+      toast.success(uiText('Two-Factor Authentication enabled', 'feedback'));
       setQrCodeUrl(null);
       setTotpCode('');
       await queryClient.invalidateQueries({ queryKey: ['currentUser'] });
@@ -88,45 +80,13 @@ const SecuritySettings: React.FC = () => {
     }
   };
 
-  const handleDisableTotp = async () => {
-    setBusy(true);
-    setError(null);
-    setSuccess(null);
-    try {
-      await api.post('/auth/totp/disable', { code: totpCode });
-      setTotpCode('');
-      setSuccess('Two-factor authentication disabled.');
-      toast.info('Two-Factor Authentication disabled');
-      await queryClient.invalidateQueries({ queryKey: ['currentUser'] });
-    } catch (e: any) {
-      setError(e.response?.data?.message || 'Could not disable two-factor authentication');
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const handleRegisterPasskey = async () => {
-    setError(null);
-    setSuccess(null);
-    try {
-      const res = await api.get('/auth/passkey/register-options');
-      const options = res.data;
-      const attResp = await startRegistration({ optionsJSON: options });
-      await api.post('/auth/passkey/register-verify', attResp);
-      setSuccess('Passkey registered successfully!');
-      toast.success('Device passkey registered');
-    } catch (e: any) {
-      setError(e.message || 'Failed to register passkey');
-    }
-  };
-
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentPassword) {
       return setError('Please enter your current password.');
     }
-    if (!newPassword || newPassword.length < 8) {
-      return setError('New password must be at least 8 characters long.');
+    if (!newPassword || newPassword.length < 12 || new TextEncoder().encode(newPassword).length > 72) {
+      return setError('Password must contain at least 12 characters and at most 72 UTF-8 bytes');
     }
     if (newPassword !== confirmPassword) {
       return setError('New passwords do not match.');
@@ -144,7 +104,7 @@ const SecuritySettings: React.FC = () => {
       setNewPassword('');
       setConfirmPassword('');
       setSuccess('Password changed successfully.');
-      toast.success('Password updated successfully');
+      toast.success(uiText('Password updated successfully', 'feedback'));
     } catch (err: any) {
       const msg = err.response?.data?.message || 'Failed to change password.';
       setError(Array.isArray(msg) ? msg.join(', ') : msg);
@@ -155,14 +115,14 @@ const SecuritySettings: React.FC = () => {
 
   return (
     <Box sx={{ maxWidth: 1000, margin: '0 auto', width: '100%' }}>
+      <AccountSecurityActions />
+      <OidcIdentitySettings />
       {/* Header */}
       <Box sx={{ mb: 3 }}>
         <Typography variant="h4" fontWeight={800}>
-          Security & Credentials
-        </Typography>
+          {uiText("Security & Credentials ")}</Typography>
         <Typography color="text.secondary">
-          Manage your account password, two-factor authentication (TOTP), and hardware passkeys.
-        </Typography>
+          {uiText("Manage your account password, two-factor authentication (TOTP), and hardware passkeys. ")}</Typography>
       </Box>
 
       {error && (
@@ -177,8 +137,7 @@ const SecuritySettings: React.FC = () => {
       )}
       {isError && (
         <Alert severity="error" sx={{ mb: 2 }}>
-          Could not load your security status. Refresh before making changes.
-        </Alert>
+          {uiText("Could not load your security status. Refresh before making changes. ")}</Alert>
       )}
 
       {/* Security Status Cards */}
@@ -188,15 +147,14 @@ const SecuritySettings: React.FC = () => {
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
                 <Typography variant="body2" color="text.secondary" fontWeight={600}>
-                  AUTHENTICATION ROLE
-                </Typography>
+                  {uiText("AUTHENTICATION ROLE ")}</Typography>
                 <ShieldIcon color="primary" />
               </Box>
               <Typography variant="h6" fontWeight={800}>
                 {currentUser?.role || 'VIEWER'}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                User: @{currentUser?.username || '—'}
+                {uiText("User: @")}{currentUser?.username || '—'}
               </Typography>
             </CardContent>
           </Card>
@@ -207,21 +165,20 @@ const SecuritySettings: React.FC = () => {
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
                 <Typography variant="body2" color="text.secondary" fontWeight={600}>
-                  TWO-FACTOR (TOTP)
-                </Typography>
+                  {uiText("TWO-FACTOR (TOTP) ")}</Typography>
                 <Phone2faIcon color={currentUser?.isTotpEnabled ? 'success' : 'action'} />
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Chip
                   size="small"
-                  label={currentUser?.isTotpEnabled ? 'ENABLED' : 'DISABLED'}
+                  label={currentUser?.isTotpEnabled ? uiText("ENABLED") : uiText("DISABLED")}
                   color={currentUser?.isTotpEnabled ? 'success' : 'default'}
                 />
               </Box>
               <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
                 {currentUser?.isTotpEnabled
-                  ? 'Authenticator app active'
-                  : 'Extra security recommended'}
+                  ? uiText("Authenticator app active")
+                  : uiText("Extra security recommended")}
               </Typography>
             </CardContent>
           </Card>
@@ -232,16 +189,13 @@ const SecuritySettings: React.FC = () => {
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
                 <Typography variant="body2" color="text.secondary" fontWeight={600}>
-                  PASSKEY CREDENTIALS
-                </Typography>
+                  {uiText("PASSKEY CREDENTIALS ")}</Typography>
                 <PasskeyIcon color="info" />
               </Box>
               <Typography variant="h6" fontWeight={800}>
-                FIDO2 / WebAuthn
-              </Typography>
+                {uiText("FIDO2 / WebAuthn ")}</Typography>
               <Typography variant="caption" color="text.secondary">
-                Biometric & security keys
-              </Typography>
+                {uiText("Biometric & security keys ")}</Typography>
             </CardContent>
           </Card>
         </Grid>
@@ -256,11 +210,9 @@ const SecuritySettings: React.FC = () => {
             </Box>
             <Box>
               <Typography variant="h6" fontWeight={800}>
-                Change Account Password
-              </Typography>
+                {uiText("Change Account Password ")}</Typography>
               <Typography variant="body2" color="text.secondary">
-                Ensure your account uses a strong password with at least 8 characters.
-              </Typography>
+                {uiText("Ensure your account uses a strong password with at least 8 characters. ")}</Typography>
             </Box>
           </Box>
 
@@ -268,7 +220,7 @@ const SecuritySettings: React.FC = () => {
             <Grid container spacing={2}>
               <Grid size={{ xs: 12, sm: 4 }}>
                 <TextField
-                  label="Current Password"
+                  label={uiText("Current Password", 'forms')}
                   type={showCurrentPass ? 'text' : 'password'}
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
@@ -291,12 +243,12 @@ const SecuritySettings: React.FC = () => {
 
               <Grid size={{ xs: 12, sm: 4 }}>
                 <TextField
-                  label="New Password"
+                  label={uiText("New Password", 'forms')}
                   type={showNewPass ? 'text' : 'password'}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   fullWidth
-                  helperText="Minimum 8 characters"
+                  helperText={uiText("Minimum 8 characters", 'forms')}
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">
@@ -315,7 +267,7 @@ const SecuritySettings: React.FC = () => {
 
               <Grid size={{ xs: 12, sm: 4 }}>
                 <TextField
-                  label="Confirm New Password"
+                  label={uiText("Confirm New Password", 'forms')}
                   type={showNewPass ? 'text' : 'password'}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
@@ -323,7 +275,7 @@ const SecuritySettings: React.FC = () => {
                   error={Boolean(confirmPassword && newPassword !== confirmPassword)}
                   helperText={
                     confirmPassword && newPassword !== confirmPassword
-                      ? 'Passwords do not match'
+                      ? uiText("Passwords do not match", 'forms')
                       : ''
                   }
                 />
@@ -336,7 +288,7 @@ const SecuritySettings: React.FC = () => {
               disabled={passwordBusy || !currentPassword || !newPassword}
               sx={{ mt: 2.5 }}
             >
-              {passwordBusy ? 'Updating Password...' : 'Update Password'}
+              {passwordBusy ? uiText("Updating Password...") : uiText("Update Password")}
             </Button>
           </Box>
         </Paper>
@@ -349,11 +301,9 @@ const SecuritySettings: React.FC = () => {
             </Box>
             <Box>
               <Typography variant="h6" fontWeight={800}>
-                Two-Factor Authentication (TOTP)
-              </Typography>
+                {uiText("Two-Factor Authentication (TOTP) ")}</Typography>
               <Typography variant="body2" color="text.secondary">
-                Use an authenticator app (Google Authenticator, Authy, 1Password) to generate secure one-time verification codes.
-              </Typography>
+                {uiText("Use an authenticator app (Google Authenticator, Authy, 1Password) to generate secure one-time verification codes. ")}</Typography>
             </Box>
           </Box>
 
@@ -361,55 +311,28 @@ const SecuritySettings: React.FC = () => {
             {currentUser?.isTotpEnabled ? (
               <Stack spacing={2} sx={{ maxWidth: 450 }}>
                 <Alert severity="success" icon={<ShieldIcon />}>
-                  Two-Factor Authentication is currently active on your account.
-                </Alert>
+                  {uiText("Two-Factor Authentication is currently active on your account. ")}</Alert>
                 <Typography variant="body2" color="text.secondary">
-                  To disable two-factor authentication, enter a valid 6-digit code from your authenticator app below:
-                </Typography>
+                  {uiText('Confirm your password and current authenticator code to disable two-factor authentication.')}</Typography>
                 <Stack direction="row" spacing={1.5}>
-                  <TextField
-                    label="Current 6-digit code"
-                    value={totpCode}
-                    onChange={(e) =>
-                      setTotpCode(e.target.value.replace(/\D/g, '').slice(0, 6))
-                    }
-                    inputProps={{ inputMode: 'numeric', maxLength: 6 }}
-                    sx={{ width: 200 }}
-                  />
-                  <Button
-                    color="error"
-                    variant="outlined"
-                    disabled={busy || !/^\d{6}$/.test(totpCode)}
-                    onClick={handleDisableTotp}
-                  >
-                    Disable 2FA
-                  </Button>
+                  <CredentialActionButton color="error" variant="outlined" label={uiText('Disable 2FA')} endpoint="/auth/totp/disable" onComplete={async()=>{setTotpCode('');setSuccess('Two-factor authentication disabled.');await queryClient.invalidateQueries({queryKey:['currentUser']});}} />
                 </Stack>
               </Stack>
             ) : !qrCodeUrl ? (
-              <Button
-                variant="contained"
-                startIcon={<Phone2faIcon />}
-                disabled={busy || isLoading || isError}
-                onClick={handleGenerateTotp}
-              >
-                Set Up Authenticator App
-              </Button>
+              <CredentialActionButton variant="contained" startIcon={<Phone2faIcon />} disabled={busy || isLoading || isError} label={uiText('Set Up Authenticator App')} endpoint="/auth/totp/generate" onComplete={data=>{setQrCodeUrl(data.otpauth);setError(null);setSuccess(null);}} />
             ) : (
               <Paper variant="outlined" sx={{ p: 3, borderRadius: 2, maxWidth: 500, bgcolor: 'action.hover' }}>
                 <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1.5 }}>
-                  1. Scan QR Code
-                </Typography>
+                  {uiText("1. Scan QR Code ")}</Typography>
                 <Box sx={{ display: 'flex', justifyContent: 'center', p: 2, bgcolor: '#ffffff', borderRadius: 2, width: 'fit-content', mx: 'auto', mb: 2 }}>
                   <QRCodeSVG value={qrCodeUrl} size={180} />
                 </Box>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2, textAlign: 'center' }}>
-                  Scan this barcode using Google Authenticator, then enter the 6-digit verification code below:
-                </Typography>
+                  {uiText("Scan this barcode using Google Authenticator, then enter the 6-digit verification code below: ")}</Typography>
 
                 <Stack direction="row" spacing={1.5} sx={{ justifyContent: 'center' }}>
                   <TextField
-                    label="6-digit code"
+                    label={uiText("6-digit code", 'forms')}
                     value={totpCode}
                     onChange={(e) =>
                       setTotpCode(e.target.value.replace(/\D/g, '').slice(0, 6))
@@ -422,8 +345,7 @@ const SecuritySettings: React.FC = () => {
                     onClick={handleVerifyTotp}
                     disabled={busy || !/^\d{6}$/.test(totpCode)}
                   >
-                    Verify & Enable
-                  </Button>
+                    {uiText("Verify & Enable ")}</Button>
                 </Stack>
               </Paper>
             )}
@@ -438,22 +360,15 @@ const SecuritySettings: React.FC = () => {
             </Box>
             <Box>
               <Typography variant="h6" fontWeight={800}>
-                Passkeys & Biometric Security (WebAuthn)
-              </Typography>
+                {uiText("Passkeys & Biometric Security (WebAuthn) ")}</Typography>
               <Typography variant="body2" color="text.secondary">
-                Log in securely using your device's biometric sensors (Windows Hello, Touch ID, Face ID) or hardware security key (YubiKey).
-              </Typography>
+                {uiText("Log in securely using your device's biometric sensors (Windows Hello, Touch ID, Face ID) or hardware security key (YubiKey). ")}</Typography>
             </Box>
           </Box>
 
           <Box sx={{ mt: 2 }}>
-            <Button
-              variant="outlined"
-              startIcon={<PasskeyIcon />}
-              onClick={handleRegisterPasskey}
-            >
-              Register New Passkey on this Device
-            </Button>
+            <CredentialActionButton variant="outlined" startIcon={<PasskeyIcon />} disabled={isLoading || isError} label={uiText('Register New Passkey on this Device')} endpoint="/auth/passkey/register-options" onComplete={async options=>{const response=await startRegistration({optionsJSON:options});await api.post('/auth/passkey/register-verify',response);await queryClient.invalidateQueries({queryKey:['own-passkeys']});setSuccess('Passkey registered successfully!');}} />
+            <PasskeyManager />
           </Box>
         </Paper>
       </Stack>

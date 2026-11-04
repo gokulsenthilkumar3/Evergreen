@@ -1,0 +1,430 @@
+/* Owner access: the same quiet visual language as the workspace. */
+.gate-root,
+.gate-checking-root {
+  min-height: 100dvh;
+  box-sizing: border-box;
+  font-family: Inter, "Segoe UI", sans-serif;
+  color: #ecedf5;
+  background: #111217;
+  -webkit-font-smoothing: antialiased;
+}
+.gate-root {
+  display: grid;
+  place-items: center;
+  padding: 40px;
+  position: relative;
+}
+.gate-root:has(.gate-story) {
+  grid-template-columns: minmax(360px, 1.15fr) minmax(340px, 0.85fr);
+  gap: 70px;
+  max-width: 1400px;
+  margin: auto;
+  padding: 50px 8%;
+  min-height: 100dvh;
+}
+.gate-story {
+  align-self: stretch;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 630px;
+  padding-right: 30px;
+}
+.gate-wordmark {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: -0.7px;
+  color: #eef0fa;
+}
+.gate-wordmark svg {
+  width: 30px;
+  height: 30px;
+  fill: #aeb6ff0b;
+  stroke: #aeb6ff;
+  stroke-width: 1.2;
+}
+.gate-wordmark > span {
+  margin-left: 10px;
+  font-size: 7px;
+  color: #8c91a8;
+  letter-spacing: 0.15em;
+  font-weight: 500;
+}
+.gate-story-copy {
+  margin-top: 65px;
+}
+.gate-story-eyebrow {
+  font-size: 8px;
+  letter-spacing: 0.16em;
+  color: #878da5;
+}
+.gate-story h2 {
+  font-size: clamp(40px, 4.5vw, 64px);
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -2.6px;
+  margin: 22px 0;
+}
+.gate-story h2 em {
+  font-style: normal;
+  color: #b4bbef;
+}
+.gate-story-copy p {
+  font-size: 12px;
+  line-height: 1.9;
+  color: #9097ad;
+  max-width: 310px;
+}
+.gate-story-art {
+  height: 220px;
+  position: relative;
+  perspective: 900px;
+  margin-top: 20px;
+  isolation: isolate;
+}
+.gate-story-art::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  background: radial-gradient(ellipse, #8c9ade13, transparent 65%);
+  z-index: -1;
+}
+.gate-story-art svg {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) rotate(-8deg);
+  width: 220px;
+  height: 160px;
+  fill: #9ca7e906;
+  stroke: #9ca7e96b;
+  stroke-width: 0.7;
+  filter: drop-shadow(0 0 20px #9ca7e91a);
+}
+.gate-art-orbit {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 290px;
+  height: 100px;
+  border: 1px solid #9ca7e91c;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) rotate(-20deg);
+}
+.gate-art-label {
+  position: absolute;
+  background: #1c202d;
+  border: 1px solid #aab3ff12;
+  border-radius: 5px;
+  padding: 8px 12px;
+  color: #9ca7c1;
+  font-size: 7px;
+  letter-spacing: 0.1em;
+  box-shadow: 0 10px 30px #0002;
+}
+.label-a {
+  top: 26%;
+  left: 5%;
+}
+.label-b {
+  right: 0;
+  top: 40%;
+}
+.label-c {
+  bottom: 0;
+  left: 26%;
+}
+.gate-story-footer {
+  display: flex;
+  gap: 24px;
+  color: #626c85;
+  font-size: 9px;
+  padding-top: 40px;
+}
+.gate-card {
+  width: 100%;
+  max-width: 390px;
+  position: relative;
+  padding: 34px;
+  background: #191b23;
+  border: 1px solid #ffffff0c;
+  border-radius: 12px;
+  box-sizing: border-box;
+  box-shadow: 0 20px 70px #0000001a;
+}
+.gate-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font:
+    500 8px Inter,
+    "Segoe UI",
+    sans-serif;
+  letter-spacing: 0.16em;
+  color: #9aa2bb;
+  margin-bottom: 25px;
+}
+.gate-badge-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #aeb6ed;
+}
+.gate-title {
+  font-size: 27px;
+  line-height: 1.25;
+  letter-spacing: -1px;
+  font-weight: 550;
+  margin: 0 0 12px;
+  color: #eef0f7;
+}
+.gate-subtitle {
+  font-size: 11px;
+  line-height: 1.9;
+  color: #8f96ad;
+  margin-bottom: 26px;
+}
+.gate-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.gate-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: #c4c8d8;
+}
+.gate-input {
+  width: 100%;
+  padding: 13px 14px;
+  border: 1px solid #ffffff12;
+  border-radius: 6px;
+  background: #111319;
+  color: #eef0f7;
+  font:
+    12px Inter,
+    "Segoe UI",
+    sans-serif;
+  box-sizing: border-box;
+  outline: none;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+.gate-input:focus {
+  border-color: #aeb6ed88;
+  box-shadow: 0 0 0 3px #aeb6ed0b;
+}
+.gate-input::placeholder {
+  color: #606b82;
+}
+.gate-input:disabled {
+  opacity: 0.6;
+}
+.gate-submit-btn {
+  padding: 13px 16px;
+  margin-top: 9px;
+  background: #bac2f8;
+  color: #1a2038;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font:
+    600 11px Inter,
+    "Segoe UI",
+    sans-serif;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    transform 0.2s;
+}
+.gate-submit-btn:hover:not(:disabled) {
+  background: #ced3ff;
+  transform: translateY(-1px);
+}
+.gate-submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.gate-alert {
+  padding: 10px 12px;
+  font-size: 11px;
+  line-height: 1.7;
+  color: #edb2be;
+  background: #dd81980b;
+  border: 1px solid #dd819826;
+  border-radius: 6px;
+}
+.gate-details {
+  margin-top: 22px;
+  border-top: 1px solid #ffffff08;
+  padding-top: 18px;
+  font-size: 10px;
+}
+.gate-summary {
+  color: #a7b2e0;
+  font-size: 10px;
+  cursor: pointer;
+}
+.gate-details p {
+  color: #8f96ad;
+  font-size: 10px;
+  line-height: 1.8;
+  margin: 12px 0;
+}
+.gate-code {
+  display: block;
+  overflow-wrap: anywhere;
+  background: #111319;
+  border: 1px solid #ffffff08;
+  border-radius: 5px;
+  padding: 12px;
+  font:
+    9px/1.8 "Cascadia Code",
+    monospace;
+  color: #b0bbe3;
+  user-select: all;
+}
+.gate-footer {
+  font-size: 8px;
+  line-height: 1.8;
+  color: #68738c;
+  margin: 22px 0 0;
+  border-top: 1px solid #ffffff08;
+  padding-top: 16px;
+}
+.gate-lock-btn {
+  position: fixed;
+  right: 16px;
+  bottom: 14px;
+  z-index: 70;
+  padding: 8px 12px;
+  border: 1px solid #ffffff12;
+  border-radius: 6px;
+  background: #191b23ed;
+  color: #969db3;
+  font:
+    10px Inter,
+    "Segoe UI",
+    sans-serif;
+  cursor: pointer;
+}
+.gate-lock-btn:hover {
+  color: #e9c1ce;
+  border-color: #dd819840;
+}
+.gate-checking-root {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 18px;
+  font-size: 12px;
+  color: #919ab2;
+}
+.gate-checking-spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #aeb6ed1a;
+  border-top-color: #aeb6ed;
+  border-radius: 50%;
+  animation: gate-spin 0.9s linear infinite;
+}
+@keyframes gate-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .gate-card {
+    animation: gate-enter 0.45s ease-out both;
+  }
+  .gate-story-art svg {
+    animation: gate-float 10s ease-in-out infinite;
+  }
+  @keyframes gate-enter {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes gate-float {
+    50% {
+      transform: translate(-50%, calc(-50% - 5px)) rotate(-4deg);
+    }
+  }
+}
+@media (max-width: 950px) {
+  .gate-root:has(.gate-story) {
+    gap: 35px;
+    padding: 35px 6%;
+  }
+  .gate-story {
+    padding-right: 0;
+  }
+  .gate-story h2 {
+    font-size: 44px;
+  }
+  .gate-wordmark > span {
+    display: none;
+  }
+  .gate-card {
+    padding: 28px;
+  }
+  .gate-story-footer {
+    gap: 12px;
+  }
+}
+@media (max-width: 720px) {
+  .gate-root:has(.gate-story) {
+    grid-template-columns: 1fr;
+    gap: 30px;
+    padding: 35px 24px;
+  }
+  .gate-story {
+    min-height: 0;
+  }
+  .gate-story-copy {
+    margin-top: 30px;
+  }
+  .gate-story h2 {
+    font-size: 36px;
+    letter-spacing: -1.5px;
+    margin: 16px 0;
+  }
+  .gate-story h2 br {
+    display: none;
+  }
+  .gate-story h2 em::before {
+    content: " ";
+  }
+  .gate-story-art,
+  .gate-story-footer {
+    display: none;
+  }
+  .gate-story-copy p {
+    max-width: 100%;
+  }
+  .gate-card {
+    max-width: none;
+  }
+  .gate-root {
+    padding: 24px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gate-card,
+  .gate-story-art svg {
+    animation: none;
+  }
+  .gate-submit-btn {
+    transition: none;
+  }
+}

@@ -18,10 +18,10 @@ No literal Tab controls in this file. Check composed components and dynamic navi
 
 | Control / label | Handler | Source |
 | --- | --- | --- |
-| Refresh | `{() => queryClient.invalidateQueries({ queryKey: ['hr-shifts'] })}` | [apps/web/src/pages/yarn/ShiftManagement.tsx:83](../../../apps/web/src/pages/yarn/ShiftManagement.tsx) |
-| Add Shift | `{handleOpen}` | [apps/web/src/pages/yarn/ShiftManagement.tsx:89](../../../apps/web/src/pages/yarn/ShiftManagement.tsx) |
-| Cancel | `{() => setOpen(false)}` | [apps/web/src/pages/yarn/ShiftManagement.tsx:176](../../../apps/web/src/pages/yarn/ShiftManagement.tsx) |
-| Save shift | `{() => createShift.mutate()}` | [apps/web/src/pages/yarn/ShiftManagement.tsx:177](../../../apps/web/src/pages/yarn/ShiftManagement.tsx) |
+| {uiText("Refresh ")} | `{() => queryClient.invalidateQueries({ queryKey: ['hr-shifts'] })}` | [apps/web/src/pages/yarn/ShiftManagement.tsx:83](../../../apps/web/src/pages/yarn/ShiftManagement.tsx) |
+| {uiText("Add Shift ")} | `{handleOpen}` | [apps/web/src/pages/yarn/ShiftManagement.tsx:88](../../../apps/web/src/pages/yarn/ShiftManagement.tsx) |
+| {uiText("Cancel")} | `{() => setOpen(false)}` | [apps/web/src/pages/yarn/ShiftManagement.tsx:170](../../../apps/web/src/pages/yarn/ShiftManagement.tsx) |
+| {uiText("Save shift ")} | `{() => createShift.mutate()}` | [apps/web/src/pages/yarn/ShiftManagement.tsx:171](../../../apps/web/src/pages/yarn/ShiftManagement.tsx) |
 
 ## API calls
 
@@ -29,11 +29,12 @@ Paths are relative to the client API base (`/api/backend` by default in the brow
 
 | Method | Path expression | Source |
 | --- | --- | --- |
-| GET | `/hr/shifts` | [apps/web/src/pages/yarn/ShiftManagement.tsx:39](../../../apps/web/src/pages/yarn/ShiftManagement.tsx) |
-| POST | `/hr/shifts` | [apps/web/src/pages/yarn/ShiftManagement.tsx:43](../../../apps/web/src/pages/yarn/ShiftManagement.tsx) |
+| GET | `/hr/shifts` | [apps/web/src/pages/yarn/ShiftManagement.tsx:41](../../../apps/web/src/pages/yarn/ShiftManagement.tsx) |
+| POST | `/hr/shifts` | [apps/web/src/pages/yarn/ShiftManagement.tsx:45](../../../apps/web/src/pages/yarn/ShiftManagement.tsx) |
 
 ## Composed behavior
 
+- [i18n.ts](../../../apps/web/src/i18n.ts)
 - [api.ts](../../../apps/web/src/utils/api.ts)
 
 ## Verify the workflow

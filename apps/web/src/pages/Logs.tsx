@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage, uiLocale, uiDateLocale } from "../i18n";
 import React, { useState } from 'react';
 import {
     Box,
@@ -77,6 +78,7 @@ const MODULE_OPTIONS = [
 const ACTION_OPTIONS = ['All', 'CREATE', 'UPDATE', 'DELETE', 'LOGIN', 'LOGOUT', 'EXPORT', 'PAYMENT'];
 
 const Logs: React.FC<LogsProps> = ({ userRole, username }) => {
+  useUiLanguage();
     const [searchTerm, setSearchTerm] = useState('');
     const [page, setPage] = useState(1);
     const [dateFilter, setDateFilter] = useState<DateFilterType>('all');
@@ -123,7 +125,7 @@ const Logs: React.FC<LogsProps> = ({ userRole, username }) => {
         if (type === 'pdf') {
             const headers = ['Timestamp', 'User', 'Action', 'Module', 'Details'];
             const rows = filteredLogs.map((log: LogEntry) => [
-                new Date(log.timestamp).toLocaleString(),
+                new Date(log.timestamp).toLocaleString(uiLocale()),
                 log.username || '-',
                 log.action,
                 log.module,
@@ -132,7 +134,7 @@ const Logs: React.FC<LogsProps> = ({ userRole, username }) => {
             generatePDF('Audit Logs', headers, rows, filename);
         } else if (type === 'excel') {
             const excelData = filteredLogs.map((log: LogEntry) => ({
-                Timestamp: new Date(log.timestamp).toLocaleString(),
+                Timestamp: new Date(log.timestamp).toLocaleString(uiLocale()),
                 User: log.username || '-',
                 Action: log.action,
                 Module: log.module,
@@ -150,22 +152,21 @@ const Logs: React.FC<LogsProps> = ({ userRole, username }) => {
         <Box>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 2, flexWrap: 'wrap', mb: 3 }}>
                 <Box>
-                    <Typography variant="h4" fontWeight={800}>Audit Logs</Typography>
+                    <Typography variant="h4" fontWeight={800}>{uiText("Audit Logs")}</Typography>
                     <Typography variant="body2" color="text.secondary">
-                        Trace system activity with live, filterable evidence.
-                    </Typography>
+                        {uiText("Trace system activity with live, filterable evidence. ")}</Typography>
                 </Box>
                 <Stack direction="row" spacing={1} flexWrap="wrap">
                     <Paper sx={{ px: 2, py: 1 }}>
-                        <Typography variant="caption" color="text.secondary">Entries</Typography>
+                        <Typography variant="caption" color="text.secondary">{uiText("Entries")}</Typography>
                         <Typography fontWeight={800}>{filteredLogs.length}</Typography>
                     </Paper>
                     <Paper sx={{ px: 2, py: 1 }}>
-                        <Typography variant="caption" color="text.secondary">Modules</Typography>
+                        <Typography variant="caption" color="text.secondary">{uiText("Modules")}</Typography>
                         <Typography fontWeight={800}>{moduleCount}</Typography>
                     </Paper>
                     <Paper sx={{ px: 2, py: 1 }}>
-                        <Typography variant="caption" color="text.secondary">Actions</Typography>
+                        <Typography variant="caption" color="text.secondary">{uiText("Actions")}</Typography>
                         <Typography fontWeight={800}>{actionCount}</Typography>
                     </Paper>
                 </Stack>
@@ -176,7 +177,7 @@ const Logs: React.FC<LogsProps> = ({ userRole, username }) => {
                 <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
                     <TextField
                         size="small"
-                        placeholder="Search logs..."
+                        placeholder={uiText("Search logs...", 'forms')}
                         value={searchTerm}
                         onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
                         InputProps={{
@@ -185,23 +186,23 @@ const Logs: React.FC<LogsProps> = ({ userRole, username }) => {
                         sx={{ minWidth: 200, flex: 1 }}
                     />
                     <TextField
-                        select size="small" label="Date Range"
+                        select size="small" label={uiText("Date Range", 'forms')}
                         value={dateFilter}
                         onChange={(e) => { setDateFilter(e.target.value as DateFilterType); setPage(1); }}
                         sx={{ minWidth: 140 }}
                     >
                         {DATE_FILTER_OPTIONS_WITH_ALL.map(opt => (
-                            <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
+                            <MenuItem key={opt.value} value={opt.value}>{uiText(opt.label, 'forms')}</MenuItem>
                         ))}
                     </TextField>
                     {dateFilter === 'custom' && (
                         <>
-                            <GlassDatePicker  size="small" label="From" value={customFrom} onChange={(e) => setCustomFrom(e.target.value)} InputLabelProps={{ shrink: true }} sx={{ width: 150 }} />
-                            <GlassDatePicker  size="small" label="To" value={customTo} onChange={(e) => setCustomTo(e.target.value)} InputLabelProps={{ shrink: true }} sx={{ width: 150 }} />
+                            <GlassDatePicker  size="small" label={uiText("From", 'forms')} value={customFrom} onChange={(e) => setCustomFrom(e.target.value)} InputLabelProps={{ shrink: true }} sx={{ width: 150 }} />
+                            <GlassDatePicker  size="small" label={uiText("To", 'forms')} value={customTo} onChange={(e) => setCustomTo(e.target.value)} InputLabelProps={{ shrink: true }} sx={{ width: 150 }} />
                         </>
                     )}
                     <TextField
-                        select size="small" label="Module"
+                        select size="small" label={uiText("Module", 'forms')}
                         value={moduleFilter}
                         onChange={(e) => { setModuleFilter(e.target.value); setPage(1); }}
                         sx={{ minWidth: 120 }}
@@ -209,7 +210,7 @@ const Logs: React.FC<LogsProps> = ({ userRole, username }) => {
                         {MODULE_OPTIONS.map(m => <MenuItem key={m} value={m}>{m}</MenuItem>)}
                     </TextField>
                     <TextField
-                        select size="small" label="Action"
+                        select size="small" label={uiText("Action", 'forms')}
                         value={actionFilter}
                         onChange={(e) => { setActionFilter(e.target.value); setPage(1); }}
                         sx={{ minWidth: 120 }}
@@ -223,8 +224,7 @@ const Logs: React.FC<LogsProps> = ({ userRole, username }) => {
             {/* Stats */}
             <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
                 <Typography variant="body2" color="text.secondary">
-                    Showing {paginatedLogs.length} of {filteredLogs.length} entries
-                </Typography>
+                    {uiText("Showing ")}{paginatedLogs.length} {uiText(" of ")}{filteredLogs.length} {uiText(" entries ")}</Typography>
             </Box>
 
             {/* Logs Table */}
@@ -232,29 +232,29 @@ const Logs: React.FC<LogsProps> = ({ userRole, username }) => {
                 <Table size="small">
                     <TableHead>
                         <TableRow>
-                            <TableCell sx={{ fontWeight: 'bold' }}>Timestamp</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold' }}>User</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold' }}>Action</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold' }}>Module</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold' }}>Details</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold' }}>{uiText("Timestamp", 'tables')}</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold' }}>{uiText("User", 'tables')}</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold' }}>{uiText("Action", 'tables')}</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold' }}>{uiText("Module", 'tables')}</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold' }}>{uiText("Details", 'tables')}</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {isLoading ? (
                             <TableRow>
                                 <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
-                                    <Typography color="text.secondary">Loading logs...</Typography>
+                                    <Typography color="text.secondary">{uiText("Loading logs...", 'tables')}</Typography>
                                 </TableCell>
                             </TableRow>
                         ) : paginatedLogs.length > 0 ? (
                             paginatedLogs.map((log: LogEntry) => (
                                 <TableRow key={log.id} hover>
                                     <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                                        <Tooltip title={new Date(log.timestamp).toLocaleString()} arrow>
+                                        <Tooltip title={new Date(log.timestamp).toLocaleString(uiLocale())} arrow>
                                             <Typography variant="body2">
-                                                {new Date(log.timestamp).toLocaleDateString()}{' '}
+                                                {new Date(log.timestamp).toLocaleDateString(uiDateLocale())}{' '}
                                                 <Typography component="span" variant="caption" color="text.secondary">
-                                                    {new Date(log.timestamp).toLocaleTimeString()}
+                                                    {new Date(log.timestamp).toLocaleTimeString(uiDateLocale())}
                                                 </Typography>
                                             </Typography>
                                         </Tooltip>
@@ -295,7 +295,7 @@ const Logs: React.FC<LogsProps> = ({ userRole, username }) => {
                                 <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
                                     <EmptyState
                                         type="search"
-                                        title="No logs found"
+                                        title={uiText("No logs found", 'tables')}
                                         message="Try a wider date range or clear one of the filters."
                                     />
                                 </TableCell>

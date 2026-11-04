@@ -18,8 +18,16 @@ beforeEach(() => {
 afterEach(() => { cleanup(); vi.useRealTimers(); vi.unstubAllGlobals(); });
 
 describe('campus animation controls', () => {
+  it('keeps simulation running while switching operational zones', () => {
+    render(<CampusScene {...props} />);
+    for (const zone of [/\d+ Receiving/, /\d+ Production/, /\d+ Warehouse/, /\d+ Dispatch/, /\d+ People/]) {
+      fireEvent.click(screen.getByRole('button', { name: zone }));
+      expect(screen.getByTestId('campus-canvas')).toHaveAttribute('data-mode', 'always');
+    }
+  });
   it('pauses continuous rendering and resumes it without remounting the canvas', () => {
     render(<CampusScene {...props} />);
+    fireEvent.click(screen.getByText(/Presentation controls/));
     const canvas = screen.getByTestId('campus-canvas');
     expect(canvas).toHaveAttribute('data-mode', 'always');
     fireEvent.click(screen.getByRole('button', { name: /^Pause$/ }));
@@ -32,6 +40,7 @@ describe('campus animation controls', () => {
   it('advances the guided tour and stops when a zone is selected manually', () => {
     vi.useFakeTimers();
     render(<CampusScene {...props} />);
+    fireEvent.click(screen.getByText(/Presentation controls/));
     fireEvent.click(screen.getByRole('button', { name: 'Camera tour' }));
     act(() => vi.advanceTimersByTime(7000));
     expect(screen.getByRole('button', { name: /02 Receiving/ })).toHaveAttribute('aria-pressed', 'true');
@@ -45,6 +54,7 @@ describe('campus animation controls', () => {
   it('honors reduced motion and avoids showing unknown stock as zero', () => {
     preferences.reduced = true;
     render(<CampusScene {...props} stockAvailable={false} />);
+    fireEvent.click(screen.getByText(/Presentation controls/));
     expect(screen.getByTestId('campus-canvas')).toHaveAttribute('data-mode', 'demand');
     expect(screen.getByRole('button', { name: /^Play$/ })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Camera tour' })).toBeDisabled();
@@ -56,6 +66,7 @@ describe('campus animation controls', () => {
     vi.useFakeTimers();
     const hidden = vi.spyOn(document, 'hidden', 'get').mockReturnValue(false);
     render(<CampusScene {...props} />);
+    fireEvent.click(screen.getByText(/Presentation controls/));
     fireEvent.click(screen.getByRole('button', { name: 'Camera tour' }));
     hidden.mockReturnValue(true);
     act(() => document.dispatchEvent(new Event('visibilitychange')));
@@ -71,15 +82,24 @@ describe('campus animation controls', () => {
 
   it('cleans up tour timers on unmount', () => {
     vi.useFakeTimers();
+    const intervals = vi.spyOn(globalThis, 'setInterval');
+    const clearIntervalSpy = vi.spyOn(globalThis, 'clearInterval');
     const mounted = render(<CampusScene {...props} />);
+    fireEvent.click(screen.getByText(/Presentation controls/));
+    fireEvent.click(screen.getByText(/Presentation controls/));
     fireEvent.click(screen.getByRole('button', { name: 'Camera tour' }));
+    const tourTimer = intervals.mock.results.at(-1)?.value;
+    expect(tourTimer).toBeDefined();
     mounted.unmount();
-    expect(vi.getTimerCount()).toBe(0);
+    expect(clearIntervalSpy).toHaveBeenCalledWith(tourTimer);
+    intervals.mockRestore();
+    clearIntervalSpy.mockRestore();
   });
 
   it('applies playback speed to the camera tour', () => {
     vi.useFakeTimers();
     render(<CampusScene {...props} />);
+    fireEvent.click(screen.getByText(/Presentation controls/));
     fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Animation speed' }));
     fireEvent.click(screen.getByRole('option', { name: '2×' }));
     fireEvent.click(screen.getByRole('button', { name: 'Camera tour' }));

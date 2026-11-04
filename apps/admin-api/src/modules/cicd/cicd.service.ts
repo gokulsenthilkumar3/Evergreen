@@ -4,10 +4,12 @@ import {
   Injectable,
   NotFoundException,
   ServiceUnavailableException,
+  Optional,
 } from '@nestjs/common';
 import { createHash } from 'node:crypto';
 import type { ReleaseJob } from '@prisma/admin-client';
 import { PrismaService } from '../../services/prisma.service';
+import { EvidenceService } from '../control/evidence.service';
 import { BuildReleaseDto, DeployReleaseDto } from './cicd.dto';
 import {
   githubConfig,
@@ -29,7 +31,7 @@ export class CicdService {
   private refreshing: Promise<void> | null = null;
   private refreshedAt = 0;
   private releaseCache: { at: number; rows: GithubRelease[] } | null = null;
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService,@Optional() private readonly evidence?:EvidenceService) {}
 
   async getPackages() {
     if (!githubConfig()) return [];
@@ -101,7 +103,7 @@ export class CicdService {
                 : run.conclusion === 'cancelled'
                   ? 'CANCELLED'
                   : 'FAILED';
-          await this.prisma.releaseJob.update({
+          const observedJob = await this.prisma.releaseJob.update({
             where: { id: job.id },
             data: {
               status,
@@ -110,6 +112,7 @@ export class CicdService {
               ...(terminal.includes(status) ? { activeTarget: null } : {}),
             },
           });
+          await this.evidence?.recordJob(observedJob);
         }
       }
       this.refreshedAt = Date.now();
@@ -370,6 +373,7 @@ export class CicdService {
       });
     }
     this.refreshedAt = 0;
+    await this.evidence?.recordJob(job);
     return this.view(job);
   }
 }

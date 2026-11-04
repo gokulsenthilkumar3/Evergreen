@@ -1,8 +1,9 @@
+import { uiText, useUiLanguage } from "../i18n";
 import React, { useRef, useMemo, Suspense } from 'react';
 import { Box, useMediaQuery, useTheme } from '@mui/material';
 import { Canvas, useFrame } from '@react-three/fiber';
 import type { RootState, ThreeElements } from '@react-three/fiber';
-import { OrbitControls, Stars, Float, Environment } from '@react-three/drei';
+import { OrbitControls, Stars, Float, Environment, Lightformer } from '@react-three/drei';
 import * as THREE from 'three';
 
 // Extend JSX namespace for Three.js elements
@@ -22,6 +23,7 @@ interface LoginAvatarProps {
 
 // --- CUSTOM IRIDESCENT SHADER ---
 const IridescentMaterial = () => {
+  useUiLanguage();
     const materialRef = useRef<THREE.ShaderMaterial>(null);
 
     useFrame((state: RootState) => {
@@ -65,6 +67,7 @@ const IridescentMaterial = () => {
 
 // --- CHARACTER COMPONENT ---
 const Character = ({ isPasswordFocused, isLoading, hasError }: Partial<LoginAvatarProps>) => {
+  useUiLanguage();
     const group = useRef<THREE.Group>(null);
     const eyesRef = useRef<THREE.Group>(null);
     const theme = useTheme();
@@ -173,6 +176,7 @@ const Character = ({ isPasswordFocused, isLoading, hasError }: Partial<LoginAvat
 };
 
 const LoginAvatar: React.FC<LoginAvatarProps> = (props: LoginAvatarProps) => {
+  useUiLanguage();
     const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
     const theme = useTheme();
     const compact = props.compact ?? false;
@@ -227,7 +231,11 @@ const LoginAvatar: React.FC<LoginAvatarProps> = (props: LoginAvatarProps) => {
                         makeDefault
                     />
 
-                    <Environment preset={theme.palette.mode === 'dark' ? 'night' : 'studio'} />
+                    {/* Lit by local light panels: a preset would download an HDR file and fail offline. */}
+                    <Environment resolution={64}>
+                        <Lightformer intensity={theme.palette.mode === 'dark' ? 0.8 : 1.6} position={[0, 4, 3]} scale={[8, 2, 1]} />
+                        <Lightformer intensity={0.7} position={[-4, 1, -3]} rotation-y={Math.PI / 2} scale={[6, 2, 1]} color={theme.palette.primary.light} />
+                    </Environment>
                 </Suspense>
             </Canvas>
         </Box>

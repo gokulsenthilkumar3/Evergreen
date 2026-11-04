@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage } from "../../i18n";
 import React from 'react';
 import { Refresh as RefreshIcon } from '@mui/icons-material';
 import {
@@ -44,6 +45,7 @@ const STAT_CARDS = (data: Machine[], openInspections: Inspection[]) => [
 ];
 
 const LiveDashboard: React.FC = () => {
+  useUiLanguage();
   const queryClient = useQueryClient();
 
   const machines = useQuery<Machine[]>({
@@ -74,27 +76,23 @@ const LiveDashboard: React.FC = () => {
       <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, mb: 3 }}>
         <Box>
           <Typography variant="h4" fontWeight={800}>
-            Machine Status Overview
-          </Typography>
+            {uiText("Machine Status Overview ")}</Typography>
           <Typography color="text.secondary">
-            Current machine registry and recorded inspection status. Auto-refreshes every 30 s.
-          </Typography>
+            {uiText("Current machine registry and recorded inspection status. Auto-refreshes every 30 s. ")}</Typography>
         </Box>
         <Button startIcon={<RefreshIcon />} onClick={handleRefresh}>
-          Refresh
-        </Button>
+          {uiText("Refresh ")}</Button>
       </Box>
 
       {/* Error state */}
       {(machines.error || inspections.error) && (
         <Alert severity="error" sx={{ mb: 2 }}>
-          Could not load all machine status data.
-        </Alert>
+          {uiText("Could not load all machine status data. ")}</Alert>
       )}
 
       {/* Loading / data */}
       {machines.isLoading || inspections.isLoading ? (
-        <CircularProgress aria-label="Loading machine data" />
+        <CircularProgress aria-label={uiText("Loading machine data")} />
       ) : (
         <>
           {/* KPI cards */}
@@ -104,7 +102,7 @@ const LiveDashboard: React.FC = () => {
                 <Card variant="outlined">
                   <CardContent>
                     <Typography variant="body2" color="text.secondary">
-                      {label}
+                      {uiText(label, 'forms')}
                     </Typography>
                     <Typography variant="h4" fontWeight={800}>
                       {value}
@@ -120,10 +118,10 @@ const LiveDashboard: React.FC = () => {
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell>Machine</TableCell>
-                  <TableCell>Type</TableCell>
-                  <TableCell>Serial no.</TableCell>
-                  <TableCell>Status</TableCell>
+                  <TableCell>{uiText("Machine", 'tables')}</TableCell>
+                  <TableCell>{uiText("Type", 'tables')}</TableCell>
+                  <TableCell>{uiText("Serial no.", 'tables')}</TableCell>
+                  <TableCell>{uiText("Status", 'tables')}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -135,7 +133,7 @@ const LiveDashboard: React.FC = () => {
                     <TableCell>
                       <Chip
                         size="small"
-                        label={machine.active ? 'Active' : 'Inactive'}
+                        label={machine.active ? uiText("Active", 'tables') : uiText("Inactive", 'tables')}
                         color={machine.active ? 'success' : 'default'}
                       />
                     </TableCell>
@@ -144,8 +142,7 @@ const LiveDashboard: React.FC = () => {
                 {!data.length && (
                   <TableRow>
                     <TableCell colSpan={4} align="center">
-                      No machines have been registered.
-                    </TableCell>
+                      {uiText("No machines have been registered. ", 'tables')}</TableCell>
                   </TableRow>
                 )}
               </TableBody>
@@ -153,9 +150,7 @@ const LiveDashboard: React.FC = () => {
           </Paper>
 
           <Typography variant="caption" color="text.secondary">
-            This overview reflects the latest loaded records. Runtime telemetry, OEE, spindle
-            counts are not yet connected.
-          </Typography>
+            {uiText("This overview reflects the latest loaded records. Runtime telemetry, OEE, spindle counts are not yet connected. ")}</Typography>
         </>
       )}
     </Box>

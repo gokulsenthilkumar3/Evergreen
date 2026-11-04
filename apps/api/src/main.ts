@@ -1,3 +1,11 @@
+import { refreshInstallationLease } from '@evergreen/types/licensing-online';
+import { ownerGroqEnvironment } from '@evergreen/types/ai-server';
+import { upgradeApiReference } from './api-reference';
+import { observeApi, serveMonitor } from './api-monitor';
+import {
+  requireInstallationLicence,
+  ownerHostEnvironment,
+} from '@evergreen/types/licensing';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
@@ -8,8 +16,17 @@ import type { NextFunction, Request, Response } from 'express';
 import { NotFoundExceptionFilter } from './filters/not-found-exception.filter';
 import { BusinessActionFilter } from './filters/business-action.filter';
 import { PrismaService } from './services/prisma.service';
+import { trustedProxies } from './utils/trusted-proxies';
 
 async function bootstrap() {
+  Object.assign(process.env, ownerHostEnvironment('tenant'));
+  Object.assign(process.env, ownerGroqEnvironment());
+  try {
+    await refreshInstallationLease('tenant');
+  } catch {
+    /* Existing signed offline access is checked below. */
+  }
+  requireInstallationLicence('tenant');
   if (process.env.AUTO_MIGRATE === 'true') {
     throw new Error(
       'AUTO_MIGRATE is no longer supported. Use the release deployment helper to snapshot and migrate the selected database.',
@@ -18,10 +35,10 @@ async function bootstrap() {
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.enableShutdownHooks();
+  app.use(observeApi);
   // Company logo uploads are limited to 500 KB before base64 encoding.
   app.useBodyParser('json', { limit: '1mb' });
-  // Only the loopback web proxy may supply the original client address.
-  app.set('trust proxy', 'loopback');
+  app.set('trust proxy', trustedProxies());
 
   // Enable CORS with specific configuration
   app.enableCors({
@@ -46,7 +63,7 @@ async function bootstrap() {
             'https://fonts.googleapis.com',
           ],
           fontSrc: ["'self'", 'https://fonts.gstatic.com', 'https:', 'data:'],
-          imgSrc: ["'self'", 'data:', 'https:'],
+          imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
           connectSrc: ["'self'", 'http:', 'https:', 'ws:'],
         },
       },
@@ -139,13 +156,16 @@ Authorize with your own staff bearer token for protected endpoints. Try it out e
         'Staff directory, shift rosters & wage disbursement',
       )
       .build();
-    const document = SwaggerModule.createDocument(app, config);
+    const document = upgradeApiReference(app, SwaggerModule.createDocument(app, config), 'tenant');
+    app.getHttpAdapter().get('/internal/api-monitor', serveMonitor(document));
     SwaggerModule.setup('api/docs', app, document, {
       customSiteTitle:
         'EverGreen One — API Documentation & Interactive Explorer',
       swaggerOptions: {
-        persistAuthorization: true,
-        docExpansion: 'list',
+        persistAuthorization: false,
+        docExpansion: 'none',
+        displayOperationId: true,
+        requestSnippetsEnabled: true,
         filter: true,
         displayRequestDuration: true,
         tryItOutEnabled: true,
@@ -154,6 +174,15 @@ Authorize with your own staff bearer token for protected endpoints. Try it out e
         defaultModelsExpandDepth: 1,
       },
       customCss: `
+        .swagger-ui .wrapper { max-width: 1440px !important; padding: 0 32px !important; }
+        .swagger-ui .information-container { padding: 28px 0 12px; }
+        .swagger-ui .info .title { font-size: clamp(26px, 4vw, 42px) !important; letter-spacing: -1px; }
+        .swagger-ui .opblock-tag { padding: 20px 12px !important; border-bottom: 1px solid #334155 !important; }
+        .swagger-ui .opblock-summary { min-height: 58px; gap: 12px; }
+        .swagger-ui .filter-container { position: sticky; top: 0; z-index: 10; background: #080d1a; padding: 16px 0; }
+        .swagger-ui .operation-filter-input { min-height: 48px; border-radius: 10px !important; }
+        .swagger-ui button:focus-visible, .swagger-ui a:focus-visible { outline: 3px solid #34d399 !important; outline-offset: 4px; }
+        @media(max-width: 640px) { .swagger-ui .wrapper { padding: 0 12px !important; } .swagger-ui .opblock-summary { flex-wrap: wrap; } .swagger-ui .opblock-summary-path { max-width: 100% !important; overflow-wrap: anywhere; } }
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
         
         body, html, .swagger-ui {

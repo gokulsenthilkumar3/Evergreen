@@ -11,9 +11,22 @@ concurrency:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: evergreen_ci
+          POSTGRES_PASSWORD: disposable-ci-fixture-only
+          POSTGRES_DB: evergreen_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U evergreen_ci -d evergreen_ci"
+          --health-interval 5s --health-timeout 5s --health-retries 10
     env:
       DATABASE_URL: file:./test.db
       ADMIN_DATABASE_URL: file:./admin-test.db
+      EVERGREEN_PG_TEST_URL: postgresql://evergreen_ci:disposable-ci-fixture-only@127.0.0.1:5432/evergreen_ci
       JWT_SECRET: ci-only-72dd710bab23369402ce86bd20a8ec597088fc320f4ec45e
       NODE_ENV: test
     steps:

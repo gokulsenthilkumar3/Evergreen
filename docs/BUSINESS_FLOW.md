@@ -19,6 +19,8 @@ flowchart LR
 2. **Produce.** Record the lots consumed, yarn produced, recoverable waste and unfinished material. Input must equal output plus waste plus recorded loss. Correcting posted production must keep stock and journals consistent.
 3. **Review and dispatch.** Check ownership, reservations, quality holds and available stock before releasing goods. A partial dispatch keeps its order and lot references. A second click or a retry must not deduct the same stock twice.
 4. **Invoice.** Use the saved customer and issuer details and the line snapshot. Quantities, rates, discounts, rounding and tax must match the saved document. A PDF is not a statutory e-invoice or e-Way Bill.
+
+   Tax type follows two states. The seller's state is where the company GSTIN is registered, and Settings rejects a different seller state. A customer's state comes from their GSTIN when one is entered, and a GSTIN registered in another state is rejected. The same state gives CGST plus SGST; different states give IGST. Each line's GST rate comes from its catalogue item, and an order or invoice cannot replace it.
 5. **Collect.** Apply each payment to the right invoice, keep the remaining balance, and keep the customer ledger in step. Reversals and closed accounting periods follow explicit rules.
 
 ## Who owns each handoff
@@ -74,4 +76,6 @@ Run this on a disposable database, never on customer data.
 7. Simulate an API failure. The workspace must warn that data may be stale, and never show a made-up status or a zero balance.
 8. Check phone-width navigation, keyboard access to the guide, search with no results, and the browser Back button.
 
-Business Workspace (`/workspace`) and the Tutorial (`/tutorial`) show the same searchable "From material to payment" guide, with links to each screen. This checklist is the acceptance test the pilot still has to pass. It has not all been run.
+Business Workspace (`/workspace`) and the Tutorial (`/tutorial`) show the same searchable "From material to payment" guide, with links to each screen and a row of numbered stations that opens each step. This checklist is the acceptance test the pilot still has to pass. It has not all been run.
+
+On 30 October, parts of this check were run through the API on a disposable database: issuer settings (step 1), a 100 kg catalogue receipt (step 2), a 40 kg sales order and a 25 kg inter-state invoice from it at ₹6,250 plus ₹312.50 IGST (step 4, without downloading the PDF), and two payments that cleared the balance with the customer ledger and balance in agreement (step 5). A replayed payment was applied once. Phone-width navigation, keyboard search and the Back button (step 8) were checked in a browser at 1440 px and 390 px. Production, a separate dispatch, steps 6 and 7 and the PDF were not run, and no operator has completed the flow. See the [30 October report](audits/2026-10-30/REPORT.md).

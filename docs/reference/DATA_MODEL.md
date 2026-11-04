@@ -2,11 +2,128 @@
 
 Generated from [schema.prisma](../../packages/database/prisma/schema.prisma). SQLite is the current datasource. There is no tenant discriminator on operational models; isolate company installations.
 
+## SupportTicket
+
+```prisma
+model SupportTicket {
+  id          String   @id @default(cuid())
+  requestKey  String   @unique
+  subject     String
+  description String
+  category    String
+  priority    String   @default("NORMAL")
+  status      String   @default("OPEN")
+  createdBy   String
+  resolution  String?
+  requesterId Int?
+  assigneeId Int?
+  queue String @default("TRIAGE")
+  resolvedById Int?
+  resolvedAt DateTime?
+  confirmedById Int?
+  confirmedAt DateTime?
+  closedAt DateTime?
+  tagsJson String @default("[]")
+  customFieldsJson String @default("{}")
+  watchersJson String @default("[]")
+  dueAt DateTime?
+  parentId String?
+  mergedIntoId String?
+  slaPolicyJson String?
+  events SupportTicketEvent[]
+  version     Int      @default(1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  @@index([createdBy, createdAt])
+  @@index([status, updatedAt])
+  @@index([assigneeId, status])
+}
+```
+
+## SupportResource
+
+```prisma
+model SupportResource {
+  id String @id @default(cuid())
+  scopeKey String @unique
+  kind String
+  key String
+  title String
+  ownerId Int
+  visibility String @default("TEAM")
+  status String @default("ACTIVE")
+  data String
+  version Int @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  revisions SupportResourceRevision[]
+  @@index([kind, status, visibility])
+}
+```
+
+## SupportResourceRevision
+
+```prisma
+model SupportResourceRevision {
+  id String @id @default(cuid())
+  resourceId String
+  resource SupportResource @relation(fields:[resourceId],references:[id],onDelete:Restrict)
+  version Int
+  actorId Int
+  actorUsername String
+  snapshot String
+  reason String
+  createdAt DateTime @default(now())
+  @@unique([resourceId, version])
+}
+```
+
+## SupportTicketEvent
+
+```prisma
+model SupportTicketEvent {
+  id String @id @default(cuid())
+  ticketId String
+  ticket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Restrict)
+  version Int
+  requestKey String? @unique
+  actorId Int
+  actorPublicId String?
+  actorUsername String
+  kind String
+  visibility String @default("PUBLIC")
+  payload String
+  previousHash String
+  hash String @unique
+  createdAt DateTime @default(now())
+  @@unique([ticketId, version])
+  @@unique([ticketId, previousHash])
+  @@index([ticketId, createdAt])
+}
+```
+
 ## User
 
 ```prisma
 model User {
   id               Int       @id @default(autoincrement())
+  publicId         String?   @unique @default(uuid())
+  status           String    @default("ACTIVE")
+  statusReason     String?
+  statusChangedAt  DateTime?
+  deletedAt        DateTime?
+  department       String?
+  site             String?
+  locale           String    @default("en")
+  timezone         String    @default("Asia/Kolkata")
+  emailVerifiedAt  DateTime?
+  failedLogins     Int       @default(0)
+  lockedUntil      DateTime?
+  actionTokens     AccountActionToken[]
+  recoveryCodes    UserRecoveryCode[]
+  externalIdentities UserExternalIdentity[]
+  scopedAccess     Boolean   @default(false)
+  accessRules      UserAccessRule[]
   email            String    @unique
   username         String    @unique
   name             String?
@@ -45,6 +162,75 @@ model WebAuthnCredential {
 }
 ```
 
+## AccountActionToken
+
+```prisma
+model AccountActionToken {
+  id             String    @id @default(cuid())
+  tokenHash      String    @unique
+  userId         Int
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  purpose        String
+  email          String
+  expiresAt      DateTime
+  usedAt         DateTime?
+  revokedAt      DateTime?
+  deliveryStatus String    @default("PENDING")
+  messageId      String?
+  createdBy      String
+  createdAt      DateTime  @default(now())
+  @@index([userId, purpose, createdAt])
+}
+```
+
+## UserRecoveryCode
+
+```prisma
+model UserRecoveryCode {
+  id        String    @id @default(cuid())
+  userId    Int
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  codeHash  String    @unique
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  @@index([userId, usedAt])
+}
+```
+
+## UserExternalIdentity
+
+```prisma
+model UserExternalIdentity {
+  id        String   @id @default(cuid())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  issuer    String
+  subject   String
+  createdAt DateTime @default(now())
+  @@unique([issuer, subject])
+  @@index([userId])
+}
+```
+
+## UserAccessRule
+
+```prisma
+model UserAccessRule {
+  id         String    @id @default(cuid())
+  userId     Int
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  method     String
+  path       String
+  effect     String
+  expiresAt  DateTime?
+  revokedAt  DateTime?
+  createdBy  String
+  reason     String
+  createdAt  DateTime  @default(now())
+  @@index([userId, revokedAt])
+}
+```
+
 ## Session
 
 ```prisma
@@ -60,6 +246,22 @@ model Session {
   isValid    Boolean  @default(true)
   createdAt  DateTime @default(now())
   lastActive DateTime @updatedAt
+  expiresAt  DateTime?
+  lastSeenAt DateTime?
+}
+```
+
+## UserSessionPolicy
+
+```prisma
+model UserSessionPolicy {
+  role            String   @id
+  absoluteMinutes Int      @default(1440)
+  idleMinutes     Int      @default(0)
+  maxConcurrent   Int      @default(10)
+  limitAction     String   @default("REVOKE_OLDEST")
+  updatedBy       String
+  updatedAt       DateTime @updatedAt
 }
 ```
 
@@ -269,6 +471,29 @@ model ActivityLog {
 }
 ```
 
+## UserAuditLedger
+
+```prisma
+model UserAuditLedger {
+  id              Int      @id @default(autoincrement())
+  eventId         String   @unique
+  actorId         Int?
+  actorPublicId   String?
+  actorUsername   String
+  subjectUserId   Int?
+  subjectPublicId String?
+  action          String
+  module          String
+  details         String
+  previousHash    String   @unique
+  hash            String   @unique
+  createdAt       DateTime
+  @@index([subjectUserId, createdAt])
+  @@index([actorId, createdAt])
+  @@map("audit_ledger")
+}
+```
+
 ## ImportBatch
 
 ```prisma
@@ -359,6 +584,15 @@ model CostingEntry {
   entryTimestamp  DateTime @default(now())
   createdBy       String?
   updatedBy       String?
+}
+```
+
+## DocumentSequence
+
+```prisma
+model DocumentSequence {
+  key   String @id
+  value Int
 }
 ```
 

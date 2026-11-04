@@ -1831,3 +1831,187 @@ textarea.form-input-text {
   background: rgba(56, 189, 248, 0.12);
 }
 
+
+/* Owner workspace preferences and live database explorer */
+.owner-preferences {
+  position: fixed;
+  right: 22px;
+  top: 78px;
+  z-index: 80;
+  background: var(--adm-card, #101c2a);
+  border: 1px solid var(--adm-border, #31433d);
+  border-radius: 12px;
+  color: var(--adm-muted, #c0cddd);
+  font:
+    12px/1.5 system-ui,
+    sans-serif;
+  max-width: calc(100vw - 32px);
+}
+.owner-preferences summary {
+  padding: 9px 13px;
+  cursor: pointer;
+}
+.owner-preferences > div {
+  display: flex;
+  gap: 14px;
+  padding: 14px;
+  flex-wrap: wrap;
+}
+.owner-preferences label {
+  display: grid;
+  gap: 5px;
+}
+.owner-preferences select {
+  padding: 8px;
+  background: #11241e;
+  border: 1px solid #4b6658;
+  border-radius: 6px;
+  color: #e3f3e9;
+}
+.workspace-eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--adm-emerald);
+  font-weight: 750;
+}
+.workspace-subtitle {
+  font-size: 13px;
+  color: var(--adm-muted);
+  margin-block: 12px;
+  max-width: 760px;
+  line-height: 1.7;
+}
+.workspace-error {
+  padding: 16px;
+  background: #4a241f;
+  color: #ffd5c6;
+  border: 1px solid #a9705c;
+  border-radius: 10px;
+}
+.database-health-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-block: 24px;
+}
+.database-health-card {
+  padding: 20px;
+  display: grid;
+  gap: 12px;
+}
+.database-health-card span {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--adm-muted);
+}
+.database-health-card strong {
+  font-size: 18px;
+  color: #edf5f0;
+  overflow-wrap: anywhere;
+}
+.database-schema-layout {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: 20px;
+  margin-block: 24px;
+}
+.database-schema-layout > aside,
+.database-schema-layout > article,
+.database-owner-tools {
+  padding: 24px;
+}
+.database-schema-layout h2,
+.database-owner-tools h2 {
+  font-size: 18px;
+  margin-bottom: 16px;
+}
+.database-schema-layout label {
+  display: block;
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+.database-schema-layout nav {
+  display: grid;
+  gap: 6px;
+  margin-top: 16px;
+}
+.database-schema-layout nav button {
+  display: flex;
+  justify-content: space-between;
+  padding: 11px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: var(--adm-muted);
+  background: transparent;
+  text-align: left;
+}
+.database-schema-layout nav button[aria-pressed="true"] {
+  border-color: #4c8a6a;
+  background: #1c3c2c;
+  color: #d7f9e4;
+}
+.database-schema-layout nav span {
+  font-size: 11px;
+}
+.database-table-scroll {
+  overflow-x: auto;
+}
+.database-owner-tools {
+  line-height: 1.7;
+  font-size: 13px;
+}
+.database-owner-tools code {
+  display: block;
+  background: #071810;
+  padding: 14px;
+  border: 1px solid #315142;
+  border-radius: 8px;
+  color: #b8e8cc;
+  margin-block: 12px;
+}
+.database-owner-tools p {
+  color: var(--adm-muted);
+}
+html[data-owner-accent="sky"] {
+  --adm-emerald: #65c4ef;
+  --adm-cyan: #7ed1f5;
+}
+html[data-owner-accent="violet"] {
+  --adm-emerald: #bca3f5;
+  --adm-cyan: #b6a9e9;
+}
+html[data-owner-density="compact"] .tenants-data-table td,
+html[data-owner-density="compact"] .tenants-data-table th {
+  padding-block: 9px;
+}
+html[data-owner-motion="reduced"] *,
+html[data-owner-motion="reduced"] *::before,
+html[data-owner-motion="reduced"] *::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+@media (max-width: 1000px) {
+  .database-health-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .database-schema-layout {
+    grid-template-columns: 1fr;
+  }
+  .owner-preferences {
+    top: 74px;
+    right: 16px;
+  }
+  .database-schema-layout nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .admin-app *,
+  .admin-app *::before,
+  .admin-app *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

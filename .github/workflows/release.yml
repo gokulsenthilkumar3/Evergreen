@@ -27,8 +27,11 @@ jobs:
         env:
           REQUEST_ID: ${{ inputs.request_id }}
           RELEASE_VERSION: ${{ inputs.version }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           node --input-type=module -e "import fs from 'node:fs'; const p=JSON.parse(fs.readFileSync('apps/desktop/package.json')); if (!/^[a-f0-9-]{36}$/.test(process.env.REQUEST_ID) || process.env.RELEASE_VERSION !== 'v'+p.version || !/^v\d+\.\d+\.\d+$/.test(process.env.RELEASE_VERSION)) process.exit(1)"
+          # Reject repeat publication before any image can overwrite a commit tag.
+          node --input-type=module -e "const r=await fetch('https://api.github.com/repos/'+process.env.GITHUB_REPOSITORY+'/git/ref/tags/'+process.env.RELEASE_VERSION,{headers:{Authorization:'Bearer '+process.env.GH_TOKEN},signal:AbortSignal.timeout(15000),redirect:'error'}); if(r.status!==404) throw new Error(r.ok?'Release version already exists':'Could not verify release version availability')"
           printf 'commit=%s\n' "$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
       - run: npm ci
       - run: npm audit --omit=dev --audit-level=high

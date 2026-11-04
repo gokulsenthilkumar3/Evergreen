@@ -245,9 +245,15 @@ export class CompaniesService {
 
       const updateData: Prisma.CompanyUpdateInput = {
         activeStaff: metrics.activeUsers,
-        docsPosted,
         lastSyncAt: now,
       };
+      if (metrics.billingPeriod !== undefined || metrics.periodDocsPosted !== undefined) {
+        if (metrics.billingPeriod !== now.toISOString().slice(0, 7) ||
+            !Number.isSafeInteger(metrics.periodDocsPosted) || metrics.periodDocsPosted! < 0 || metrics.periodDocsPosted! > MAX_COUNTER) {
+          throw new BadRequestException('Billing usage must identify the current UTC month and a valid document count');
+        }
+        updateData.docsPosted = metrics.periodDocsPosted;
+      }
       if (metrics.appVersion) {
         updateData.appVersion = metrics.appVersion;
       }

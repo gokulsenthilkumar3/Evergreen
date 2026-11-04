@@ -27,74 +27,74 @@ interface CaseStudyItem {
 const EXTENDED_CASE_STUDIES: CaseStudyItem[] = [
   {
     id: 'sri_murugan',
-    company: 'Sri Murugan Handlooms & Spinning Mills',
+    company: 'Illustrative ring-spinning workflow',
     location: 'Tirupur Cluster, Tamil Nadu',
     category: 'Ring Spinning',
     spindles: '18,000 Spindles (30s & 40s Combed Hosiery)',
-    keyMetric: '₹4.2L / yr',
-    metricLabel: 'Moisture Fraud Intercepted',
-    quote: '"Before EverGreen, we were losing ₹35 to ₹45 on every cotton bale due to water injection by unmonitored ginners. The RS-232 serial lock and SIMA 8.5% deduction caught ₹18.4 Lakhs in our first full year."',
-    person: 'M. Selvakumar',
-    role: 'Managing Director',
+    keyMetric: 'Pilot required',
+    metricLabel: 'Physical indicator capture',
+    quote: 'Record received weight, measured moisture and the allowance agreed in your purchase contract. Validate a supported indicator and device identity during a supervised pilot.',
+    person: 'Example workflow',
+    role: 'No customer testimonial or measured savings',
     color: 'emerald',
     beforeAfter: [
-      { label: 'Moisture Fraud Loss', before: 'Lost ₹38 / bale', after: '₹0 / bale (100% Intercepted)' },
-      { label: 'Weighbridge Entry', before: 'Manual Ledger Slip', after: 'Automatic RS-232 Hardware Tare Lock' },
+      { label: 'Moisture Calculation', before: 'Separate contract calculation', after: 'Recorded contract inputs and deduction' },
+      { label: 'Weighbridge Entry', before: 'Manual Ledger Slip', after: 'Entry workflow; serial capture requires pilot' },
       { label: 'Bale Lot QR Trace', before: 'Chalk marks on bales', after: 'Thermal QR sticker (Bale → Cone)' },
     ],
   },
   {
     id: 'kavitha_cotton',
-    company: 'Kavitha Cotton Mills Pvt Ltd',
+    company: 'Illustrative accounting workflow',
     location: 'Coimbatore Hub, Tamil Nadu',
     category: 'OE Rotor',
     spindles: '24,000 Spindles + 4 Rotor Frames',
-    keyMetric: '18 Hours',
-    metricLabel: 'Audit Time Saved Per Month',
-    quote: '"Our accounts department used to spend 4 hours every evening typing dispatch gate passes into Tally. EverGreen auto-generates the complete Tally Prime XML file. One click import, zero tax errors, zero duplicate vouchers."',
-    person: 'K. Priya, ACA',
-    role: 'Chief Financial Officer',
+    keyMetric: 'XML export',
+    metricLabel: 'Operator-reviewed import',
+    quote: 'Export vouchers as XML and let the accountant review and import them into Tally. Verify tax values and reconcile the import result before accepting the posting.',
+    person: 'Example workflow',
+    role: 'Import timing and outcomes require validation',
     color: 'sky',
     beforeAfter: [
-      { label: 'Tally Voucher Entry', before: '4 Hours / Day manual typing', after: '12 Seconds 1-Click XML Import' },
-      { label: 'GST Tax Errors', before: '3–5 reconciliation errors/mo', after: '0% Tax Discrepancy (Auto-Split)' },
-      { label: 'Month-End Audit Prep', before: '4 Full Days of Paper Search', after: '15 Minutes on Book-Ellam' },
+      { label: 'Tally Voucher Entry', before: 'Manual transcription', after: 'XML export for operator import' },
+      { label: 'Tax Review', before: 'Separate calculation', after: 'Calculated split for accountant review' },
+      { label: 'Audit Preparation', before: 'Separate register lookup', after: 'Cross-register search' },
     ],
   },
   {
     id: 'selvam_spinning',
-    company: 'Selvam Spinning Works & Export Unit',
+    company: 'Illustrative collections workflow',
     location: 'Erode District, Tamil Nadu',
     category: 'Composite Mill',
     spindles: '42,000 Spindles + 120 Airjet Looms',
-    keyMetric: '12 Days',
-    metricLabel: 'DSO Reduction via WhatsApp',
-    quote: '"The automated bilingual WhatsApp payment reminders in Tamil & English are brilliant. Buyers reply with bank UTR screenshots directly on WhatsApp, and our ledger auto-updates. Outstanding collections improved by 28% in month one."',
-    person: 'S. Rajan',
-    role: 'Founder & Chairman',
+    keyMetric: 'Staff review',
+    metricLabel: 'Payment verification',
+    quote: 'Prepare bilingual reminder links for staff to send, then verify remittances and record payments in the accounts workflow. A WhatsApp reply does not automatically confirm a bank receipt.',
+    person: 'Example workflow',
+    role: 'No measured collection improvement',
     color: 'purple',
     beforeAfter: [
-      { label: 'Payment Collection Cycle', before: '48 Days Average DSO', after: '36 Days (Reduced by 12 Days)' },
-      { label: 'UTR Bank Reconciliation', before: '2 Days bank statement matching', after: 'Instant Automated Webhook Sync' },
-      { label: 'Buyer Payment Disputes', before: '14 disputes/quarter', after: '0 disputes (Digitally Signed Slips)' },
+      { label: 'Payment Follow-up', before: 'Separate reminder drafting', after: 'Prepared Tamil and English links' },
+      { label: 'UTR Bank Reconciliation', before: 'Bank statement matching', after: 'Staff verification before payment entry' },
+      { label: 'Buyer Payment Review', before: 'Separate records', after: 'Invoice and payment history' },
     ],
   },
   {
     id: 'shree_venkateshwara',
-    company: 'Shree Venkateshwara Yarn Traders',
+    company: 'Illustrative yarn-trading workflow',
     location: 'Karur Corridor, Tamil Nadu',
     category: 'Yarn Trading',
     spindles: 'Cotton Brokerage & 25,000 kg/day Distribution',
-    keyMetric: '100%',
-    metricLabel: 'Dispute-Free Cone Dispatches',
-    quote: '"Trading yarn between Coimbatore spinners and Karur home-textile weavers used to involve constant weight complaints. EverGreen’s 2.5 kg calibrated tare deduction and gate pass QR code ended weight disputes permanently."',
-    person: 'P. Anandhan',
-    role: 'Managing Partner',
+    keyMetric: 'Traceability',
+    metricLabel: 'Recorded dispatch history',
+    quote: 'Record agreed tare values and dispatch quantities against the order, retain the gate pass and reconcile the invoice. Calibration and delivery acceptance remain part of the mill operating procedure.',
+    person: 'Example workflow',
+    role: 'No guaranteed dispute reduction',
     color: 'amber',
     beforeAfter: [
       { label: 'Gate Pass Verification', before: 'Carbon Copy Hand Receipt', after: 'QR-Coded Digitally Sealed E-Pass' },
-      { label: 'Tare Weight Disputes', before: 'Frequent 20-30 kg box claims', after: 'Zero Tare Variance (Calibrated 2.5kg)' },
-      { label: 'E-Way Bill Generation', before: '15 Mins on GSTN portal', after: '1-Click API Automated Creation' },
+      { label: 'Tare Review', before: 'Separate tare notes', after: 'Recorded operator-supplied tare' },
+      { label: 'e-Way Bill Registration', before: 'External portal process', after: 'Readiness checks; external registration required' },
     ],
   },
 ];
@@ -115,6 +115,7 @@ export function InteractiveCaseStudies({ onStartPoc, lang = 'en' }: Props) {
 
   return (
     <div className="extended-case-studies">
+      <p className="product-readiness-note">{lang === 'ta' ? 'இவை விளக்கத்திற்கான கற்பனைச் செயல்முறைகள். வாடிக்கையாளர் சான்றுகள் அல்லது அளவிடப்பட்ட முடிவுகள் அல்ல.' : 'Illustrative workflows with fictional operating profiles. These are not customer testimonials or measured results.'}</p>
       <div className="cs-category-filter">
         {categories.map(cat => (
           <button
@@ -149,13 +150,13 @@ export function InteractiveCaseStudies({ onStartPoc, lang = 'en' }: Props) {
                   className={`cs-toggle-btn ${currentView === 'QUOTE' ? 'active' : ''}`}
                   onClick={() => toggleView(cs.id, 'QUOTE')}
                 >
-                  {lang === 'ta' ? '💬 ஆலை கருத்துரை' : '💬 Mill Testimonial'}
+                  {lang === 'ta' ? '💬 செய்முறை விளக்கம்' : '💬 Workflow example'}
                 </button>
                 <button
                   className={`cs-toggle-btn ${currentView === 'BEFORE_AFTER' ? 'active' : ''}`}
                   onClick={() => toggleView(cs.id, 'BEFORE_AFTER')}
                 >
-                  {lang === 'ta' ? '📊 முன் & பின் ஒப்பீடு' : '📊 Before vs After'}
+                  {lang === 'ta' ? '📊 செய்முறை ஒப்பீடு' : '📊 Workflow comparison'}
                 </button>
               </div>
 
@@ -179,7 +180,7 @@ export function InteractiveCaseStudies({ onStartPoc, lang = 'en' }: Props) {
                             <span>{ba.before}</span>
                           </div>
                           <div className="ba-after">
-                            <span className="ba-tag tag-after">{lang === 'ta' ? 'EverGreen உடன்' : 'With EverGreen'}</span>
+                            <span className="ba-tag tag-after">{lang === 'ta' ? 'முன்மொழியப்பட்ட செய்முறை' : 'Proposed workflow'}</span>
                             <strong>{ba.after}</strong>
                           </div>
                         </div>
@@ -190,9 +191,9 @@ export function InteractiveCaseStudies({ onStartPoc, lang = 'en' }: Props) {
               )}
 
               <div className="cs-card-footer">
-                <span className="cs-cluster-pill">{lang === 'ta' ? 'உறுதிப்படுத்தப்பட்ட தரவு' : 'Verified Mill Telemetry'}</span>
+                <span className="cs-cluster-pill">{lang === 'ta' ? 'விளக்க உதாரணம்' : 'Illustrative example'}</span>
                 <button className="cs-poc-btn" onClick={onStartPoc}>
-                  {lang === 'ta' ? 'உங்கள் ஆலைக்கான POC துவங்குங்கள் →' : 'Achieve Similar ROI →'}
+                  {lang === 'ta' ? 'உங்கள் ஆலைக்கான POC துவங்குங்கள் →' : 'Plan a pilot →'}
                 </button>
               </div>
             </div>

@@ -8,10 +8,17 @@ if [ "$(id -u)" = 0 ]; then
 fi
 # A compose run command is used for snapshots and checks, never implicit migrations.
 if [ "$#" -eq 2 ] && [ "$1" = node ] && { [ "$2" = apps/api/dist/main.js ] || [ "$2" = apps/admin-api/dist/main.js ]; }; then
+  node -e "require('@evergreen/types/licensing').requireInstallationLicence(process.env.EVERGREEN_PLANE)"
   if [ "$EVERGREEN_PLANE" = tenant ]; then
     : "${JWT_SECRET:?JWT_SECRET is required}"
     : "${ENCRYPTION_SECRET:?ENCRYPTION_SECRET is required}"
-    database="${DATABASE_URL#file:}"
+    case "$DATABASE_URL" in
+      postgresql://*|postgres://*)
+        node packages/database/check-postgres.js
+        exec "$@"
+        ;;
+      *) database="${DATABASE_URL#file:}" ;;
+    esac
   else
     : "${ADMIN_API_KEY:?ADMIN_API_KEY is required}"
     database="${ADMIN_DATABASE_URL#file:}"

@@ -1,3 +1,5 @@
+import { dateKey } from '../utils/dateKey';
+import { uiText, useUiLanguage, uiLocale, formatUiDecimal, uiTemplate, uiDateLocale, uiScopedTemplate } from "../i18n";
 import React, { useState } from 'react';
 import { getDateRange, DATE_FILTER_OPTIONS_WITH_ALL, type DateFilterType } from '../utils/dateFilters';
 import { validateVehicleNo, validateDate, validateCustomerName, isEmptyOrWhitespace } from '../utils/validators';
@@ -72,6 +74,7 @@ interface OutwardEntryProps {
 }
 
 const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
+  useUiLanguage();
     const [openDialog, setOpenDialog] = useState(false);
     const [historyFrom, setHistoryFrom] = useState('');
     const [historyTo, setHistoryTo] = useState('');
@@ -114,7 +117,7 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
         },
     });
 
-    const [date, setDate] = useState(new Date().toLocaleDateString('en-CA'));
+    const [date, setDate] = useState(dateKey());
     const [dispatchTime, setDispatchTime] = useState(() => localTimeValue());
     const [customerName, setCustomerName] = useState('');
     const [vehicleNo, setVehicleNo] = useState('');
@@ -175,20 +178,20 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
         const dateCheck = validateDate(date, false);
         if (!dateCheck.valid) { toast.error(dateCheck.message); return; }
 
-        const todayLocal = new Date().toLocaleDateString('en-CA');
+        const todayLocal = dateKey();
         if (date < todayLocal) {
             toast.info(INFO_MESSAGES.PAST_DATE_STOCK_INFO(date));
         }
 
         // Date validation: cannot be in the future
         if (date > todayLocal) {
-            toast.error('Outward date cannot be in the future');
+            toast.error(uiText('Outward date cannot be in the future', 'feedback'));
             return;
         }
 
         // Date validation: today's yarn production cannot go to yesterday's outward
         if (date < todayLocal) {
-            toast.warning('Note: Adding outward entry for a past date. Only yarn produced on or before that date will be counted.');
+            toast.warning(uiText('Note: Adding outward entry for a past date. Only yarn produced on or before that date will be counted.', 'feedback'));
         }
 
         const validItems = items.filter(i => Number(i.bags) > 0);
@@ -219,7 +222,7 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
             return;
         }
 
-        if (!productionTimestamp(date, dispatchTime)) { toast.error('Enter a valid dispatch time'); return; }
+        if (!productionTimestamp(date, dispatchTime)) { toast.error(uiText('Enter a valid dispatch time', 'feedback')); return; }
         setIsSubmitting(true);
         try {
             await api.post('/inventory/outward', {
@@ -239,7 +242,7 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
             setVehicleNo('');
             setDriverName('');
             setItems([{ id: 1, count: '2', bags: 0, weight: 0 }]);
-            setDate(new Date().toLocaleDateString('en-CA'));
+            setDate(dateKey());
             refetchHistory();
             refetchStock();
             setOpenDialog(false);
@@ -256,7 +259,7 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
 
         try {
             await api.delete(`/inventory/outward/${id}`);
-            toast.success('Dispatch reversed and yarn returned to stock');
+            toast.success(uiText('Dispatch reversed and yarn returned to stock', 'feedback'));
             refetchHistory();
             refetchStock();
         } catch (error: any) {
@@ -276,7 +279,7 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
         if (type === 'pdf') {
             const headers = ['Date', 'Customer', 'Vehicle No', 'Driver', 'T. Bags', 'T. Weight (kg)'];
             const rows = data.map((row: any) => [
-                new Date(row.date).toLocaleDateString(),
+                new Date(row.date).toLocaleDateString(uiDateLocale()),
                 row.customerName,
                 row.vehicleNo,
                 row.driverName || '-',
@@ -286,7 +289,7 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
             generatePDF('Outward Sales Report', headers, rows, filename);
         } else if (type === 'excel') {
             const excelData = data.map((row: any) => ({
-                Date: new Date(row.date).toLocaleDateString(),
+                Date: new Date(row.date).toLocaleDateString(uiDateLocale()),
                 Customer: row.customerName,
                 'Vehicle No': row.vehicleNo,
                 'Driver Name': row.driverName,
@@ -306,27 +309,26 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
             {/* Header and Actions */}
             <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'stretch', md: 'center' }, gap: 2, mb: 3 }}>
                 <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-                    Outward Entry
-                    {isLoading && <LinearProgress sx={{ mt: 1, borderRadius: 1 }} />}
+                    {uiText("Outward Entry ")}{isLoading && <LinearProgress sx={{ mt: 1, borderRadius: 1 }} />}
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
                     <TextField
                         select
-                        label="Date Filter"
+                        label={uiText("Date Filter", 'forms')}
                         size="small"
                         value={filterType}
                         onChange={handleFilterChange}
                         sx={{ width: 150 }}
                     >
                         {DATE_FILTER_OPTIONS_WITH_ALL.map(opt => (
-                            <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
+                            <MenuItem key={opt.value} value={opt.value}>{uiText(opt.label, 'forms')}</MenuItem>
                         ))}
                     </TextField>
 
                     {filterType === 'custom' && (
                         <>
                             <GlassDatePicker
-                                label="From"
+                                label={uiText("From", 'forms')}
                                 
                                 size="small"
                                 value={historyFrom}
@@ -335,7 +337,7 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
                                 sx={{ width: 140 }}
                             />
                             <GlassDatePicker
-                                label="To"
+                                label={uiText("To", 'forms')}
                                 
                                 size="small"
                                 value={historyTo}
@@ -352,8 +354,7 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
                         onClick={() => { setDispatchTime(localTimeValue()); setOpenDialog(true); }}
                         sx={{ whiteSpace: 'nowrap' }}
                     >
-                        Add Outward
-                    </Button>
+                        {uiText("Add Outward ")}</Button>
 
                     <Divider orientation="vertical" flexItem sx={{ mx: 1, display: { xs: 'none', md: 'block' } }} />
 
@@ -367,45 +368,45 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
                     <Table stickyHeader>
                         <TableHead>
                             <TableRow sx={{ bgcolor: 'action.hover' }}>
-                                <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Date</TableCell>
-                                <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Customer</TableCell>
-                                <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Vehicle / Driver</TableCell>
-                                <TableCell align="center" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Total Bags</TableCell>
-                                <TableCell align="center" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Total Weight</TableCell>
-                                <TableCell align="center" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>Action</TableCell>
+                                <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>{uiText("Date", 'tables')}</TableCell>
+                                <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>{uiText("Customer", 'tables')}</TableCell>
+                                <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>{uiText("Vehicle / Driver", 'tables')}</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>{uiText("Total Bags", 'tables')}</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>{uiText("Total Weight", 'tables')}</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: 0.5 }}>{uiText("Action", 'tables')}</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
                             {outwardHistory?.map((row: any) => (
                                 <TableRow key={row.id} hover>
                                     <TableCell>
-                                        <Tooltip title={row.entryTimestamp ? new Date(row.entryTimestamp).toLocaleString() : new Date(row.date).toLocaleString()} arrow placement="top">
+                                        <Tooltip title={row.entryTimestamp ? new Date(row.entryTimestamp).toLocaleString(uiLocale()) : new Date(row.date).toLocaleString(uiLocale())} arrow placement="top">
                                             <Box component="span" sx={{ cursor: 'help', borderBottom: '1px dotted', borderColor: 'divider' }}>
-                                                {new Date(row.date).toLocaleDateString()}
+                                                {new Date(row.date).toLocaleDateString(uiDateLocale())}
                                             </Box>
                                         </Tooltip>
                                     </TableCell>
-                                    <TableCell sx={{ fontWeight: 'bold' }}>{row.customerName}{row.status === 'REVERSED' && <Chip label="Reversed" size="small" sx={{ ml: 1 }} />}</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold' }}>{row.customerName}{row.status === 'REVERSED' && <Chip label={uiText("Reversed", 'tables')} size="small" sx={{ ml: 1 }} />}</TableCell>
                                     <TableCell>
                                         <Typography variant="body2">{row.vehicleNo}</Typography>
                                         <Typography variant="caption" color="text.secondary">{row.driverName}</Typography>
                                     </TableCell>
                                     <TableCell align="center">{row.totalBags}</TableCell>
-                                    <TableCell align="center" sx={{ fontWeight: 'bold', color: 'primary.main' }}>{row.totalWeight} kg</TableCell>
+                                    <TableCell align="center" sx={{ fontWeight: 'bold', color: 'primary.main' }}>{row.totalWeight} {uiText(" kg", 'tables')}</TableCell>
                                     <TableCell align="center">
                                         <Stack direction="row" spacing={0.5} justifyContent="center" alignItems="center">
-                                            <Tooltip title="Print Dispatch Sticker (Barcode & QR)">
+                                            <Tooltip title={uiText("Print Dispatch Sticker (Barcode & QR)", 'tables')}>
                                                 <IconButton
                                                     size="small"
                                                     color="primary"
                                                     onClick={() => setLabelOutward(row)}
-                                                    aria-label="Generate QR and Barcode Label"
+                                                    aria-label={uiText("Generate QR and Barcode Label", 'tables')}
                                                 >
                                                     <QrIcon fontSize="small" />
                                                 </IconButton>
                                             </Tooltip>
                                             {(userRole === 'ADMIN' && row.status !== 'REVERSED') && (
-                                                <Tooltip title="Reverse dispatch and return stock">
+                                                <Tooltip title={uiText("Reverse dispatch and return stock", 'tables')}>
                                                     <IconButton color="error" size="small" onClick={() => handleDeleteOutward(row.id)}>
                                                         <DeleteIcon fontSize="small" />
                                                     </IconButton>
@@ -418,8 +419,8 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
                             {(!outwardHistory || outwardHistory.length === 0) && (
                                 <TableRow>
                                     <TableCell colSpan={6} align="center" sx={{ py: 8 }}>
-                                        <Typography color="text.secondary" variant="body1">No outward records found</Typography>
-                                        <Typography color="text.secondary" variant="caption">Start by recording a new outward entry using the button above</Typography>
+                                        <Typography color="text.secondary" variant="body1">{uiText("No outward records found", 'tables')}</Typography>
+                                        <Typography color="text.secondary" variant="caption">{uiText("Start by recording a new outward entry using the button above", 'tables')}</Typography>
                                     </TableCell>
                                 </TableRow>
                             )}
@@ -430,16 +431,16 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
 
             <Dialog open={openDialog} onClose={() => { if (!isSubmitting) { setOpenDialog(false); setShowErrors(false); } }} maxWidth="md" fullWidth
                 aria-labelledby="outward-wizard-title" aria-describedby="outward-wizard-title-description">
-                <EntryWizardHeader id="outward-wizard-title" stage="03 · Yarn dispatch" title="New Outward Entry"
+                <EntryWizardHeader id="outward-wizard-title" stage="03 · Yarn dispatch" title={uiText("New Outward Entry")}
                     description="Prepare the load, confirm available yarn, and record its destination."
                     icon={<LocalShippingOutlined />} busy={isSubmitting} onClose={() => { setOpenDialog(false); setShowErrors(false); }} />
                 <DialogContent sx={{ p: { xs: 2, sm: 3 } }}>
                     <Box sx={{ mt: 1 }}>
-                        <Typography variant="overline" color="text.secondary" sx={{ display: 'block', mb: 2 }}>01 / Delivery details</Typography>
+                        <Typography variant="overline" color="text.secondary" sx={{ display: 'block', mb: 2 }}>{uiText("01 / Delivery details")}</Typography>
                         <Grid container spacing={2}>
                             <Grid size={{ xs: 12, sm: 6 }}>
                                 <TextField type="date" size="small"
-                                    label="Date"
+                                    label={uiText("Date", 'forms')}
                                     
                                     fullWidth
                                     value={date}
@@ -449,10 +450,10 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
                                     InputLabelProps={{ shrink: true }}
                                 />
                             </Grid>
-                            <Grid size={{ xs: 12, sm: 6 }}><TextField type="time" label="Dispatch time" value={dispatchTime} onChange={e => setDispatchTime(e.target.value)} fullWidth slotProps={{ inputLabel: { shrink: true }, htmlInput: { step: 1 } }} helperText="Yarn must be available at this time." /></Grid>
+                            <Grid size={{ xs: 12, sm: 6 }}><TextField type="time" label={uiText("Dispatch time", 'forms')} value={dispatchTime} onChange={e => setDispatchTime(e.target.value)} fullWidth slotProps={{ inputLabel: { shrink: true }, htmlInput: { step: 1 } }} helperText={uiText("Yarn must be available at this time.", 'forms')} /></Grid>
                             <Grid size={{ xs: 12, sm: 6 }}>
                                 <TextField
-                                    label="Customer Name"
+                                    label={uiText("Customer Name", 'forms')}
                                     fullWidth
                                     value={customerName}
                                     onChange={(e) => setCustomerName(e.target.value)}
@@ -463,25 +464,25 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
                             </Grid>
                             <Grid size={{ xs: 12, sm: 6 }}>
                                 <TextField
-                                    label="Vehicle No"
+                                    label={uiText("Vehicle No", 'forms')}
                                     fullWidth
                                     value={vehicleNo}
                                     onChange={(e) => setVehicleNo(e.target.value.toUpperCase())}
                                     required
-                                    placeholder="TN 01 AB 1234"
+                                    placeholder={uiText("TN 01 AB 1234", 'forms')}
                                     error={showErrors && !validateVehicleNo(vehicleNo).valid}
                                     helperText={(showErrors && validateVehicleNo(vehicleNo).message) || 'Format: TN 01 AB 1234'}
                                 />
                             </Grid>
                             <Grid size={{ xs: 12, sm: 6 }}>
                                 <TextField
-                                    label="Driver Name"
+                                    label={uiText("Driver Name", 'forms')}
                                     fullWidth
                                     value={driverName}
                                     onChange={(e) => setDriverName(e.target.value)}
                                     required
                                     error={showErrors && isEmptyOrWhitespace(driverName)}
-                                    helperText={showErrors && isEmptyOrWhitespace(driverName) ? 'Driver name is required' : undefined}
+                                    helperText={showErrors && isEmptyOrWhitespace(driverName) ? uiText("Driver name is required", 'forms') : undefined}
                                 />
                             </Grid>
                         </Grid>
@@ -489,17 +490,16 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
                         <Divider sx={{ my: 3 }} />
 
                         <Typography variant="overline" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
-                            02 / Yarn to dispatch
-                        </Typography>
+                            {uiText("02 / Yarn to dispatch ")}</Typography>
 
                         <TableContainer component={Paper} variant="outlined" sx={{ mb: 2 }}>
                             <Table size="small">
                                 <TableHead>
                                     <TableRow sx={{ bgcolor: 'action.hover' }}>
-                                        <TableCell sx={{ fontWeight: 'bold', width: '25%' }}>Count</TableCell>
-                                        <TableCell sx={{ fontWeight: 'bold', width: '35%' }}>Bags</TableCell>
-                                        <TableCell sx={{ fontWeight: 'bold', width: '30%' }}>Weight (kg)</TableCell>
-                                        <TableCell sx={{ fontWeight: 'bold', width: '10%' }} align="center">Action</TableCell>
+                                        <TableCell sx={{ fontWeight: 'bold', width: '25%' }}>{uiText("Count", 'tables')}</TableCell>
+                                        <TableCell sx={{ fontWeight: 'bold', width: '35%' }}>{uiText("Bags", 'tables')}</TableCell>
+                                        <TableCell sx={{ fontWeight: 'bold', width: '30%' }}>{uiText("Weight (kg)", 'tables')}</TableCell>
+                                        <TableCell sx={{ fontWeight: 'bold', width: '10%' }} align="center">{uiText("Action", 'tables')}</TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
@@ -512,7 +512,7 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
                                                     fullWidth
                                                     value={item.count}
                                                     onChange={(e) => handleItemChange(item.id, 'count', e.target.value)}
-                                                    label="Count"
+                                                    label={uiText("Count", 'forms')}
                                                 >
                                                     {Object.keys(yarnStock).length > 0 ? (
                                                         Object.keys(yarnStock).sort((a, b) => Number(a) - Number(b)).map(c => (
@@ -531,15 +531,15 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
                                                     type="number"
                                                     fullWidth
                                                     value={item.bags}
-                                                    label="Bags to dispatch"
-                                                    InputProps={{ endAdornment: <InputAdornment position="end">bags</InputAdornment> }}
+                                                    label={uiText("Bags to dispatch", 'forms')}
+                                                    InputProps={{ endAdornment: <InputAdornment position="end">{uiText("bags", 'forms')}</InputAdornment> }}
                                                     onChange={(e) => handleItemChange(item.id, 'bags', e.target.value)}
                                                     required
                                                     error={!item.bags || (yarnStock[item.count] !== undefined && item.weight > yarnStock[item.count])}
                                                     helperText={
                                                         yarnStock[item.count] !== undefined
-                                                            ? `Available: ${Math.floor(yarnStock[item.count] / 60)} bags (${yarnStock[item.count].toFixed(1)}kg)`
-                                                            : 'Stock unknown'
+                                                            ? uiScopedTemplate('forms')`Available: ${Math.floor(yarnStock[item.count] / 60)} bags (${formatUiDecimal(yarnStock[item.count], 1)}kg)`
+                                                            : uiText("Stock unknown", 'forms')
                                                     }
                                                 />
                                             </TableCell>
@@ -549,14 +549,14 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
                                                     type="number"
                                                     fullWidth
                                                     value={item.weight}
-                                                    label="Dispatch weight"
-                                                    InputProps={{ endAdornment: <InputAdornment position="end">kg</InputAdornment> }}
+                                                    label={uiText("Dispatch weight", 'forms')}
+                                                    InputProps={{ endAdornment: <InputAdornment position="end">{uiText("kg", 'forms')}</InputAdornment> }}
                                                     disabled // Auto-calculated
                                                     sx={{ bgcolor: 'action.hover' }}
                                                 />
                                             </TableCell>
                                             <TableCell>
-                                                <IconButton size="small" color="error" aria-label="Remove dispatch row" onClick={() => removeItemRow(item.id)} disabled={items.length === 1}>
+                                                <IconButton size="small" color="error" aria-label={uiText("Remove dispatch row", 'tables')} onClick={() => removeItemRow(item.id)} disabled={items.length === 1}>
                                                     <DeleteIcon fontSize="small" />
                                                 </IconButton>
                                             </TableCell>
@@ -572,27 +572,26 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
                                 onClick={addItemRow}
                                 variant="outlined"
                             >
-                                Add Row
-                            </Button>
-                            <EntrySummary title="Dispatch at a glance">
-                                <SummaryValue label="Customer" value={customerName.trim() || '—'} />
-                                <SummaryValue label="Total bags" value={getTotalBags()} />
-                                <SummaryValue label="Dispatch weight" value={`${getTotalWeight().toFixed(1)} kg`} />
-                                <SummaryValue label="Packing" value="60 kg / bag" />
+                                {uiText("Add Row ")}</Button>
+                            <EntrySummary title={uiText("Dispatch at a glance")}>
+                                <SummaryValue label={uiText("Customer")} value={customerName.trim() || '—'} />
+                                <SummaryValue label={uiText("Total bags")} value={getTotalBags()} />
+                                <SummaryValue label={uiText("Dispatch weight")} value={`${getTotalWeight().toFixed(1)} kg`} />
+                                <SummaryValue label={uiText("Packing")} value="60 kg / bag" />
                             </EntrySummary>
                         </Box>
 
                     </Box>
                 </DialogContent>
                 <DialogActions sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
-                    <Button onClick={() => { setOpenDialog(false); setShowErrors(false); }} color="inherit" disabled={isSubmitting}>Cancel</Button>
+                    <Button onClick={() => { setOpenDialog(false); setShowErrors(false); }} color="inherit" disabled={isSubmitting}>{uiText("Cancel")}</Button>
                     <Button
                         onClick={handleSave}
                         variant="contained"
                         startIcon={<SaveIcon />}
                         disabled={isSubmitting}
                     >
-                        {isSubmitting ? 'Saving...' : 'Save Entry'}
+                        {isSubmitting ? uiText("Saving...") : uiText("Save Entry")}
                     </Button>
                 </DialogActions>
             </Dialog>
@@ -602,16 +601,16 @@ const OutwardEntry: React.FC<OutwardEntryProps> = ({ userRole, username }) => {
                     open={Boolean(labelOutward)}
                     onClose={() => setLabelOutward(null)}
                     type="OUTWARD"
-                    title={`Outward Dispatch: ${formatOutwardCode(labelOutward.date, labelOutward.id)}`}
+                    title={uiTemplate`Outward Dispatch: ${formatOutwardCode(labelOutward.date, labelOutward.id)}`}
                     code={formatOutwardCode(labelOutward.date, labelOutward.id)}
                     qrPayload={buildOutwardQRPayload(labelOutward)}
                     metadata={[
                         { label: 'Customer', value: labelOutward.customerName },
                         { label: 'Vehicle No', value: labelOutward.vehicleNo },
                         { label: 'Driver', value: labelOutward.driverName || 'N/A' },
-                        { label: 'Dispatch Date', value: new Date(labelOutward.date).toLocaleDateString('en-IN') },
+                        { label: 'Dispatch Date', value: new Date(labelOutward.date).toLocaleDateString(uiDateLocale()) },
                         { label: 'Total Bags', value: `${labelOutward.totalBags} bags` },
-                        { label: 'Total Weight', value: `${labelOutward.totalWeight.toLocaleString()} kg` },
+                        { label: 'Total Weight', value: `${labelOutward.totalWeight.toLocaleString(uiLocale())} kg` },
                     ]}
                 />
             )}

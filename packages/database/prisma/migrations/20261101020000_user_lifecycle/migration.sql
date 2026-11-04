@@ -1,0 +1,13 @@
+BEGIN TRANSACTION;
+ALTER TABLE "User" ADD COLUMN "publicId" TEXT;
+ALTER TABLE "User" ADD COLUMN "status" TEXT NOT NULL DEFAULT 'ACTIVE';
+ALTER TABLE "User" ADD COLUMN "statusReason" TEXT;
+ALTER TABLE "User" ADD COLUMN "statusChangedAt" DATETIME;
+ALTER TABLE "User" ADD COLUMN "deletedAt" DATETIME;
+ALTER TABLE "User" ADD COLUMN "department" TEXT;
+ALTER TABLE "User" ADD COLUMN "site" TEXT;
+ALTER TABLE "User" ADD COLUMN "locale" TEXT NOT NULL DEFAULT 'en';
+ALTER TABLE "User" ADD COLUMN "timezone" TEXT NOT NULL DEFAULT 'Asia/Kolkata';
+UPDATE "User" SET "publicId" = lower(hex(randomblob(4)) || '-' || hex(randomblob(2)) || '-4' || substr(hex(randomblob(2)),2) || '-8' || substr(hex(randomblob(2)),2) || '-' || hex(randomblob(6))) WHERE "publicId" IS NULL;
+CREATE UNIQUE INDEX "User_publicId_key" ON "User"("publicId");
+COMMIT;

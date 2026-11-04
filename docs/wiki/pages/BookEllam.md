@@ -12,21 +12,21 @@ Sign in to the company installation. VIEWER reads records, MODIFIER performs ord
 
 ## Tabs
 
-- {`All Books (${allRecords.length})`} ([apps/web/src/pages/BookEllam.tsx:419](../../../apps/web/src/pages/BookEllam.tsx))
-- Inward Book (வரவு) ([apps/web/src/pages/BookEllam.tsx:420](../../../apps/web/src/pages/BookEllam.tsx))
-- Outward Book (செலவு) ([apps/web/src/pages/BookEllam.tsx:421](../../../apps/web/src/pages/BookEllam.tsx))
-- Stock & Waste (சரக்கு) ([apps/web/src/pages/BookEllam.tsx:422](../../../apps/web/src/pages/BookEllam.tsx))
-- Spinning Runs (உற்பத்தி) ([apps/web/src/pages/BookEllam.tsx:423](../../../apps/web/src/pages/BookEllam.tsx))
-- Party Ledger (பேரேடு / Khata) ([apps/web/src/pages/BookEllam.tsx:424](../../../apps/web/src/pages/BookEllam.tsx))
+- {uiScopedTemplate('tabs')`All Books (${allRecords.length})`} ([apps/web/src/pages/BookEllam.tsx:408](../../../apps/web/src/pages/BookEllam.tsx))
+- {uiText("Inward Book (வரவு)", 'tabs')} ([apps/web/src/pages/BookEllam.tsx:409](../../../apps/web/src/pages/BookEllam.tsx))
+- {uiText("Outward Book (செலவு)", 'tabs')} ([apps/web/src/pages/BookEllam.tsx:410](../../../apps/web/src/pages/BookEllam.tsx))
+- {uiText("Stock & Waste (சரக்கு)", 'tabs')} ([apps/web/src/pages/BookEllam.tsx:411](../../../apps/web/src/pages/BookEllam.tsx))
+- {uiText("Spinning Runs (உற்பத்தி)", 'tabs')} ([apps/web/src/pages/BookEllam.tsx:412](../../../apps/web/src/pages/BookEllam.tsx))
+- {uiText("Party Ledger (பேரேடு / Khata)", 'tabs')} ([apps/web/src/pages/BookEllam.tsx:413](../../../apps/web/src/pages/BookEllam.tsx))
 
 ## Actions
 
 | Control / label | Handler | Source |
 | --- | --- | --- |
-| Export Sales / Receipts XML | `{async () => { try { const response = await api.get('/integrations/tally/export', { params: { types: 'Sales,Receipt' }, responseType: 'blob' }); const url = URL.createObjectURL(response.data); const link = document.createElement('a'); link.href = url; link.download = 'Tally-Sales-Receipts.xml'; document.body.appendChild(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000); } catch { toast.error('Tally export failed. An administrator account is required.'); } }}` | [apps/web/src/pages/BookEllam.tsx:271](../../../apps/web/src/pages/BookEllam.tsx) |
-| Export CSV Audit | `{exportToCSV}` | [apps/web/src/pages/BookEllam.tsx:290](../../../apps/web/src/pages/BookEllam.tsx) |
-| Print Ledger Book | `{() => window.print()}` | [apps/web/src/pages/BookEllam.tsx:300](../../../apps/web/src/pages/BookEllam.tsx) |
-| Clear Filters | `{() => { setSearchQuery(''); setDateFilter(''); }}` | [apps/web/src/pages/BookEllam.tsx:400](../../../apps/web/src/pages/BookEllam.tsx) |
+| {uiText("Export Sales / Receipts XML ")} | `{async () => { try { const response = await api.get('/integrations/tally/export', { params: { types: 'Sales,Receipt' }, responseType: 'blob' }); const url = URL.createObjectURL(response.data); const link = document.createElement('a'); link.href = url; link.download = 'Tally-Sales-Receipts.xml'; document.body.appendChild(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000); } catch { toast.error(uiText('Tally export failed. An administrator account is required.', 'feedback')); } }}` | [apps/web/src/pages/BookEllam.tsx:271](../../../apps/web/src/pages/BookEllam.tsx) |
+| {uiText("Export CSV Audit ")} | `{exportToCSV}` | [apps/web/src/pages/BookEllam.tsx:289](../../../apps/web/src/pages/BookEllam.tsx) |
+| {uiText("Print Ledger Book ")} | `{() => window.print()}` | [apps/web/src/pages/BookEllam.tsx:298](../../../apps/web/src/pages/BookEllam.tsx) |
+| {uiText("Clear Filters ")} | `{() => { setSearchQuery(''); setDateFilter(''); }}` | [apps/web/src/pages/BookEllam.tsx:390](../../../apps/web/src/pages/BookEllam.tsx) |
 
 ## API calls
 
@@ -34,15 +34,16 @@ Paths are relative to the client API base (`/api/backend` by default in the brow
 
 | Method | Path expression | Source |
 | --- | --- | --- |
-| GET | `/inventory/inward` | [apps/web/src/pages/BookEllam.tsx:60](../../../apps/web/src/pages/BookEllam.tsx) |
-| GET | `/inventory/outward` | [apps/web/src/pages/BookEllam.tsx:69](../../../apps/web/src/pages/BookEllam.tsx) |
-| GET | `/commerce/customers` | [apps/web/src/pages/BookEllam.tsx:79](../../../apps/web/src/pages/BookEllam.tsx) |
-| GET | `/production` | [apps/web/src/pages/BookEllam.tsx:92](../../../apps/web/src/pages/BookEllam.tsx) |
-| GET | `/inventory/history?range=all` | [apps/web/src/pages/BookEllam.tsx:105](../../../apps/web/src/pages/BookEllam.tsx) |
+| GET | `/inventory/inward` | [apps/web/src/pages/BookEllam.tsx:62](../../../apps/web/src/pages/BookEllam.tsx) |
+| GET | `/inventory/outward` | [apps/web/src/pages/BookEllam.tsx:71](../../../apps/web/src/pages/BookEllam.tsx) |
+| GET | `/commerce/customers` | [apps/web/src/pages/BookEllam.tsx:81](../../../apps/web/src/pages/BookEllam.tsx) |
+| GET | `/production` | [apps/web/src/pages/BookEllam.tsx:94](../../../apps/web/src/pages/BookEllam.tsx) |
+| GET | `/inventory/history?range=all` | [apps/web/src/pages/BookEllam.tsx:107](../../../apps/web/src/pages/BookEllam.tsx) |
 | GET | `/integrations/tally/export` | [apps/web/src/pages/BookEllam.tsx:276](../../../apps/web/src/pages/BookEllam.tsx) |
 
 ## Composed behavior
 
+- [i18n.ts](../../../apps/web/src/i18n.ts)
 - [api.ts](../../../apps/web/src/utils/api.ts)
 - [csvGenerator.ts](../../../apps/web/src/utils/csvGenerator.ts)
 

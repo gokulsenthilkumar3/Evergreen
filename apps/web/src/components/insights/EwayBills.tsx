@@ -1,3 +1,4 @@
+import { uiText, useUiLanguage } from "../../i18n";
 import React, { useState } from 'react';
 import {
     Box, Typography, Paper, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
@@ -19,28 +20,29 @@ interface EwayBill {
 }
 
 const EwayBills: React.FC = () => {
+  useUiLanguage();
     const { items } = usePersist<EwayBill>('eway_bills');
     const [open, setOpen] = useState(false);
     const [form, setForm] = useState({ invoiceNo: '', customer: '', amount: 0, distance: 0 });
 
     const handleGenerate = () => {
-        toast.error('E-Way Bill issuance is unavailable until a provider is configured.');
+        toast.error(uiText('E-Way Bill issuance is unavailable until a provider is configured.', 'feedback'));
     };
 
     const handleCancel = (_id: string) => {
-        toast.error('Portal cancellation is unavailable until a provider is configured.');
+        toast.error(uiText('Portal cancellation is unavailable until a provider is configured.', 'feedback'));
     };
 
     return (
         <Box>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                 <Box>
-                    <Typography variant="h6" fontWeight={700}>E-Way Bills</Typography>
-                    <Typography variant="body2" color="text.secondary">Provider integration is not configured. Existing local records are unverified.</Typography>
+                    <Typography variant="h6" fontWeight={700}>{uiText("E-Way Bills")}</Typography>
+                    <Typography variant="body2" color="text.secondary">{uiText("Provider integration is not configured. Existing local records are unverified.")}</Typography>
                 </Box>
                 <Box sx={{ display: 'flex', gap: 1 }}>
-                    <Button variant="outlined" startIcon={<SyncIcon />} onClick={() => toast.error('NIC synchronization is unavailable until a provider is configured.')}>Sync NIC</Button>
-                    <Button disabled variant="contained" startIcon={<AddIcon />} onClick={() => { setForm({ invoiceNo: '', customer: '', amount: 0, distance: 0 }); setOpen(true); }}>Generate EWB</Button>
+                    <Button variant="outlined" startIcon={<SyncIcon />} onClick={() => toast.error(uiText('NIC synchronization is unavailable until a provider is configured.', 'feedback'))}>{uiText("Sync NIC")}</Button>
+                    <Button disabled variant="contained" startIcon={<AddIcon />} onClick={() => { setForm({ invoiceNo: '', customer: '', amount: 0, distance: 0 }); setOpen(true); }}>{uiText("Generate EWB")}</Button>
                 </Box>
             </Box>
             
@@ -49,18 +51,18 @@ const EwayBills: React.FC = () => {
                     <Table size="small">
                         <TableHead>
                             <TableRow sx={{ bgcolor: 'action.hover' }}>
-                                <TableCell sx={{ fontWeight: 700 }}>EWB No</TableCell>
-                                <TableCell sx={{ fontWeight: 700 }}>Generated On</TableCell>
-                                <TableCell sx={{ fontWeight: 700 }}>Invoice No</TableCell>
-                                <TableCell sx={{ fontWeight: 700 }}>Customer</TableCell>
-                                <TableCell sx={{ fontWeight: 700 }} align="right">Doc Value (₹)</TableCell>
-                                <TableCell sx={{ fontWeight: 700 }}>Valid Upto</TableCell>
-                                <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
+                                <TableCell sx={{ fontWeight: 700 }}>{uiText("EWB No", 'tables')}</TableCell>
+                                <TableCell sx={{ fontWeight: 700 }}>{uiText("Generated On", 'tables')}</TableCell>
+                                <TableCell sx={{ fontWeight: 700 }}>{uiText("Invoice No", 'tables')}</TableCell>
+                                <TableCell sx={{ fontWeight: 700 }}>{uiText("Customer", 'tables')}</TableCell>
+                                <TableCell sx={{ fontWeight: 700 }} align="right">{uiText("Doc Value (₹)", 'tables')}</TableCell>
+                                <TableCell sx={{ fontWeight: 700 }}>{uiText("Valid Upto", 'tables')}</TableCell>
+                                <TableCell sx={{ fontWeight: 700 }}>{uiText("Status", 'tables')}</TableCell>
                                 <TableCell />
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {items.length === 0 && <TableRow><TableCell colSpan={8} align="center" sx={{ py: 6, color: 'text.disabled' }}>No E-Way Bills found.</TableCell></TableRow>}
+                            {items.length === 0 && <TableRow><TableCell colSpan={8} align="center" sx={{ py: 6, color: 'text.disabled' }}>{uiText("No E-Way Bills found.", 'tables')}</TableCell></TableRow>}
                             {items.slice().reverse().map(ewb => (
                                 <TableRow key={ewb.id} hover>
                                     <TableCell><Typography fontWeight={600} sx={{ fontFamily: 'monospace' }}>{ewb.ewbNo}</Typography></TableCell>
@@ -82,9 +84,9 @@ const EwayBills: React.FC = () => {
                                         />
                                     </TableCell>
                                     <TableCell>
-                                        <Tooltip title="Print/View EWB"><IconButton size="small" color="primary"><ViewIcon fontSize="small" /></IconButton></Tooltip>
+                                        <Tooltip title={uiText("Print/View EWB", 'tables')}><IconButton size="small" color="primary"><ViewIcon fontSize="small" /></IconButton></Tooltip>
                                         {ewb.status === 'Active' && (
-                                            <Tooltip title="Cancel EWB"><IconButton size="small" color="error" onClick={() => handleCancel(ewb.id)}><CancelIcon fontSize="small" /></IconButton></Tooltip>
+                                            <Tooltip title={uiText("Cancel EWB", 'tables')}><IconButton size="small" color="error" onClick={() => handleCancel(ewb.id)}><CancelIcon fontSize="small" /></IconButton></Tooltip>
                                         )}
                                     </TableCell>
                                 </TableRow>
@@ -95,18 +97,18 @@ const EwayBills: React.FC = () => {
             </Paper>
 
             <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
-                <DialogTitle sx={{ fontWeight: 700, borderBottom: '1px solid', borderColor: 'divider' }}>Generate New E-Way Bill</DialogTitle>
+                <DialogTitle sx={{ fontWeight: 700, borderBottom: '1px solid', borderColor: 'divider' }}>{uiText("Generate New E-Way Bill")}</DialogTitle>
                 <DialogContent sx={{ pt: 3 }}>
                     <Grid container spacing={2}>
-                        <Grid size={{ xs: 12, sm: 6 }}><TextField label="Invoice No" fullWidth size="small" value={form.invoiceNo} onChange={e => setForm({ ...form, invoiceNo: e.target.value })} required /></Grid>
-                        <Grid size={{ xs: 12, sm: 6 }}><TextField label="Customer Name" fullWidth size="small" value={form.customer} onChange={e => setForm({ ...form, customer: e.target.value })} required /></Grid>
-                        <Grid size={{ xs: 12, sm: 6 }}><TextField type="number" label="Document Value (₹)" fullWidth size="small" value={form.amount || ''} onChange={e => setForm({ ...form, amount: parseFloat(e.target.value) || 0 })} required /></Grid>
-                        <Grid size={{ xs: 12, sm: 6 }}><TextField type="number" label="Approx Distance (km)" fullWidth size="small" value={form.distance || ''} onChange={e => setForm({ ...form, distance: parseInt(e.target.value) || 0 })} required helperText="Determines validity period" /></Grid>
+                        <Grid size={{ xs: 12, sm: 6 }}><TextField label={uiText("Invoice No", 'forms')} fullWidth size="small" value={form.invoiceNo} onChange={e => setForm({ ...form, invoiceNo: e.target.value })} required /></Grid>
+                        <Grid size={{ xs: 12, sm: 6 }}><TextField label={uiText("Customer Name", 'forms')} fullWidth size="small" value={form.customer} onChange={e => setForm({ ...form, customer: e.target.value })} required /></Grid>
+                        <Grid size={{ xs: 12, sm: 6 }}><TextField type="number" label={uiText("Document Value (₹)", 'forms')} fullWidth size="small" value={form.amount || ''} onChange={e => setForm({ ...form, amount: parseFloat(e.target.value) || 0 })} required /></Grid>
+                        <Grid size={{ xs: 12, sm: 6 }}><TextField type="number" label={uiText("Approx Distance (km)", 'forms')} fullWidth size="small" value={form.distance || ''} onChange={e => setForm({ ...form, distance: parseInt(e.target.value) || 0 })} required helperText={uiText("Determines validity period", 'forms')} /></Grid>
                     </Grid>
                 </DialogContent>
                 <DialogActions sx={{ p: 2, borderTop: '1px solid', borderColor: 'divider' }}>
-                    <Button onClick={() => setOpen(false)} color="inherit">Cancel</Button>
-                    <Button onClick={handleGenerate} variant="contained">Generate</Button>
+                    <Button onClick={() => setOpen(false)} color="inherit">{uiText("Cancel")}</Button>
+                    <Button onClick={handleGenerate} variant="contained">{uiText("Generate")}</Button>
                 </DialogActions>
             </Dialog>
         </Box>

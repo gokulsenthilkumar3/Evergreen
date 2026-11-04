@@ -3,10 +3,44 @@ import { Cron } from '@nestjs/schedule';
 import * as nodemailer from 'nodemailer';
 import { PrismaService } from '../../services/prisma.service';
 
+type ProducedYarn = {
+  count: string;
+  bags: number;
+  weight: number | string;
+  remainingLog: number | string;
+};
+
+/** Every production run of the day, with yarn output combined by count. */
+export function summarizeProduction(
+  runs: Array<{ totalProduced: number | null; producedYarn: ProducedYarn[] }>,
+) {
+  const byCount = new Map<
+    string,
+    { count: string; bags: number; weight: number; remainingLog: number }
+  >();
+  for (const yarn of runs.flatMap((run) => run.producedYarn)) {
+    const row = byCount.get(yarn.count) || {
+      count: yarn.count,
+      bags: 0,
+      weight: 0,
+      remainingLog: 0,
+    };
+    row.bags += Number(yarn.bags) || 0;
+    row.weight += Number(yarn.weight) || 0;
+    row.remainingLog += Number(yarn.remainingLog) || 0;
+    byCount.set(yarn.count, row);
+  }
+  return {
+    totalProduced: runs.reduce((sum, run) => sum + (run.totalProduced || 0), 0),
+    yarn: [...byCount.values()],
+  };
+}
+
 /**
  * DailySummaryService — Phase 4 gate
- * Fires at 23:59 IST (18:29 UTC) every day and sends a formatted
- * production + cost summary email to the configured recipient(s).
+ * Fires at 23:59 by the server clock every day and sends a production + cost summary email
+ * for that calendar day. Stock events and "today" use the same clock, so an installation in
+ * India must run with TZ=Asia/Kolkata for the email to cover the Indian business day.
  */
 @Injectable()
 export class DailySummaryService {
@@ -29,11 +63,8 @@ export class DailySummaryService {
     });
   }
 
-  /**
-   * Cron: 23:29 UTC = 23:59 IST (UTC+5:30).
-   * Re-verify this offset when IST daylight-saving rules change (currently none).
-   */
-  @Cron('29 23 * * *', { timeZone: 'UTC' })
+  /** 23:59 on the server clock, the same clock used for `today` below and for stock event dates. */
+  @Cron('59 23 * * *')
   async sendDailySummary() {
     const recipient = process.env.DAILY_SUMMARY_EMAIL;
     if (!this.transporter || !recipient) {
@@ -50,8 +81,11 @@ export class DailySummaryService {
       tomorrow.setDate(tomorrow.getDate() + 1);
 
       const [production, costs, settings] = await Promise.all([
-        this.prisma.production.findFirst({
-          where: { date: { gte: today, lt: tomorrow } },
+        this.prisma.production.findMany({
+          where: {
+            date: { gte: today, lt: tomorrow },
+            createdBy: { not: 'SYSTEM_MERGE' },
+          },
           include: { producedYarn: true },
         }),
         this.prisma.costingEntry.findMany({
@@ -64,7 +98,7 @@ export class DailySummaryService {
         (s: number, c: { totalCost: number | null }) => s + (c.totalCost || 0),
         0,
       );
-      const totalProduced = production?.totalProduced || 0;
+      const { totalProduced, yarn } = summarizeProduction(production);
       const costPerKg = totalProduced > 0 ? totalCost / totalProduced : 0;
       const companyName = settings?.companyName || 'EverGreen Yarn Mills';
       const dateStr = today.toLocaleDateString('en-IN', {
@@ -74,15 +108,10 @@ export class DailySummaryService {
         day: 'numeric',
       });
 
-      const yarnTable = production?.producedYarn?.length
-        ? production.producedYarn
+      const yarnTable = yarn.length
+        ? yarn
             .map(
-              (p: {
-                count: string;
-                bags: number;
-                weight: number | string;
-                remainingLog: number | string;
-              }) =>
+              (p) =>
                 `<tr><td>Count ${p.count}</td><td>${p.bags}</td><td>${Number(p.weight).toFixed(2)} kg</td><td>${Number(p.remainingLog).toFixed(2)} kg</td></tr>`,
             )
             .join('')
@@ -141,7 +170,7 @@ export class DailySummaryService {
   </table>
 
   <div class="footer">
-    Sent automatically at 23:59 IST by EverGreen. Do not reply to this email.
+    Sent automatically at 23:59 (server time) by EverGreen. Do not reply to this email.
   </div>
 </div>
 </body>

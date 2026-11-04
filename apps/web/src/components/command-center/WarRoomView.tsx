@@ -1,3 +1,4 @@
+import { uiLocale, formatUiDecimal, uiTemplate } from "../../i18n";
 import React, { useMemo } from 'react';
 import {
   Box,
@@ -25,7 +26,7 @@ import {
   BuildOutlined,
   VerifiedUserOutlined,
 } from '@mui/icons-material';
-import type { MachineData } from './FloorCanvas';
+import FloorCanvas, { type MachineData } from './FloorCanvas';
 import { sfx } from '../../utils/sfx';
 
 export interface WarRoomViewProps {
@@ -102,6 +103,16 @@ export const WarRoomView: React.FC<WarRoomViewProps> = ({
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, width: '100%' }}>
+      <Paper variant="outlined" sx={{ p: 2, borderRadius: 3 }}>
+        <Typography variant="subtitle2" fontWeight={700}>Interactive operations floor</Typography>
+        <Typography variant="caption" color="text.secondary">Illustrative material flow · select a machine to inspect recorded operations</Typography>
+        <Box sx={{ height: { xs: 320, md: 420 }, mt: 1 }}>
+          <FloorCanvas machines={machines} cottonKg={cottonKg} cottonBales={cottonBales}
+            yarnKg={yarnKg} yarnBags={yarnBags} productionRunning={productionRunning}
+            dispatchCount={dispatchCount} qualityHolds={qualityHolds} simulateFlow
+            onMachineClick={onMachineClick} />
+        </Box>
+      </Paper>
       {/* ─── Top Material Throughput Pipeline ─────────────────────────────── */}
       <Paper
         elevation={0}
@@ -152,7 +163,7 @@ export const WarRoomView: React.FC<WarRoomViewProps> = ({
               Plant Availability Rating:
             </Typography>
             <Chip
-              label={`${oeePercent}% registered active`}
+              label={uiTemplate`${oeePercent}% registered active`}
               size="small"
               sx={{
                 fontWeight: 800,
@@ -195,7 +206,7 @@ export const WarRoomView: React.FC<WarRoomViewProps> = ({
                 <GrassOutlined sx={{ color: '#0ea5e9', fontSize: 18 }} />
               </Box>
               <Typography variant="h6" fontWeight={800} sx={{ lineHeight: 1.1 }}>
-                {cottonKg.toLocaleString('en-IN')} <Typography component="span" variant="body2" sx={{ color: 'text.secondary', fontWeight: 700 }}>kg</Typography>
+                {cottonKg.toLocaleString(uiLocale())} <Typography component="span" variant="body2" sx={{ color: 'text.secondary', fontWeight: 700 }}>kg</Typography>
               </Typography>
               <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 0.5 }}>
                 ≈ {cottonBales} compressed bales in store
@@ -231,10 +242,10 @@ export const WarRoomView: React.FC<WarRoomViewProps> = ({
                 <FactoryOutlined sx={{ color: '#6366f1', fontSize: 18 }} />
               </Box>
               <Typography variant="h6" fontWeight={800} sx={{ lineHeight: 1.1 }}>
-                {periodProductionKg.toLocaleString('en-IN')} <Typography component="span" variant="body2" sx={{ color: 'text.secondary', fontWeight: 700 }}>kg</Typography>
+                {periodProductionKg.toLocaleString(uiLocale())} <Typography component="span" variant="body2" sx={{ color: 'text.secondary', fontWeight: 700 }}>kg</Typography>
               </Typography>
               <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 0.5 }}>
-                {wasteRatePct}% waste ({periodWasteKg.toFixed(1)} kg)
+                {wasteRatePct}% waste ({formatUiDecimal(periodWasteKg, 1)} kg)
               </Typography>
             </Box>
           </Grid>
@@ -267,7 +278,7 @@ export const WarRoomView: React.FC<WarRoomViewProps> = ({
                 <Inventory2Outlined sx={{ color: '#10b981', fontSize: 18 }} />
               </Box>
               <Typography variant="h6" fontWeight={800} sx={{ lineHeight: 1.1 }}>
-                {yarnKg.toLocaleString('en-IN')} <Typography component="span" variant="body2" sx={{ color: 'text.secondary', fontWeight: 700 }}>kg</Typography>
+                {yarnKg.toLocaleString(uiLocale())} <Typography component="span" variant="body2" sx={{ color: 'text.secondary', fontWeight: 700 }}>kg</Typography>
               </Typography>
               <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 0.5 }}>
                 {yarnBags} standard 60kg bags
@@ -306,7 +317,7 @@ export const WarRoomView: React.FC<WarRoomViewProps> = ({
                 {dispatchCount} <Typography component="span" variant="body2" sx={{ color: 'text.secondary', fontWeight: 700 }}>dispatches</Typography>
               </Typography>
               <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 0.5 }}>
-                {qualityHolds > 0 ? `${qualityHolds} hold(s) pending QC` : 'All lots cleared'}
+                {qualityHolds > 0 ? uiTemplate`${qualityHolds} hold(s) pending QC` : 'All lots cleared'}
               </Typography>
             </Box>
           </Grid>
@@ -456,7 +467,7 @@ export const WarRoomView: React.FC<WarRoomViewProps> = ({
                           <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 0.5 }}>
                             {hasAlert ? (
                               <Chip
-                                label={`${m.openInspections} alert`}
+                                label={uiTemplate`${m.openInspections} alert`}
                                 size="small"
                                 sx={{
                                   height: 18,
@@ -516,7 +527,7 @@ export const WarRoomView: React.FC<WarRoomViewProps> = ({
                   </Typography>
                 </Box>
                 <Chip
-                  label={qualityHolds > 0 ? `${qualityHolds} Active Quarantine` : '100% Passed'}
+                  label={qualityHolds > 0 ? uiTemplate`${qualityHolds} Active Quarantine` : '100% Passed'}
                   size="small"
                   sx={{
                     fontWeight: 700,
@@ -527,7 +538,7 @@ export const WarRoomView: React.FC<WarRoomViewProps> = ({
               </Box>
               <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.8rem', lineHeight: 1.6 }}>
                 {qualityHolds > 0
-                  ? `There are ${qualityHolds} production lots under hold inspection. In-progress batches require laboratory verification before release to finished yarn store.`
+                  ? uiTemplate`There are ${qualityHolds} production lots under hold inspection. In-progress batches require laboratory verification before release to finished yarn store.`
                   : 'All finished yarn bags meet standard quality benchmarks. No quarantined lots currently in hold.'}
               </Typography>
             </Box>
@@ -567,7 +578,7 @@ export const WarRoomView: React.FC<WarRoomViewProps> = ({
                   </Typography>
                 </Box>
                 <Chip
-                  label={`${dispatchCount} Recorded Shipments`}
+                  label={uiTemplate`${dispatchCount} Recorded Shipments`}
                   size="small"
                   sx={{ fontWeight: 700, bgcolor: 'rgba(139,92,246,0.15)', color: '#8b5cf6' }}
                 />

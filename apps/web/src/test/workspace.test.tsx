@@ -28,14 +28,14 @@ describe('workspace business evidence', () => {
   it('reads the actual register and preserves stale values on a failed refresh', async () => {
     vi.mocked(api.get).mockImplementation(async url => ({ data: String(url).startsWith('/health') ? { status: 'ok' } : url === '/machines' ? [{ id: 1 }, { id: 2 }] : report }));
     const client = mountWorkspace();
-    expect(await screen.findByText('₹2,500')).toBeInTheDocument();
+    expect(await screen.findByText('₹ 2,500.00')).toBeInTheDocument();
     expect(screen.getByText('API HEALTHY')).toBeInTheDocument();
     expect(api.get).toHaveBeenCalledWith('/machines');
     expect(api.get).not.toHaveBeenCalledWith('/machines/stats');
     vi.mocked(api.get).mockRejectedValue(new Error('Offline'));
     fireEvent.click(screen.getByRole('button', { name: 'Refresh now' }));
     await waitFor(() => expect(screen.getByText(/Some workspace data could not be refreshed/)).toBeInTheDocument());
-    expect(screen.getByText('₹2,500')).toBeInTheDocument();
+    expect(screen.getByText('₹ 2,500.00')).toBeInTheDocument();
     expect(screen.getByText('HEALTH UNAVAILABLE')).toBeInTheDocument();
     client.clear();
   });
@@ -52,5 +52,14 @@ describe('shared workflow guide', () => {
     fireEvent.change(screen.getByLabelText('Search workflow guide'), { target: { value: 'remaining balance' } });
     expect(screen.getByText('Collect and review')).toBeInTheDocument();
     expect(screen.queryByText('Set up your business')).not.toBeInTheDocument();
+  });
+
+  it('opens a step from its station and marks it as current', () => {
+    render(<BusinessFlowGuide />);
+    const invoice = screen.getByRole('button', { name: 'Step 6: Invoice' });
+    fireEvent.click(invoice);
+    expect(invoice).toHaveAttribute('aria-current', 'step');
+    expect(screen.getByRole('button', { name: 'Step 1: Set up' })).not.toHaveAttribute('aria-current');
+    expect(screen.getByText(/Select the saved customer and catalogue items/)).toBeVisible();
   });
 });

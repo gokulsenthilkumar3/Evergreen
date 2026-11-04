@@ -18,9 +18,9 @@ No literal Tab controls in this file. Check composed components and dynamic navi
 
 | Control / label | Handler | Source |
 | --- | --- | --- |
-| <RefreshIcon /> | `{handleRefresh}` | [apps/web/src/pages/TodayDashboard.tsx:153](../../../apps/web/src/pages/TodayDashboard.tsx) |
-| Record Production | `{() => navigate('production')}` | [apps/web/src/pages/TodayDashboard.tsx:254](../../../apps/web/src/pages/TodayDashboard.tsx) |
-| Add Costs | `{() => navigate('costing')}` | [apps/web/src/pages/TodayDashboard.tsx:263](../../../apps/web/src/pages/TodayDashboard.tsx) |
+| <RefreshIcon /> | `{handleRefresh}` | [apps/web/src/pages/TodayDashboard.tsx:156](../../../apps/web/src/pages/TodayDashboard.tsx) |
+| {uiText("Record Production ")} | `{() => navigate('production')}` | [apps/web/src/pages/TodayDashboard.tsx:255](../../../apps/web/src/pages/TodayDashboard.tsx) |
+| {uiText("Add Costs ")} | `{() => navigate('costing')}` | [apps/web/src/pages/TodayDashboard.tsx:263](../../../apps/web/src/pages/TodayDashboard.tsx) |
 
 ## API calls
 
@@ -28,11 +28,13 @@ Paths are relative to the client API base (`/api/backend` by default in the brow
 
 | Method | Path expression | Source |
 | --- | --- | --- |
-| GET | `/production` | [apps/web/src/pages/TodayDashboard.tsx:71](../../../apps/web/src/pages/TodayDashboard.tsx) |
-| GET | `/costing/entries` | [apps/web/src/pages/TodayDashboard.tsx:80](../../../apps/web/src/pages/TodayDashboard.tsx) |
+| GET | `/production` | [apps/web/src/pages/TodayDashboard.tsx:74](../../../apps/web/src/pages/TodayDashboard.tsx) |
+| GET | `/costing/entries` | [apps/web/src/pages/TodayDashboard.tsx:83](../../../apps/web/src/pages/TodayDashboard.tsx) |
 
 ## Composed behavior
 
+- [dateKey.ts](../../../apps/web/src/utils/dateKey.ts)
+- [i18n.ts](../../../apps/web/src/i18n.ts)
 - [api.ts](../../../apps/web/src/utils/api.ts)
 
 ## Verify the workflow
