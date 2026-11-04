@@ -62,6 +62,23 @@ describe('connected module smoke tests', () => {
         user,
         { ip: '127.0.0.1', userAgent: 'Jest' },
         undefined,
+        undefined,
+      );
+    });
+
+    it('passes a recovery code through the password login flow', async () => {
+      const user = { id: 1, username: 'admin' };
+      auth.validateUser.mockResolvedValue(user);
+      auth.login.mockResolvedValue({ access_token: 'token' });
+      await controller.login(
+        { username: 'admin', password: 'password', recoveryCode: 'fixture-code' },
+        request,
+      );
+      expect(auth.login).toHaveBeenCalledWith(
+        user,
+        { ip: '127.0.0.1', userAgent: 'Jest' },
+        undefined,
+        'fixture-code',
       );
     });
   });

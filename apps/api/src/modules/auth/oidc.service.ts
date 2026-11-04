@@ -2,7 +2,7 @@ import { appendUserAudit } from '../../utils/user-audit';
 import { BadRequestException, Injectable, ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createHash, randomBytes } from 'node:crypto';
-import { TOTP } from 'otplib';
+import { authenticator } from './totp';
 import { PrismaService } from '../../services/prisma.service';
 import { AuthService } from './auth.service';
 import { verifyPassword } from './passwords';
@@ -43,7 +43,7 @@ export class OidcService {
     if (link) {
       const user = await this.prisma.user.findUnique({ where: { id: link.userId } });
       if (!user || user.status !== 'ACTIVE' || !await verifyPassword(user.password, link.password)) throw new BadRequestException('Current password is incorrect');
-      if (user.isTotpEnabled && (!link.code || !user.totpSecret || !(await new TOTP().verify(link.code, { secret: user.totpSecret })).valid)) throw new BadRequestException('Authenticator code is required');
+      if (user.isTotpEnabled && (!link.code || !user.totpSecret || !(await authenticator.verify(link.code, { secret: user.totpSecret })).valid)) throw new BadRequestException('Authenticator code is required');
       updatedAt = user.updatedAt.getTime();
     }
     const { oidc, configuration } = await this.provider();
@@ -99,7 +99,7 @@ export class OidcService {
   async unlink(id: string, userId: number, password: string, code?: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user || !await verifyPassword(user.password, password)) throw new BadRequestException('Current password is incorrect');
-    if (user.isTotpEnabled && (!code || !user.totpSecret || !(await new TOTP().verify(code, { secret: user.totpSecret })).valid)) throw new BadRequestException('Authenticator code is required');
+    if (user.isTotpEnabled && (!code || !user.totpSecret || !(await authenticator.verify(code, { secret: user.totpSecret })).valid)) throw new BadRequestException('Authenticator code is required');
     await this.prisma.$transaction(async tx => {
       const removed = await tx.userExternalIdentity.deleteMany({ where: { id, userId } });
       if (!removed.count) throw new BadRequestException('Identity not found');

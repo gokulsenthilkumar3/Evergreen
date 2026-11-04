@@ -5,6 +5,11 @@
   "description": "Ever Green Yarn Management System",
   "overrides": {
     "proxy-addr": "2.0.8",
+    "@angular-devkit/core": "19.2.24",
+    "undici@6": "6.29.1",
+    "@nestjs/platform-express": {
+      "multer": "2.5.0"
+    },
     "@nestjs/swagger": {
       "js-yaml": "5.4.3"
     }
@@ -14,6 +19,11 @@
     "packages/*"
   ],
   "scripts": {
+    "graph:build": "graphify extract . --code-only --max-workers 2 && graphify cluster-only . --no-label",
+    "graph:check": "node scripts/graphify/commit-check.mjs staged",
+    "graph:ci": "node scripts/graphify/commit-check.mjs ci",
+    "graph:hooks": "node scripts/graphify/commit-check.mjs install-hooks",
+    "graph:test": "node --test scripts/graphify/commit-check.test.mjs",
     "start": "node scripts/dev-all.mjs",
     "start:all": "node scripts/dev-all.mjs",
     "dev:all": "node scripts/dev-all.mjs",
@@ -28,8 +38,11 @@
     "test": "npm run test --workspaces --if-present",
     "docs:generate": "node scripts/generate-knowledge.mjs",
     "docs:check": "node scripts/generate-knowledge.mjs --check && node scripts/check-knowledge-links.mjs",
+    "check:boundaries": "node scripts/check-browser-boundaries.mjs",
+    "test:boundaries": "node --test scripts/check-browser-boundaries.test.mjs",
+    "test:data": "node --test scripts/data/*.test.mjs",
     "typecheck": "npm run typecheck -w apps/api && npx tsc --noEmit -p apps/web/tsconfig.json",
-    "verify": "npm run generate -w @evergreen/database && npm run migrate:check -w @evergreen/database && npm run generate -w @evergreen/admin-database && npm run migrate:check -w @evergreen/admin-database && npm run typecheck && npm test && npm run test:e2e -w apps/api && npm run agent:check && npm run test:maintenance && npm run test:release && npm run audit:check && npm run docs:check && npm run build",
+    "verify": "npm run generate -w @evergreen/database && npm run migrate:check -w @evergreen/database && npm run postgres:check -w @evergreen/database && npm run generate -w @evergreen/admin-database && npm run migrate:check -w @evergreen/admin-database && npm run typecheck && npm run check:boundaries && npm run test:boundaries && npm run test:data && npm test && npm run test:e2e -w apps/api && npm run agent:check && npm run test:maintenance && npm run test:release && npm run audit:check && npm run docs:check && npm run build",
     "desktop": "npm run start -w apps/desktop",
     "dist:desktop": "npm run dist -w apps/desktop",
     "release:desktop": "node scripts/release/desktop.mjs",

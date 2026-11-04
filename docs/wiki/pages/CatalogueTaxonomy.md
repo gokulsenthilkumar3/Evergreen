@@ -18,10 +18,10 @@ No literal Tab controls in this file. Check composed components and dynamic navi
 
 | Control / label | Handler | Source |
 | --- | --- | --- |
-| {editingId ? 'Update' : 'Add'} | `{save}` | [apps/web/src/pages/CatalogueTaxonomy.tsx:36](../../../apps/web/src/pages/CatalogueTaxonomy.tsx) |
-| Cancel | `{() => { setEditingId(null); setName(''); }}` | [apps/web/src/pages/CatalogueTaxonomy.tsx:37](../../../apps/web/src/pages/CatalogueTaxonomy.tsx) |
-| Edit | `{() => { setEditingId(row.id); setName(row.name); }}` | [apps/web/src/pages/CatalogueTaxonomy.tsx:42](../../../apps/web/src/pages/CatalogueTaxonomy.tsx) |
-| Archive | `{() => void archive(row)}` | [apps/web/src/pages/CatalogueTaxonomy.tsx:42](../../../apps/web/src/pages/CatalogueTaxonomy.tsx) |
+| {editingId ? uiText("Update") : uiText("Add")} | `{save}` | [apps/web/src/pages/CatalogueTaxonomy.tsx:38](../../../apps/web/src/pages/CatalogueTaxonomy.tsx) |
+| {uiText("Cancel")} | `{() => { setEditingId(null); setName(''); }}` | [apps/web/src/pages/CatalogueTaxonomy.tsx:39](../../../apps/web/src/pages/CatalogueTaxonomy.tsx) |
+| {uiText("Edit")} | `{() => { setEditingId(row.id); setName(row.name); }}` | [apps/web/src/pages/CatalogueTaxonomy.tsx:44](../../../apps/web/src/pages/CatalogueTaxonomy.tsx) |
+| {uiText("Archive")} | `{() => void archive(row)}` | [apps/web/src/pages/CatalogueTaxonomy.tsx:44](../../../apps/web/src/pages/CatalogueTaxonomy.tsx) |
 
 ## API calls
 
@@ -29,13 +29,14 @@ Paths are relative to the client API base (`/api/backend` by default in the brow
 
 | Method | Path expression | Source |
 | --- | --- | --- |
-| GET | `'/commerce/${resource}'` | [apps/web/src/pages/CatalogueTaxonomy.tsx:13](../../../apps/web/src/pages/CatalogueTaxonomy.tsx) |
-| PATCH | `'/commerce/${resource}/${editingId}'` | [apps/web/src/pages/CatalogueTaxonomy.tsx:17](../../../apps/web/src/pages/CatalogueTaxonomy.tsx) |
-| POST | `'/commerce/${resource}'` | [apps/web/src/pages/CatalogueTaxonomy.tsx:18](../../../apps/web/src/pages/CatalogueTaxonomy.tsx) |
-| DELETE | `'/commerce/${resource}/${row.id}'` | [apps/web/src/pages/CatalogueTaxonomy.tsx:27](../../../apps/web/src/pages/CatalogueTaxonomy.tsx) |
+| GET | `'/commerce/${resource}'` | [apps/web/src/pages/CatalogueTaxonomy.tsx:15](../../../apps/web/src/pages/CatalogueTaxonomy.tsx) |
+| PATCH | `'/commerce/${resource}/${editingId}'` | [apps/web/src/pages/CatalogueTaxonomy.tsx:19](../../../apps/web/src/pages/CatalogueTaxonomy.tsx) |
+| POST | `'/commerce/${resource}'` | [apps/web/src/pages/CatalogueTaxonomy.tsx:20](../../../apps/web/src/pages/CatalogueTaxonomy.tsx) |
+| DELETE | `'/commerce/${resource}/${row.id}'` | [apps/web/src/pages/CatalogueTaxonomy.tsx:29](../../../apps/web/src/pages/CatalogueTaxonomy.tsx) |
 
 ## Composed behavior
 
+- [i18n.ts](../../../apps/web/src/i18n.ts)
 - [api.ts](../../../apps/web/src/utils/api.ts)
 
 ## Verify the workflow

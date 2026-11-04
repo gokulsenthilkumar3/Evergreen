@@ -16,7 +16,7 @@ flowchart LR
   Provider --> Jobs[Durable release jobs]
   Jobs --> Actions[Protected GitHub workflows]
   Actions --> Runner[Installation-scoped Docker runner]
-  Tenant -. license and usage sync, not yet authenticated .-> Provider
+  Tenant -. optional company-key usage sync .-> Provider
   Desktop[Electron desktop] --> LocalAPI[Packaged customer API]
   LocalAPI --> LocalDB[(Local database)]
 ```
@@ -29,7 +29,7 @@ The supported design assigns each customer its own web app, API, database, secre
 
 ### Databases
 
-Both Prisma schemas use SQLite today, and money is stored as floating-point numbers. The decided target is one PostgreSQL database per customer with exact money types (register items DB-003 and DB-004). That needs a separate schema, migration and reconciliation plan; changing `DATABASE_URL` alone is not enough.
+SQLite remains the customer default and provider datasource. The customer API also has an opt-in PostgreSQL client, exact-decimal schema and explicit copy/reconciliation tooling. See the [migration procedure](POSTGRES_MIGRATION.md) for scales, verification and cutover limits. The disposable fixture is not acceptance of a live migration or all PostgreSQL workflows. The provider and packaged local desktop retain SQLite.
 
 ## Customer application (`apps/web`)
 
@@ -64,7 +64,9 @@ Rules that every change must keep:
 - Any stock change runs inside `stockTransaction`. Connectors and imports call domain commands. They never write ledger tables directly.
 - Master-data imports create customers and items only. They post no opening stock or cash.
 - Retry protection is per command, not global. Invoices, workflow documents, imports and payments have request keys or fingerprints. Check the specific command before calling a retry safe (register API-008).
-- Reconciliation reads broadly and loops inside write transactions. Measure before optimising, and keep the full reconciliation as a cross-check when adding incremental projections (register API-012, PERF-001).
+- Ordinary finance projection scopes reads to mutated cost, payroll, production and invoice IDs. Full startup, scheduled audit, repair and ambiguous bulk paths remain. Legacy stock mutations and closed-period snapshots still read broadly; this is not constant-time posting for every ledger (register API-012, PERF-001).
+
+Optional provider transport uses a [company-bound sync contract](PROVIDER_SYNC.md). Browser imports are checked by `npm run check:boundaries`; server-only shared subpaths are disabled under the browser export condition.
 
 ```mermaid
 flowchart TD
@@ -96,7 +98,7 @@ The provider workspace stores company records, license settings, usage snapshots
 - Company create, license and metrics routes validate input with DTOs, allowlist the fields they write and bound their numbers. Each license change is written in the same transaction as its audit record. Routine reads no longer return the enrollment API key.
 - Saving a license or maintenance flag changes provider configuration only. Nothing confirms that a customer installation applied it. Remote restart, sync and migration return HTTP 503 instead of recording fake success.
 - Release creation and installation deployment use persisted `ReleaseJob` records and protected GitHub workflows. Target mapping and credentials are server-owned, retries keep the same identity, and lost dispatch acknowledgement remains unknown. Success requires a matching completed workflow. GitHub credentials, signing, runner environments and host acceptance are deployment configuration, not fabricated defaults.
-- The customer sync job (`apps/api/src/services/admin-sync.service.ts`) is opt-in through `ADMIN_API_URL` and `COMPANY_ID`. It validates the endpoint, rejects redirects, limits the HTTP exchange to 10 seconds and prevents overlapping runs within one API process. It counts actual retained invoices, validates the full license response and keeps an explicit provider suspension. It still sends no credential and reports lifetime rather than billing-period counts, so connected rollout stays blocked (register SEP-002, API-006, BIZ-007). See [configuration and limits](../apps/api/README.md#optional-provider-sync).
+- The customer sync job is opt-in through `ADMIN_API_URL`, `COMPANY_ID` and a company-bound `ADMIN_SYNC_KEY`. It validates the endpoint, rejects redirects, limits the HTTP exchange to ten seconds and prevents overlapping runs within one API process. It sends lifetime reporting counts and explicit current-UTC-month document counts, validates the licence response and preserves provider suspension. Repeated payloads replace the usage snapshot. Connected rollout still requires credential provisioning and installation acceptance; see [configuration and limits](PROVIDER_SYNC.md).
 
 ## Integrations and adjacent apps
 

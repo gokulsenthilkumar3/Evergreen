@@ -8,14 +8,16 @@ services:
     environment:
       NODE_ENV: production
       EVERGREEN_API_HOST: 0.0.0.0
-      DATABASE_URL: file:/data/${TENANT_DATABASE:-tenant.db}
+      EVERGREEN_TRUSTED_PROXIES: loopback,${EVERGREEN_WEB_PROXY_IP:-172.29.240.10},${EVERGREEN_MARKETING_PROXY_IP:-172.29.240.11}
+      DATABASE_URL: ${EVERGREEN_TENANT_DATABASE_URL:-file:/data/${TENANT_DATABASE:-tenant.db}}
       JWT_SECRET: ${TENANT_JWT_SECRET:?Set a unique tenant JWT secret}
       ENCRYPTION_SECRET: ${TENANT_ENCRYPTION_SECRET:?Set a unique encryption secret}
       BOOTSTRAP_ADMIN_USERNAME: ${BOOTSTRAP_ADMIN_USERNAME:-}
       BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:-}
       BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:-}
-      ADMIN_API_URL: ''
-      COMPANY_ID: ''
+      ADMIN_API_URL: ${EVERGREEN_ADMIN_API_URL:-}
+      COMPANY_ID: ${EVERGREEN_COMPANY_ID:-}
+      ADMIN_SYNC_KEY: ${EVERGREEN_ADMIN_SYNC_KEY:-}
       AUTO_MIGRATE: 'false'
       EVERGREEN_LICENSE_FILE: /run/evergreen-license/tenant.json
       EVERGREEN_INSTALLATION_KEY_FILE: /run/evergreen-license/installation-key.json
@@ -32,7 +34,9 @@ services:
     ports: ['${EVERGREEN_BIND:-127.0.0.1}:${EVERGREEN_PUBLIC_PORT:-4000}:4000']
     depends_on:
       tenant-api: { condition: service_healthy }
-    networks: [tenant]
+    networks:
+      tenant:
+        ipv4_address: ${EVERGREEN_WEB_PROXY_IP:-172.29.240.10}
   admin-api:
     hostname: ${COMPOSE_PROJECT_NAME:-evergreen}-provider
     profiles: [provider]
@@ -73,9 +77,16 @@ services:
     ports: ['${EVERGREEN_BIND:-127.0.0.1}:${EVERGREEN_MARKETING_PORT:-3300}:3300']
     depends_on:
       tenant-api: { condition: service_healthy }
-    networks: [marketing, tenant, provider]
+    networks:
+      marketing: {}
+      tenant:
+        ipv4_address: ${EVERGREEN_MARKETING_PROXY_IP:-172.29.240.11}
+      provider: {}
 networks:
-  tenant: {}
+  tenant:
+    ipam:
+      config:
+        - subnet: ${EVERGREEN_TENANT_SUBNET:-172.29.240.0/24}
   provider: {}
   marketing: {}
 volumes:

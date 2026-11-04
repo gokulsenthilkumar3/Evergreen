@@ -18,13 +18,13 @@ No literal Tab controls in this file. Check composed components and dynamic navi
 
 | Control / label | Handler | Source |
 | --- | --- | --- |
-| Weighbridge receipt | `{() => setOpenWeighbridge(true)}` | [apps/web/src/pages/InwardEntry.tsx:353](../../../apps/web/src/pages/InwardEntry.tsx) |
-| Merge ( {selectedBatches.length} ) | `{handleMergeBatches}` | [apps/web/src/pages/InwardEntry.tsx:355](../../../apps/web/src/pages/InwardEntry.tsx) |
-| Add Batch | `{() => { setReceiptTime(localTimeValue()); setOpenWizard(true); }}` | [apps/web/src/pages/InwardEntry.tsx:366](../../../apps/web/src/pages/InwardEntry.tsx) |
-| Cancel | `{() => { setOpenWizard(false); setTouched({}); }}` | [apps/web/src/pages/InwardEntry.tsx:494](../../../apps/web/src/pages/InwardEntry.tsx) |
-| {isSubmitting ? 'Saving...' : 'Add Batch'} | `{handleSubmit}` | [apps/web/src/pages/InwardEntry.tsx:497](../../../apps/web/src/pages/InwardEntry.tsx) |
-| <QrIcon fontSize="small" /> | `{() => setLabelBatch(row)}` | [apps/web/src/pages/InwardEntry.tsx:650](../../../apps/web/src/pages/InwardEntry.tsx) |
-| <DeleteIcon fontSize="small" /> | `{() => handleDeleteBatch(row.id)}` | [apps/web/src/pages/InwardEntry.tsx:656](../../../apps/web/src/pages/InwardEntry.tsx) |
+| {uiText("Weighbridge receipt")} | `{() => setOpenWeighbridge(true)}` | [apps/web/src/pages/InwardEntry.tsx:354](../../../apps/web/src/pages/InwardEntry.tsx) |
+| {uiText("Merge (")} {selectedBatches.length} ) | `{handleMergeBatches}` | [apps/web/src/pages/InwardEntry.tsx:356](../../../apps/web/src/pages/InwardEntry.tsx) |
+| {uiText("Add Batch ")} | `{() => { setReceiptTime(localTimeValue()); setOpenWizard(true); }}` | [apps/web/src/pages/InwardEntry.tsx:367](../../../apps/web/src/pages/InwardEntry.tsx) |
+| {uiText("Cancel ")} | `{() => { setOpenWizard(false); setTouched({}); }}` | [apps/web/src/pages/InwardEntry.tsx:494](../../../apps/web/src/pages/InwardEntry.tsx) |
+| {isSubmitting ? uiText("Saving...") : uiText("Add Batch")} | `{handleSubmit}` | [apps/web/src/pages/InwardEntry.tsx:496](../../../apps/web/src/pages/InwardEntry.tsx) |
+| <QrIcon fontSize="small" /> | `{() => setLabelBatch(row)}` | [apps/web/src/pages/InwardEntry.tsx:646](../../../apps/web/src/pages/InwardEntry.tsx) |
+| <DeleteIcon fontSize="small" /> | `{() => handleDeleteBatch(row.id)}` | [apps/web/src/pages/InwardEntry.tsx:652](../../../apps/web/src/pages/InwardEntry.tsx) |
 
 ## API calls
 
@@ -32,13 +32,15 @@ Paths are relative to the client API base (`/api/backend` by default in the brow
 
 | Method | Path expression | Source |
 | --- | --- | --- |
-| GET | `/inventory/inward` | [apps/web/src/pages/InwardEntry.tsx:124](../../../apps/web/src/pages/InwardEntry.tsx) |
-| DELETE | `'/inventory/inward/${id}'` | [apps/web/src/pages/InwardEntry.tsx:185](../../../apps/web/src/pages/InwardEntry.tsx) |
-| POST | `/inventory/inward` | [apps/web/src/pages/InwardEntry.tsx:203](../../../apps/web/src/pages/InwardEntry.tsx) |
-| POST | `/inventory/inward/merge` | [apps/web/src/pages/InwardEntry.tsx:251](../../../apps/web/src/pages/InwardEntry.tsx) |
+| GET | `/inventory/inward` | [apps/web/src/pages/InwardEntry.tsx:127](../../../apps/web/src/pages/InwardEntry.tsx) |
+| DELETE | `'/inventory/inward/${id}'` | [apps/web/src/pages/InwardEntry.tsx:188](../../../apps/web/src/pages/InwardEntry.tsx) |
+| POST | `/inventory/inward` | [apps/web/src/pages/InwardEntry.tsx:206](../../../apps/web/src/pages/InwardEntry.tsx) |
+| POST | `/inventory/inward/merge` | [apps/web/src/pages/InwardEntry.tsx:254](../../../apps/web/src/pages/InwardEntry.tsx) |
 
 ## Composed behavior
 
+- [dateKey.ts](../../../apps/web/src/utils/dateKey.ts)
+- [i18n.ts](../../../apps/web/src/i18n.ts)
 - [api.ts](../../../apps/web/src/utils/api.ts)
 - [productionTiming.ts](../../../apps/web/src/utils/productionTiming.ts)
 - [pdfGenerator.ts](../../../apps/web/src/utils/pdfGenerator.ts)

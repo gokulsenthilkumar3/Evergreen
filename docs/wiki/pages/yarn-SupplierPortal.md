@@ -18,7 +18,7 @@ No literal Tab controls in this file. Check composed components and dynamic navi
 
 | Control / label | Handler | Source |
 | --- | --- | --- |
-| Refresh | `{() => queryClient.invalidateQueries({ queryKey: ['inward-receipts'] })}` | [apps/web/src/pages/yarn/SupplierPortal.tsx:51](../../../apps/web/src/pages/yarn/SupplierPortal.tsx) |
+| {uiText("Refresh ")} | `{() => queryClient.invalidateQueries({ queryKey: ['inward-receipts'] })}` | [apps/web/src/pages/yarn/SupplierPortal.tsx:51](../../../apps/web/src/pages/yarn/SupplierPortal.tsx) |
 
 ## API calls
 
@@ -26,10 +26,11 @@ Paths are relative to the client API base (`/api/backend` by default in the brow
 
 | Method | Path expression | Source |
 | --- | --- | --- |
-| GET | `/commerce/inward-receipts` | [apps/web/src/pages/yarn/SupplierPortal.tsx:33](../../../apps/web/src/pages/yarn/SupplierPortal.tsx) |
+| GET | `/commerce/inward-receipts` | [apps/web/src/pages/yarn/SupplierPortal.tsx:35](../../../apps/web/src/pages/yarn/SupplierPortal.tsx) |
 
 ## Composed behavior
 
+- [i18n.ts](../../../apps/web/src/i18n.ts)
 - [api.ts](../../../apps/web/src/utils/api.ts)
 
 ## Verify the workflow

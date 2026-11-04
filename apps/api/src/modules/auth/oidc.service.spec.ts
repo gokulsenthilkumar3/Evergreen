@@ -1,7 +1,7 @@
 jest.mock('../../utils/user-audit',()=>({appendUserAudit:(tx:any,args:any)=>tx.activityLog.create(args)}));
 jest.mock('./auth.service',()=>({AuthService:class{}}));
 jest.mock('./passwords',()=>({verifyPassword:async()=>true}));
-jest.mock('otplib',()=>({TOTP:class{verify=async()=>({valid:true})}}));
+jest.mock('otplib',()=>({...jest.requireActual('otplib'),TOTP:class{verify=async()=>({valid:true})}}));
 import { OidcService } from './oidc.service';
 describe('OIDC browser binding and explicit linking',()=>{
   const user={id:7,username:'staff',status:'ACTIVE',updatedAt:new Date('2026-11-01'),isTotpEnabled:false};

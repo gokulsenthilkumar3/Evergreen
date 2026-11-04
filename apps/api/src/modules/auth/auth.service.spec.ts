@@ -8,6 +8,7 @@ import type { User } from '@prisma/client';
 
 const verify = jest.fn();
 jest.mock('otplib', () => ({
+  ...jest.requireActual('otplib'),
   TOTP: jest.fn().mockImplementation(() => ({
     verify: (...args: unknown[]) => verify(...args),
   })),

@@ -7,6 +7,7 @@ Start with the [Quick Start](../QUICK_START.md). Inside the app, the searchable 
 | Document | Read it to learn |
 | --- | --- |
 | [Architecture](ARCHITECTURE.md) | How the system is built, which code owns each rule, and how to make a change safely |
+| [Graphify workflow](GRAPHIFY.md) | Build/query the architecture graph and run the required staged commit gate |
 | [Architecture decision](decisions/0001-installation-and-data-boundaries.md) | Why the modular monolith and separate customer installations are retained, with rollout and rollback gates |
 | [Business flow](BUSINESS_FLOW.md) | How material and money move, who owns each handoff, and the end-to-end acceptance check |
 | [Integrations](INTEGRATIONS.md) | CSV import, Tally export, and the webhook and e-Way Bill designs |
@@ -24,6 +25,7 @@ Start with the [Quick Start](../QUICK_START.md). Inside the app, the searchable 
 | Document | Read it to learn |
 | --- | --- |
 | [Project status](PROJECT_AUDIT.md) | Current findings, readiness by business flow, and the validation record |
+| [4 November Graphify review](audits/2026-11-04/GRAPHIFY_REVIEW.md) | Source-verified findings from the technical/business review and Reface, with graph limitations and priorities |
 | [Implementation backlog](IMPLEMENTATION_BACKLOG.md) | Open work packages, their acceptance criteria and the register IDs they close |
 | [Shared issue register](audits/2026-10-11/issue-register.md) | Every individual defect, with severity, priority and the test to add |
 | [30 October review](audits/2026-10-30/REPORT.md) | How the running application behaves: every screen in a browser at desktop and phone width, the business flow through the live API, and what was fixed |

@@ -1,4 +1,4 @@
-import { uiText, useUiLanguage, setUiLanguage, uiLocale, uiTemplate, uiDateLocale, useTamilPreferences } from "./i18n";
+import { uiText, useUiLanguage, setUiLanguage, loadUiLanguage, uiLocale, uiTemplate, uiDateLocale, useTamilPreferences } from "./i18n";
 import { useState, useMemo, useEffect, useRef, lazy, Suspense } from 'react';
 import { Toaster, toast } from 'sonner';
 import { SUCCESS_MESSAGES } from './utils/messages';
@@ -494,8 +494,12 @@ const App: React.FC = () => {
     if(languagePending.current)return;
     languagePending.current=true;setLanguageSaving(true);
     const next = language === 'en' ? 'ta' : 'en';
-    setUiLanguage(next);
-    try { await api.put('/settings', { language: next }); } catch { toast.error(uiText('Language changed on this device only; it could not be saved to your account.', 'feedback')); }finally{languagePending.current=false;setLanguageSaving(false);}
+    try {
+      await loadUiLanguage(next);
+      setUiLanguage(next);
+      try { await api.put('/settings', { language: next }); } catch { toast.error(uiText('Language changed on this device only; it could not be saved to your account.', 'feedback')); }
+    } catch { toast.error('Could not load the selected language. Please retry.'); }
+    finally { languagePending.current=false;setLanguageSaving(false); }
   };
 
 

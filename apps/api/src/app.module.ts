@@ -40,6 +40,7 @@ import { IntegrationsModule } from './modules/integrations/integrations.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      ignoreEnvFile: process.env.NODE_ENV === 'test',
     }),
     ScheduleModule.forRoot(),
     DatabaseModule,

@@ -1,0 +1,6 @@
+# Duplicated static marketing explorations obscure the maintained application.
+apps/marketing-web/Demo/
+apps/marketing-web/public/demo/
+
+# Generated reports and dependencies are already covered by .gitignore.
+**/coverage/

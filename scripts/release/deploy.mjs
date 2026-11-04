@@ -31,7 +31,11 @@ export function writeJson(file, value) {
 export function createEnvironment(file) {
   if (fs.existsSync(file)) return false;
   const secret = () => randomBytes(48).toString('hex');
+  const networkId = createHash('sha256').update(path.resolve(file)).digest();
+  const networkPrefix = `172.${16 + (networkId[0] & 15)}.${networkId[1]}`;
   const env = {
+    EVERGREEN_TENANT_SUBNET: `${networkPrefix}.0/24`,
+    EVERGREEN_WEB_PROXY_IP: `${networkPrefix}.10`, EVERGREEN_MARKETING_PROXY_IP: `${networkPrefix}.11`,
     TENANT_JWT_SECRET: secret(), TENANT_ENCRYPTION_SECRET: secret(),
     PROVIDER_ADMIN_API_KEY: secret(), ADMIN_JWT_SECRET: secret(),
     BOOTSTRAP_ADMIN_USERNAME: 'admin', BOOTSTRAP_ADMIN_EMAIL: 'admin@evergreen.local',
@@ -77,6 +81,9 @@ export async function deploy(options, execute = runDocker) {
     if (previous && previous.release === options.release) throw new Error('That release is already installed; use status');
     createEnvironment(envFile);
     const installationEnvironment = readEnvironment(envFile);
+    if (options.command === 'update' && /^postgres(?:ql)?:\/\//.test(installationEnvironment.EVERGREEN_TENANT_DATABASE_URL || process.env.EVERGREEN_TENANT_DATABASE_URL || '')) {
+      throw new Error('PostgreSQL updates require a verified pg_dump backup and an explicitly reviewed schema rollout; the SQLite snapshot updater cannot perform that cutover');
+    }
     const generation = randomUUID();
     const next = { format: 1, project: options.project, release: options.release, all: previous?.all ?? options.all,
       engineProject: previous?.engineProject || `${options.project}-${createHash('sha256').update(fs.realpathSync(options.state)).digest('hex').slice(0, 8)}`,

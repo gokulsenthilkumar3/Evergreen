@@ -1,5 +1,9 @@
 import '@testing-library/jest-dom';
 import type { TestingLibraryMatchers } from '@testing-library/jest-dom/matchers';
+import { beforeAll } from 'vitest';
+import { loadUiLanguage } from '../i18n';
+// Translation tests exercise the ready state; production loads only the chosen locale.
+beforeAll(() => loadUiLanguage('ta'));
 
 // The '@testing-library/jest-dom/vitest' entry cannot be used here: jest-dom is hoisted to the root
 // node_modules while vitest is installed under apps/web, so that entry cannot resolve 'vitest' at run

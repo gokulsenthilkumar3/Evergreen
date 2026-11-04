@@ -5,15 +5,16 @@ import { Prisma } from '@prisma/client';
  * Corrections are appended to the catalogue ledger, preserving imported history.
  * Commerce yarn movements are projected back into inventory without importing them twice.
  */
-export async function reconcileStock(tx: Prisma.TransactionClient) {
-  const cotton = await tx.cottonInventory.findMany();
-  const yarn = await tx.yarnInventory.findMany({
+export async function reconcileStock(tx: Prisma.TransactionClient, affectedItems?: Set<number>) {
+  const cotton = affectedItems ? [] : await tx.cottonInventory.findMany();
+  const yarn = affectedItems ? [] : await tx.yarnInventory.findMany({
     where: { type: { not: 'COMMERCE' } },
   });
   for (const [kind, entries] of [
     ['COTTON', cotton],
     ['YARN', yarn],
   ] as const) {
+    if (affectedItems) continue; // Legacy source writes select the full repair path explicitly.
     const referenceType = `LEGACY_${kind}`;
     const imported = await tx.stockMovement.findMany({
       where: { referenceType },
@@ -119,7 +120,7 @@ export async function reconcileStock(tx: Prisma.TransactionClient) {
   }
 
   const managed = await tx.catalogueItem.findMany({
-    where: { legacySource: 'EVERGREEN_LEGACY' },
+    where: { legacySource: 'EVERGREEN_LEGACY', ...(affectedItems ? { id: { in: [...affectedItems] } } : {}) },
   });
   for (const item of managed) {
     const movements = await tx.stockMovement.findMany({
@@ -169,6 +170,7 @@ export async function reconcileStock(tx: Prisma.TransactionClient) {
     }
   }
   const yarnRows = await tx.yarnInventory.findMany({
+    ...(affectedItems ? { where: { count: { in: managed.filter(item => item.type === 'YARN').map(item => item.legacyId || item.sku.replace(/^LEGACY-YARN-/, '')) } } } : {}),
     orderBy: [{ date: 'asc' }, { id: 'asc' }],
   });
   const balances = new Map<string | null, number>();
@@ -181,7 +183,7 @@ export async function reconcileStock(tx: Prisma.TransactionClient) {
         data: { balance },
       });
   }
-  const cottonRows = await tx.cottonInventory.findMany({
+  const cottonRows = affectedItems ? [] : await tx.cottonInventory.findMany({
     orderBy: [{ date: 'asc' }, { id: 'asc' }],
   });
   let cottonBalance = 0;

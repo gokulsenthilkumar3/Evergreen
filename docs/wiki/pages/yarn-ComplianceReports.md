@@ -18,7 +18,7 @@ No literal Tab controls in this file. Check composed components and dynamic navi
 
 | Control / label | Handler | Source |
 | --- | --- | --- |
-| Refresh | `{refresh}` | [apps/web/src/pages/yarn/ComplianceReports.tsx:75](../../../apps/web/src/pages/yarn/ComplianceReports.tsx) |
+| {uiText("Refresh ")} | `{refresh}` | [apps/web/src/pages/yarn/ComplianceReports.tsx:75](../../../apps/web/src/pages/yarn/ComplianceReports.tsx) |
 
 ## API calls
 
@@ -26,11 +26,12 @@ Paths are relative to the client API base (`/api/backend` by default in the brow
 
 | Method | Path expression | Source |
 | --- | --- | --- |
-| GET | `/commerce/report` | [apps/web/src/pages/yarn/ComplianceReports.tsx:30](../../../apps/web/src/pages/yarn/ComplianceReports.tsx) |
-| GET | `/hr/payroll` | [apps/web/src/pages/yarn/ComplianceReports.tsx:35](../../../apps/web/src/pages/yarn/ComplianceReports.tsx) |
+| GET | `/commerce/report` | [apps/web/src/pages/yarn/ComplianceReports.tsx:32](../../../apps/web/src/pages/yarn/ComplianceReports.tsx) |
+| GET | `/hr/payroll` | [apps/web/src/pages/yarn/ComplianceReports.tsx:37](../../../apps/web/src/pages/yarn/ComplianceReports.tsx) |
 
 ## Composed behavior
 
+- [i18n.ts](../../../apps/web/src/i18n.ts)
 - [api.ts](../../../apps/web/src/utils/api.ts)
 
 ## Verify the workflow

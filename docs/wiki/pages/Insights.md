@@ -12,14 +12,14 @@ Sign in to the company installation. VIEWER reads records, MODIFIER performs ord
 
 ## Tabs
 
-- {t.label} ([apps/web/src/pages/Insights.tsx:275](../../../apps/web/src/pages/Insights.tsx))
+- {t.label} ([apps/web/src/pages/Insights.tsx:269](../../../apps/web/src/pages/Insights.tsx))
 
 ## Actions
 
 | Control / label | Handler | Source |
 | --- | --- | --- |
-| Export All | `{() => alert('All reports exported successfully!')}` | [apps/web/src/pages/Insights.tsx:81](../../../apps/web/src/pages/Insights.tsx) |
-| Generate Reports → | `{() => alert('${cat.category} reports generated successfully!')}` | [apps/web/src/pages/Insights.tsx:109](../../../apps/web/src/pages/Insights.tsx) |
+| {uiText("Export All")} | `{() => alert('All reports exported successfully!')}` | [apps/web/src/pages/Insights.tsx:82](../../../apps/web/src/pages/Insights.tsx) |
+| {uiText("Generate Reports → ")} | `{() => alert('${cat.category} reports generated successfully!')}` | [apps/web/src/pages/Insights.tsx:110](../../../apps/web/src/pages/Insights.tsx) |
 
 ## API calls
 
@@ -27,12 +27,13 @@ Paths are relative to the client API base (`/api/backend` by default in the brow
 
 | Method | Path expression | Source |
 | --- | --- | --- |
-| GET | `/billing/invoices` | [apps/web/src/pages/Insights.tsx:124](../../../apps/web/src/pages/Insights.tsx) |
-| GET | `/dashboard/summary` | [apps/web/src/pages/Insights.tsx:130](../../../apps/web/src/pages/Insights.tsx) |
-| GET | `/dashboard/charts` | [apps/web/src/pages/Insights.tsx:136](../../../apps/web/src/pages/Insights.tsx) |
+| GET | `/billing/invoices` | [apps/web/src/pages/Insights.tsx:125](../../../apps/web/src/pages/Insights.tsx) |
+| GET | `/dashboard/summary` | [apps/web/src/pages/Insights.tsx:131](../../../apps/web/src/pages/Insights.tsx) |
+| GET | `/dashboard/charts` | [apps/web/src/pages/Insights.tsx:137](../../../apps/web/src/pages/Insights.tsx) |
 
 ## Composed behavior
 
+- [i18n.ts](../../../apps/web/src/i18n.ts)
 - [EwayBills.tsx](../../../apps/web/src/components/insights/EwayBills.tsx)
 - [TallySync.tsx](../../../apps/web/src/components/insights/TallySync.tsx)
 - [api.ts](../../../apps/web/src/utils/api.ts)

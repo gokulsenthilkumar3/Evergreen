@@ -5,6 +5,12 @@ import { omit } from '../utils/omit';
 export const money = (n: number) =>
   Math.round((n + Number.EPSILON) * 100) / 100;
 type Tx = Prisma.TransactionClient;
+export interface FinanceScope {
+  costs: Set<number>;
+  payroll: Set<number>;
+  productions: Set<number>;
+  invoices: Set<number>;
+}
 export async function unavailableStock(
   tx: Pick<Tx, 'stockHold' | 'stockMovement'>,
   itemId: number,
@@ -182,9 +188,9 @@ export async function journal(
 }
 
 /** Assign legacy quantities once; new unlabelled issues pick released company lots. */
-export async function reconcileLots(tx: Tx) {
+export async function reconcileLots(tx: Tx, affectedItems?: Set<number>) {
   const rows = await tx.stockMovement.findMany({
-    where: { lotId: null, quantity: { not: 0 } },
+    where: { lotId: null, quantity: { not: 0 }, ...(affectedItems ? { itemId: { in: [...affectedItems] } } : {}) },
     orderBy: [{ date: 'asc' }, { id: 'asc' }],
   });
   for (const row of rows) {
@@ -348,9 +354,9 @@ export function payrollProblem(pay: { month: string; basicPay: number; overtime:
  * database edit; it is left out of the journal and reported instead of thrown,
  * because throwing here would block every posting, including its own repair.
  */
-export async function reconcileFinance(tx: Tx): Promise<string[]> {
+export async function reconcileFinance(tx: Tx, scope?: FinanceScope): Promise<string[]> {
   const issues: string[] = [];
-  const expenses = await tx.costingEntry.findMany();
+  const expenses = scope && !scope.costs.size ? [] : await tx.costingEntry.findMany(scope ? { where: { id: { in: [...scope.costs] } } } : undefined);
   for (const expense of expenses) {
     if (!Number.isFinite(expense.totalCost) || expense.totalCost < 0) {
       issues.push(
@@ -370,7 +376,7 @@ export async function reconcileFinance(tx: Tx): Promise<string[]> {
       ],
     );
   }
-  const payroll = await tx.payrollEntry.findMany();
+  const payroll = scope && !scope.payroll.size ? [] : await tx.payrollEntry.findMany(scope ? { where: { id: { in: [...scope.payroll] } } } : undefined);
   for (const pay of payroll) {
     const date = pay.createdAt;
     const problem = payrollProblem(pay);
@@ -406,7 +412,7 @@ export async function reconcileFinance(tx: Tx): Promise<string[]> {
       ],
     );
   }
-  const productions = await tx.production.findMany();
+  const productions = scope && !scope.productions.size ? [] : await tx.production.findMany(scope ? { where: { id: { in: [...scope.productions] } } } : undefined);
   for (const p of productions) {
     if (p.totalIntermediate > 0)
       await tx.wipLot.upsert({
@@ -433,8 +439,8 @@ export async function reconcileFinance(tx: Tx): Promise<string[]> {
         ],
       );
   }
-  const invoices = await tx.invoice.findMany({
-    where: { customerId: { not: null } },
+  const invoices = scope && !scope.invoices.size ? [] : await tx.invoice.findMany({
+    where: { customerId: { not: null }, ...(scope ? { id: { in: [...scope.invoices] } } : {}) },
     include: { payments: true },
   });
   for (const invoice of invoices) {

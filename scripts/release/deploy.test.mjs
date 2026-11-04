@@ -84,6 +84,23 @@ test('invalid targets and arguments are rejected before deployment', () => {
   assert.throws(() => parseOptions(['update', '--release', 'x;command']), /release/);
   assert.throws(() => parseOptions(['update']), /release/);
 });
+
+test('PostgreSQL updates are blocked before Docker work for both file and inherited configuration', async t => {
+  const f = fixture(t);
+  await deploy(f.options('install'), async () => {});
+  const previous = process.env.EVERGREEN_TENANT_DATABASE_URL;
+  try {
+    process.env.EVERGREEN_TENANT_DATABASE_URL = 'postgresql://fixture:fixture@localhost/fixture';
+    await assert.rejects(deploy(f.options('update'), async () => assert.fail('must not invoke Docker')), /pg_dump/);
+    delete process.env.EVERGREEN_TENANT_DATABASE_URL;
+    fs.appendFileSync(path.join(f.dir, 'installation.env'), 'EVERGREEN_TENANT_DATABASE_URL=postgresql://fixture:fixture@localhost/fixture\n');
+    await assert.rejects(deploy(f.options('update'), async () => assert.fail('must not invoke Docker')), /pg_dump/);
+    assert.equal(f.read('state.json').release, 'revision-1');
+  } finally {
+    if (previous === undefined) delete process.env.EVERGREEN_TENANT_DATABASE_URL;
+    else process.env.EVERGREEN_TENANT_DATABASE_URL = previous;
+  }
+});
 test('separate state directories get distinct Compose projects even when their display slug matches', async t => {
   const first = fixture(t), second = fixture(t);
   const a = await deploy(first.options('install'), async () => {});

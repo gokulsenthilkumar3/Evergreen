@@ -24,32 +24,32 @@ const NAV_LINKS = [
 ];
 
 const STATS = [
-  { val: '140K+', label: 'Active Spindles Managed', color: 'var(--emerald)' },
-  { val: '₹18.4L', label: 'Moisture Fraud Caught (Live)', color: 'var(--amber)' },
-  { val: '30 Days', label: 'Unrestricted Grace Quota', color: 'var(--sky)' },
-  { val: '< 3 Min', label: 'Instant Reactivation SLA', color: 'var(--purple)' },
-  { val: '99.98%', label: 'Multi-Cloud Uptime', color: 'var(--emerald)' },
-  { val: '4 Clouds', label: 'GCP · AWS · Azure · Local VM', color: 'var(--sky)' },
+  { val: 'Pilot stage', label: 'Operator acceptance required', color: 'var(--emerald)' },
+  { val: 'Illustrative', label: 'Simulator and ROI figures', color: 'var(--amber)' },
+  { val: 'Signed access', label: 'Owner-configured licence terms', color: 'var(--sky)' },
+  { val: 'Owner assisted', label: 'Activation and deployment', color: 'var(--purple)' },
+  { val: 'Local or hosted', label: 'Customer-specific installation', color: 'var(--emerald)' },
+  { val: 'Tamil + English', label: 'Staff workflow interface', color: 'var(--sky)' },
 ];
 
 const FEATURES = [
   {
     icon: '⚖️', tag: 'ANTI-FRAUD', title: 'TareZero Weighbridge Gateway',
-    desc: 'RS-232 serial hardware integration with Avery, Essae & Mettler indicators. Cryptographic moisture deduction logs. Catches invisible weight fraud in real time.',
+    desc: 'Indicator parsers, signed slip utilities and contract-based moisture calculations. Physical serial capture and device provisioning require a supported-hardware pilot.',
     color: 'amber',
-    items: ['Hardware-level tare locking', 'SIMA/CCI moisture deduction standards', 'Anti-tamper audit trail', 'QR-coded lot slips'],
+    items: ['Indicator parser utilities', 'Contract-specific moisture calculation', 'Signed slip validation', 'QR-coded lot slips'],
   },
   {
     icon: '📑', tag: 'ACCOUNTING', title: 'Tally Prime XML Bridge',
-    desc: 'Zero-duplicate purchase, sales & receipt vouchers auto-generated as valid Tally Prime XML. One click imports — your accountant stays in Tally forever.',
+    desc: 'Export purchase, sales and receipt vouchers as Tally XML for an operator to review and import. Automatic two-way posting and import acknowledgements are not available.',
     color: 'cyan',
-    items: ['CGST / SGST / IGST auto-split', 'E-Way Bill generation', 'Multi-company ledger mapping', 'Day Book cross-register search'],
+    items: ['CGST / SGST / IGST split', 'e-Way Bill readiness checks', 'Tally XML export', 'Day Book cross-register search'],
   },
   {
     icon: '📱', tag: 'COLLECTIONS', title: 'WhatsApp Collections Engine',
-    desc: 'Bilingual payment reminders in Tamil & English sent directly to buyer WhatsApp. Tracks UTR confirmations and automatically updates ledger balances.',
+    desc: 'Prepare Tamil and English payment reminder links for staff to send in WhatsApp. Payments are recorded and verified in the accounts workflow.',
     color: 'green',
-    items: ['Tamil & English bilingual', 'Auto UTR confirmation', 'Ledger balance sync', 'Outstanding report generator'],
+    items: ['Tamil & English bilingual', 'Staff-controlled reminders', 'Recorded payment history', 'Outstanding reports'],
   },
   {
     icon: '🔬', tag: 'INTELLIGENCE', title: 'Book-Ellam (புக் எல்லாம்)',
@@ -58,16 +58,16 @@ const FEATURES = [
     items: ['Cross-register search', 'Party ledger history', 'Comber noil & waste matrix', 'Shift production variance'],
   },
   {
-    icon: '🌩️', tag: 'DEPLOYMENT', title: '1-Click Multi-Cloud Deploy',
-    desc: 'Self-deploying install script for Local Linux VM, GCP Cloud Run, AWS ECS, or Azure Container Apps. Hermetically sealed Docker OCI with rolling zero-downtime upgrades.',
+    icon: '🌩️', tag: 'DEPLOYMENT', title: 'Customer-Specific Deployment',
+    desc: 'Deployment helpers for local Linux and container hosts. Hosting, credentials, backup/restore and update acceptance are configured and verified for each installation.',
     color: 'blue',
-    items: ['Rolling / Blue-Green / Canary', 'Isolated SQLite per tenant', 'Zero vendor lock-in', 'Air-gapped factory support'],
+    items: ['Local and container helpers', 'Separate customer database', 'Owner-managed hosting', 'Installation recovery checks'],
   },
   {
     icon: '🛡️', tag: 'COMPLIANCE', title: 'Owner-Controlled Licence Periods',
     desc: 'The owner defines activation periods and signed offline deadlines. Renew before expiry; an expired activation blocks access until a valid licence is installed.',
     color: 'amber',
-    items: ['Signed offline validity', 'Sales & support SLA alerts', 'UTR-verified 3-min reactivation', 'Cryptographic audit log'],
+    items: ['Signed offline validity', 'Owner-defined support terms', 'Owner-assisted activation', 'Cryptographic licence checks'],
   },
 ];
 
@@ -76,7 +76,7 @@ const TIERS = [
     name: 'Gatekeeper P0', badge: 'ANTI-FRAUD ENTRY', price: 3999, period: 'month',
     desc: 'Weighbridge + Tally Prime XML integration for mills who want fraud prevention first.',
     color: 'amber', popular: false,
-    features: ['TareZero Weighbridge Gateway', 'Tally XML export', 'Anti-tamper moisture log', '1 Weighbridge station', '30-Day Active Grace', '< 3 min reactivation'],
+    features: ['Weighbridge workflow pilot', 'Tally XML export', 'Recorded moisture inputs', '1 planned weighbridge station', 'Signed activation terms', 'Owner-assisted renewal'],
     cta: 'Start Gatekeeper',
   },
   {
@@ -90,7 +90,7 @@ const TIERS = [
     name: 'Scale Enterprise', badge: 'LARGE MILLS', price: 14999, period: 'month',
     desc: 'Composite textile group — multi-unit spinning, weaving & export processing.',
     color: 'purple', popular: false,
-    features: ['Everything in Growth', 'Unlimited staff & machines', 'Real-time Digital Twin dashboard', 'Custom Tally connector', 'Dedicated SLA engineer', 'Custom VPC peering (GCP/AWS)'],
+    features: ['Growth workflows', 'Agreed staff and machine limits', 'Recorded production dashboard', 'Tally XML export', 'Agreed support terms', 'Host-specific deployment review'],
     cta: 'Contact Enterprise Sales',
   },
   {
@@ -473,12 +473,12 @@ const FAQS = [
   {
     category: '30-Day Grace & Licensing',
     q: 'What happens when my license expires?',
-    a: 'Nothing stops. Your mill operations continue uninterrupted for 30 full days (Active Grace Quota). Our licensing team contacts you for renewal. Once payment is verified (UTR), your license reactivates in under 3 minutes — from anywhere, by our provider admin.',
+    a: 'Activation and offline validity follow signed owner terms. Expired activation blocks access until a valid licence is installed. Arrange renewal before the deadline; this site does not promise a reactivation time.',
   },
   {
     category: 'Cloud & Offline',
     q: 'Can it run offline on a local factory PC?',
-    a: 'Yes. EverGreen runs natively on a Windows or Linux PC or server inside your mill, with zero cloud dependency. The local SQLite database holds all your data. Telemetry (no PII) syncs hourly to our control plane when internet is available.',
+    a: 'A local installation can own its own database within the signed offline validity period. Hosted and local databases do not provide bidirectional offline synchronization. Provider metrics transport is optional and requires company-bound credentials.',
   },
   {
     category: 'Book-Ellam',
@@ -488,7 +488,7 @@ const FAQS = [
   {
     category: 'Weighbridge & Hardware',
     q: 'How does the Weighbridge anti-fraud system work?',
-    a: 'The TareZero system connects directly to your Avery, Essae, or Mettler weighbridge indicator via RS-232 serial. It captures the weight at the hardware level before software can manipulate it, applies SIMA/CCI standard moisture deductions, and creates a cryptographically signed log entry for every bale weighed.',
+    a: 'Indicator parsers, signature validation and receipt workflows are available. Physical serial capture needs a supported-device pilot and provisioned identity. Moisture allowances must follow the purchase contract; software alone does not prove physical anti-tamper protection.',
   },
   {
     category: 'POC & Trials',
@@ -553,17 +553,17 @@ export default function App() {
   }, []);
 
 
-  const copyScript = () => {
-    const scripts: Record<string, string> = {
-      LOCAL_VM: `curl -sSL https://get.evergreen-os.com/install.sh | sudo bash -s -- --target=local-vm`,
-      GCP: `gcloud run deploy evergreen-mill --image=gcr.io/evergreen-os/tenant:v1.2.4-lts --region=asia-south1`,
-      AWS: `aws ecs create-service --cluster evergreen --service-name mill --task-definition evergreen:1.2.4`,
-      AZURE: `az container create --resource-group EvergreenRG --name evergreen-mill --image evergreenos/tenant:v1.2.4-lts`,
-    };
-    navigator.clipboard?.writeText(scripts[deployTarget]);
-    setCopied(true);
-    setToastMsg(`${deployTarget} install command copied to clipboard!`);
-    setTimeout(() => setCopied(false), 2500);
+  const copyScript = async () => {
+    if (deployTarget !== 'LOCAL_VM') return;
+    try {
+      if (!navigator.clipboard) throw new Error('Clipboard unavailable');
+      await navigator.clipboard.writeText('node scripts/release/deploy.mjs install --project my-mill --release RELEASE_TAG');
+      setCopied(true);
+      setToastMsg('Local deployment helper command copied. Review prerequisites before running it.');
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      setToastMsg('Could not copy the command. Select it from the example instead.');
+    }
   };
 
   const filteredFaqs = FAQS.filter(f => {
@@ -590,7 +590,7 @@ export default function App() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
             <span style={{ fontSize: '0.74rem', color: 'var(--emerald-light)', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'rgba(16, 185, 129, 0.1)', padding: '0.2rem 0.55rem', borderRadius: 9999 }}>
               <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--emerald)', boxShadow: '0 0 6px var(--emerald)' }} />
-              142,840 Spindles Live
+              Pilot acceptance required
             </span>
             <a href="#pricing" className="ticker-cta">{t.ticker.cta}</a>
           </div>
@@ -840,17 +840,17 @@ export default function App() {
                   <p>Stop waiting for month-end Tally sheets. Get real-time per-kilogram yarn costing, EB unit rate attribution, raw cotton purchase parity, and live day-book balances.</p>
                   <ul className="check-list">
                     <li><strong>Live Margin Tracker:</strong> Cotton price vs. yarn sales realization per count, per shift.</li>
-                    <li><strong>Zero Stock Leakage:</strong> Lot QR traceability — no bale leaves without barcode dispatch.</li>
-                    <li><strong>Fraud Prevention ROI:</strong> Average ₹4.2L/year saved on moisture fraud alone.</li>
+                    <li><strong>Stock Traceability:</strong> Review lot records and dispatch history.</li>
+                    <li><strong>Illustrative ROI:</strong> Use your contract, measured moisture and verified costs in the calculator. Savings require pilot evidence.</li>
                     <li><strong>Transparent Billing:</strong> Regional pricing multipliers for Tirupur, Surat, Ludhiana.</li>
                   </ul>
                 </div>
                 <div className="metric-card-stack">
                   {[
-                    { label: 'Average Waste Reduction', val: '0.85%–1.4%', color: 'var(--emerald)' },
-                    { label: 'Invoice Generation Speed', val: '12 Seconds', color: 'var(--sky)' },
-                    { label: 'Audit Time Saved', val: '18 Hours/Month', color: 'var(--purple)' },
-                    { label: 'Tally Import Speed', val: 'From 4hr → 12s', color: 'var(--amber)' },
+                    { label: 'Waste Analysis', val: 'Recorded production balance', color: 'var(--emerald)' },
+                    { label: 'Invoices', val: 'Reviewed posting workflow', color: 'var(--sky)' },
+                    { label: 'Audit', val: 'Cross-register search', color: 'var(--purple)' },
+                    { label: 'Tally', val: 'Operator-reviewed XML import', color: 'var(--amber)' },
                   ].map((m, i) => (
                     <div className="metric-card" key={i}>
                       <span>{m.label}</span>
@@ -863,10 +863,10 @@ export default function App() {
             {activePersona === 'SPINNER' && (
               <div className="persona-grid">
                 <div>
-                  <h3>Flawless Bale Inward, Tare Calibration & Waste Balance</h3>
-                  <p>From Blowroom to Autoconer — capture tare weights, moisture deductions, staple length. Ensure every 2.5kg cone box has exact net weight with anti-fraud hardware locks.</p>
+                  <h3>Bale Inward, Tare Records & Waste Balance</h3>
+                  <p>Record tare weights, agreed moisture deductions and production quantities. Confirm physical capture and calibration during a supported-indicator pilot.</p>
                   <ul className="check-list">
-                    <li><strong>Automated Tare Deductions:</strong> Box tare, tube tare, plastic wrap — calculated at hardware level.</li>
+                    <li><strong>Tare Deductions:</strong> Calculate from operator-supplied box, tube and wrap inputs.</li>
                     <li><strong>Comber Noil & Waste Balance:</strong> Cotton-to-yarn efficiency and drop % by lot.</li>
                     <li><strong>Shift Production Rostering:</strong> 3-shift gate pass, machine uptime & OEE tracking.</li>
                     <li><strong>Machine License Quotas:</strong> Enforce spindle count limits and preventive maintenance schedules.</li>
@@ -874,9 +874,9 @@ export default function App() {
                 </div>
                 <div className="metric-card-stack">
                   {[
-                    { label: 'Bale Weighbridge Scan', val: 'RS-232 Automated', color: 'var(--amber)' },
-                    { label: 'Cone Box Standard', val: '2.5 kg Tare Calibrated', color: 'var(--emerald)' },
-                    { label: 'Moisture Deduction', val: 'SIMA/CCI Standard', color: 'var(--sky)' },
+                    { label: 'Indicator Capture', val: 'Supported-device pilot required', color: 'var(--amber)' },
+                    { label: 'Cone Box Tare', val: 'Operator-supplied input', color: 'var(--emerald)' },
+                    { label: 'Moisture Deduction', val: 'Purchase-contract allowance', color: 'var(--sky)' },
                     { label: 'Lot QR Traceability', val: 'Bale → Cone → Dispatch', color: 'var(--purple)' },
                   ].map((m, i) => (
                     <div className="metric-card" key={i}>
@@ -891,20 +891,20 @@ export default function App() {
               <div className="persona-grid">
                 <div>
                   <h3>Book-Ellam (புக் எல்லாம்) — The All-Books Audit Engine</h3>
-                  <p>The traditional South Indian textile trade's unified audit research tool. Search all registers simultaneously in one view. Zero manual cross-referencing. Tally Prime auto-vouchers eliminate data re-entry forever.</p>
+                  <p>Search operational registers in one view and export Tally XML for an accountant to review and import. Reconcile import outcomes before accepting the posting.</p>
                   <ul className="check-list">
                     <li><strong>Cross-Register Search:</strong> Day Book, Inward, Outward, Party Khata — one query.</li>
-                    <li><strong>Tally XML Auto-Import:</strong> Purchase, sales & receipt vouchers — zero re-entry.</li>
+                    <li><strong>Tally XML Export:</strong> Purchase, sales and receipt vouchers for operator import.</li>
                     <li><strong>CGST/SGST/IGST Auto-Split:</strong> Automated interstate tax categorization.</li>
-                    <li><strong>E-Way Bill Integration:</strong> GSTN portal sync for all qualifying dispatches.</li>
+                    <li><strong>e-Way Bill Readiness:</strong> Check fields before external registration.</li>
                   </ul>
                 </div>
                 <div className="metric-card-stack">
                   {[
-                    { label: 'Tally Import Time', val: '4 Hours → 12 Seconds', color: 'var(--emerald)' },
-                    { label: 'GST Error Rate', val: '0% (Auto-Calculated)', color: 'var(--sky)' },
-                    { label: 'Audit Preparation', val: '18 Hours Saved/Month', color: 'var(--purple)' },
-                    { label: 'E-Way Bill Generation', val: 'API Integrated', color: 'var(--amber)' },
+                    { label: 'Tally Import', val: 'Accountant review required', color: 'var(--emerald)' },
+                    { label: 'Tax Split', val: 'Calculated for review', color: 'var(--sky)' },
+                    { label: 'Audit Preparation', val: 'Search recorded registers', color: 'var(--purple)' },
+                    { label: 'e-Way Bill', val: 'External registration required', color: 'var(--amber)' },
                   ].map((m, i) => (
                     <div className="metric-card" key={i}>
                       <span>{m.label}</span>
@@ -917,21 +917,21 @@ export default function App() {
             {activePersona === 'DEVOPS' && (
               <div className="persona-grid">
                 <div>
-                  <h3>1-Click Multi-Cloud Deployment & Zero Vendor Lock-In</h3>
-                  <p>A single install command auto-provisions the full EverGreen stack — NestJS API, SQLite database, and Weighbridge agent. Rolling, Blue-Green, and Canary upgrades from provider admin. Full air-gap support for offline factory environments.</p>
+                  <h3>Customer-Specific Local or Hosted Deployment</h3>
+                  <p>Configure the API, web app and database for each customer. Deployment helpers require host credentials, signed activation and a verified backup and recovery procedure.</p>
                   <ul className="check-list">
-                    <li><strong>Hermetic OCI Docker Images:</strong> Tagged, checksummed, and signed artifacts.</li>
-                    <li><strong>Zero PII Telemetry:</strong> Only quota metrics sync to provider hub — no business data.</li>
-                    <li><strong>Rolling / Blue-Green / Canary:</strong> Zero-downtime upgrades from mission control.</li>
-                    <li><strong>Air-Gap Support:</strong> Runs fully offline on local mill LAN with USB provisioning.</li>
+                    <li><strong>Container Builds:</strong> Build and validate a release before deployment.</li>
+                    <li><strong>Optional Metrics:</strong> Company-bound credentials control provider transport.</li>
+                    <li><strong>Reviewed Updates:</strong> Verify downtime, schema rollout and recovery.</li>
+                    <li><strong>Local Operation:</strong> Access remains subject to signed offline deadlines.</li>
                   </ul>
                 </div>
                 <div className="metric-card-stack">
                   {[
-                    { label: 'Deploy Time (Local VM)', val: 'Under 8 Minutes', color: 'var(--emerald)' },
-                    { label: 'Upgrade Downtime', val: '0 Seconds (Rolling)', color: 'var(--sky)' },
-                    { label: 'Multi-Cloud Support', val: 'GCP · AWS · Azure · VM', color: 'var(--amber)' },
-                    { label: 'Data Isolation', val: '100% — Zero Sharing', color: 'var(--purple)' },
+                    { label: 'Setup', val: 'Host-specific validation', color: 'var(--emerald)' },
+                    { label: 'Upgrade Downtime', val: 'Measure per installation', color: 'var(--sky)' },
+                    { label: 'Hosting', val: 'Local or container host', color: 'var(--amber)' },
+                    { label: 'Data Boundary', val: 'Separate customer database', color: 'var(--purple)' },
                   ].map((m, i) => (
                     <div className="metric-card" key={i}>
                       <span>{m.label}</span>
@@ -1160,9 +1160,9 @@ export default function App() {
       <section id="deployment" className="mkt-section bg-alt"><div className="mkt-container product-readiness-note">Deployment examples show the intended workflow. A cloud account, domain, secrets and environment validation are required; this page does not provision infrastructure.</div>
         <div className="mkt-container">
           <div className="section-head">
-            <span className="eyebrow">1-CLICK DEPLOYMENT</span>
-            <h2>Deploy in Under 8 Minutes — Any Cloud, Any Mill</h2>
-            <p>A single command installs the complete EverGreen stack. Choose your deployment target and copy the script.</p>
+            <span className="eyebrow">DEPLOYMENT PLANNING</span>
+            <h2>Configure and Validate Your Installation</h2>
+            <p>These command examples are illustrative and require a reviewed host configuration, database and recovery plan.</p>
           </div>
           <div className="terminal-card glass-card">
             <div className="terminal-header">
@@ -1184,38 +1184,16 @@ export default function App() {
             </div>
             <div className="terminal-body">
               <div className="terminal-comment"># EverGreen OS — {deployTarget} Single-Command Install</div>
-              {deployTarget === 'LOCAL_VM' && (
-                <>
-                  <div className="terminal-line"><span className="t-prompt">$</span> curl -sSL https://get.evergreenos.in/install.sh | sudo bash -s -- \</div>
-                  <div className="terminal-line t-indent"><span className="t-flag">--target</span>=local-vm <span className="t-flag">--port</span>=4000 <span className="t-flag">--admin-url</span>=https://admin.evergreenos.in</div>
-                </>
+              {deployTarget === 'LOCAL_VM' ? (
+                <div className="terminal-line"><span className="t-prompt">$</span> node scripts/release/deploy.mjs install --project my-mill --release RELEASE_TAG</div>
+              ) : (
+                <div className="terminal-line">Prepare a host-specific container configuration with your deployment owner. No ready-to-run cloud command is published here.</div>
               )}
-              {deployTarget === 'GCP' && (
-                <>
-                  <div className="terminal-line"><span className="t-prompt">$</span> gcloud run deploy <span className="t-str">evergreen-mill</span> \</div>
-                  <div className="terminal-line t-indent"><span className="t-flag">--image</span>=<span className="t-str">gcr.io/evergreen-os/tenant:v1.2.4-lts</span> \</div>
-                  <div className="terminal-line t-indent"><span className="t-flag">--region</span>=asia-south1 <span className="t-flag">--allow-unauthenticated</span></div>
-                </>
-              )}
-              {deployTarget === 'AWS' && (
-                <>
-                  <div className="terminal-line"><span className="t-prompt">$</span> aws ecs create-service <span className="t-flag">--cluster</span> evergreen \</div>
-                  <div className="terminal-line t-indent"><span className="t-flag">--service-name</span> mill <span className="t-flag">--task-definition</span> evergreen:v1.2.4 \</div>
-                  <div className="terminal-line t-indent"><span className="t-flag">--desired-count</span> 1 <span className="t-flag">--launch-type</span> FARGATE</div>
-                </>
-              )}
-              {deployTarget === 'AZURE' && (
-                <>
-                  <div className="terminal-line"><span className="t-prompt">$</span> az container create <span className="t-flag">--resource-group</span> EvergreenRG \</div>
-                  <div className="terminal-line t-indent"><span className="t-flag">--name</span> mill-tenant <span className="t-flag">--image</span> <span className="t-str">evergreenos/tenant:v1.2.4-lts</span> \</div>
-                  <div className="terminal-line t-indent"><span className="t-flag">--cpu</span> 2 <span className="t-flag">--memory</span> 4 <span className="t-flag">--ports</span> 4000 4301</div>
-                </>
-              )}
-              <div className="terminal-line t-success">✓ EverGreen deployed successfully. Visit http://localhost:4000</div>
+              <div className="terminal-line">Example output only. No deployment was performed.</div>
             </div>
             <div className="terminal-footer">
-              <button className="btn-copy" onClick={copyScript}>{copied ? '✅ Copied!' : '📋 Copy Command'}</button>
-              <span className="terminal-note">Estimated setup time: 6–8 minutes including Docker pull</span>
+              <button className="btn-copy" onClick={copyScript} disabled={deployTarget !== 'LOCAL_VM'}>{copied ? '✅ Copied!' : '📋 Copy Local Helper'}</button>
+              <span className="terminal-note">Review the deployment guide and host prerequisites before running commands.</span>
             </div>
           </div>
         </div>
@@ -1465,8 +1443,8 @@ export default function App() {
             <div className="final-cta-glow" />
             <h2 className="final-cta-h2">Ready to Transform Your Spinning Mill?</h2>
             <p className="final-cta-p">
-              Join leading mills across Tirupur, Coimbatore, Erode & Karur who have eliminated weighbridge moisture fraud,
-              automated Tally entry, and unlocked real-time shift profit visibility with EverGreen OS.
+              Evaluate the receipt-to-payment workflow with your mill operators and accountant.
+              Hardware capture, accounting connectors and production deployment require pilot acceptance.
             </p>
             <div className="final-cta-btns">
               <button className="btn-primary btn-xl" onClick={() => setShowPocModal(true)}>

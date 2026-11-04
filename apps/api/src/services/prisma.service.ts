@@ -11,25 +11,34 @@ import {
   reconcileLots,
   reconcileFinance,
   reconcileValuation,
+  type FinanceScope,
 } from './business-ledger';
 import { AsyncLocalStorage } from 'node:async_hooks';
+import { createDatabaseClient } from '@evergreen/database/runtime-client';
+import { Cron, CronExpression } from '@nestjs/schedule';
+
+// Client delegation keeps lifecycle/ledger methods on the service while selecting a
+// generated provider at construction time, after environment configuration is loaded.
+export interface PrismaService extends PrismaClient {}
 
 @Injectable()
-export class PrismaService
-  extends PrismaClient
-  implements OnModuleInit, OnModuleDestroy
+export class PrismaService implements OnModuleInit, OnModuleDestroy
 {
   private readonly mutationScope = new AsyncLocalStorage<{
     items: Set<number>;
     lots: Set<number>;
     waste: boolean;
     all: boolean;
+    legacy: boolean;
+    financeAll: boolean;
+    finance: FinanceScope;
   }>();
   private startupIssue: string | null = null;
   private dataIssues: string[] = [];
+  private auditInProgress = false;
   constructor() {
-    super();
-    this.$use(async (params, next) => {
+    const client = createDatabaseClient();
+    client.$use(async (params, next) => {
       const result = await next(params);
       const scope = this.mutationScope.getStore();
       if (
@@ -65,9 +74,35 @@ export class PrismaService
       if (params.model === 'StockHold' && result?.lotId)
         scope.lots.add(result.lotId);
       if (params.model === 'WasteInventory') scope.waste = true;
+      if (['CottonInventory', 'YarnInventory', 'InwardBatch'].includes(params.model || '')) scope.legacy = true;
+      const financeModels: Partial<Record<Prisma.ModelName, keyof FinanceScope>> = {
+        CostingEntry: 'costs', PayrollEntry: 'payroll', Production: 'productions', Invoice: 'invoices', Payment: 'invoices',
+      };
+      const financeKey = params.model ? financeModels[params.model] : undefined;
+      if (financeKey) {
+        const id = params.model === 'Payment' ? result?.invoiceId : result?.id;
+        if (typeof id === 'number') scope.finance[financeKey].add(id);
+        else scope.financeAll = true; // Bulk/partial results retain the safe full reconciliation path.
+      }
       return result;
     });
     console.log('🏗️ PrismaService constructed');
+    return new Proxy(this, {
+      get(target, key, receiver) {
+        if (key in target) return Reflect.get(target, key, receiver);
+        const value = Reflect.get(client, key, client);
+        return typeof value === 'function' ? value.bind(client) : value;
+      },
+    });
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_2AM)
+  async auditLedgers() {
+    if (this.auditInProgress) return;
+    this.auditInProgress = true;
+    try { await this.reconcileEverything(); }
+    catch { console.error('Scheduled ledger audit failed; database/schema health requires attention'); }
+    finally { this.auditInProgress = false; }
   }
   async onModuleInit() {
     console.log('🔌 Connecting to Prisma database...');
@@ -122,13 +157,16 @@ export class PrismaService
       lots: new Set<number>(),
       waste: false,
       all: false,
+      legacy: false,
+      financeAll: false,
+      finance: { costs: new Set<number>(), payroll: new Set<number>(), productions: new Set<number>(), invoices: new Set<number>() },
     };
     return this.mutationScope.run(scope, async () => {
       let unposted: string[] = [];
       const repairFirst = await this.leadingReconcileBlocked();
       const committed = await this.$transaction(
         async (tx) => {
-          if (!repairFirst) {
+          if (this.startupIssue && !repairFirst) {
             await reconcileStock(tx);
             await reconcileLots(tx);
           }
@@ -139,10 +177,11 @@ export class PrismaService
             ? await this.closedSnapshot(tx, period.through)
             : null;
           const result = await work(tx);
-          await reconcileStock(tx);
-          await reconcileLots(tx);
+          const affected = scope.legacy || scope.all || this.startupIssue ? undefined : scope.items;
+          await reconcileStock(tx, affected);
+          await reconcileLots(tx, affected);
           // Split lot issues before projecting commerce quantities back to yarn.
-          await reconcileStock(tx);
+          await reconcileStock(tx, affected);
           for (const lotId of scope.lots) {
             const lot = await tx.stockLot.findUnique({ where: { id: lotId } });
             if (lot) scope.items.add(lot.itemId);
@@ -153,7 +192,7 @@ export class PrismaService
             scope.waste,
           );
           await guardLots(tx, scope.all ? undefined : scope.items);
-          unposted = await reconcileFinance(tx);
+          unposted = await reconcileFinance(tx, scope.financeAll || this.startupIssue ? undefined : scope.finance);
           await reconcileValuation(tx, scope.all ? undefined : scope.items);
           if (
             period &&
@@ -166,7 +205,14 @@ export class PrismaService
         },
         { timeout: 60_000 },
       );
-      this.dataIssues = unposted;
+      this.dataIssues = scope.financeAll || this.startupIssue ? unposted : [
+        ...this.dataIssues.filter(issue => {
+          const cost = issue.match(/^Cost entry #(\d+)/);
+          const pay = issue.match(/^Payroll entry #(\d+)/);
+          return !(cost && scope.finance.costs.has(Number(cost[1]))) && !(pay && scope.finance.payroll.has(Number(pay[1])));
+        }),
+        ...unposted,
+      ];
       // This posting may have been the repair: re-run the full check so a resolved
       // problem stops being reported. The posting itself is already committed.
       if (this.startupIssue)

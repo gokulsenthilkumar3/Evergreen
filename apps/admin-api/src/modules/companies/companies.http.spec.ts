@@ -239,7 +239,7 @@ describe('Provider company contracts', () => {
   it.each(['sync', 'v1/sync'])(
     'updates one daily record through %s and returns only license fields',
     async (route) => {
-      const payload = { ...metrics, appVersion: '1.2.3' };
+      const payload = { ...metrics, appVersion: '1.2.3', billingPeriod: new Date().toISOString().slice(0, 7), periodDocsPosted: 9 };
       for (let i = 0; i < 2; i++) {
         const result = await http()
           .post(`/companies/${companyId}/${route}`)

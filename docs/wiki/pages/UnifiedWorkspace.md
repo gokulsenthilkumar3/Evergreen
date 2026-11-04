@@ -18,17 +18,17 @@ No literal Tab controls in this file. Check composed components and dynamic navi
 
 | Control / label | Handler | Source |
 | --- | --- | --- |
-| Open Mill Dashboard | `{() => onNavigate('dashboard')}` | [apps/web/src/pages/UnifiedWorkspace.tsx:195](../../../apps/web/src/pages/UnifiedWorkspace.tsx) |
-| Yarn ERP Hub (9 Modules) | `{() => onNavigate('yarnerp')}` | [apps/web/src/pages/UnifiedWorkspace.tsx:204](../../../apps/web/src/pages/UnifiedWorkspace.tsx) |
-| Business Desk & Invoices | `{() => onNavigate('business')}` | [apps/web/src/pages/UnifiedWorkspace.tsx:216](../../../apps/web/src/pages/UnifiedWorkspace.tsx) |
-| Refresh now | `{() => { void report.refetch(); void machines.refetch(); void health.refetch(); }}` | [apps/web/src/pages/UnifiedWorkspace.tsx:233](../../../apps/web/src/pages/UnifiedWorkspace.tsx) |
-| Review | `{() => onNavigate('reports')}` | [apps/web/src/pages/UnifiedWorkspace.tsx:306](../../../apps/web/src/pages/UnifiedWorkspace.tsx) |
-| {module.action} | `{() => onNavigate(module.page)}` | [apps/web/src/pages/UnifiedWorkspace.tsx:379](../../../apps/web/src/pages/UnifiedWorkspace.tsx) |
-| Live Monitor | `{() => onNavigate('yarnlive')}` | [apps/web/src/pages/UnifiedWorkspace.tsx:420](../../../apps/web/src/pages/UnifiedWorkspace.tsx) |
-| Quality Lab | `{() => onNavigate('yarnquality')}` | [apps/web/src/pages/UnifiedWorkspace.tsx:428](../../../apps/web/src/pages/UnifiedWorkspace.tsx) |
-| Financials | `{() => onNavigate('reports')}` | [apps/web/src/pages/UnifiedWorkspace.tsx:436](../../../apps/web/src/pages/UnifiedWorkspace.tsx) |
-| Workflow documentation | `{() => onNavigate('tutorial')}` | [apps/web/src/pages/UnifiedWorkspace.tsx:447](../../../apps/web/src/pages/UnifiedWorkspace.tsx) |
-| API explorer (development) | `delegated / form submit` | [apps/web/src/pages/UnifiedWorkspace.tsx:448](../../../apps/web/src/pages/UnifiedWorkspace.tsx) |
+| {uiText("Open Mill Dashboard ")} | `{() => onNavigate('dashboard')}` | [apps/web/src/pages/UnifiedWorkspace.tsx:195](../../../apps/web/src/pages/UnifiedWorkspace.tsx) |
+| {uiText("Yarn ERP Hub (9 Modules) ")} | `{() => onNavigate('yarnerp')}` | [apps/web/src/pages/UnifiedWorkspace.tsx:203](../../../apps/web/src/pages/UnifiedWorkspace.tsx) |
+| {uiText("Business Desk & Invoices ")} | `{() => onNavigate('business')}` | [apps/web/src/pages/UnifiedWorkspace.tsx:214](../../../apps/web/src/pages/UnifiedWorkspace.tsx) |
+| {uiText("Refresh now")} | `{() => { void report.refetch(); void machines.refetch(); void health.refetch(); }}` | [apps/web/src/pages/UnifiedWorkspace.tsx:230](../../../apps/web/src/pages/UnifiedWorkspace.tsx) |
+| {uiText("Review")} | `{() => onNavigate('reports')}` | [apps/web/src/pages/UnifiedWorkspace.tsx:295](../../../apps/web/src/pages/UnifiedWorkspace.tsx) |
+| {uiText(module.action)} | `{() => onNavigate(module.page)}` | [apps/web/src/pages/UnifiedWorkspace.tsx:366](../../../apps/web/src/pages/UnifiedWorkspace.tsx) |
+| {uiText("Live Monitor ")} | `{() => onNavigate('yarnlive')}` | [apps/web/src/pages/UnifiedWorkspace.tsx:406](../../../apps/web/src/pages/UnifiedWorkspace.tsx) |
+| {uiText("Quality Lab ")} | `{() => onNavigate('yarnquality')}` | [apps/web/src/pages/UnifiedWorkspace.tsx:413](../../../apps/web/src/pages/UnifiedWorkspace.tsx) |
+| {uiText("Financials ")} | `{() => onNavigate('reports')}` | [apps/web/src/pages/UnifiedWorkspace.tsx:420](../../../apps/web/src/pages/UnifiedWorkspace.tsx) |
+| {uiText("Workflow documentation")} | `{() => onNavigate('tutorial')}` | [apps/web/src/pages/UnifiedWorkspace.tsx:430](../../../apps/web/src/pages/UnifiedWorkspace.tsx) |
+| {uiText("API explorer (development)")} | `delegated / form submit` | [apps/web/src/pages/UnifiedWorkspace.tsx:431](../../../apps/web/src/pages/UnifiedWorkspace.tsx) |
 
 ## API calls
 
@@ -36,12 +36,13 @@ Paths are relative to the client API base (`/api/backend` by default in the brow
 
 | Method | Path expression | Source |
 | --- | --- | --- |
-| GET | `/commerce/report` | [apps/web/src/pages/UnifiedWorkspace.tsx:112](../../../apps/web/src/pages/UnifiedWorkspace.tsx) |
-| GET | `/machines` | [apps/web/src/pages/UnifiedWorkspace.tsx:117](../../../apps/web/src/pages/UnifiedWorkspace.tsx) |
-| GET | `/health?format=json` | [apps/web/src/pages/UnifiedWorkspace.tsx:122](../../../apps/web/src/pages/UnifiedWorkspace.tsx) |
+| GET | `/commerce/report` | [apps/web/src/pages/UnifiedWorkspace.tsx:114](../../../apps/web/src/pages/UnifiedWorkspace.tsx) |
+| GET | `/machines` | [apps/web/src/pages/UnifiedWorkspace.tsx:119](../../../apps/web/src/pages/UnifiedWorkspace.tsx) |
+| GET | `/health?format=json` | [apps/web/src/pages/UnifiedWorkspace.tsx:124](../../../apps/web/src/pages/UnifiedWorkspace.tsx) |
 
 ## Composed behavior
 
+- [i18n.ts](../../../apps/web/src/i18n.ts)
 - [api.ts](../../../apps/web/src/utils/api.ts)
 - [BusinessFlowGuide.tsx](../../../apps/web/src/components/BusinessFlowGuide.tsx)
 

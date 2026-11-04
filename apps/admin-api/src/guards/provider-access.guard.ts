@@ -3,14 +3,18 @@ import {
   ExecutionContext,
   Injectable,
   UnauthorizedException,
+  Optional,
 } from '@nestjs/common';
 import { createHash, timingSafeEqual } from 'node:crypto';
 import type { Request } from 'express';
 import { validateProviderSession } from './provider-session';
+import { PrismaService } from '../services/prisma.service';
 
 @Injectable()
 export class ProviderAccessGuard implements CanActivate {
-  canActivate(context: ExecutionContext): boolean {
+  constructor(@Optional() private readonly prisma?: PrismaService) {}
+
+  canActivate(context: ExecutionContext): boolean | Promise<boolean> {
     const req = context
       .switchToHttp()
       .getRequest<Request & { providerActor?: string }>();
@@ -34,6 +38,24 @@ export class ProviderAccessGuard implements CanActivate {
       throw new UnauthorizedException(
         'ADMIN_API_KEY must be configured before provider access is enabled',
       );
+    }
+
+    // A company key can authenticate only that company's metrics endpoint.
+    // It never grants provider-console, licence-management or deployment access.
+    const companyKey = req.headers['x-company-key'];
+    if (companyKey !== undefined) {
+      const match = /^\/companies\/([a-zA-Z0-9_-]{1,128})\/(?:v1\/)?sync\/?$/.exec(req.path);
+      if (req.method !== 'POST' || !match || typeof companyKey !== 'string' || !this.prisma) {
+        throw new UnauthorizedException('Company sync credentials are not valid for this endpoint');
+      }
+      return this.prisma.company.findUnique({ where: { id: match[1] }, select: { apiKey: true } }).then(company => {
+        const digest = (value: string) => createHash('sha256').update(value).digest();
+        if (!company?.apiKey || !timingSafeEqual(digest(companyKey), digest(company.apiKey))) {
+          throw new UnauthorizedException('Invalid company sync credentials');
+        }
+        req.providerActor = `Company:${match[1]}`;
+        return true;
+      });
     }
 
     if (

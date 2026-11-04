@@ -1,0 +1,41 @@
+name: Graphify architecture check
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: graphify-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  architecture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned Graphify in an isolated environment
+        run: |
+          python -m venv "$RUNNER_TEMP/evergreen-graphify-venv"
+          "$RUNNER_TEMP/evergreen-graphify-venv/bin/python" -m pip install -r scripts/graphify/requirements.txt
+          echo "$RUNNER_TEMP/evergreen-graphify-venv/bin" >> "$GITHUB_PATH"
+      - name: Verify the commit gate
+        env:
+          GRAPHIFY_INTEGRATION: '1'
+        run: node --test scripts/graphify/commit-check.test.mjs
+      - name: Build and query the committed architecture
+        run: node scripts/graphify/commit-check.mjs ci
+      - name: Retain graph impact evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: graphify-commit-evidence
+          path: .evergreen/graphify/
+          if-no-files-found: ignore
+          retention-days: 14

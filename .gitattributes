@@ -1,0 +1,2 @@
+# Git executes this tracked hook through sh on Windows and POSIX.
+.githooks/* text eol=lf
