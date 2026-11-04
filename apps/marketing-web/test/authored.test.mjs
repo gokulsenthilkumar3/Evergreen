@@ -70,6 +70,8 @@ test("interactive failures, keyboard tabs, exact draft, settings fetch and WebGL
     w = dom.window,
     previous = new Map(),
     calls = [];
+  // Exercise the missing-WebGL path independently of the runner's CPU count.
+  Object.defineProperty(w.navigator, "hardwareConcurrency", { value: 8 });
   const globals = {
     window: w,
     MutationObserver: w.MutationObserver,
