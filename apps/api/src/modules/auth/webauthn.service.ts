@@ -27,7 +27,7 @@ export class WebAuthnService {
     });
   }
   constructor(private prisma: PrismaService, config: ConfigService) {
-    const configured = config.get<string>('PUBLIC_APP_URL');
+    const configured = config.get<string>('PUBLIC_APP_URL') || config.get<string>('FRONTEND_URL');
     if (!configured && process.env.NODE_ENV === 'production') throw new Error('PUBLIC_APP_URL is required for passkeys');
     const url = new URL(configured || 'http://localhost:4000');
     if (url.protocol !== 'https:' && !(url.protocol === 'http:' && ['localhost','127.0.0.1'].includes(url.hostname))) throw new Error('Passkeys require HTTPS or localhost');

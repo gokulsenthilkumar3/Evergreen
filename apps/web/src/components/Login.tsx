@@ -245,10 +245,9 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings, onSwitchToSignu
 
 
                         <Box sx={{ textAlign: 'center', mb: 3 }}>
-                            {settings?.logo ? (
                                 <Box
                                     component="img"
-                                    src={settings.logo}
+                                    src={settings?.logo || '/favicon.jpg'}
                                     alt={uiText("Logo")}
                                     sx={{
                                         height: 80,
@@ -257,9 +256,8 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings, onSwitchToSignu
                                         objectFit: 'contain'
                                     }}
                                 />
-                            ) : null}
                             <Typography variant="h4" sx={{ fontWeight: 800, color: 'primary.main', letterSpacing: '-0.5px', mb: 0.5 }}>
-                                {settings?.companyName?.toUpperCase() || 'EVER GREEN'}
+                                {settings?.companyName?.toUpperCase() || 'EverGreen'}
                             </Typography>
                             <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, opacity: 0.8 }}>
                                 {uiText("Yarn Management Solution ")}</Typography>
@@ -509,7 +507,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, settings, onSwitchToSignu
                     animation: `${fadeInUp} 0.6s ease-out 0.8s forwards`
                 }}
             >
-                © {new Date().getFullYear()} Ever Green Yarn Mills. All rights reserved.
+                © {new Date().getFullYear()} EverGreen. All rights reserved.
             </Typography>
             */}
         </Box>

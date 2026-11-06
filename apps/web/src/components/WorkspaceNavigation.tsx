@@ -315,7 +315,8 @@ export default function WorkspaceNavigation(props: Props) {
         {props.expanded && (
           <>
             <Avatar
-              src={props.logo}
+              src={props.logo || '/favicon.jpg'}
+              alt={props.companyName}
               variant="rounded"
               sx={{
                 width: 36,

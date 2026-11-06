@@ -11,26 +11,37 @@ if (!fs.existsSync(path.join(stage, 'runtime/release-manifest.json'))) throw new
 const require = createRequire(import.meta.url);
 const runtimeRoot = path.join(stage, 'runtime');
 const { migrate, snapshot, databaseUrl } = require(path.join(runtimeRoot, 'scripts/release/database.cjs'));
-const { serveWeb, startApi } = require(path.join(stage, 'app/runtime.cjs'));
 const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'evergreen-desktop-smoke-'));
 let api, web;
 try {
+  let helper = path.join(stage, 'app/runtime.cjs');
+  if (fs.existsSync(path.join(stage, 'app.asar'))) {
+    helper = path.join(directory, 'runtime.cjs');
+    fs.writeFileSync(helper, require('@electron/asar').extractFile(path.join(stage, 'app.asar'), 'runtime.cjs'));
+  }
+  const { serveWeb, startApi } = require(helper);
   const original = path.join(directory, 'original.db'), candidate = path.join(directory, 'candidate.db');
   const account = { username: 'release-smoke', password: randomBytes(24).toString('hex') };
   const secrets = { JWT_SECRET: randomBytes(48).toString('hex'), ENCRYPTION_SECRET: randomBytes(48).toString('hex') };
+  const migrationStart = performance.now();
   await migrate(runtimeRoot, original);
+  const migrationMs = Math.round(performance.now() - migrationStart);
   web = await serveWeb(path.join(stage, 'web'));
+  const coldStart = performance.now();
   api = await startApi(runtimeRoot, { ...secrets, FRONTEND_URL: web.origin, DATABASE_URL: databaseUrl(original),
     BOOTSTRAP_ADMIN_USERNAME: account.username, BOOTSTRAP_ADMIN_EMAIL: 'release-smoke@example.test', BOOTSTRAP_ADMIN_PASSWORD: account.password });
   web.setApiPort(api.port);
+  const coldStartMs = Math.round(performance.now() - coldStart);
   const request = httpClient(web.origin);
   const before = await seedBusiness(request, account);
   await api.stop(); api = null;
   await snapshot(runtimeRoot, original, candidate);
   await migrate(runtimeRoot, candidate);
+  const warmStart = performance.now();
   api = await startApi(runtimeRoot, { ...secrets, FRONTEND_URL: web.origin, DATABASE_URL: databaseUrl(candidate),
     BOOTSTRAP_ADMIN_USERNAME: '', BOOTSTRAP_ADMIN_EMAIL: '', BOOTSTRAP_ADMIN_PASSWORD: '' });
   web.setApiPort(api.port);
+  console.log('Desktop startup timings:', JSON.stringify({ migrationMs, coldStartMs, warmStartMs: Math.round(performance.now() - warmStart) }));
   const upgraded = httpClient(web.origin);
   await upgraded('POST', '/auth/login', account);
   assert.deepEqual(await readBusiness(upgraded), before);

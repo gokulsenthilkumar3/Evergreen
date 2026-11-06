@@ -25,11 +25,15 @@ test('encrypted installation secrets persist across launches and never store pla
 });
 test('local web serves the SPA and proxies API paths only to the selected loopback API', async t => {
   const dir = fixture(t); fs.writeFileSync(path.join(dir, 'index.html'), '<h1>Local application</h1>');
+  fs.copyFileSync(path.join(__dirname, '../web/public/favicon.jpg'), path.join(dir, 'favicon.jpg'));
   const web = await serveWeb(dir);
   const api = http.createServer((req, res) => { res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify({ path: req.url })); });
   await new Promise(resolve => api.listen(0, '127.0.0.1', resolve));
   try {
     assert.ok((await (await fetch(web.origin + '/inventory')).text()).includes('Local application'));
+    const logo = await fetch(web.origin + '/favicon.jpg');
+    assert.equal(logo.headers.get('content-type'), 'image/jpeg');
+    assert.deepEqual(Buffer.from(await logo.arrayBuffer()), fs.readFileSync(path.join(dir, 'favicon.jpg')));
     assert.equal((await fetch(web.origin + '/health')).status, 503);
     web.setApiPort(api.address().port);
     assert.deepEqual(await (await fetch(web.origin + '/api/backend/auth/me?test=1')).json(), { path: '/auth/me?test=1' });

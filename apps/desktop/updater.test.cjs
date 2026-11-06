@@ -42,6 +42,16 @@ test('disabled feed never makes an update request', async () => {
   await createUpdater({ ...f, enabled: false, prepare: async () => {} })();
   assert.deepEqual(f.calls, []);
 });
+
+test('an unavailable update result never claims this build is current', async () => {
+  for (const result of [null, {}, { updateInfo: { version: '1.0.1' } }]) {
+    const f = fixture({ checkForUpdates: async () => result });
+    await createUpdater({ ...f, enabled: true, prepare: async () => f.calls.push('backup') })();
+    assert.deepEqual(f.calls, []);
+    assert.equal(f.dialogs[0].type, 'warning');
+    assert.match(f.dialogs[0].message, /could not be verified/);
+  }
+});
 test('concurrent checks share one pending operation', async () => {
   let complete;
   const f = fixture({ checkForUpdates: () => new Promise(resolve => { complete = resolve; }) });

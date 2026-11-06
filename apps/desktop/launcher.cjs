@@ -1,17 +1,55 @@
-const { app, BrowserWindow, Menu, dialog, ipcMain, safeStorage, shell } = require('electron');
+const { app, BrowserWindow, Menu, dialog, ipcMain, safeStorage, shell, nativeImage } = require('electron');
 const path = require('node:path');
 const fs = require('node:fs');
 const { randomUUID } = require('node:crypto');
 const { pathToFileURL } = require('node:url');
 const { readJson, writeJson, validateSetup, secretsFor, serveWeb, startApi } = require('./runtime.cjs');
 const { createUpdater } = require('./updater.cjs');
-let mainWindow, api, web, database, closing = false, booting = true;
+let mainWindow, startupWindow, api, web, database, closing = false, booting = true;
 const isDev = !app.isPackaged && process.env.ELECTRON_IS_DEV === 'true';
 const runtimeRoot = path.join(process.resourcesPath, 'runtime');
+const icon = path.join(__dirname, 'assets', 'icon.png');
+
+async function showStartupWindow() {
+  startupWindow = new BrowserWindow({ width: 420, height: 280, title: 'Starting EverGreen', icon,
+    resizable: false, minimizable: false, autoHideMenuBar: true,
+    webPreferences: { nodeIntegration: false, contextIsolation: true, sandbox: true } });
+  startupWindow.on('closed', () => { startupWindow = null; if (booting) app.quit(); });
+  startupWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  const logo = nativeImage.createFromPath(icon).resize({ width: 64 }).toDataURL();
+  await startupWindow.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(`<!doctype html><html lang="en"><head>
+    <meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data:; style-src 'unsafe-inline'">
+    <title>Starting EverGreen</title><style>body{font:16px system-ui;text-align:center;background:#f3f7f5;color:#153c32;margin:24px}img{width:56px;height:56px}h1{font-size:22px;margin:8px}p{margin:12px}progress{width:240px;accent-color:#08654e}</style></head>
+    <body><img src="${logo}" alt="EverGreen"><h1>EverGreen</h1><p id="status" role="status">Checking installation access…</p><progress aria-label="Starting EverGreen"></progress></body></html>`));
+}
+
+async function startupStatus(message) {
+  if (startupWindow && !startupWindow.isDestroyed()) {
+    await startupWindow.webContents.executeJavaScript(`document.getElementById('status').textContent = ${JSON.stringify(message)}`).catch(() => {});
+  }
+}
+
+async function showAbout() {
+  const manifest = readJson(path.join(runtimeRoot, 'release-manifest.json'));
+  await dialog.showMessageBox({ type: 'info', title: 'About EverGreen', message: `EverGreen ${app.getVersion()}`, icon,
+    detail: manifest ? `Built: ${manifest.builtAt || 'Not recorded'}\nSource: ${manifest.commit}${manifest.dirty ? ' (local changes)' : ''}\nUpdates: ${manifest.updatesEnabled ? 'Configured' : 'Manual installer'}` : 'Local development build.' });
+}
+
+async function showLicense() {
+  try {
+    const licensing = require(path.join(runtimeRoot, 'node_modules/@evergreen/types/dist/licensing.js'));
+    const licence = licensing.requireInstallationLicence('tenant');
+    await dialog.showMessageBox({ type: 'info', title: 'EverGreen license', message: 'Installation license is valid.', icon,
+      detail: `Licensed to: ${licence.owner}\nExpires: ${new Date(licence.expiresAt).toLocaleString()}\nOffline allowance until: ${new Date(licence.offlineUntil).toLocaleString()}\nContact your EverGreen provider for renewal.` });
+  } catch {
+    await dialog.showMessageBox({ type: 'warning', title: 'EverGreen license', message: 'A valid installation license could not be verified.',
+      detail: 'Contact your EverGreen provider to activate or renew this Windows installation.' });
+  }
+}
 
 function setupAccount() {
   return new Promise((resolve, reject) => {
-    const setup = new BrowserWindow({ width: 560, height: 650, resizable: false,
+    const setup = new BrowserWindow({ width: 560, height: 650, resizable: false, icon,
       webPreferences: { nodeIntegration: false, contextIsolation: true, sandbox: true, preload: path.join(__dirname, 'setup-preload.cjs') } });
     const expected = pathToFileURL(path.join(__dirname, 'setup.html')).href;
     let complete = false;
@@ -36,6 +74,7 @@ async function start() {
     const online = require(path.join(runtimeRoot, 'node_modules/@evergreen/types/dist/licensing-online.js'));
     try { await online.refreshInstallationLease('tenant'); } catch { /* Enforce the signed offline window below. */ }
     licensing.requireInstallationLicence('tenant');
+    await startupStatus('Preparing your workspace…');
     const directory = app.getPath('userData');
     fs.mkdirSync(path.join(directory, 'databases'), { recursive: true });
     const manifest = readJson(path.join(runtimeRoot, 'release-manifest.json'));
@@ -53,6 +92,7 @@ async function start() {
     if (previous && changed) await storage.snapshot(runtimeRoot, path.join(directory, 'databases', previous.database), database);
     if (changed) await storage.migrate(runtimeRoot, database);
     web = await serveWeb(path.join(process.resourcesPath, 'web')); origin = web.origin;
+    await startupStatus('Opening your workspace…');
     api = await startApi(runtimeRoot, { ...secrets, DATABASE_URL: storage.databaseUrl(database), FRONTEND_URL: origin,
       BOOTSTRAP_ADMIN_USERNAME: account?.username || '', BOOTSTRAP_ADMIN_EMAIL: account?.email || '', BOOTSTRAP_ADMIN_PASSWORD: account?.password || '' }, () => {
       dialog.showErrorBox('EverGreen stopped', 'The local service stopped. Close and reopen EverGreen. Your saved database is retained.'); app.quit();
@@ -65,7 +105,7 @@ async function start() {
       writeJson(stateFile, { version: manifest.version, apiSha256: manifest.apiSha256, schemaSha256: manifest.schemaSha256, lockSha256: manifest.lockSha256, database: filename });
     }
   }
-  mainWindow = new BrowserWindow({ width: 1280, height: 800, title: 'EverGreen', webPreferences: { nodeIntegration: false, contextIsolation: true, sandbox: true } });
+  mainWindow = new BrowserWindow({ width: 1280, height: 800, title: 'EverGreen', icon, webPreferences: { nodeIntegration: false, contextIsolation: true, sandbox: true } });
   mainWindow.webContents.on('will-navigate', (event, url) => { if (new URL(url).origin !== origin) event.preventDefault(); });
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     if (/^https?:\/\//i.test(url)) void shell.openExternal(url);
@@ -87,16 +127,22 @@ async function start() {
   Menu.setApplicationMenu(Menu.buildFromTemplate([
     { label: 'File', submenu: [{ role: 'quit' }] },
     { label: 'View', submenu: [{ role: 'reload' }, { role: 'resetZoom' }, { role: 'zoomIn' }, { role: 'zoomOut' }, { role: 'togglefullscreen' }] },
-    { label: 'Help', submenu: [{ label: 'Check for updates', click: () => void check() }] },
+    { label: 'Help', submenu: [
+      { label: 'About EverGreen', click: () => void showAbout() },
+      { label: 'License status', click: () => void showLicense() },
+      { type: 'separator' },
+      { label: 'Check for updates', click: () => void check() },
+    ] },
   ]));
   await mainWindow.loadURL(origin);
   booting = false;
+  if (startupWindow) startupWindow.close();
 }
 
 if (!app.requestSingleInstanceLock()) app.quit();
 else {
   app.on('second-instance', () => { if (mainWindow) { if (mainWindow.isMinimized()) mainWindow.restore(); mainWindow.show(); mainWindow.focus(); } });
-  app.whenReady().then(start).catch(async error => {
+  app.whenReady().then(async () => { if (!isDev) await showStartupWindow(); await start(); }).catch(async error => {
     dialog.showErrorBox('EverGreen could not start', error.message);
     app.quit();
   });

@@ -1,0 +1,59 @@
+name: Sync Documentation to GitHub Wiki
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/wiki/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync-wiki:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Repository
+        uses: actions/checkout@v4
+
+      - name: Checkout GitHub Wiki
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}.wiki
+          path: wiki-repo
+          token: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+      - name: Deploy Wiki Files
+        run: |
+          if [ -d "wiki-repo" ]; then
+            echo "Copying wiki pages and navigation..."
+            # Copy root wiki navigation and guide files
+            cp docs/wiki/Home.md wiki-repo/Home.md 2>/dev/null || true
+            cp docs/wiki/_Sidebar.md wiki-repo/_Sidebar.md 2>/dev/null || true
+            cp docs/wiki/_Footer.md wiki-repo/_Footer.md 2>/dev/null || true
+            cp docs/wiki/OPERATING_GUIDE.md wiki-repo/OPERATING_GUIDE.md 2>/dev/null || true
+            cp docs/ARCHITECTURE.md wiki-repo/Architecture.md 2>/dev/null || true
+            cp docs/BUSINESS_FLOW.md wiki-repo/BusinessFlow.md 2>/dev/null || true
+            cp docs/DESKTOP_DELIVERY.md wiki-repo/DesktopDelivery.md 2>/dev/null || true
+
+            # Copy all page-level guides into the wiki root
+            cp docs/wiki/pages/*.md wiki-repo/ 2>/dev/null || true
+
+            cd wiki-repo
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add .
+            if git diff --staged --quiet; then
+              echo "No wiki changes to commit."
+            else
+              git commit -m "docs: automated sync from main repository docs/wiki"
+              git push origin master || git push origin main
+              echo "Successfully synced to GitHub Wiki."
+            fi
+          else
+            echo "Wiki repository not initialized yet. Enable the Wiki feature in GitHub repo settings and create a dummy first page."
+          fi
+

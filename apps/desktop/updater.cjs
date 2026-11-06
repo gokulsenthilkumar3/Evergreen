@@ -15,7 +15,10 @@ function createUpdater({ updater, dialog, prepare, recover = () => {}, enabled }
     let preparing = false;
     try {
       const result = await updater.checkForUpdates();
-      if (!result?.isUpdateAvailable) {
+      if (!result || typeof result.isUpdateAvailable !== 'boolean') {
+        await dialog.showMessageBox({ type: 'warning', message: 'The latest EverGreen version could not be verified.', detail: 'Try again later or contact your release administrator.' }); return;
+      }
+      if (!result.isUpdateAvailable) {
         await dialog.showMessageBox({ type: 'info', message: 'EverGreen is up to date.' }); return;
       }
       const choice = await dialog.showMessageBox({ type: 'info', buttons: ['Download and install', 'Later'], defaultId: 0, cancelId: 1,

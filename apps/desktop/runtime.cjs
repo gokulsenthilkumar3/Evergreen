@@ -33,7 +33,7 @@ function secretsFor(directory, safeStorage) {
 
 async function serveWeb(webRoot) {
   let apiPort;
-  const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon', '.woff2': 'font/woff2' };
+  const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.ico': 'image/x-icon', '.woff2': 'font/woff2' };
   const server = http.createServer((req, res) => {
     const expectedHost = `127.0.0.1:${server.address().port}`;
     if (req.headers.host !== expectedHost) { res.writeHead(403).end(); return; }
@@ -72,13 +72,16 @@ function startApi(runtimeRoot, environment, onUnexpectedExit = () => {}) {
   return new Promise((resolve, reject) => {
     const child = fork(path.join(runtimeRoot, 'apps/api/dist/main.js'), [], {
       cwd: runtimeRoot, execPath: path.join(runtimeRoot, 'node.exe'), execArgv: [], windowsHide: true,
-      env: { ...process.env, ...environment, ELECTRON_RUN_AS_NODE: '1', NODE_ENV: 'production',
+      env: { ...process.env, ...environment,
+        PUBLIC_APP_URL: environment.FRONTEND_URL || process.env.PUBLIC_APP_URL || 'http://127.0.0.1',
+        ELECTRON_RUN_AS_NODE: '1', NODE_ENV: 'production',
         EVERGREEN_DESKTOP: 'true', EVERGREEN_API_HOST: '127.0.0.1', EVERGREEN_API_PORT: '0',
         AUTO_MIGRATE: 'false', ADMIN_API_URL: '', COMPANY_ID: '', SMTP_HOST: '', DAILY_SUMMARY_EMAIL: '' },
       stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
     });
-    // Do not forward application logs containing operational data to renderer dialogs.
-    child.stdout.resume(); child.stderr.resume();
+    // Log child output during diagnostics/packaging
+    child.stdout.on('data', d => process.stdout.write(d));
+    child.stderr.on('data', d => process.stderr.write(d));
     let ready = false, stopping = false;
     const timer = setTimeout(() => { child.kill(); reject(new Error('Local API startup timed out')); }, 120_000);
     child.once('error', error => { clearTimeout(timer); reject(error); });

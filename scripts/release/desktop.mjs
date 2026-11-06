@@ -53,6 +53,14 @@ export function copyDependencies(dependencies, from, output) {
       const name = path.basename(sourceFile);
       const runtimeFiles = manifest.name === '@evergreen/database' ? ['runtime-client.js'] : [];
       if (workspace && !['package.json', 'dist', ...runtimeFiles].includes(path.relative(realSource, sourceFile).split(path.sep)[0])) return false;
+      const relative = path.relative(realSource, sourceFile).replaceAll('\\', '/');
+      // Retain attribution while excluding declarations, source maps and documentation.
+      if (!/^(?:licen[cs]e|notice|copying|copyright|authors)/i.test(name) &&
+          /(?:\.d\.[cm]?ts|\.map|\.md|\.markdown)$/i.test(name)) return false;
+      // These packages select CJS for both Node require and import; their other
+      // builds are browser/bundler inputs, not desktop runtime dependencies.
+      if (manifest.name === 'rxjs' && /^(?:src|dist\/(?:esm|esm5|types))(?:\/|$)/.test(relative)) return false;
+      if (['class-validator', 'class-transformer'].includes(manifest.name) && /^(?:esm5|esm2015|bundles|types)(?:\/|$)/.test(relative)) return false;
       return !['node_modules', '.git', 'backups'].includes(name) && !name.startsWith('.env') && !/\.(db(?:-.*)?|sqlite.*|log|pfx|pem|key)$/.test(name);
     } });
     for (const child of Object.keys(manifest.dependencies || {})) copy(child, realSource, target, child in (manifest.optionalDependencies || {}));
@@ -88,6 +96,18 @@ export async function prepareDesktop({ build = true } = {}) {
   for (const file of ['apps/api/dist', 'packages/database/prisma/schema.prisma', 'packages/database/prisma/migrations', 'scripts/release/database.cjs']) {
     fs.cpSync(path.join(root, file), path.join(runtime, file), { recursive: true });
   }
+  // Bundle compiled JavaScript so TypeScript's decorator metadata is preserved.
+  // Native modules, device licensing and libraries with runtime assets stay external.
+  await require('esbuild').build({
+    entryPoints: [path.join(root, 'apps/api/dist/main.js')],
+    outfile: path.join(runtime, 'apps/api/dist/main.js'),
+    bundle: true, platform: 'node', target: 'node24', format: 'cjs', keepNames: true,
+    external: ['@prisma/client', '@evergreen/database', '@evergreen/types', '@evergreen/pdf',
+      '@nestjs/microservices', '@nestjs/websockets', '@nestjs/platform-socket.io',
+      'class-transformer', 'class-transformer/storage', 'class-validator',
+      'bcrypt', 'argon2', 'openid-client', '@simplewebauthn/server', 'nodemailer',
+      'swagger-ui-express', 'swagger-ui-dist', 'canvas', '@fastify/static', '@fastify/view'],
+  });
   fs.writeFileSync(path.join(runtime, 'package.json'), JSON.stringify({ name: 'evergreen-local-runtime', private: true, version: desktop.version }));
   copyDependencies(desktop.dependencies, path.join(root, 'apps/desktop'), app);
   for (const file of ['main.js', 'launcher.cjs', 'runtime.cjs', 'updater.cjs', 'setup.html', 'setup.js', 'setup-preload.cjs', 'assets']) fs.cpSync(path.join(root, 'apps/desktop', file), path.join(app, file), { recursive: true });
@@ -100,7 +120,7 @@ export async function prepareDesktop({ build = true } = {}) {
   const status = spawnSync('git', ['-c', `safe.directory=${root.replaceAll('\\', '/')}`, 'status', '--porcelain'], { cwd: root, encoding: 'utf8', windowsHide: true });
   const dirty = status.status !== 0 || status.stdout.trim().length > 0;
   if (config.enabled && dirty) throw new Error('Signed update releases require a clean committed source tree');
-  const manifest = { format: 1, version: desktop.version, commit: git.status === 0 ? git.stdout.trim() : 'unknown',
+  const manifest = { format: 1, version: desktop.version, builtAt: new Date().toISOString(), commit: git.status === 0 ? git.stdout.trim() : 'unknown',
     dirty,
     lockSha256: digest(fs.readFileSync(path.join(root, 'package-lock.json'))),
     apiSha256: digest(treeDigest(path.join(runtime, 'apps/api/dist')) + treeDigest(path.join(runtime, 'node_modules/@evergreen'))),
@@ -112,14 +132,38 @@ export async function prepareDesktop({ build = true } = {}) {
   return { stage, app, runtime, manifest, config, desktop };
 }
 
+export function desktopResources(prepared) {
+  // Electron Builder always excludes a source root's node_modules directory,
+  // even for extraResources. Copy that directory through its own file mapping.
+  return [
+    { from: prepared.runtime, to: 'runtime' },
+    { from: path.join(prepared.runtime, 'node_modules'), to: 'runtime/node_modules' },
+    { from: path.join(prepared.stage, 'web'), to: 'web' },
+  ];
+}
+
+export function verifyDesktopResources(prepared, resources) {
+  for (const [source, target] of [[prepared.runtime, 'runtime'], [path.join(prepared.stage, 'web'), 'web']]) {
+    if (treeDigest(source) !== treeDigest(path.join(resources, target))) {
+      throw new Error(`Packaged desktop ${target} does not match the verified staging files`);
+    }
+  }
+}
+
 export async function packageDesktop(prepared, { directory = false } = {}) {
       const { build, Platform } = require('electron-builder');
       const artifacts = await build({ projectDir: prepared.app, targets: Platform.WINDOWS.createTarget(directory ? 'dir' : 'nsis'), publish: 'never', config: {
         appId: 'com.evergreen.yarnsms', productName: 'EverGreen', electronVersion: prepared.desktop.devDependencies.electron,
         directories: { output: path.join(root, 'apps/desktop/dist') }, npmRebuild: false,
-        files: ['**/*'], extraResources: [{ from: prepared.runtime, to: 'runtime' }, { from: path.join(prepared.stage, 'web'), to: 'web' }],
-        win: { artifactName: 'EverGreen-${version}-win.${ext}', ...(prepared.config.enabled ? { publisherName: prepared.config.publisher } : {}) },
-        nsis: { oneClick: true, perMachine: false, createDesktopShortcut: true, runAfterFinish: true, deleteAppDataOnUninstall: false },
+        files: ['**/*'], extraResources: desktopResources(prepared),
+        afterPack: context => {
+          const resources = path.join(context.appOutDir, 'resources');
+          verifyDesktopResources(prepared, resources);
+          runNode(['scripts/release/smoke-desktop.mjs', resources]);
+        },
+        win: { icon: path.join(prepared.app, 'assets/icon.ico'), artifactName: 'EverGreen-${version}-win.${ext}', ...(prepared.config.enabled ? { publisherName: prepared.config.publisher } : {}) },
+        nsis: { oneClick: true, perMachine: false, createDesktopShortcut: true, runAfterFinish: true, deleteAppDataOnUninstall: false,
+          ...(!prepared.config.enabled ? { differentialPackage: false, useZip: true } : {}) },
         forceCodeSigning: prepared.config.enabled,
         publish: prepared.config.enabled ? { provider: 'generic', url: prepared.config.url } : null,
       } });
@@ -135,8 +179,7 @@ export async function packageDesktop(prepared, { directory = false } = {}) {
         const manifestFile = path.join(output, 'release-manifest.json');
         fs.writeFileSync(manifestFile, JSON.stringify(prepared.manifest, null, 2));
         const files = [...new Set([...artifacts, manifestFile,
-          path.join(output, `EverGreen-${prepared.manifest.version}-win.exe.blockmap`),
-          ...(prepared.config.enabled ? [path.join(output, 'latest.yml')] : []),
+          ...(prepared.config.enabled ? [path.join(output, `EverGreen-${prepared.manifest.version}-win.exe.blockmap`), path.join(output, 'latest.yml')] : []),
         ])].filter(file => fs.existsSync(file) && fs.statSync(file).isFile());
         const checksums = files.map(file => `${digest(fs.readFileSync(file))}  ${path.basename(file)}`).join('\n');
         fs.writeFileSync(path.join(output, 'SHA256SUMS'), checksums + '\n');

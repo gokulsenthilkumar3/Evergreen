@@ -43,7 +43,7 @@ export class AuthService implements OnModuleInit {
       await appendUserAudit(tx,{data:{username,action:'BOOTSTRAP_ADMIN',module:'USER_MANAGEMENT',details:'Created user '+user.id+' (ADMIN): owner-controlled bootstrap'}},user.id);
     });
     this.logger.warn('One-time administrator created. Remove bootstrap variables now.');
-  } catch { this.logger.error('Administrator bootstrap failed; no unaudited account was created.'); }
+  } catch (err: any) { this.logger.error('Administrator bootstrap failed; no unaudited account was created: ' + (err?.stack || err?.message || err)); }
 }
 
   

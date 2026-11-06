@@ -7,6 +7,7 @@ import {
   ownerHostEnvironment,
 } from '@evergreen/types/licensing';
 import { NestFactory } from '@nestjs/core';
+import { ExpressAdapter } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
@@ -19,7 +20,12 @@ import { PrismaService } from './services/prisma.service';
 import { trustedProxies } from './utils/trusted-proxies';
 
 async function bootstrap() {
-  Object.assign(process.env, ownerHostEnvironment('tenant'));
+  if (process.env.EVERGREEN_DESKTOP === 'true') {
+    const { DATABASE_URL: _discard, ...desktopHostEnv } = ownerHostEnvironment('tenant');
+    Object.assign(process.env, desktopHostEnv);
+  } else {
+    Object.assign(process.env, ownerHostEnvironment('tenant'));
+  }
   Object.assign(process.env, ownerGroqEnvironment());
   try {
     await refreshInstallationLease('tenant');
@@ -33,7 +39,7 @@ async function bootstrap() {
     );
   }
 
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, new ExpressAdapter());
   app.enableShutdownHooks();
   app.use(observeApi);
   // Company logo uploads are limited to 500 KB before base64 encoding.
