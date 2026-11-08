@@ -16,7 +16,8 @@ export function postgresSchema(sqliteSchema) {
       `${indent}${field}${spacing}Decimal${nullable} @db.Decimal(24, ${monetaryFields.has(field) ? 2 : 6})${rest}`);
 }
 const target = path.join(root, 'packages/database/prisma/postgres/schema.prisma');
-const content = postgresSchema(source);
+const newline = source.includes('\r\n') ? '\r\n' : '\n';
+const content = postgresSchema(source).replace(/\r\n|\n/g, newline);
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
 if (process.argv.includes('--check')) {
   if (!fs.existsSync(target) || fs.readFileSync(target, 'utf8') !== content) {

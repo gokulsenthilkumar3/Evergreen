@@ -7,13 +7,14 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `observeApi` | FunctionDeclaration | [apps/api/src/api-monitor.ts:6](../../apps/api/src/api-monitor.ts) |
 | `serveMonitor` | FunctionDeclaration | [apps/api/src/api-monitor.ts:20](../../apps/api/src/api-monitor.ts) |
 | `upgradeApiReference` | FunctionDeclaration | [apps/api/src/api-reference.ts:6](../../apps/api/src/api-reference.ts) |
-| `AppController` | ClassDeclaration | [apps/api/src/app.controller.ts:8](../../apps/api/src/app.controller.ts) |
-| `licenceStatus` | MethodDeclaration | [apps/api/src/app.controller.ts:13](../../apps/api/src/app.controller.ts) |
-| `index` | MethodDeclaration | [apps/api/src/app.controller.ts:25](../../apps/api/src/app.controller.ts) |
-| `health` | MethodDeclaration | [apps/api/src/app.controller.ts:32](../../apps/api/src/app.controller.ts) |
-| `status` | MethodDeclaration | [apps/api/src/app.controller.ts:39](../../apps/api/src/app.controller.ts) |
-| `probe` | MethodDeclaration | [apps/api/src/app.controller.ts:45](../../apps/api/src/app.controller.ts) |
-| `AppModule` | ClassDeclaration | [apps/api/src/app.module.ts:39](../../apps/api/src/app.module.ts) |
+| `AppController` | ClassDeclaration | [apps/api/src/app.controller.ts:10](../../apps/api/src/app.controller.ts) |
+| `context` | MethodDeclaration | [apps/api/src/app.controller.ts:15](../../apps/api/src/app.controller.ts) |
+| `licenceStatus` | MethodDeclaration | [apps/api/src/app.controller.ts:21](../../apps/api/src/app.controller.ts) |
+| `index` | MethodDeclaration | [apps/api/src/app.controller.ts:33](../../apps/api/src/app.controller.ts) |
+| `health` | MethodDeclaration | [apps/api/src/app.controller.ts:52](../../apps/api/src/app.controller.ts) |
+| `status` | MethodDeclaration | [apps/api/src/app.controller.ts:59](../../apps/api/src/app.controller.ts) |
+| `probe` | MethodDeclaration | [apps/api/src/app.controller.ts:65](../../apps/api/src/app.controller.ts) |
+| `AppModule` | ClassDeclaration | [apps/api/src/app.module.ts:41](../../apps/api/src/app.module.ts) |
 | `ProcessorInfo` | InterfaceDeclaration | [apps/api/src/app.service.ts:4](../../apps/api/src/app.service.ts) |
 | `PublicHealth` | InterfaceDeclaration | [apps/api/src/app.service.ts:16](../../apps/api/src/app.service.ts) |
 | `SystemHealthData` | InterfaceDeclaration | [apps/api/src/app.service.ts:23](../../apps/api/src/app.service.ts) |
@@ -49,7 +50,7 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `canActivate` | MethodDeclaration | [apps/api/src/guards/public-order-rate-limit.guard.ts:68](../../apps/api/src/guards/public-order-rate-limit.guard.ts) |
 | `RolesGuard` | ClassDeclaration | [apps/api/src/guards/roles.guard.ts:13](../../apps/api/src/guards/roles.guard.ts) |
 | `canActivate` | MethodDeclaration | [apps/api/src/guards/roles.guard.ts:17](../../apps/api/src/guards/roles.guard.ts) |
-| `bootstrap` | FunctionDeclaration | [apps/api/src/main.ts:21](../../apps/api/src/main.ts) |
+| `bootstrap` | FunctionDeclaration | [apps/api/src/main.ts:22](../../apps/api/src/main.ts) |
 | `AdminOpsController` | ClassDeclaration | [apps/api/src/modules/admin-ops/admin-ops.controller.ts:9](../../apps/api/src/modules/admin-ops/admin-ops.controller.ts) |
 | `runMigration` | MethodDeclaration | [apps/api/src/modules/admin-ops/admin-ops.controller.ts:11](../../apps/api/src/modules/admin-ops/admin-ops.controller.ts) |
 | `AdminOpsModule` | ClassDeclaration | [apps/api/src/modules/admin-ops/admin-ops.module.ts:4](../../apps/api/src/modules/admin-ops/admin-ops.module.ts) |
@@ -119,12 +120,12 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `validateUser` | MethodDeclaration | [apps/api/src/modules/auth/auth.service.ts:53](../../apps/api/src/modules/auth/auth.service.ts) |
 | `recordFailedLogin` | MethodDeclaration | [apps/api/src/modules/auth/auth.service.ts:81](../../apps/api/src/modules/auth/auth.service.ts) |
 | `login` | MethodDeclaration | [apps/api/src/modules/auth/auth.service.ts:89](../../apps/api/src/modules/auth/auth.service.ts) |
-| `assertOwnerProof` | MethodDeclaration | [apps/api/src/modules/auth/auth.service.ts:208](../../apps/api/src/modules/auth/auth.service.ts) |
-| `generateTotpSecret` | MethodDeclaration | [apps/api/src/modules/auth/auth.service.ts:216](../../apps/api/src/modules/auth/auth.service.ts) |
-| `verifyAndEnableTotp` | MethodDeclaration | [apps/api/src/modules/auth/auth.service.ts:228](../../apps/api/src/modules/auth/auth.service.ts) |
-| `disableTotp` | MethodDeclaration | [apps/api/src/modules/auth/auth.service.ts:241](../../apps/api/src/modules/auth/auth.service.ts) |
-| `updateProfile` | MethodDeclaration | [apps/api/src/modules/auth/auth.service.ts:254](../../apps/api/src/modules/auth/auth.service.ts) |
-| `changePassword` | MethodDeclaration | [apps/api/src/modules/auth/auth.service.ts:269](../../apps/api/src/modules/auth/auth.service.ts) |
+| `assertOwnerProof` | MethodDeclaration | [apps/api/src/modules/auth/auth.service.ts:210](../../apps/api/src/modules/auth/auth.service.ts) |
+| `generateTotpSecret` | MethodDeclaration | [apps/api/src/modules/auth/auth.service.ts:218](../../apps/api/src/modules/auth/auth.service.ts) |
+| `verifyAndEnableTotp` | MethodDeclaration | [apps/api/src/modules/auth/auth.service.ts:230](../../apps/api/src/modules/auth/auth.service.ts) |
+| `disableTotp` | MethodDeclaration | [apps/api/src/modules/auth/auth.service.ts:243](../../apps/api/src/modules/auth/auth.service.ts) |
+| `updateProfile` | MethodDeclaration | [apps/api/src/modules/auth/auth.service.ts:256](../../apps/api/src/modules/auth/auth.service.ts) |
+| `changePassword` | MethodDeclaration | [apps/api/src/modules/auth/auth.service.ts:271](../../apps/api/src/modules/auth/auth.service.ts) |
 | `EmailService` | ClassDeclaration | [apps/api/src/modules/auth/email.service.ts:4](../../apps/api/src/modules/auth/email.service.ts) |
 | `readiness` | MethodDeclaration | [apps/api/src/modules/auth/email.service.ts:31](../../apps/api/src/modules/auth/email.service.ts) |
 | `verifyAccount` | MethodDeclaration | [apps/api/src/modules/auth/email.service.ts:35](../../apps/api/src/modules/auth/email.service.ts) |
@@ -759,6 +760,14 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `onModuleDestroy` | MethodDeclaration | [apps/api/src/services/prisma.service.ts:311](../../apps/api/src/services/prisma.service.ts) |
 | `reconcileStock` | FunctionDeclaration | [apps/api/src/services/stock-bridge.ts:8](../../apps/api/src/services/stock-bridge.ts) |
 | `guardManagedStock` | FunctionDeclaration | [apps/api/src/services/stock-bridge.ts:200](../../apps/api/src/services/stock-bridge.ts) |
+| `TenantContext` | InterfaceDeclaration | [apps/api/src/tenant/tenant-context.service.ts:4](../../apps/api/src/tenant/tenant-context.service.ts) |
+| `TenantContextService` | ClassDeclaration | [apps/api/src/tenant/tenant-context.service.ts:10](../../apps/api/src/tenant/tenant-context.service.ts) |
+| `normalizeHostname` | MethodDeclaration | [apps/api/src/tenant/tenant-context.service.ts:12](../../apps/api/src/tenant/tenant-context.service.ts) |
+| `getCompanyId` | MethodDeclaration | [apps/api/src/tenant/tenant-context.service.ts:16](../../apps/api/src/tenant/tenant-context.service.ts) |
+| `getContext` | MethodDeclaration | [apps/api/src/tenant/tenant-context.service.ts:20](../../apps/api/src/tenant/tenant-context.service.ts) |
+| `assertAllowedHost` | MethodDeclaration | [apps/api/src/tenant/tenant-context.service.ts:32](../../apps/api/src/tenant/tenant-context.service.ts) |
+| `TenantHostGuard` | ClassDeclaration | [apps/api/src/tenant/tenant-host.guard.ts:5](../../apps/api/src/tenant/tenant-host.guard.ts) |
+| `canActivate` | MethodDeclaration | [apps/api/src/tenant/tenant-host.guard.ts:9](../../apps/api/src/tenant/tenant-host.guard.ts) |
 | `getKey` | FunctionDeclaration | [apps/api/src/utils/crypto.ts:14](../../apps/api/src/utils/crypto.ts) |
 | `encryptField` | FunctionDeclaration | [apps/api/src/utils/crypto.ts:27](../../apps/api/src/utils/crypto.ts) |
 | `decryptField` | FunctionDeclaration | [apps/api/src/utils/crypto.ts:45](../../apps/api/src/utils/crypto.ts) |
@@ -1356,11 +1365,12 @@ Generated declarations and methods from active API, web and shared source. Neste
 | `overdueInvoices` | FunctionDeclaration | [apps/web/src/utils/alerts.ts:21](../../apps/web/src/utils/alerts.ts) |
 | `hasProductionOn` | FunctionDeclaration | [apps/web/src/utils/alerts.ts:34](../../apps/web/src/utils/alerts.ts) |
 | `setMutationListener` | Function binding | [apps/web/src/utils/api.ts:5](../../apps/web/src/utils/api.ts) |
-| `getToken` | Function binding | [apps/web/src/utils/authStorage.ts:2](../../apps/web/src/utils/authStorage.ts) |
-| `getStoredUser` | Function binding | [apps/web/src/utils/authStorage.ts:4](../../apps/web/src/utils/authStorage.ts) |
-| `clearAuth` | FunctionDeclaration | [apps/web/src/utils/authStorage.ts:6](../../apps/web/src/utils/authStorage.ts) |
-| `saveSession` | FunctionDeclaration | [apps/web/src/utils/authStorage.ts:12](../../apps/web/src/utils/authStorage.ts) |
-| `saveUser` | FunctionDeclaration | [apps/web/src/utils/authStorage.ts:18](../../apps/web/src/utils/authStorage.ts) |
+| `storageKey` | Function binding | [apps/web/src/utils/authStorage.ts:2](../../apps/web/src/utils/authStorage.ts) |
+| `getToken` | Function binding | [apps/web/src/utils/authStorage.ts:3](../../apps/web/src/utils/authStorage.ts) |
+| `getStoredUser` | Function binding | [apps/web/src/utils/authStorage.ts:5](../../apps/web/src/utils/authStorage.ts) |
+| `clearAuth` | FunctionDeclaration | [apps/web/src/utils/authStorage.ts:7](../../apps/web/src/utils/authStorage.ts) |
+| `saveSession` | FunctionDeclaration | [apps/web/src/utils/authStorage.ts:13](../../apps/web/src/utils/authStorage.ts) |
+| `saveUser` | FunctionDeclaration | [apps/web/src/utils/authStorage.ts:19](../../apps/web/src/utils/authStorage.ts) |
 | `padZero` | FunctionDeclaration | [apps/web/src/utils/codeFormatters.ts:10](../../apps/web/src/utils/codeFormatters.ts) |
 | `formatDateCompact` | FunctionDeclaration | [apps/web/src/utils/codeFormatters.ts:16](../../apps/web/src/utils/codeFormatters.ts) |
 | `generateRandomSuffix` | FunctionDeclaration | [apps/web/src/utils/codeFormatters.ts:24](../../apps/web/src/utils/codeFormatters.ts) |

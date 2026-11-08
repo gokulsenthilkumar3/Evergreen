@@ -1,4 +1,6 @@
-An end-to-end architectural, technical, operational, and market viability audit of the EverGreen monorepo (Evergreen-0307795e7c30ebf796bd8c8311f180485a236791) is presented below. Because the uploaded archive is a raw binary ZIP stream, its complete directory tree, module boundaries, test suites, and audit manifests are readable while individual file contents remain deflate-compressed; this report synthesizes every structural and domain signal exposed across the repository and sets up a part-by-part deep dive for line-level code inspection.  
+> **Historical audit; not current acceptance evidence.** This text describes an earlier repository snapshot (`Evergreen-0307795e7c30ebf796bd8c8311f180485a236791`). The current repository source is available for inspection; the claims below about live hardware, offline synchronization, isolation, connector acceptance, testing and commercial viability have not been independently established by this inventory. Use the [source-verified Graphify review](audits/2026-11-04/GRAPHIFY_REVIEW.md) for current technical status and limitations, and revalidate any dated counts or claims before relying on them.
+
+An end-to-end architectural, technical, operational, and market viability audit of the EverGreen monorepo is presented below as historical context.
 gokulsenthilkumar3/evergreen
 
 - 1

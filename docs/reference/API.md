@@ -4,10 +4,11 @@ Generated from Nest controller decorators. Default global policy: authenticated 
 
 | Method | Route | Policy | Handler signature | Source |
 | --- | --- | --- | --- | --- |
-| GET | `/license/status` | Public (inspect local guards) | `licenceStatus()` | [apps/api/src/app.controller.ts:13](../../apps/api/src/app.controller.ts) |
-| GET | `/` | Public (inspect local guards) | `index(@Res({ passthrough: true }) res: Response)` | [apps/api/src/app.controller.ts:25](../../apps/api/src/app.controller.ts) |
-| GET | `/health` | Public (inspect local guards) | `health(@Res({ passthrough: true }) res: Response)` | [apps/api/src/app.controller.ts:32](../../apps/api/src/app.controller.ts) |
-| GET | `/status` | ADMIN | `status()` | [apps/api/src/app.controller.ts:39](../../apps/api/src/app.controller.ts) |
+| GET | `/tenant/context` | Public (inspect local guards) | `context(@Req() request: Request)` | [apps/api/src/app.controller.ts:15](../../apps/api/src/app.controller.ts) |
+| GET | `/license/status` | Public (inspect local guards) | `licenceStatus()` | [apps/api/src/app.controller.ts:21](../../apps/api/src/app.controller.ts) |
+| GET | `/` | Public (inspect local guards) | `index(@Res({ passthrough: true }) res: Response)` | [apps/api/src/app.controller.ts:33](../../apps/api/src/app.controller.ts) |
+| GET | `/health` | Public (inspect local guards) | `health(@Res({ passthrough: true }) res: Response)` | [apps/api/src/app.controller.ts:52](../../apps/api/src/app.controller.ts) |
+| GET | `/status` | ADMIN | `status()` | [apps/api/src/app.controller.ts:59](../../apps/api/src/app.controller.ts) |
 | POST | `/admin-ops/migrate` | MODIFIER | `runMigration()` | [apps/api/src/modules/admin-ops/admin-ops.controller.ts:11](../../apps/api/src/modules/admin-ops/admin-ops.controller.ts) |
 | GET | `/ai/staff` | VIEWER | `staffStatus()` | [apps/api/src/modules/assistants/assistants.controller.ts:25](../../apps/api/src/modules/assistants/assistants.controller.ts) |
 | POST | `/ai/staff` | VIEWER | `staff(@Body() body: unknown, @Req() req: Request & { user: { userId?: number; username: string } })` | [apps/api/src/modules/assistants/assistants.controller.ts:33](../../apps/api/src/modules/assistants/assistants.controller.ts) |

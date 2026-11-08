@@ -17,10 +17,13 @@ const visit = (node, fn) => { fn(node); ts.forEachChild(node, child => visit(chi
 const write = (file, content) => {
   // This page is a maintained operating guide; API/control references remain generated.
   if (file === 'docs/wiki/pages/Integrations.md') return;
-  const text = content.join('\n') + '\n';
-  if (fs.existsSync(path.join(root, file)) && fs.readFileSync(path.join(root, file), 'utf8') === text) return;
+  const filePath = path.join(root, file);
+  const existing = fs.existsSync(filePath) ? fs.readFileSync(filePath, 'utf8') : undefined;
+  const newline = existing?.includes('\r\n') || process.platform === 'win32' ? '\r\n' : '\n';
+  const text = content.join(newline) + newline;
+  if (existing === text) return;
   changed.push(file);
-  if (!check) { fs.mkdirSync(path.dirname(path.join(root, file)), { recursive: true }); fs.writeFileSync(path.join(root, file), text); }
+  if (!check) { fs.mkdirSync(path.dirname(filePath), { recursive: true }); fs.writeFileSync(filePath, text); }
 };
 const sourceLink = (file, node, sf, prefix = '../../') => `[${file}:${sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1}](${prefix}${file})`;
 const value = node => node && (ts.isStringLiteralLike(node) ? node.text : node.getText());

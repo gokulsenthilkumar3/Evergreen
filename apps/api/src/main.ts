@@ -70,7 +70,7 @@ async function bootstrap() {
           ],
           fontSrc: ["'self'", 'https://fonts.gstatic.com', 'https:', 'data:'],
           imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
-          connectSrc: ["'self'", 'http:', 'https:', 'ws:'],
+          connectSrc: ["'self'"],
         },
       },
     }),
