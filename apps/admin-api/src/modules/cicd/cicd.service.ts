@@ -16,8 +16,16 @@ import {
   githubRequest,
   GithubRequestRejected,
   type GithubRelease,
+  type GithubCompare,
   type GithubRun,
 } from './github-release.service';
+import {
+  compareVersions,
+  formatVersion,
+  incrementVersion,
+  parseStableVersion,
+  requireIncrement,
+} from './semver';
 
 const releaseTag = (value: string) => {
   if (!/^v?\d+\.\d+\.\d+$/.test(value))
@@ -71,6 +79,68 @@ export class CicdService {
           sizeMB: asset.size / 1_048_576,
         })),
       }));
+  }
+
+  private async stablePackages() {
+    const packages = await this.getPackages();
+    return packages
+      .map(item => ({ ...item, parsed: parseStableVersion(item.version) }))
+      .filter(item => item.parsed)
+      .sort((left, right) => compareVersions(right.parsed!, left.parsed!));
+  }
+
+  async nextVersion(value?: string) {
+    const increment = requireIncrement(value || 'patch');
+    const releases = await this.stablePackages();
+    const current = releases[0]?.parsed || null;
+    return {
+      currentVersion: current ? formatVersion(current) : null,
+      nextVersion: formatVersion(incrementVersion(current, increment)),
+      increment,
+    };
+  }
+
+  async releaseDiff(base: string | undefined, target: string) {
+    const targetTag = releaseTag(target);
+    const baseTag = base ? releaseTag(base) : undefined;
+    if (!baseTag) return { available: false, reason: 'A previous stable release is required', baseVersion: null, targetVersion: targetTag };
+    if (baseTag === targetTag) return { available: true, baseVersion: baseTag, targetVersion: targetTag, commits: [], files: [], aheadBy: 0, behindBy: 0, status: 'identical' };
+    if (!githubConfig()) return { available: false, reason: 'Release provider is not configured', baseVersion: baseTag, targetVersion: targetTag };
+    const comparison = await githubRequest<GithubCompare>(`/compare/${encodeURIComponent(baseTag)}...${encodeURIComponent(targetTag)}`);
+    return {
+      available: true,
+      baseVersion: baseTag,
+      targetVersion: targetTag,
+      status: comparison.status,
+      aheadBy: comparison.ahead_by,
+      behindBy: comparison.behind_by,
+      commits: (comparison.commits || []).slice(0, 200).map(commit => ({ sha: commit.sha, url: commit.html_url, message: commit.commit.message.split('\n')[0], author: commit.commit.author?.name || null })),
+      files: (comparison.files || []).slice(0, 500).map(file => ({ filename: file.filename, status: file.status, additions: file.additions, deletions: file.deletions, changes: file.changes })),
+    };
+  }
+
+  async getUpdates() {
+    if (!githubConfig()) return { available: false, reason: 'Release provider is not configured', latestVersion: null, updates: [] };
+    const releases = await this.stablePackages();
+    const latest = releases[0];
+    if (!latest) return { available: true, latestVersion: null, updates: [] };
+    const companies = await this.prisma.company.findMany({ orderBy: { name: 'asc' }, select: { id: true, name: true, appVersion: true, cloudProvider: true, status: true, lastSyncAt: true, isMaintenance: true } });
+    const diffs = new Map<string, Awaited<ReturnType<CicdService['releaseDiff']>>>();
+    const updates = [];
+    for (const company of companies) {
+      const installed = parseStableVersion(company.appVersion);
+      if (!installed) {
+        updates.push({ companyId: company.id, companyName: company.name, installedVersion: company.appVersion || null, latestVersion: latest.version, status: 'UNKNOWN', reason: 'Installed version is not a stable semantic version', release: latest });
+        continue;
+      }
+      const relation = compareVersions(installed, latest.parsed!);
+      if (relation >= 0) continue;
+      const baseVersion = formatVersion(installed);
+      let diff = diffs.get(baseVersion);
+      if (!diff) { diff = await this.releaseDiff(baseVersion, latest.version); diffs.set(baseVersion, diff); }
+      updates.push({ companyId: company.id, companyName: company.name, installedVersion: baseVersion, latestVersion: latest.version, status: company.status === 'SUSPENDED' ? 'BLOCKED' : 'UPDATE_AVAILABLE', reason: company.status === 'SUSPENDED' ? 'Customer is suspended' : null, cloudProvider: company.cloudProvider, lastSyncAt: company.lastSyncAt, isMaintenance: company.isMaintenance, release: latest, diff });
+    }
+    return { available: true, latestVersion: latest.version, latestRelease: latest, updates };
   }
 
   private async refresh() {
@@ -195,7 +265,7 @@ export class CicdService {
       throw new ServiceUnavailableException(
         'Release provider is not configured',
       );
-    const version = releaseTag(data.version);
+    const version = data.version ? releaseTag(data.version) : (await this.nextVersion(data.increment || 'patch')).nextVersion;
     return this.dispatch({
       requestKey: data.requestKey,
       kind: 'BUILD',

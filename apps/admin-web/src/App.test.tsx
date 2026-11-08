@@ -14,7 +14,26 @@ import type { ReactNode } from 'react';
 // Workspace tests represent an activated, signed-in owner. Gate behavior is covered separately.
 vi.mock('./InstallationGate', () => ({ default: ({ children }: { children: ReactNode }) => children }));
 vi.mock('./ProviderAccessGate', () => ({ default: ({ children }: { children: ReactNode }) => children }));
-import { DEMO_TENANTS } from "./control-data";
+import type { Tenant } from "./control-data";
+
+const TEST_TENANTS: Tenant[] = [
+  {
+    id: "test-company-1",
+    name: "Test company",
+    cloudProvider: "AWS",
+    plan: "SEED",
+    status: "GRACE_PERIOD",
+    appVersion: "test",
+    activeStaff: 0,
+    docsPosted: 0,
+    maxUsers: 1,
+    maxMachines: 1,
+    maxDocsPerMonth: 1,
+    expiresAt: "2026-01-01T00:00:00.000Z",
+    isMaintenance: false,
+    lastSyncAt: null,
+  },
+];
 
 // jest-dom is hoisted to the root node_modules and vitest is installed under apps/admin-web, so the
 // "@testing-library/jest-dom/vitest" entry cannot resolve "vitest"; register the matchers and types here.
@@ -31,7 +50,7 @@ beforeEach(() => {
     "fetch",
     vi.fn(async (url: string) => ({
       ok: true,
-      json: async () => (url.endsWith("/companies") ? DEMO_TENANTS : []),
+      json: async () => (url.endsWith("/companies") ? TEST_TENANTS : []),
     })),
   );
   Object.defineProperty(HTMLDialogElement.prototype, "showModal", {
@@ -75,7 +94,7 @@ describe("Provider admin workspace", () => {
     vi.mocked(fetch).mockImplementation(async input => {
       const url = String(input);
       if (url.endsWith('/cicd/deploy')) return pending;
-      return { ok: true, json: async () => url.endsWith('/companies') ? DEMO_TENANTS : url.endsWith('/cicd/releases') ? [{ id: 'release-1', version: 'v1.0.0', name: 'Release fixture', targets: ['DOCKER'], artifacts: [], createdAt: '2026-10-19T00:00:00Z' }] : [] } as Response;
+      return { ok: true, json: async () => url.endsWith('/companies') ? TEST_TENANTS : url.endsWith('/cicd/releases') ? [{ id: 'release-1', version: 'v1.0.0', name: 'Release fixture', targets: ['DOCKER'], artifacts: [], createdAt: '2026-10-19T00:00:00Z' }] : [] } as Response;
     });
     const nav = await openApp();
     fireEvent.click(nav.getByRole('button', { name: /^Rollouts/ }));
@@ -102,7 +121,7 @@ describe("Provider admin workspace", () => {
     vi.mocked(fetch).mockImplementation(async (input) => {
       const url = String(input);
       if (url.endsWith("/license")) return pending;
-      return { ok: true, json: async () => url.endsWith("/companies") ? DEMO_TENANTS : [] } as Response;
+      return { ok: true, json: async () => url.endsWith("/companies") ? TEST_TENANTS : [] } as Response;
     });
     await openApp();
     fireEvent.click(await screen.findByRole("button", { name: /^⚡ Reactivate/ }));
@@ -129,7 +148,7 @@ describe("Provider admin workspace", () => {
   it("keeps a failed renewal open with its inputs available for correction", async () => {
     vi.mocked(fetch).mockImplementation(async (input) => ({
       ok: !String(input).endsWith("/license"), status: 400,
-      json: async () => String(input).endsWith("/companies") ? DEMO_TENANTS : [],
+      json: async () => String(input).endsWith("/companies") ? TEST_TENANTS : [],
     } as Response));
     await openApp();
     fireEvent.click(await screen.findByRole("button", { name: /^⚡ Reactivate/ }));
@@ -145,7 +164,7 @@ describe("Provider admin workspace", () => {
     vi.mocked(fetch).mockResolvedValue({ ok: false, status: 503 } as Response);
     await openApp();
     expect(await screen.findByText(/Mill data is unavailable/)).toBeInTheDocument();
-    expect(screen.queryByText(DEMO_TENANTS[0].name)).not.toBeInTheDocument();
+    expect(screen.queryByText(TEST_TENANTS[0].name)).not.toBeInTheDocument();
   });
 
   it("renders every module with one page heading and an active navigation item", async () => {
@@ -206,7 +225,7 @@ describe("Provider admin workspace", () => {
       screen.getByText("No mills match these filters."),
     ).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Clear filters" }));
-    expect(screen.getByText(DEMO_TENANTS[0].name)).toBeInTheDocument();
+    expect(screen.getByText(TEST_TENANTS[0].name)).toBeInTheDocument();
   });
 
   it("prints only provider API results in the ops terminal and never claims unrun operations", async () => {
@@ -215,7 +234,7 @@ describe("Provider admin workspace", () => {
       if (url.endsWith("/health")) {
         return { ok: true, json: async () => ({ service: "evergreen-admin-api", status: "ok", timestamp: "2026-10-15T00:00:00.000Z", database: { status: "CONNECTED", tenantsManaged: 3 } }) } as Response;
       }
-      return { ok: true, json: async () => url.endsWith("/companies") ? DEMO_TENANTS : [] } as Response;
+      return { ok: true, json: async () => url.endsWith("/companies") ? TEST_TENANTS : [] } as Response;
     });
     const nav = await openApp();
     fireEvent.click(nav.getByRole("button", { name: /^Diagnostics/ }));
@@ -240,7 +259,7 @@ describe("Provider admin workspace", () => {
     vi.mocked(fetch).mockImplementation(async (input) => {
       const url = String(input);
       if (url.endsWith("/health")) return { ok: false, status: 503, json: async () => ({}) } as Response;
-      return { ok: true, json: async () => url.endsWith("/companies") ? DEMO_TENANTS : [] } as Response;
+      return { ok: true, json: async () => url.endsWith("/companies") ? TEST_TENANTS : [] } as Response;
     });
     const nav = await openApp();
     fireEvent.click(nav.getByRole("button", { name: /^Diagnostics/ }));

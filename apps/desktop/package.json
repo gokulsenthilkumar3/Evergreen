@@ -1,6 +1,6 @@
 {
   "name": "evergreen-desktop",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "EverGreen Yarn Management System Desktop",
   "author": "EverGreen",
   "main": "main.js",

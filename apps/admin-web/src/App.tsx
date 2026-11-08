@@ -2,6 +2,8 @@ import AiAssistant from '../../../packages/portal-ui/AiAssistant';
 import MarketingSettings from './MarketingSettings';
 import DatabaseWorkspace from './DatabaseWorkspace';
 import CustomerApiConsole from './CustomerApiConsole';
+import CustomerPlanning from './CustomerPlanning';
+import ReleaseUpdates from './ReleaseUpdates';
 import OperationsOverview from './OperationsOverview';
 import RecordedServices from './RecordedServices';
 import './overview.css';
@@ -73,6 +75,16 @@ interface Company {
   actions?: RemoteAction[];
 }
 
+interface CompanyDomain {
+  id: string;
+  companyId: string;
+  hostname: string;
+  kind: string;
+  verificationToken: string;
+  isPrimary: boolean;
+  verifiedAt: string | null;
+}
+
 interface ReleasePackage {
   id: string;
   version: string;
@@ -118,6 +130,8 @@ interface CicdLogEntry {
 export type TabId =
   | 'DASHBOARD'
   | 'TENANTS'
+  | 'CUSTOMER_PLANNING'
+  | 'UPDATES'
   | 'DEPLOYMENTS'
   | 'PACKAGES'
   | 'MAINTENANCE'
@@ -207,6 +221,9 @@ function App() {
 
   // Modals
   const [activeModalCompany, setActiveModalCompany] = useState<Company | null>(null);
+  const [companyDomains, setCompanyDomains] = useState<CompanyDomain[]>([]);
+  const [domainInput, setDomainInput] = useState('');
+  const [domainBusy, setDomainBusy] = useState(false);
   const [deployTargetCompany, setDeployTargetCompany] = useState<Company | null>(null);
   const [reactivateTargetCompany, setReactivateTargetCompany] = useState<Company | null>(null);
   const [reactivateUtr, setReactivateUtr] = useState<string>('');
@@ -222,6 +239,7 @@ function App() {
 
   const [showNewPkgModal, setShowNewPkgModal] = useState(false);
   const [newPkgVersion, setNewPkgVersion] = useState('');
+  const [newPkgIncrement, setNewPkgIncrement] = useState<'patch' | 'minor' | 'major'>('patch');
   const [newPkgName, setNewPkgName] = useState('');
   const [newPkgChangelog, setNewPkgChangelog] = useState('');
   const newPkgTargets = ['WINDOWS', 'DOCKER'];
@@ -233,7 +251,7 @@ function App() {
   const [cloud, setCloud] = useState('LOCAL_VM');
   const [url, setUrl] = useState('');
   const [tier, setTier] = useState('TIER_2_CITY');
-  const [stateRegion, setStateRegion] = useState('Tamil Nadu');
+  const [stateRegion, setStateRegion] = useState('');
   const [plan, setPlan] = useState('GROWTH');
   const [maxUsers, setMaxUsers] = useState(5);
   const [maxMachines, setMaxMachines] = useState(25);
@@ -259,7 +277,7 @@ function App() {
   const [showNewRecordModal, setShowNewRecordModal] = useState<boolean>(false);
   const [newRecordKind, setNewRecordKind] = useState<string>('TASK');
   const [newRecordTitle, setNewRecordTitle] = useState<string>('');
-  const [newRecordOwner, setNewRecordOwner] = useState<string>('Evergreen Ops');
+  const [newRecordOwner, setNewRecordOwner] = useState<string>('');
   const [newRecordPriority, setNewRecordPriority] = useState<string>('NORMAL');
   const [newRecordPayload, setNewRecordPayload] = useState('{}');
   const [savingRecord, setSavingRecord] = useState(false);
@@ -272,6 +290,57 @@ function App() {
       if (response.status === 401) { sessionStorage.removeItem('evergreen_provider_key'); window.dispatchEvent(new Event('evergreen:provider-locked')); }
       return response;
     });
+  };
+
+  useEffect(() => {
+    if (!activeModalCompany) {
+      setCompanyDomains([]);
+      setDomainInput('');
+      return;
+    }
+    let cancelled = false;
+    authFetch(`${adminApiBase}/companies/${activeModalCompany.id}/domains`)
+      .then(response => response.ok ? response.json() : [])
+      .then(domains => { if (!cancelled) setCompanyDomains(Array.isArray(domains) ? domains : []); })
+      .catch(() => { if (!cancelled) setCompanyDomains([]); });
+    return () => { cancelled = true; };
+  }, [activeModalCompany?.id]);
+
+  const registerCompanyDomain = async () => {
+    if (!activeModalCompany || !domainInput.trim() || domainBusy) return;
+    setDomainBusy(true);
+    try {
+      const response = await authFetch(`${adminApiBase}/companies/${activeModalCompany.id}/domains`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hostname: domainInput.trim(), kind: domainInput.trim().endsWith('.evergreen.com') ? 'SUBDOMAIN' : 'CUSTOM_DOMAIN', isPrimary: companyDomains.length === 0 }),
+      });
+      if (!response.ok) throw new Error(`Domain registration failed (HTTP ${response.status})`);
+      const created = await response.json();
+      setCompanyDomains(previous => [...previous.filter(domain => !created.isPrimary || !domain.isPrimary), created]);
+      setDomainInput('');
+      showMsg('Customer hostname registered. Configure DNS and route it to this installation.', false);
+    } catch (error) {
+      showMsg(error instanceof Error ? error.message : 'Customer hostname could not be registered', false);
+    } finally {
+      setDomainBusy(false);
+    }
+  };
+
+  const verifyCompanyDomain = async (domain: CompanyDomain) => {
+    if (!activeModalCompany || domainBusy) return;
+    setDomainBusy(true);
+    try {
+      const response = await authFetch(`${adminApiBase}/companies/${activeModalCompany.id}/domains/${domain.id}/verify`, { method: 'POST' });
+      if (!response.ok) throw new Error((await response.json().catch(() => null))?.message || `DNS verification failed (HTTP ${response.status})`);
+      const verified = await response.json();
+      setCompanyDomains(previous => previous.map(item => item.id === domain.id ? { ...item, verifiedAt: verified.verifiedAt } : item));
+      showMsg(`${domain.hostname} is verified and routable.`, false);
+    } catch (error) {
+      showMsg(error instanceof Error ? error.message : 'DNS verification failed', false);
+    } finally {
+      setDomainBusy(false);
+    }
   };
 
   /* ──── DATA FETCHING ──── */
@@ -442,17 +511,18 @@ function App() {
   const handleCreatePackage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (buildingRef.current) return;
-    const fingerprint = JSON.stringify([newPkgVersion, newPkgName, newPkgChangelog, newPkgTargets]);
+    const fingerprint = JSON.stringify([newPkgVersion, newPkgIncrement, newPkgName, newPkgChangelog, newPkgTargets]);
     if (buildRequestRef.current?.fingerprint !== fingerprint) buildRequestRef.current = { fingerprint, key: crypto.randomUUID() };
     buildingRef.current = true;
     setBuilding(true);
     try {
-      showMsg(`🔨 Building release package ${newPkgVersion}...`, false);
+      showMsg(`🔨 Building ${newPkgVersion || `${newPkgIncrement} increment`} release package...`, false);
       const res = await authFetch(`${adminApiBase}/cicd/build`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          version: newPkgVersion,
+          version: newPkgVersion || undefined,
+          increment: newPkgIncrement,
           name: newPkgName,
           changelog: newPkgChangelog,
           targets: newPkgTargets,
@@ -464,6 +534,7 @@ function App() {
         showMsg(`Release job ${job.id}: ${job.status}. The release appears in the registry after the build and publication complete.`, false);
         setShowNewPkgModal(false);
         setNewPkgVersion('');
+        setNewPkgIncrement('patch');
         setNewPkgName('');
         setNewPkgChangelog('');
         fetchCicdData();
@@ -647,6 +718,8 @@ function App() {
   const MODULE_TABS: { id: TabId; label: string; cat: NavCategory; badge?: string; badgeColor?: string }[] = [
     { id: 'DASHBOARD', label: 'Command deck', cat: 'CORE', badge: '', badgeColor: 'cyan' },
     { id: 'TENANTS', label: 'Companies', cat: 'CORE', badge: String(companies.length), badgeColor: '' },
+    { id: 'CUSTOMER_PLANNING', label: 'Customer planning', cat: 'CORE', badge: '', badgeColor: 'emerald' },
+    { id: 'UPDATES', label: 'Release updates', cat: 'CLOUD', badge: '', badgeColor: 'cyan' },
     { id: 'TASKS', label: 'Workboard', cat: 'CORE', badge: String(records.filter(r => r.kind === 'TASK').length), badgeColor: '' },
     { id: 'DEPLOYMENTS', label: 'Rollouts', cat: 'CLOUD', badge: String(deployments.length), badgeColor: '' },
     { id: 'PACKAGES', label: 'Release registry', cat: 'CLOUD', badge: String(packages.length), badgeColor: '' },
@@ -814,6 +887,8 @@ function App() {
             {activeTab === 'JOBS' && <ProofLedger apiBase={adminApiBase} jobsOnly onInspect={event => setInspection({id:event.entityId,title:event.title,type:'JOB',proof:event.proof,data:event,at:event.at})} />}
             {['PROVISIONING','ACCESS','KEYS','BACKUPS','SLOS'].includes(activeTab) && <CapabilityView id={activeTab} apiBase={adminApiBase} />}
             {activeTab === 'DASHBOARD' && <OperationsOverview companies={companies} records={records} updatedAt={lastDataResponse} onRefresh={() => { void fetchCompanies(); void fetchRecords(); }} onNavigate={setActiveTab} onInspect={company => setInspection({id:company.id,title:company.name,type:'COMPANY',data:company})} />}
+            {activeTab === 'CUSTOMER_PLANNING' && <CustomerPlanning apiBase={adminApiBase} />}
+            {activeTab === 'UPDATES' && <ReleaseUpdates apiBase={adminApiBase} />}
 
             {/* ═══════════════════════════════════════════════════════════════
                 TAB 2: SPINNING MILL TENANTS & LICENSES
@@ -1578,7 +1653,7 @@ function App() {
                     type="text"
                     required
                     className="form-input-text"
-                    placeholder="e.g. Mahalakshmi Spinning Mills Pvt Ltd"
+                    placeholder="Enter the registered company name"
                     value={name}
                     onChange={e => setName(e.target.value)}
                   />
@@ -1607,9 +1682,9 @@ function App() {
                       value={tier}
                       onChange={e => setTier(e.target.value)}
                     >
-                      <option value="TIER_2_CITY">Tirupur Knitwear Cluster</option>
-                      <option value="TIER_1_CITY">Coimbatore Spinning Hub</option>
-                      <option value="TIER_3_CITY">Karur / Dindigul Handlooms</option>
+                      <option value="TIER_2_CITY">Tier 2 city / industrial cluster</option>
+                      <option value="TIER_1_CITY">Tier 1 city / major industrial hub</option>
+                      <option value="TIER_3_CITY">Tier 3 city / regional cluster</option>
                     </select>
                   </div>
                 </div>
@@ -1621,7 +1696,7 @@ function App() {
                     maxLength={120}
                     type="text"
                     className="form-input-text"
-                    placeholder="e.g. Tamil Nadu"
+                    placeholder="Enter the state or province"
                     value={stateRegion}
                     onChange={e => setStateRegion(e.target.value)}
                   />
@@ -1701,7 +1776,7 @@ function App() {
                     maxLength={2048}
                     type="url"
                     className="form-input-text"
-                    placeholder="https://mahalakshmi.evergreenos.in"
+                                  placeholder="https://customer.example.com"
                     value={url}
                     onChange={e => setUrl(e.target.value)}
                   />
@@ -1857,6 +1932,33 @@ function App() {
                 Target: {activeModalCompany.cloudProvider}<br />
                 Provider API: {adminApiBase}
               </div>
+              <div style={{ marginTop: '1.2rem' }}>
+                <strong>Customer hostnames</strong>
+                <p style={{ fontSize: '0.82rem', color: 'var(--adm-muted)', lineHeight: '1.5' }}>
+                  Each hostname routes to this isolated customer installation. DNS and the edge proxy must point the hostname to its deployment URL.
+                </p>
+                {companyDomains.length > 0 ? (
+                  <ul style={{ paddingLeft: '1.2rem', color: 'var(--adm-text)' }}>
+                    {companyDomains.map(domain => <li key={domain.id}>
+                      {domain.hostname}{domain.isPrimary ? ' · primary' : ''} · {domain.verifiedAt ? 'verified' : 'pending DNS'}
+                      {!domain.verifiedAt && <button className="btn-ghost" style={{ marginLeft: '0.5rem' }} disabled={domainBusy} onClick={() => verifyCompanyDomain(domain)}>Verify</button>}
+                      {!domain.verifiedAt && <div style={{ fontSize: '0.75rem', color: 'var(--adm-muted)', marginTop: '0.25rem' }}>TXT _evergreen-verification.{domain.hostname} = {domain.verificationToken}</div>}
+                    </li>)}
+                  </ul>
+                ) : <p style={{ color: 'var(--adm-muted)' }}>No customer hostname registered.</p>}
+                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem' }}>
+                  <input
+                    className="form-input-text"
+                    aria-label="Customer hostname"
+                    placeholder="customer.example.com"
+                    value={domainInput}
+                    onChange={event => setDomainInput(event.target.value)}
+                  />
+                  <button className="btn-provision-trigger" disabled={domainBusy || !domainInput.trim()} onClick={registerCompanyDomain}>
+                    {domainBusy ? 'Registering…' : 'Register'}
+                  </button>
+                </div>
+              </div>
             </div>
             <div className="modal-footer">
               <button className="btn-provision-trigger" onClick={() => setActiveModalCompany(null)}>Done</button>
@@ -1879,18 +1981,25 @@ function App() {
               <div className="modal-body">
                 <div className="form-grid-2col">
                   <div className="form-field-row">
-                    <label htmlFor="release-version">Package Version *</label>
+                    <label htmlFor="release-version">Package Version (optional)</label>
                     <input
                       id="release-version"
                       type="text"
-                      required
                       className="form-input-text"
-                      placeholder="e.g. v1.0.0"
+                      placeholder="Leave blank to increment automatically"
                       disabled={building}
                       pattern="v?[0-9]+\.[0-9]+\.[0-9]+"
                       value={newPkgVersion}
                       onChange={e => setNewPkgVersion(e.target.value)}
                     />
+                  </div>
+                  <div className="form-field-row">
+                    <label htmlFor="release-increment">Automatic increment</label>
+                    <select id="release-increment" className="form-select-box" value={newPkgIncrement} disabled={building} onChange={e => setNewPkgIncrement(e.target.value as 'patch' | 'minor' | 'major')}>
+                      <option value="patch">Patch · bug fixes and page improvements</option>
+                      <option value="minor">Minor · backward-compatible features</option>
+                      <option value="major">Major · breaking changes</option>
+                    </select>
                   </div>
                   <div className="form-field-row">
                     <label htmlFor="release-title">Release Title *</label>

@@ -139,6 +139,24 @@ export class UpdateLicenseDto extends LicenseFieldsDto {
   details?: string;
 }
 
+export class CreateCompanyDomainDto {
+  @Trim()
+  @IsString()
+  @Length(3, 253)
+  @Matches(/^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/i, {
+    message: 'hostname must be a valid DNS name',
+  })
+  hostname!: string;
+
+  @Optional()
+  @IsIn(['SUBDOMAIN', 'CUSTOM_DOMAIN'])
+  kind?: string;
+
+  @Optional()
+  @IsBoolean()
+  isPrimary?: boolean;
+}
+
 class CompanyMetricsDto {
   @Optional()
   @IsString()

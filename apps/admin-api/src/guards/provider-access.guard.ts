@@ -22,7 +22,7 @@ export class ProviderAccessGuard implements CanActivate {
     // Allow public health and root status probes
     if (
       req.method === 'GET' &&
-      ['/', '/health', '/license/status', '/public/marketing-settings'].includes(req.path)
+      ['/', '/health', '/license/status', '/public/marketing-settings', '/public/tenant/resolve'].includes(req.path)
     ) {
       return true;
     }

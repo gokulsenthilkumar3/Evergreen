@@ -6,9 +6,11 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../services/prisma.service';
 import * as crypto from 'crypto';
+import { resolveTxt } from 'node:dns/promises';
 import type { Prisma } from '@prisma/admin-client';
 import {
   CreateCompanyDto,
+  CreateCompanyDomainDto,
   MAX_COUNTER,
   SyncCompanyDto,
   UpdateLicenseDto,
@@ -25,6 +27,14 @@ function withoutEnrollmentKey<T extends { apiKey: string }>(
 @Injectable()
 export class CompaniesService {
   constructor(private readonly prisma: PrismaService) {}
+
+  private normalizeHostname(hostname: string) {
+    const normalized = hostname.trim().toLowerCase().replace(/\.$/, '');
+    if (!normalized || normalized.includes('/') || normalized.includes(':')) {
+      throw new BadRequestException('A hostname is required, not a URL');
+    }
+    return normalized;
+  }
 
   async createCompany(data: CreateCompanyDto) {
     const apiKey = crypto.randomBytes(32).toString('hex');
@@ -279,5 +289,86 @@ export class CompaniesService {
 
       return { success: true, ...updatedCompany };
     });
+  }
+
+  async listDomains(companyId: string) {
+    const company = await this.prisma.company.findUnique({ where: { id: companyId }, select: { id: true } });
+    if (!company) throw new NotFoundException('Company not found');
+    return this.prisma.$queryRawUnsafe(
+      'SELECT id, companyId, hostname, kind, verificationToken, isPrimary, verifiedAt, createdAt, updatedAt FROM CompanyDomain WHERE companyId = ? ORDER BY isPrimary DESC, hostname ASC',
+      companyId,
+    );
+  }
+
+  async addDomain(companyId: string, data: CreateCompanyDomainDto) {
+    const hostname = this.normalizeHostname(data.hostname);
+    const company = await this.prisma.company.findUnique({ where: { id: companyId }, select: { id: true } });
+    if (!company) throw new NotFoundException('Company not found');
+    try {
+      return await this.prisma.$transaction(async tx => {
+        if (data.isPrimary) await tx.$executeRawUnsafe('UPDATE CompanyDomain SET isPrimary = 0 WHERE companyId = ?', companyId);
+        const id = crypto.randomUUID();
+        const verificationToken = `evergreen-domain-${crypto.randomBytes(24).toString('hex')}`;
+        const now = new Date().toISOString();
+        await tx.$executeRawUnsafe(
+          'INSERT INTO CompanyDomain (id, companyId, hostname, kind, verificationToken, isPrimary, verifiedAt, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, NULL, ?, ?)',
+          id, companyId, hostname, data.kind || 'SUBDOMAIN', verificationToken, data.isPrimary ? 1 : 0, now, now,
+        );
+        return { id, companyId, hostname, kind: data.kind || 'SUBDOMAIN', verificationToken, isPrimary: data.isPrimary ?? false, verifiedAt: null, createdAt: now, updatedAt: now };
+      });
+    } catch (error) {
+      if (error instanceof Error && /unique|constraint/i.test(error.message)) {
+        throw new BadRequestException('That hostname is already assigned to a company');
+      }
+      throw error;
+    }
+  }
+
+  async removeDomain(companyId: string, domainId: string) {
+    const deleted = await this.prisma.$executeRawUnsafe('DELETE FROM CompanyDomain WHERE id = ? AND companyId = ?', domainId, companyId);
+    if (deleted !== 1) throw new NotFoundException('Company domain not found');
+    return { deleted: true, id: domainId };
+  }
+
+  async resolveDomain(hostname: string) {
+    const normalized = this.normalizeHostname(hostname.trim().replace(/:\d+$/, ''));
+    const rows = await this.prisma.$queryRawUnsafe<Array<{ hostname: string; kind: string; isPrimary: boolean; companyId: string; companyName: string; deploymentUrl: string | null; status: string; isMaintenance: boolean }>>(
+      'SELECT d.hostname, d.kind, d.isPrimary, c.id AS companyId, c.name AS companyName, c.deploymentUrl, c.status, c.isMaintenance FROM CompanyDomain d INNER JOIN Company c ON c.id = d.companyId WHERE d.hostname = ? AND d.verifiedAt IS NOT NULL LIMIT 1',
+      normalized,
+    );
+    const domain = rows[0];
+    if (!domain || domain.status === 'SUSPENDED') return null;
+    return {
+      hostname: domain.hostname,
+      kind: domain.kind,
+      isPrimary: domain.isPrimary,
+      companyId: domain.companyId,
+      companyName: domain.companyName,
+      deploymentUrl: domain.deploymentUrl,
+      status: domain.status,
+      isMaintenance: domain.isMaintenance,
+    };
+  }
+
+  async verifyDomain(companyId: string, domainId: string) {
+    const rows = await this.prisma.$queryRawUnsafe<Array<{ id: string; hostname: string; verificationToken: string }>>(
+      'SELECT id, hostname, verificationToken FROM CompanyDomain WHERE id = ? AND companyId = ? LIMIT 1',
+      domainId, companyId,
+    );
+    const domain = rows[0];
+    if (!domain) throw new NotFoundException('Company domain not found');
+    const record = `_evergreen-verification.${domain.hostname}`;
+    let values: string[] = [];
+    try {
+      values = (await resolveTxt(record)).flat();
+    } catch {
+      throw new ServiceUnavailableException(`DNS verification record not found at ${record}`);
+    }
+    if (!values.includes(domain.verificationToken)) {
+      throw new BadRequestException('DNS verification record does not match the issued token');
+    }
+    const verifiedAt = new Date().toISOString();
+    await this.prisma.$executeRawUnsafe('UPDATE CompanyDomain SET verifiedAt = ?, updatedAt = ? WHERE id = ?', verifiedAt, verifiedAt, domainId);
+    return { id: domain.id, hostname: domain.hostname, verifiedAt };
   }
 }

@@ -1,0 +1,19 @@
+{
+  "name": "evergreen-admin-desktop",
+  "version": "1.0.0",
+  "description": "EverGreen Provider Admin desktop application",
+  "author": "EverGreen",
+  "private": true,
+  "main": "main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "dist": "node ../../scripts/release/admin-desktop.mjs"
+  },
+  "devDependencies": {
+    "electron": "44.10.2",
+    "electron-builder": "^26.7.0"
+  },
+  "dependencies": {
+    "electron-updater": "6.8.9"
+  }
+}

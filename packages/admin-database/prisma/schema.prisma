@@ -66,6 +66,129 @@ model Company {
 
   metrics             CompanyMetrics[]
   actions             RemoteAction[]
+  domains             CompanyDomain[]
+  accountPlan         CustomerAccountPlan?
+}
+
+model CompanyDomain {
+  id          String   @id @default(uuid())
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  hostname    String   @unique
+  kind        String   @default("SUBDOMAIN")
+  verificationToken String @unique
+  isPrimary   Boolean  @default(false)
+  verifiedAt  DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([companyId])
+}
+
+model CustomerPlanTemplate {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  name        String
+  description String?
+  kind        String
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  milestones  CustomerPlanTemplateMilestone[]
+  plans       CustomerAccountPlan[]
+}
+
+model CustomerPlanTemplateMilestone {
+  id           String   @id @default(uuid())
+  templateId   String
+  template     CustomerPlanTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  title        String
+  phase        String
+  daysFromStart Int     @default(0)
+  priority     String   @default("NORMAL")
+  createdAt    DateTime @default(now())
+  @@index([templateId])
+}
+
+model CustomerAccountPlan {
+  id             String   @id @default(uuid())
+  companyId      String   @unique
+  company        Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  templateId     String?
+  template       CustomerPlanTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  lifecycleStage String   @default("ONBOARDING")
+  summary        String?
+  nextReviewAt   DateTime?
+  healthScore    Int      @default(0)
+  healthBand     String   @default("AT_RISK")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  milestones     CustomerPlanMilestone[]
+  risks          CustomerPlanRisk[]
+  alerts         CustomerAlert[]
+  activities     CustomerPlanActivity[]
+  @@index([lifecycleStage, healthBand])
+}
+
+model CustomerPlanMilestone {
+  id          String   @id @default(uuid())
+  planId      String
+  plan        CustomerAccountPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  title       String
+  phase       String
+  owner       String?
+  priority    String   @default("NORMAL")
+  status      String   @default("OPEN")
+  dueAt       DateTime?
+  completedAt DateTime?
+  blocker     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  @@index([planId, status, dueAt])
+}
+
+model CustomerPlanRisk {
+  id          String   @id @default(uuid())
+  planId      String
+  plan        CustomerAccountPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  title       String
+  details     String?
+  severity    String   @default("MEDIUM")
+  status      String   @default("OPEN")
+  mitigation  String?
+  dueAt       DateTime?
+  resolvedAt  DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  @@index([planId, status, severity])
+}
+
+model CustomerAlert {
+  id             String   @id @default(uuid())
+  planId         String
+  plan           CustomerAccountPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  fingerprint    String   @unique
+  type           String
+  severity       String   @default("MEDIUM")
+  status         String   @default("OPEN")
+  title          String
+  details        String?
+  acknowledgedAt DateTime?
+  resolvedAt     DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  @@index([planId, status, severity])
+}
+
+model CustomerPlanActivity {
+  id        String   @id @default(uuid())
+  planId    String
+  plan      CustomerAccountPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  action    String
+  actor     String
+  details   String?
+  createdAt DateTime @default(now())
+  @@index([planId, createdAt])
 }
 
 model RemoteAction {

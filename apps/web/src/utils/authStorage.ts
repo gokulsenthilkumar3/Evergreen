@@ -1,23 +1,24 @@
-/** Keep shared-device sessions in this tab; persistent sessions retain the existing storage format. */
+/** Keep sessions isolated by origin so customer subdomains and custom domains never share credentials. */
+const storageKey = (key: string) => `${window.location.origin}:${key}`;
 export const getToken = () =>
-  sessionStorage.getItem("token") || localStorage.getItem("token");
+  sessionStorage.getItem(storageKey("token")) || localStorage.getItem(storageKey("token"));
 export const getStoredUser = () =>
-  sessionStorage.getItem("user") || localStorage.getItem("user");
+  sessionStorage.getItem(storageKey("user")) || localStorage.getItem(storageKey("user"));
 export function clearAuth() {
   for (const storage of [sessionStorage, localStorage]) {
-    storage.removeItem("token");
-    storage.removeItem("user");
+    storage.removeItem(storageKey("token"));
+    storage.removeItem(storageKey("user"));
   }
 }
 export function saveSession(token: string, user: unknown, remember: boolean) {
   clearAuth();
   const storage = remember ? localStorage : sessionStorage;
-  storage.setItem("token", token);
-  storage.setItem("user", JSON.stringify(user));
+  storage.setItem(storageKey("token"), token);
+  storage.setItem(storageKey("user"), JSON.stringify(user));
 }
 export function saveUser(user: unknown) {
-  const storage = sessionStorage.getItem("token")
+  const storage = sessionStorage.getItem(storageKey("token"))
     ? sessionStorage
     : localStorage;
-  storage.setItem("user", JSON.stringify(user));
+  storage.setItem(storageKey("user"), JSON.stringify(user));
 }

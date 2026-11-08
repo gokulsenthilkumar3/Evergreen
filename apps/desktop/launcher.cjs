@@ -89,7 +89,26 @@ async function start() {
     const filename = changed ? `${randomUUID()}.db` : previous.database;
     if (!/^[a-f0-9-]+\.db$/.test(filename) || (previous && !/^[a-f0-9-]+\.db$/.test(previous.database))) throw new Error('Invalid installation database reference');
     database = path.join(directory, 'databases', filename);
-    if (previous && changed) await storage.snapshot(runtimeRoot, path.join(directory, 'databases', previous.database), database);
+    if (previous && changed) {
+      const databaseDirectory = path.join(directory, 'databases');
+      const expectedSource = path.join(databaseDirectory, previous.database);
+      // An installer/update can preserve installation.json while the database
+      // file was moved by an older build. Recover the most likely existing
+      // database before refusing to start; never create a blank replacement
+      // when customer data may still be present.
+      const candidates = [];
+      if (fs.existsSync(expectedSource)) candidates.push(expectedSource);
+      const legacy = path.join(directory, 'database.db');
+      if (fs.existsSync(legacy)) candidates.push(legacy);
+      if (fs.existsSync(databaseDirectory)) {
+        for (const name of fs.readdirSync(databaseDirectory)) {
+          if (/^[a-f0-9-]+\.db$/.test(name)) candidates.push(path.join(databaseDirectory, name));
+        }
+      }
+      const source = [...new Set(candidates)].sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs)[0];
+      if (!source) throw new Error('The saved customer database could not be found. No new database was created; contact your administrator to restore the previous EverGreen data folder.');
+      await storage.snapshot(runtimeRoot, source, database);
+    }
     if (changed) await storage.migrate(runtimeRoot, database);
     web = await serveWeb(path.join(process.resourcesPath, 'web')); origin = web.origin;
     await startupStatus('Opening your workspace…');

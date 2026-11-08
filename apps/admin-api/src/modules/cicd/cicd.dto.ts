@@ -26,8 +26,13 @@ export class DeployReleaseDto {
 }
 
 export class BuildReleaseDto {
+  @IsOptional()
   @Matches(/^v?\d+\.\d+\.\d+$/)
   version!: string;
+
+  @IsOptional()
+  @IsIn(['patch', 'minor', 'major'])
+  increment?: 'patch' | 'minor' | 'major';
 
   @IsUUID()
   requestKey!: string;

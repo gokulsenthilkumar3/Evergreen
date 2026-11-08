@@ -18,14 +18,17 @@ import { PrismaService } from './services/prisma.service';
 import { EvidenceService } from './modules/control/evidence.service';
 
 async function bootstrap() {
-  Object.assign(process.env, ownerHostEnvironment('provider'));
+  const hostedAdmin = process.env.EVERGREEN_ADMIN_HOSTED === 'true';
+  if (!hostedAdmin) Object.assign(process.env, ownerHostEnvironment('provider'));
   Object.assign(process.env, ownerGroqEnvironment());
-  try {
-    await refreshInstallationLease('provider');
-  } catch {
-    /* Existing signed offline access is checked below. */
+  if (!hostedAdmin) {
+    try {
+      await refreshInstallationLease('provider');
+    } catch {
+      /* Existing signed offline access is checked below. */
+    }
   }
-  requireInstallationLicence('provider');
+  if (!hostedAdmin) requireInstallationLicence('provider');
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const adminIdentity = await app.get(EvidenceService).health();
   app.use((_req:Request,res:Response,next:NextFunction)=>{res.setHeader('X-Admin-Instance',adminIdentity.instance);res.setHeader('X-Admin-DB-Fingerprint',adminIdentity.dbFingerprint);next();});
@@ -512,6 +515,12 @@ async function bootstrap() {
     process.env.EVERGREEN_API_HOST ??
     (process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1');
   await app.listen(port, host);
+  if (process.env.EVERGREEN_DESKTOP === 'true' && process.send) {
+    const address = app.getHttpAdapter().getHttpServer().address();
+    if (!address || typeof address === 'string')
+      throw new Error('Provider API did not bind a TCP port');
+    process.send({ type: 'evergreen-ready', port: address.port });
+  }
   console.log(`🚀 Application is listening on ${host}:${port}`);
   if (process.env.NODE_ENV !== 'production') {
     console.log(`📊 API Documentation: http://localhost:${port}/api/docs`);

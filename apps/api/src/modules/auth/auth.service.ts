@@ -192,6 +192,7 @@ export class AuthService implements OnModuleInit {
       sub: user.id,
       role: user.role,
       sessionId: session.id,
+      companyId: process.env.COMPANY_ID?.trim() || undefined,
     };
 
     return {
@@ -201,6 +202,7 @@ export class AuthService implements OnModuleInit {
         username: user.username,
         name: user.name,
         role: user.role,
+        companyId: process.env.COMPANY_ID?.trim() || null,
       },
     };
   }

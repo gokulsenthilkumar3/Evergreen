@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Delete,
   Body,
   Param,
   Req,
@@ -15,6 +16,7 @@ import {
   SyncCompanyDto,
   SyncCompanyV1Dto,
   UpdateLicenseDto,
+  CreateCompanyDomainDto,
 } from './companies.dto';
 
 @Controller('companies')
@@ -34,6 +36,35 @@ export class CompaniesController {
   @Get(':id')
   async getCompany(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.companiesService.getCompany(id);
+  }
+
+  @Get(':id/domains')
+  async listDomains(@Param('id', new ParseUUIDPipe()) id: string) {
+    return this.companiesService.listDomains(id);
+  }
+
+  @Post(':id/domains')
+  async addDomain(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() body: CreateCompanyDomainDto,
+  ) {
+    return this.companiesService.addDomain(id, body);
+  }
+
+  @Delete(':id/domains/:domainId')
+  async removeDomain(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Param('domainId', new ParseUUIDPipe()) domainId: string,
+  ) {
+    return this.companiesService.removeDomain(id, domainId);
+  }
+
+  @Post(':id/domains/:domainId/verify')
+  async verifyDomain(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Param('domainId', new ParseUUIDPipe()) domainId: string,
+  ) {
+    return this.companiesService.verifyDomain(id, domainId);
   }
 
   // Endpoints that the individual company API will call to sync data

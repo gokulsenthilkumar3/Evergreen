@@ -35,6 +35,8 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { IntegrationsModule } from './modules/integrations/integrations.module';
+import { TenantContextService } from './tenant/tenant-context.service';
+import { TenantHostGuard } from './tenant/tenant-host.guard';
 
 @Module({
   imports: [
@@ -69,10 +71,12 @@ import { IntegrationsModule } from './modules/integrations/integrations.module';
   controllers: [AppController, AssistantsController, HelpdeskIngressController, HelpdeskOperationsController, HelpdeskController],
   providers: [
     InstallationLeaseService,
+    TenantContextService,
     HelpdeskService,
     HelpdeskOperationsService,
     InstallationLicenseGuard,
     { provide: APP_GUARD, useExisting: InstallationLicenseGuard },
+    { provide: APP_GUARD, useClass: TenantHostGuard },
     AppService,
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },

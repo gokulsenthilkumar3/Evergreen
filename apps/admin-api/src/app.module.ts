@@ -15,6 +15,7 @@ import { AppService } from './app.service';
 import { APP_GUARD } from '@nestjs/core';
 import { ProviderAccessGuard } from './guards/provider-access.guard';
 import { ControlModule } from './modules/control/control.module';
+import { CustomerPlanningModule } from './modules/customer-planning/customer-planning.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { ControlModule } from './modules/control/control.module';
     CompaniesModule,
     CicdModule,
     ControlModule,
+    CustomerPlanningModule,
   ],
   controllers: [
     AppController,

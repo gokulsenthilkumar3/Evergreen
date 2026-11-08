@@ -24,6 +24,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (!payload.sessionId) {
       throw new UnauthorizedException('Invalid token structure');
     }
+    const configuredCompanyId = process.env.COMPANY_ID?.trim();
+    if (configuredCompanyId && payload.companyId && payload.companyId !== configuredCompanyId) {
+      throw new UnauthorizedException('Session belongs to a different customer installation');
+    }
 
     const session = await this.prisma.session.findUnique({
       where: { id: payload.sessionId },
@@ -68,6 +72,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       username: user.username,
       role: user.role,
       sessionId: payload.sessionId,
+      companyId: configuredCompanyId || payload.companyId || null,
       scopedAccess: user.scopedAccess,
       accessRules: user.accessRules,
     };

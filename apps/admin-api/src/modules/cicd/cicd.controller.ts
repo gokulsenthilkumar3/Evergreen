@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query, Req } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Req } from '@nestjs/common';
 import { CicdService } from './cicd.service';
 import { BuildReleaseDto, DeployReleaseDto } from './cicd.dto';
 import type { Request } from 'express';
@@ -21,6 +21,21 @@ export class CicdController {
   getLogs(@Query('limit') limit?: string) {
     const limitNum = limit ? parseInt(limit, 10) : 100;
     return this.cicdService.getLogs(limitNum);
+  }
+
+  @Get('updates')
+  getUpdates() {
+    return this.cicdService.getUpdates();
+  }
+
+  @Get('version/next')
+  nextVersion(@Query('increment') increment?: string) {
+    return this.cicdService.nextVersion(increment);
+  }
+
+  @Get('releases/:version/diff')
+  releaseDiff(@Param('version') version: string, @Query('base') base?: string) {
+    return this.cicdService.releaseDiff(base, version);
   }
 
   @Post('build')

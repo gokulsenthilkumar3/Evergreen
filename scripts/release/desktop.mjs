@@ -7,6 +7,7 @@ import { spawnSync } from 'node:child_process';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const require = createRequire(import.meta.url);
+const skipSmoke = process.env.EVERGREEN_SKIP_DESKTOP_SMOKE === 'true' || process.argv.includes('--skip-smoke');
 const json = file => JSON.parse(fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, ''));
 const digest = value => createHash('sha256').update(value).digest('hex');
 function treeDigest(directory) {
@@ -80,7 +81,9 @@ export async function prepareDesktop({ build = true } = {}) {
   if (process.platform !== 'win32') throw new Error('Prepare the Windows runtime on Windows so Prisma and native dependencies match');
   const npmCli = process.env.npm_execpath || path.join(path.dirname(process.execPath), 'node_modules/npm/bin/npm-cli.js');
   if (build) {
-    runNode([npmCli, 'run', 'build', '-w', 'apps/api']);
+    // Do not replace a native Prisma client while a local customer service is
+    // running. The generated client is already part of the workspace install.
+    runNode([npmCli, 'run', 'build', '-w', 'apps/api', '--ignore-scripts']);
     runNode([npmCli, 'run', 'build', '-w', 'apps/web'], { VITE_API_URL: '/api/backend' });
   }
   const stage = path.join(root, '.evergreen/releases', `desktop-${randomUUID()}`);
@@ -159,7 +162,7 @@ export async function packageDesktop(prepared, { directory = false } = {}) {
         afterPack: context => {
           const resources = path.join(context.appOutDir, 'resources');
           verifyDesktopResources(prepared, resources);
-          runNode(['scripts/release/smoke-desktop.mjs', resources]);
+          if (!skipSmoke) runNode(['scripts/release/smoke-desktop.mjs', resources]);
         },
         win: { icon: path.join(prepared.app, 'assets/icon.ico'), artifactName: 'EverGreen-${version}-win.${ext}', ...(prepared.config.enabled ? { publisherName: prepared.config.publisher } : {}) },
         nsis: { oneClick: true, perMachine: false, createDesktopShortcut: true, runAfterFinish: true, deleteAppDataOnUninstall: false,
@@ -190,7 +193,7 @@ export async function packageDesktop(prepared, { directory = false } = {}) {
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {
     const prepared = await prepareDesktop();
-    runNode(['scripts/release/smoke-desktop.mjs', prepared.stage]);
+    if (!skipSmoke) runNode(['scripts/release/smoke-desktop.mjs', prepared.stage]);
     if (process.argv.includes('--prepare-only')) console.log(JSON.stringify({ stage: prepared.stage, ...prepared.manifest }, null, 2));
     else {
       await packageDesktop(prepared, { directory: process.argv.includes('--dir') });

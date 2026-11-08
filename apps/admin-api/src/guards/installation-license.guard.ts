@@ -13,7 +13,10 @@ export class InstallationLicenseGuard implements CanActivate {
       .switchToHttp()
       .getRequest<{ method: string; path: string }>();
     if (req.method === 'POST' && req.path === '/licensing/lease') return true; // The issuer verifies the signed grant and device proof.
-    if (req.method === 'GET' && req.path === '/license/status') return true;
+    if (req.method === 'GET' && ['/license/status', '/public/tenant/resolve'].includes(req.path)) return true;
+    // The hosted provider control plane is authorized by ProviderAccessGuard
+    // and its owner credential/session, not by a customer-installation licence.
+    if (process.env.EVERGREEN_ADMIN_HOSTED === 'true') return true;
     let licence;
     try {
       licence = requireInstallationLicence('provider');

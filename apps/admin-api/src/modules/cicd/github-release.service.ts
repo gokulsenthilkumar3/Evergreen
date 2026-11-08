@@ -26,6 +26,15 @@ export interface GithubRun {
   conclusion: string | null;
 }
 
+export interface GithubCompare {
+  status: 'ahead' | 'behind' | 'identical' | 'diverged';
+  ahead_by: number;
+  behind_by: number;
+  total_commits: number;
+  commits: { sha: string; html_url: string; commit: { message: string; author?: { name?: string } } }[];
+  files?: { filename: string; status: string; additions: number; deletions: number; changes: number }[];
+}
+
 export function githubConfig() {
   const repository = process.env.EVERGREEN_GITHUB_REPOSITORY?.trim();
   const token = process.env.EVERGREEN_GITHUB_TOKEN?.trim();
