@@ -41,8 +41,9 @@ it("stores shared-device login in the tab and continues immediately", async () =
   enter();
   fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
   await waitFor(() => expect(success).toHaveBeenCalledOnce());
-  expect(sessionStorage.getItem("token")).toBe("session-token");
-  expect(localStorage.getItem("token")).toBeNull();
+  expect(getToken()).toBe("session-token");
+  expect(sessionStorage.getItem(`${window.location.origin}:token`)).toBe("session-token");
+  expect(localStorage.getItem(`${window.location.origin}:token`)).toBeNull();
   expect(api.post).toHaveBeenCalledWith("/auth/login", {
     username: "staff",
     password: "secret",
@@ -57,9 +58,10 @@ it("persists login only when requested", async () => {
   fireEvent.click(screen.getByRole("checkbox"));
   fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
   await waitFor(() =>
-    expect(localStorage.getItem("token")).toBe("saved-token"),
+    expect(localStorage.getItem(`${window.location.origin}:token`)).toBe("saved-token"),
   );
-  expect(sessionStorage.getItem("token")).toBeNull();
+  expect(getToken()).toBe("saved-token");
+  expect(sessionStorage.getItem(`${window.location.origin}:token`)).toBeNull();
 });
 it("continues through MFA without losing the username and password", async () => {
   const success = vi.fn();
@@ -95,10 +97,12 @@ it("shows network recovery and actionable account help", async () => {
   ).toBeInTheDocument();
 });
 it("switches storage modes without keeping old credentials and clears both on logout", () => {
+  sessionStorage.setItem("token", "unscoped-token");
+  expect(getToken()).toBeNull();
   saveSession("old", {}, true);
   saveSession("new", {}, false);
   expect(getToken()).toBe("new");
-  expect(localStorage.getItem("token")).toBeNull();
+  expect(localStorage.getItem(`${window.location.origin}:token`)).toBeNull();
   clearAuth();
   expect(getToken()).toBeNull();
 });

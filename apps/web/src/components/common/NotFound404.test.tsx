@@ -1,10 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import NotFound404 from './NotFound404';
+import { saveSession } from '../../utils/authStorage';
 
 describe('page-not-found screen', () => {
   const secret = 'eyJhbGciOiJIUzI1NiJ9.session-token';
-  beforeEach(() => localStorage.setItem('token', secret));
+  beforeEach(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+    saveSession(secret, {}, true);
+  });
   afterEach(() => { cleanup(); localStorage.clear(); });
 
   it('never puts the signed-in token, or any developer tool, into a link', () => {

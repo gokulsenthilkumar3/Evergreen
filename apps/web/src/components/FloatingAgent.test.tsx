@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import FloatingAgent from './FloatingAgent';
 import { agentPanelPosition, clampAgent } from '../hooks/useFloatingAgent';
 import { setUiLanguage } from '../i18n';
+import { saveSession } from '../utils/authStorage';
 
 let reducedMotion = false;
 beforeEach(() => {
@@ -54,7 +55,7 @@ describe('floating Loom Agent', () => {
   });
 
   it('preserves a minimized draft and sends only the consented conversation through the staff endpoint', async () => {
-    sessionStorage.setItem('token', 'staff-token');
+    saveSession('staff-token', { username: 'alice' }, false);
     const fetcher = vi.mocked(fetch);
     fetcher.mockReset();
     fetcher.mockResolvedValueOnce(new Response(JSON.stringify({ configured: true })))

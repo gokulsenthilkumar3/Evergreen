@@ -5,7 +5,7 @@ Generated source reference coverage (not test coverage or delivery certification
 - 38 page files with individual wiki entries.
 - 34 direct page render expressions.
 - 914 UI controls and tab containers.
-- 215 controller HTTP handlers.
+- 216 controller HTTP handlers.
 - 30 business workflow actions.
 - 64 database models.
 
